@@ -791,6 +791,11 @@ bool Socket::Receive(string &pSourceHost, unsigned int &pSourcePort, void *pBuff
         mPeerDataMutex.unlock();
         #ifdef HBS_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Received %d bytes via socket %d at local port %d of %s socket", tReceivedBytes, mSocketHandle, mLocalPort, TransportType2String(mSocketTransportType).c_str());
+            if (tReceivedBytes > 8)
+            {
+            	char * tData = (char*)pBuffer;
+            	LOG(LOG_VERBOSE, "First eight bytes are: %d %d %d %d  %d %d %d %d", tData[0], tData[1], tData[2], tData[3], tData[4], tData[5], tData[6], tData[7]);
+            }
         #endif
         tResult = true;
 

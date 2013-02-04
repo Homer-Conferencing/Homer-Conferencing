@@ -1565,13 +1565,20 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
 
     if (tCsrcCount > 4)
     {
-        LOG(LOG_ERROR, "Found invalid CSRC value in RTP header");
+        LOG(LOG_ERROR, "Found invalid CSRC value %u in RTP header", tCsrcCount);
 
         pIsLastFragment = false;
 
         // convert from host to network byte order again
         for (int i = 0; i < 3; i++)
             tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
+
+		#ifdef RTP_DEBUG_PACKET_DECODER
+
+			// print some verbose outputs
+			LogRtpHeader(tRtpHeader);
+
+		#endif
 
         return false;
     }
