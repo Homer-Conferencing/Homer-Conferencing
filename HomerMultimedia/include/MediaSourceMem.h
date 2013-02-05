@@ -148,7 +148,7 @@ protected:
     virtual void StopDecoder();
     virtual void* Run(void* pArgs = NULL); // decoder main loop
     VideoScaler *CreateVideoScaler();
-    void DestroyVideoScaler(VideoScaler *pScaler);
+    void CloseVideoScaler(VideoScaler *pScaler);
     void ReadPacketFromInputStream(AVPacket *pPacket, double &pPacketFrameNumber);
 
     /* buffering */
@@ -185,15 +185,12 @@ protected:
     bool                mGrabberProvidesRTGrabbing;
     /* decoder thread */
     bool                mDecoderUsesPTSFromInputPackets;
-    int                 mDecoderTargetResX;
-    int                 mDecoderTargetResY;
     bool                mDecoderThreadNeeded; // also used to signal that the decoder thread has finished the init. process
     int64_t             mDecoderLastReadPts; // check for interleaved packets, non-monotonous PTS values
     Condition           mDecoderNeedWorkCondition;
     Mutex               mDecoderNeedWorkConditionMutex;
     MediaFifo           *mDecoderFragmentFifo;
     Mutex				mDecoderFragmentFifoDestructionMutex;
-    AVFifoBuffer        *mDecoderAudioSamplesFifo;
     MediaFifo           *mDecoderFifo; // for frames
     int                 mDecoderExpectedMaxOutputPerInputFrame; // how many output frames can be calculated of one input frame?
     /* decoder thread seeking */

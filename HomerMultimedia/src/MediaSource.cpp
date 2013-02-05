@@ -3573,6 +3573,55 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 	return true;
 }
 
+bool MediaSource::FfmpegCloseFormatConverter(string pSource, int pLine)
+{
+    // free resample context
+    switch(mMediaType)
+    {
+        case MEDIA_AUDIO:
+            if (mAudioResampleContext != NULL)
+            {
+                LOG(LOG_VERBOSE, "    ..releasing %s resample context", GetMediaTypeStr().c_str());
+                HM_swr_free(&mAudioResampleContext);
+                mAudioResampleContext = NULL;
+            }
+            if (mResampleBuffer != NULL)
+            {
+                LOG(LOG_VERBOSE, "    ..releasing %s resample buffer", GetMediaTypeStr().c_str());
+                free(mResampleBuffer);
+                mResampleBuffer = NULL;
+            }
+            for (int i = 0; i < MEDIA_SOURCE_MAX_AUDIO_CHANNELS; i++)
+            {
+                if(mResampleFifo[i] != NULL)
+                {
+                    LOG(LOG_VERBOSE, "    ..releasing resample FIFO %d", i);
+                    av_fifo_free(mResampleFifo[i]);
+                    mResampleFifo[i] = NULL;
+                }
+            }
+            if (mResampleBuffer != NULL)
+            {
+                LOG(LOG_VERBOSE, "    ..releasing resample buffer");
+                free(mResampleBuffer);
+                mResampleBuffer = NULL;
+            }
+            break;
+        case MEDIA_VIDEO:
+            if (mVideoScalerContext != NULL)
+            {
+                // free the software scaler context
+                LOG(LOG_VERBOSE, "    ..releasing %s scale context", GetMediaTypeStr().c_str());
+                sws_freeContext(mVideoScalerContext);
+                mVideoScalerContext = NULL;
+            }
+            break;
+        default:
+            break;
+    }
+    return true;
+}
+
 bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 {
     LOG(LOG_VERBOSE, "%s %s source closing..", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
@@ -3585,48 +3634,11 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 	    LOG(LOG_VERBOSE, "    ..stopping %s recorder", GetMediaTypeStr().c_str());
         StopRecording();
 
-		// free resample context
-		switch(mMediaType)
-		{
-			case MEDIA_AUDIO:
-				if (mAudioResampleContext != NULL)
-				{
-			        LOG(LOG_VERBOSE, "    ..releasing %s resample context", GetMediaTypeStr().c_str());
-				    HM_swr_free(&mAudioResampleContext);
-					mAudioResampleContext = NULL;
-				}
-				if (mResampleBuffer != NULL)
-				{
-                    LOG(LOG_VERBOSE, "    ..releasing %s resample buffer", GetMediaTypeStr().c_str());
-		            free(mResampleBuffer);
-		            mResampleBuffer = NULL;
-				}
-				for (int i = 0; i < MEDIA_SOURCE_MAX_AUDIO_CHANNELS; i++)
-				{
-				    if(mResampleFifo[i] != NULL)
-				    {
-				        av_fifo_free(mResampleFifo[i]);
-				        mResampleFifo[i] = NULL;
-				    }
-				}
-		        if (mResampleBuffer != NULL)
-		        {
-		            free(mResampleBuffer);
-		            mResampleBuffer = NULL;
-		        }
-				break;
-			case MEDIA_VIDEO:
-				if (mVideoScalerContext != NULL)
-				{
-					// free the software scaler context
-                    LOG(LOG_VERBOSE, "    ..releasing %s scale context", GetMediaTypeStr().c_str());
-					sws_freeContext(mVideoScalerContext);
-					mVideoScalerContext = NULL;
-				}
-				break;
-			default:
-				break;
-		}
+        if (!FfmpegCloseFormatConverter(pSource, pLine))
+        {
+            LOG(LOG_ERROR, "Failed to close %s format converter", GetMediaTypeStr().c_str());
+            return false;
+        }
 
 		// Close the codec
 		if (mCodecContext != NULL)

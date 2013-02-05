@@ -173,6 +173,7 @@ struct FrameDescriptor
 #define SelectStream()              						FfmpegSelectStream(GetObjectNameStr(this).c_str(), __LINE__)
 #define OpenDecoder()										FfmpegOpenDecoder(GetObjectNameStr(this).c_str(), __LINE__)
 #define OpenFormatConverter()								FfmpegOpenFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
+#define CloseFormatConverter()                              FfmpegCloseFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
 #define CloseAll()											FfmpegCloseAll(GetObjectNameStr(this).c_str(), __LINE__)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -409,6 +410,7 @@ protected:
     bool FfmpegSelectStream(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
     bool FfmpegOpenDecoder(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
     bool FfmpegOpenFormatConverter(string pSource /* caller source */, int pLine /* caller line */);
+    bool FfmpegCloseFormatConverter(string pSource /* caller source */, int pLine /* caller line */);
     bool FfmpegCloseAll(string pSource /* caller source */, int pLine /* caller line */);
 
     bool                mMediaSourceOpened;

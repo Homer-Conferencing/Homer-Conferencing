@@ -92,7 +92,6 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
 	mWrappingHeaderSize= 0;
     mGrabberProvidesRTGrabbing = true;
     mSourceType = SOURCE_MEMORY;
-    mDecoderAudioSamplesFifo = NULL;
     mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE);
     mFragmentBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
     mFragmentNumber = 0;
@@ -1111,9 +1110,6 @@ void MediaSourceMem::StartDecoder()
 {
     LOG(LOG_VERBOSE, "Starting %s decoder with FIFO", GetMediaTypeStr().c_str());
 
-    mDecoderTargetResX = mTargetResX;
-    mDecoderTargetResY = mTargetResY;
-
     // trigger a RT playback calibration
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 
@@ -1177,12 +1173,12 @@ VideoScaler* MediaSourceMem::CreateVideoScaler()
     tResult = new VideoScaler("Video-Decoder(" + GetSourceTypeStr() + ")");
     if(tResult == NULL)
         LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
-    tResult->StartScaler(CalculateFrameBufferSize(), mSourceResX, mSourceResY, mCodecContext->pix_fmt, mDecoderTargetResX, mDecoderTargetResY, PIX_FMT_RGB32);
+    tResult->StartScaler(CalculateFrameBufferSize(), mSourceResX, mSourceResY, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32);
 
     return tResult;
 }
 
-void MediaSourceMem::DestroyVideoScaler(VideoScaler *pScaler)
+void MediaSourceMem::CloseVideoScaler(VideoScaler *pScaler)
 {
     pScaler->StopScaler();
 }
@@ -1432,7 +1428,7 @@ void* MediaSourceMem::Run(void* pArgs)
             {// we have single frame (a picture) as input
                 LOG(LOG_VERBOSE, "Allocating all objects for a picture input");
 
-                tChunkBufferSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY) + FF_INPUT_BUFFER_PADDING_SIZE;
+                tChunkBufferSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) + FF_INPUT_BUFFER_PADDING_SIZE;
 
                 // allocate chunk buffer
                 tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
@@ -1444,10 +1440,7 @@ void* MediaSourceMem::Run(void* pArgs)
                     LOG(LOG_ERROR, "Out of video memory");
 
                 // Assign appropriate parts of buffer to image planes in tRGBFrame
-                avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tChunkBuffer, PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
-
-                LOG(LOG_VERBOSE, "Going to create in-thread scaler context..");
-                mVideoScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mDecoderTargetResX, mDecoderTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
+                avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
 
                 mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr() + "(Data)");
             }
@@ -1467,11 +1460,6 @@ void* MediaSourceMem::Run(void* pArgs)
 
             mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr() + "(Data)");
 
-            // init fifo buffer
-            mDecoderAudioSamplesFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
-            if (mDecoderAudioSamplesFifo == NULL)
-                LOG(LOG_ERROR, "Out of audio memory");
-
             break;
         default:
             SVC_PROCESS_STATISTIC.AssignThreadName("Decoder(" + GetSourceTypeStr() + ")");
@@ -1479,6 +1467,9 @@ void* MediaSourceMem::Run(void* pArgs)
             return NULL;
             break;
     }
+
+    if (!OpenFormatConverter())
+        LOG(LOG_ERROR, "Failed to open the %s format converter", GetMediaTypeStr().c_str());
 
     // reset last PTS
     mDecoderLastReadPts = 0;
@@ -1814,7 +1805,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                             }
                                         }else
                                         {// we decode a picture
-                                            if  ((mDecoderSinglePictureResX != mDecoderTargetResX) || (mDecoderSinglePictureResY != mDecoderTargetResY))
+                                            if  ((mDecoderSinglePictureResX != mTargetResX) || (mDecoderSinglePictureResY != mTargetResY))
                                             {
                                                 #ifdef MSMEM_DEBUG_PACKETS
                                                     LOG(LOG_VERBOSE, "Scale (within decoder thread) video frame..");
@@ -1830,8 +1821,8 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                                 LOG(LOG_VERBOSE, "Decoded picture into RGB frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
 
-                                                mDecoderSinglePictureResX = mDecoderTargetResX;
-                                                mDecoderSinglePictureResY = mDecoderTargetResY;
+                                                mDecoderSinglePictureResX = mTargetResX;
+                                                mDecoderSinglePictureResY = mTargetResY;
                                             }else
                                             {// use stored RGB frame
 
@@ -1839,7 +1830,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                                 //HINT: tChunkBuffer is still valid from first decoder loop
                                             }
                                             // return size of decoded frame
-                                            tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mDecoderTargetResX, mDecoderTargetResY);
+                                            tCurrentChunkSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY);
                                         }
 
                                         // ############################
@@ -1944,18 +1935,18 @@ void* MediaSourceMem::Run(void* pArgs)
                                     if (tCurrentChunkSize > 0)
                                     {
                                         // get the buffered samples (= pts)
-                                        int tAudioFifoBufferedSamples = av_fifo_size(mDecoderAudioSamplesFifo) /* buffer sie in bytes */ / (tOutputAudioBytesPerSample * mOutputAudioChannels);
+                                        int tAudioFifoBufferedSamples = av_fifo_size(mResampleFifo[0]) /* buffer sie in bytes */ / (tOutputAudioBytesPerSample * mOutputAudioChannels);
 
                                         // ############################
                                         // ### WRITE FRAME TO FIFO
                                         // ############################
                                         #ifdef MSMEM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with buffer of %d bytes (%d samples), packet pts: %.2f", tCurrentChunkSize, av_fifo_size(mDecoderAudioSamplesFifo), tAudioFifoBufferedSamples, (float)tCurrrentInputPacketPts);
+                                            LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with buffer of %d bytes (%d samples), packet pts: %.2f", tCurrentChunkSize, av_fifo_size(mResampleFifo[0]), tAudioFifoBufferedSamples, (float)tCurrrentInputPacketPts);
                                         #endif
                                         // is there enough space in the FIFO?
-                                        if (av_fifo_space(mDecoderAudioSamplesFifo) < tCurrentChunkSize)
+                                        if (av_fifo_space(mResampleFifo[0]) < tCurrentChunkSize)
                                         {// no, we need reallocation
-                                            if (av_fifo_realloc2(mDecoderAudioSamplesFifo, av_fifo_size(mDecoderAudioSamplesFifo) + tCurrentChunkSize - av_fifo_space(mDecoderAudioSamplesFifo)) < 0)
+                                            if (av_fifo_realloc2(mResampleFifo[0], av_fifo_size(mResampleFifo[0]) + tCurrentChunkSize - av_fifo_space(mResampleFifo[0])) < 0)
                                             {
                                                 // acknowledge failed
                                                 LOG(LOG_ERROR, "Reallocation of FIFO audio buffer failed");
@@ -1964,7 +1955,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
                                         //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
                                         // write new samples into fifo buffer
-                                        av_fifo_generic_write(mDecoderAudioSamplesFifo, tDecodedAudioSamples, tCurrentChunkSize, NULL);
+                                        av_fifo_generic_write(mResampleFifo[0], tDecodedAudioSamples, tCurrentChunkSize, NULL);
 
                                         tCurrentOutputFrameNumber = (int64_t)rint(CalculateOutputFrameNumber(tCurrrentInputPacketPts) - (double)tAudioFifoBufferedSamples / MEDIA_SOURCE_SAMPLES_PER_BUFFER);
                                         
@@ -1977,17 +1968,17 @@ void* MediaSourceMem::Run(void* pArgs)
                                         int tDesiredOutputSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * tOutputAudioBytesPerSample * mOutputAudioChannels;
 
                                         int tLoops = 0;
-                                        while (av_fifo_size(mDecoderAudioSamplesFifo) >= MEDIA_SOURCE_SAMPLES_PER_BUFFER * tOutputAudioBytesPerSample * mOutputAudioChannels)
+                                        while (av_fifo_size(mResampleFifo[0]) >= MEDIA_SOURCE_SAMPLES_PER_BUFFER * tOutputAudioBytesPerSample * mOutputAudioChannels)
                                         {
                                             tLoops++;
                                             // ############################
                                             // ### READ FRAME FROM FIFO
                                             // ############################
                                             #ifdef MSM_DEBUG_PACKETS
-                                                LOG(LOG_VERBOSE, "Loop %d-Reading %d bytes from %d bytes of fifo, current frame nr.: %"PRId64, tLoops, MSF_DESIRED_AUDIO_INPUT_SIZE, av_fifo_size(mDecoderAudioSamplesFifo), tCurrentOutputFrameNumber);
+                                                LOG(LOG_VERBOSE, "Loop %d-Reading %d bytes from %d bytes of fifo, current frame nr.: %"PRId64, tLoops, MSF_DESIRED_AUDIO_INPUT_SIZE, av_fifo_size(mResampleFifo[0]), tCurrentOutputFrameNumber);
                                             #endif
                                             // read sample data from the fifo buffer
-                                            HM_av_fifo_generic_read(mDecoderAudioSamplesFifo, (void*)tChunkBuffer, tDesiredOutputSize);
+                                            HM_av_fifo_generic_read(mResampleFifo[0], (void*)tChunkBuffer, tDesiredOutputSize);
                                             tCurrentChunkSize = tDesiredOutputSize;
 
                                             // ############################
@@ -1997,7 +1988,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                             if (tCurrentChunkSize <= mDecoderFifo->GetEntrySize())
                                             {
                                                 #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
-                                                    LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with frame nr. %"PRId64", remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurrentOutputFrameNumber, av_fifo_size(mDecoderAudioSamplesFifo));
+                                                    LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with frame nr. %"PRId64", remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurrentOutputFrameNumber, av_fifo_size(mResampleFifo[0]));
                                                 #endif
                                                 WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, tCurrentOutputFrameNumber);
 
@@ -2079,26 +2070,22 @@ void* MediaSourceMem::Run(void* pArgs)
                 if (!tInputIsPicture)
                 {
                     LOG(LOG_WARN, "VIDEO decoder thread stops scaler thread..");
-                    tVideoScaler->StopScaler();
+                    CloseVideoScaler(tVideoScaler);
                     LOG(LOG_VERBOSE, "..VIDEO decoder thread stopped scaler thread");
                 }else
                 {
                     // Free the RGB frame
+                    LOG(LOG_VERBOSE, "..releasing RGB frame buffer");
                     av_free(tRGBFrame);
-
-                    sws_freeContext(mVideoScalerContext);
-                    mVideoScalerContext = NULL;
                 }
 
                 // Free the YUV frame
+                LOG(LOG_VERBOSE, "..releasing SOURCE frame buffer");
                 av_free(tSourceFrame);
 
                 break;
         case MEDIA_AUDIO:
-                // free fifo buffer
-                av_fifo_free(mDecoderAudioSamplesFifo);
-                mDecoderAudioSamplesFifo = NULL;
-
+                LOG(LOG_VERBOSE, "..releasing AUDIO frame buffer");
                 av_free(tAudioFrame);
 
                 break;
@@ -2106,6 +2093,10 @@ void* MediaSourceMem::Run(void* pArgs)
                 break;
     }
 
+    LOG(LOG_VERBOSE, "..closing format converter");
+    CloseFormatConverter();
+
+    LOG(LOG_VERBOSE, "..releasing chunk buffer");
     free(tChunkBuffer);
 
     LOG(LOG_WARN, "%s decoder main loop finished for %s media source <<<<<<<<<<<<<<<<", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
@@ -2125,10 +2116,10 @@ void MediaSourceMem::ResetDecoderBuffers()
     LOG(LOG_VERBOSE, "Reseting %s decoder internal FIFO after seeking in input stream", GetMediaTypeStr().c_str());
     mDecoderFifo->ClearFifo();
 
-    if ((mMediaType == MEDIA_AUDIO) && (mDecoderAudioSamplesFifo != NULL) && (av_fifo_size(mDecoderAudioSamplesFifo) > 0))
+    if ((mMediaType == MEDIA_AUDIO) && (mResampleFifo[0] != NULL) && (av_fifo_size(mResampleFifo[0]) > 0))
     {
         LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
-        av_fifo_drain(mDecoderAudioSamplesFifo, av_fifo_size(mDecoderAudioSamplesFifo));
+        av_fifo_drain(mResampleFifo[0], av_fifo_size(mResampleFifo[0]));
     }
 
     mDecoderOutputFrameDelay = 0;
