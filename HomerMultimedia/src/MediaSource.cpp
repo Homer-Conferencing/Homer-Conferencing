@@ -50,9 +50,6 @@ using namespace Homer::Monitor;
 // de/activate MT support during video encoding: ffmpeg supports MT only for encoding
 #define MEDIA_SOURCE_RECORDER_MULTI_THREADED_VIDEO_ENCODING
 
-
-#define MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL                  8192
-
 ///////////////////////////////////////////////////////////////////////////////
 
 Mutex MediaSource::mFfmpegInitMutex;
@@ -1871,10 +1868,10 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                     {// planar audio buffering
                         // init fifo buffer per channel
                         for (int i = 0; i < mRecorderAudioChannels; i++)
-                            mRecorderSampleFifo[i] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                            mRecorderResampleFifo[i] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
                     }else
                     {// one interleaved audio buffer
-                        mRecorderSampleFifo[0] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                        mRecorderResampleFifo[0] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
                     }
 
                 }
@@ -2017,7 +2014,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
             LOG(LOG_INFO, "    ..channels: %d", mRecorderCodecContext->channels);
             LOG(LOG_INFO, "    ..sample format: %s", av_get_sample_fmt_name(mRecorderCodecContext->sample_fmt));
             LOG(LOG_INFO, "Fifo opened...");
-            LOG(LOG_INFO, "    ..available FIFO %d size: %d bytes", 0, av_fifo_space(mRecorderSampleFifo[0]));
+            LOG(LOG_INFO, "    ..available FIFO %d size: %d bytes", 0, av_fifo_space(mRecorderResampleFifo[0]));
             break;
         default:
             LOG(LOG_ERROR, "Media type unknown");
@@ -2066,10 +2063,10 @@ void MediaSource::StopRecording()
                     {// planar audio buffering
                         // init fifo buffer
                         for (int i = 0; i < mRecorderAudioChannels; i++)
-                            av_fifo_free(mRecorderSampleFifo[i]);
+                            av_fifo_free(mRecorderResampleFifo[i]);
                     }else
                     {// one interleaved audio buffer
-                        av_fifo_free(mRecorderSampleFifo[0]);
+                        av_fifo_free(mRecorderResampleFifo[0]);
                     }
 
                     break;
@@ -2250,15 +2247,15 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 
         case MEDIA_AUDIO:
                 {
-                    int tRecorderAudioBytesPerSample = av_get_bytes_per_sample(mRecorderAudioFormat);
+                    int tOutputAudioBytesPerSample = av_get_bytes_per_sample(mRecorderAudioFormat);
                     int tOutputSamplesPerChannel = mRecorderCodecContext->frame_size; // nr. of samples of output frames
-                    int tReadFifoSize = tOutputSamplesPerChannel * tRecorderAudioBytesPerSample * mRecorderAudioChannels;
-                    int tReadFifoSizePerChannel = tOutputSamplesPerChannel * tRecorderAudioBytesPerSample;
+                    int tReadFifoSize = tOutputSamplesPerChannel * tOutputAudioBytesPerSample * mRecorderAudioChannels;
+                    int tReadFifoSizePerChannel = tOutputSamplesPerChannel * tOutputAudioBytesPerSample;
 
                     int tInputAudioBytesPerSample = av_get_bytes_per_sample(mInputAudioFormat);
                     int tInputSamplesPerChannel = pSourceFrame->nb_samples; // nr. of samples of source frames
-                    int tWrittenFifoSize = tInputSamplesPerChannel * tRecorderAudioBytesPerSample * mRecorderAudioChannels;
-                    int tWrittenFifoSizePerChannel = tInputSamplesPerChannel * tRecorderAudioBytesPerSample;
+                    int tWrittenFifoSize = tInputSamplesPerChannel * tOutputAudioBytesPerSample * mRecorderAudioChannels;
+                    int tWrittenFifoSizePerChannel = tInputSamplesPerChannel * tOutputAudioBytesPerSample;
 
                     if (pSourceFrame->nb_samples != mCodecContext->frame_size)
                         LOG(LOG_ERROR, "Number of samples in source framme differs from the defined frame size in the codec context");
@@ -2307,12 +2304,12 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                         // ### reallocate FIFO space
                         // ############################
                         #ifdef MS_DEBUG_RECORDER_PACKETS
-                            LOG(LOG_VERBOSE, "Adding %d bytes (%d bytes/sample, input channels: %d, frame size: %d) to AUDIO FIFO %d with size of %d bytes", tWrittenFifoSizePerChannel, tInputAudioBytesPerSample, mInputAudioChannels, pSourceFrame->nb_samples, tFifoIndex, av_fifo_size(mRecorderSampleFifo[tFifoIndex]));
+                            LOG(LOG_VERBOSE, "Adding %d bytes (%d bytes/sample, input channels: %d, frame size: %d) to AUDIO FIFO %d with size of %d bytes", tWrittenFifoSizePerChannel, tInputAudioBytesPerSample, mInputAudioChannels, pSourceFrame->nb_samples, tFifoIndex, av_fifo_size(mRecorderResampleFifo[tFifoIndex]));
                         #endif
                         // is there enough space in the FIFO?
-                        if (av_fifo_space(mRecorderSampleFifo[tFifoIndex]) < tWrittenFifoSizePerChannel)
+                        if (av_fifo_space(mRecorderResampleFifo[tFifoIndex]) < tWrittenFifoSizePerChannel)
                         {// no, we need reallocation
-                            if (av_fifo_realloc2(mRecorderSampleFifo[tFifoIndex], av_fifo_size(mRecorderSampleFifo[tFifoIndex]) + tWrittenFifoSizePerChannel - av_fifo_space(mRecorderSampleFifo[tFifoIndex])) < 0)
+                            if (av_fifo_realloc2(mRecorderResampleFifo[tFifoIndex], av_fifo_size(mRecorderResampleFifo[tFifoIndex]) + tWrittenFifoSizePerChannel - av_fifo_space(mRecorderResampleFifo[tFifoIndex])) < 0)
                             {
                                 // acknowledge failed
                                 LOG(LOG_ERROR, "Reallocation of recorder FIFO audio buffer for channel %d failed", i);
@@ -2324,16 +2321,16 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                         #ifdef MS_DEBUG_RECORDER_PACKETS
                             LOG(LOG_VERBOSE, "Writing %d bytes from %u(%u) to FIFO %d", tWrittenFifoSizePerChannel, tInputBuffer, mRecorderResampleBufferPlanes[tFifoIndex], tFifoIndex);
                         #endif
-                        av_fifo_generic_write(mRecorderSampleFifo[tFifoIndex], tInputBuffer, tWrittenFifoSizePerChannel, NULL);
+                        av_fifo_generic_write(mRecorderResampleFifo[tFifoIndex], tInputBuffer, tWrittenFifoSizePerChannel, NULL);
                     }
 
                     // ############################
                     // ### check FIFO for available frames
                     // ############################
                     while (/* planar */((av_sample_fmt_is_planar(mRecorderAudioFormat) &&
-                                            (av_fifo_size(mRecorderSampleFifo[0]) >= tReadFifoSizePerChannel))) ||
+                                            (av_fifo_size(mRecorderResampleFifo[0]) >= tReadFifoSizePerChannel))) ||
                           (/* packed/interleaved */((!av_sample_fmt_is_planar(mRecorderAudioFormat)) &&
-                                            (av_fifo_size(mRecorderSampleFifo[0]) >= tReadFifoSizePerChannel * mRecorderAudioChannels /* FIFO 0 stores all samples */))))
+                                            (av_fifo_size(mRecorderResampleFifo[0]) >= tReadFifoSizePerChannel * mRecorderAudioChannels /* FIFO 0 stores all samples */))))
                     {
                         //####################################################################
                         // create audio planes
@@ -2349,9 +2346,9 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                             // ### read buffer from FIFO
                             // ############################
                             #ifdef MS_DEBUG_RECORDER_PACKETS
-                                LOG(LOG_VERBOSE, "Reading %d bytes (%d bytes/sample, frame size: %d samples per packet) from %d bytes of FIFO %d", tReadFifoSizePerChannel, tInputAudioBytesPerSample, mRecorderCodecContext->frame_size, av_fifo_size(mRecorderSampleFifo[tFifoIndex]), tFifoIndex);
+                                LOG(LOG_VERBOSE, "Reading %d bytes (%d bytes/sample, frame size: %d samples per packet) from %d bytes of FIFO %d", tReadFifoSizePerChannel, tInputAudioBytesPerSample, mRecorderCodecContext->frame_size, av_fifo_size(mRecorderResampleFifo[tFifoIndex]), tFifoIndex);
                             #endif
-                            HM_av_fifo_generic_read(mRecorderSampleFifo[tFifoIndex], (void*)tOutputBuffer, tReadFifoSizePerChannel);
+                            HM_av_fifo_generic_read(mRecorderResampleFifo[tFifoIndex], (void*)tOutputBuffer, tReadFifoSizePerChannel);
 
                             tOutputBuffer += tReadFifoSizePerChannel;
                         }
@@ -3507,27 +3504,63 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 			// create resample context
 			if ((mInputAudioSampleRate != mOutputAudioSampleRate) || (mInputAudioChannels != mOutputAudioChannels) || (mInputAudioFormat != mOutputAudioFormat))
 			{
-				if (mAudioResampleContext != NULL)
-				{
-					LOG(LOG_ERROR, "State of audio resample context inconsistent");
-				}
+                // create resample context
+                if (mAudioResampleContext != NULL)
+                    LOG(LOG_ERROR, "State of audio recorder resample context inconsistent");
+                LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
+                mAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mOutputAudioChannels), mOutputAudioFormat, mOutputAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
+                if (mAudioResampleContext != NULL)
+                {// everything okay, we have to init the context
+                    int tRes = 0;
+                    if ((tRes = HM_swr_init(mAudioResampleContext)) < 0)
+                    {
+                        LOG(LOG_ERROR, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                        return false;
+                    }
+                }else
+                {
+                    LOG(LOG_ERROR, "Failed to create audio-resample context");
+                }
 
-				LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
-				mAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mOutputAudioChannels), mOutputAudioFormat, mOutputAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
-			    if (mAudioResampleContext != NULL)
-			    {// everything okay, we have to init the context
-			    	if ((tRes = HM_swr_init(mAudioResampleContext)) < 0)
-			    	{
-			    	    LOG(LOG_ERROR, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
-			            return false;
-			    	}
-			    }else
-			    {
-			    	LOG(LOG_ERROR, "Failed to create audio-resample context");
-			    }
-				if (mResampleBuffer != NULL)
-			        LOG(LOG_ERROR, "Resample buffer of %s source was already allocated", GetSourceTypeStr().c_str());
-                mResampleBuffer = (char*)malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                // resample buffer
+                LOG(LOG_VERBOSE, "..allocating audio resample memory");
+                if (mResampleBuffer != NULL)
+                    LOG(LOG_ERROR, "Recorder resample buffer of %s source was already allocated", GetSourceTypeStr().c_str());
+                mResampleBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL * 32 + FF_INPUT_BUFFER_PADDING_SIZE);
+
+//                LOG(LOG_VERBOSE, "..allocating final frame memory");
+//                if ((mRecorderFinalFrame = AllocFrame()) == NULL)
+//                    LOG(LOG_ERROR, "Out of memory in avcodec_alloc_frame()");
+
+                // reset the structure
+                memset((void*)&mResampleFifo[0], 0, sizeof(mResampleFifo));
+
+                if (av_sample_fmt_is_planar(mOutputAudioFormat))
+                {// planar audio buffering
+                    // init fifo buffer per channel
+                    for (int i = 0; i < mOutputAudioChannels; i++)
+                        mResampleFifo[i] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                }else
+                {// one interleaved audio buffer
+                    mResampleFifo[0] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                }
+
+                // planes indexing resample buffer
+                int InputFrameSize = (mCodecContext != NULL) ? (mCodecContext->frame_size > 0 ? mCodecContext->frame_size : MEDIA_SOURCE_SAMPLES_PER_BUFFER) : MEDIA_SOURCE_SAMPLES_PER_BUFFER;
+                LOG(LOG_VERBOSE, "..assigning planes memory for indexing resample memory with frame size: %d", InputFrameSize /* we use the source frame size! */);
+                memset(mResampleBufferPlanes, 0, sizeof(mResampleBufferPlanes));
+                if (HM_av_samples_fill_arrays(&mResampleBufferPlanes[0], NULL, (uint8_t *)mResampleBuffer, mOutputAudioChannels, InputFrameSize /* we use the source frame size! */, mOutputAudioFormat, 1) < 0)
+                {
+                    LOG(LOG_ERROR, "Could not fill the audio plane pointer array");
+                }
+                //AVCODEC_MAX_AUDIO_FRAME_SIZE / (av_get_bytes_per_sample(mOutputAudioFormat) * mOutputAudioChannels) /* amount of possible output samples */;
+                LOG(LOG_VERBOSE, "Resampling buffer is at: %p", mResampleBuffer);
+                for(int i = 0; i < mOutputAudioChannels; i++)
+                {
+                    LOG(LOG_VERBOSE, "Plane %d index points to: %p (diff: %u)", i, mResampleBufferPlanes[i], (i > 0) ? (mResampleBufferPlanes[i] - mResampleBufferPlanes[i - 1]) : 0);
+                }
+                LOG(LOG_VERBOSE, "Output audio format is planar: %d", av_sample_fmt_is_planar(mOutputAudioFormat));
+
 			}
 			break;
 		default:
@@ -3568,6 +3601,19 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 		            free(mResampleBuffer);
 		            mResampleBuffer = NULL;
 				}
+				for (int i = 0; i < MEDIA_SOURCE_MAX_AUDIO_CHANNELS; i++)
+				{
+				    if(mResampleFifo[i] != NULL)
+				    {
+				        av_fifo_free(mResampleFifo[i]);
+				        mResampleFifo[i] = NULL;
+				    }
+				}
+		        if (mResampleBuffer != NULL)
+		        {
+		            free(mResampleBuffer);
+		            mResampleBuffer = NULL;
+		        }
 				break;
 			case MEDIA_VIDEO:
 				if (mVideoScalerContext != NULL)

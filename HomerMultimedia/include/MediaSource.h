@@ -58,11 +58,13 @@ namespace Homer { namespace Multimedia {
 #define MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE                         16 * 1000 * 1000 // HDTV RGB32 picture: 1920*1080*4 = ca. 7,9 MB
 
 // audio processing
+#define MEDIA_SOURCE_MAX_AUDIO_CHANNELS                           32
 #define MEDIA_SOURCE_SAMPLES_CAPTURE_FIFO_SIZE                    64 // amount of capture buffers within the FIFO
 #define MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE                   64 // amount of playback buffers within the FIFO
 #define MEDIA_SOURCE_SAMPLES_PER_BUFFER                           1024
 #define MEDIA_SOURCE_SAMPLES_BUFFER_SIZE                          (MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* 16 bit signed int LittleEndian */ * 2 /* stereo */)
 #define MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE                    (4 * MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
+#define MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL                    8192
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -428,6 +430,8 @@ protected:
     enum CodecID        mSourceCodecId;
     bool                mEOFReached;
     /* audio */
+    AVFifoBuffer        *mResampleFifo[MEDIA_SOURCE_MAX_AUDIO_CHANNELS];
+    uint8_t             *mResampleBufferPlanes[MEDIA_SOURCE_MAX_AUDIO_CHANNELS];
     HM_SwrContext       *mAudioResampleContext;
     char                *mResampleBuffer;
     int                 mOutputAudioSampleRate;
@@ -478,9 +482,9 @@ protected:
     bool                mRtpActivated;
     /* recording */
     HM_SwrContext       *mRecorderAudioResampleContext;
-    AVFifoBuffer        *mRecorderSampleFifo[32];
+    AVFifoBuffer        *mRecorderResampleFifo[MEDIA_SOURCE_MAX_AUDIO_CHANNELS];
     char                *mRecorderResampleBuffer;
-    uint8_t             *mRecorderResampleBufferPlanes[32];
+    uint8_t             *mRecorderResampleBufferPlanes[MEDIA_SOURCE_MAX_AUDIO_CHANNELS];
     AVStream            *mRecorderEncoderStream;
     int                 mRecorderAudioSampleRate;
     int                 mRecorderAudioChannels;
