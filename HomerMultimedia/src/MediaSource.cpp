@@ -2233,6 +2233,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                          if (av_write_frame(mRecorderFormatContext, tPacket) != 0)
                              LOG(LOG_ERROR, "Couldn't write %s frame to file", GetMediaTypeStr().c_str());
 
+                         mRecorderFrameNumber++;
                     }else
                     {// video frame was buffered by ffmpeg
                         LOG(LOG_VERBOSE, "Video frame was buffered");
@@ -2241,7 +2242,6 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                     LOG(LOG_ERROR, "Couldn't re-encode current %s frame", GetMediaTypeStr().c_str());
 
                 av_free_packet(tPacket);
-                mRecorderFrameNumber++;
 
                 break;
 
@@ -2418,6 +2418,8 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                                  // distribute the encoded frame
                                  if (av_write_frame(mRecorderFormatContext, tPacket) != 0)
                                      LOG(LOG_ERROR, "Couldn't write %s frame to file", GetMediaTypeStr().c_str());
+
+                                 mRecorderFrameNumber++;
                             }else
                             {// audio frame was buffered by ffmpeg
                                 LOG(LOG_VERBOSE, "Audio frame was buffered");
@@ -2426,7 +2428,6 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                             LOG(LOG_ERROR, "Couldn't re-encode current %s frame", GetMediaTypeStr().c_str());
 
                         av_free_packet(tPacket);
-                        mRecorderFrameNumber++;
                     }
                 }
 
