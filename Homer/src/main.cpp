@@ -40,10 +40,111 @@
 using namespace Homer::Gui;
 using namespace std;
 
-#if defined(LINUX)
-static void HandlerSigSegfault(int pSignal, siginfo_t *pSignalInfo, void *pArg)
+#if defined(LINUX) || defined(APPLE)
+#include <execinfo.h>
+void GetSignalDescription(int pSignal, string &pSignalName, string &pSignalDescription)
 {
-    LOGEX(MainWindow, LOG_ERROR, "Segmentation fault detected, Homer Conferencing will exit now. Please, report this bug to the Homer team.");
+    switch(pSignal)
+    {
+        case 1:
+            pSignalName = "SIGHUP";
+            pSignalDescription = "hangup detected on controlling terminal or death of controlling process";
+            break;
+        case 2:
+            pSignalName = "SIGINT";
+            pSignalDescription = "interrupt from keyboard";
+            break;
+        case 3:
+            pSignalName = "SIGQUIT";
+            pSignalDescription = "quit from keyboard";
+            break;
+        case 4:
+            pSignalName = "SIGILL";
+            pSignalDescription = "illegal Instruction";
+            break;
+        case 6:
+            pSignalName = "SIGABRT";
+            pSignalDescription = "abort signal from abort()";
+            break;
+        case 8:
+            pSignalName = "SIGFPE";
+            pSignalDescription = "floating point exception";
+            break;
+        case 9:
+            pSignalName = "SIGKILL";
+            pSignalDescription = "kill signal";
+            break;
+        case 11:
+            pSignalName = "SIGSEGV";
+            pSignalDescription = "invalid memory reference";
+            break;
+        case 13:
+            pSignalName = "SIGPIPE";
+            pSignalDescription = "broken pipe: write to pipe with no readers";
+            break;
+        case 14:
+            pSignalName = "SIGALRM";
+            pSignalDescription = "timer signal from alarm()";
+            break;
+        case 15:
+            pSignalName = "SIGTERM";
+            pSignalDescription = "termination signal";
+            break;
+        case 10:
+        case 16:
+        case 30:
+            pSignalName = "SIGUSR1";
+            pSignalDescription = "user-defined signal 1";
+            break;
+        case 12:
+        case 17:
+        case 31:
+            pSignalName = "SIGUSR2";
+            pSignalDescription = "user-defined signal 2";
+            break;
+        default:
+            pSignalName = "unsupported signal";
+            pSignalDescription = "unsupported signal occurred";
+            break;
+    }
+}
+
+static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
+{
+    string tSignalName;
+    string tSignalDescription;
+    GetSignalDescription(pSignal, tSignalName, tSignalDescription);
+    LOGEX(MainWindow, LOG_ERROR, "Signal \"%s\"(%s) detected, Homer Conferencing will exit now. Please, report this to the Homer development team.", tSignalName.c_str(), tSignalDescription.c_str());
+    if (pSignalInfo != NULL)
+    {
+        switch(pSignal)
+        {
+            case SIGSEGV:
+                {
+                    LOGEX(MainWindow, LOG_ERROR, "The segmentation fault was caused at memory location: %p", pSignalInfo->si_addr);
+                    void *tBtArray[64];
+                    int tBtSize;
+                    char **tBtStrings;
+
+                    tBtSize = backtrace(tBtArray, 64);
+                    tBtStrings = backtrace_symbols(tBtArray, tBtSize);
+
+                    LOGEX(MainWindow, LOG_ERROR, "Resolved a backtrace with %d entries:", (int)tBtSize);
+
+                    for (int i = 0; i < tBtSize; i++)
+                        LOGEX(MainWindow, LOG_ERROR, "#%2d %s", i, tBtStrings[i]);
+
+                    free(tBtStrings);
+                }
+                break;
+            default:
+                break;
+        }
+        if (pSignalInfo->si_errno != 0)
+            LOGEX(MainWindow, LOG_ERROR, "This signal occurred because \"%s\"(%d)", strerror(pSignalInfo->si_errno), pSignalInfo->si_errno);
+        if (pSignalInfo->si_code != 0)
+            LOGEX(MainWindow, LOG_ERROR, "Signal code is %d", pSignalInfo->si_code);
+    }
     LOGEX(MainWindow, LOG_ERROR, "-");
     LOGEX(MainWindow, LOG_ERROR, "Restart Homer Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
     LOGEX(MainWindow, LOG_ERROR, "Afterwards attach the file debug.log to your bug report and send both by mail to homer@homer-conferencing.com.");
@@ -53,14 +154,29 @@ static void HandlerSigSegfault(int pSignal, siginfo_t *pSignalInfo, void *pArg)
 
 static void SetHandlers()
 {
+    // set handler
     struct sigaction tSigAction;
-
     memset(&tSigAction, 0, sizeof(tSigAction));
     sigemptyset(&tSigAction.sa_mask);
-    tSigAction.sa_sigaction = HandlerSigSegfault;
+    tSigAction.sa_sigaction = HandlerSignal;
     tSigAction.sa_flags   = SA_SIGINFO; // Invoke signal-catching function with three arguments instead of one
-
     sigaction(SIGSEGV, &tSigAction, NULL);
+
+    // set handler stack
+    stack_t tStack;
+    tStack.ss_sp = malloc(SIGSTKSZ);
+    if (tStack.ss_sp == NULL)
+    {
+        LOGEX(MainWindow, LOG_ERROR, "Couldn't allocate signal handler stack");
+        exit(1);
+    }
+    tStack.ss_size = SIGSTKSZ;
+    tStack.ss_flags = 0;
+    if (sigaltstack(&tStack, NULL) == -1)
+    {
+        LOGEX(MainWindow, LOG_ERROR, "Could not set signal handler stack");
+        exit(1);
+    }
 }
 #else
 static void SetHandlers(){ }
