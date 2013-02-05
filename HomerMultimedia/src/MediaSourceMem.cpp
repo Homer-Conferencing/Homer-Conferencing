@@ -732,9 +732,6 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
     	return false;
 
-	if (!OpenFormatConverter())
-		return false;
-
     // overwrite FPS by the playout FPS value
     mInputFrameRate = mOutputFrameRate;
 
@@ -829,9 +826,6 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     	return false;
 
     mInputFrameRate = (float)mInputAudioSampleRate / mCodecContext->frame_size /* shouldn't be zero here */;
-
-    if (!OpenFormatConverter())
-		return false;
 
     MarkOpenGrabDeviceSuccessful();
 

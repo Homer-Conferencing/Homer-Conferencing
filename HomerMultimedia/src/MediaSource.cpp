@@ -3507,7 +3507,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 			{
                 // create resample context
                 if (mAudioResampleContext != NULL)
-                    LOG(LOG_ERROR, "State of audio recorder resample context inconsistent");
+                    LOG(LOG_ERROR, "State of audio resample context inconsistent");
                 LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
                 mAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mOutputAudioChannels), mOutputAudioFormat, mOutputAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
                 if (mAudioResampleContext != NULL)
@@ -3526,11 +3526,11 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
                 // resample buffer
                 LOG(LOG_VERBOSE, "..allocating audio resample memory");
                 if (mResampleBuffer != NULL)
-                    LOG(LOG_ERROR, "Recorder resample buffer of %s source was already allocated", GetSourceTypeStr().c_str());
+                    LOG(LOG_ERROR, "Resample buffer of %s source was already allocated", GetSourceTypeStr().c_str());
                 mResampleBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL * 32 + FF_INPUT_BUFFER_PADDING_SIZE);
 
 //                LOG(LOG_VERBOSE, "..allocating final frame memory");
-//                if ((mRecorderFinalFrame = AllocFrame()) == NULL)
+//                if ((mFinalFrame = AllocFrame()) == NULL)
 //                    LOG(LOG_ERROR, "Out of memory in avcodec_alloc_frame()");
 
                 // reset the structure
