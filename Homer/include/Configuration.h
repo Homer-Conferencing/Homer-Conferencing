@@ -100,6 +100,8 @@ public:
     QPoint GetMainWindowPosition();
     QSize GetMainWindowSize();
 
+    bool GetBroadcastAudioPlaybackMuted();
+
     bool GetVisibilityContactsWidget();
     bool GetVisibilityFileTransfersWidget();
     bool GetVisibilityErrorsWidget();
@@ -264,6 +266,9 @@ public:
     void SetMainWindowSize(QSize pSize);
     void SetParticipantWidgetsSeparation(bool pSepWins);
     void SetParticipantWidgetsCloseImmediately(bool pActive);
+
+    void SetBroadcastAudioPlaybackMuted(bool pActive);
+
     void SetVisibilityContactsWidget(bool pActive);
     void SetVisibilityErrorsWidget(bool pActive);
     void SetVisibilityFileTransfersWidget(bool pActive);

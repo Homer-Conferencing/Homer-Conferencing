@@ -215,6 +215,13 @@ void Configuration::SetParticipantWidgetsCloseImmediately(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetBroadcastAudioPlaybackMuted(bool pActive)
+{
+    mQSettings->beginGroup("Broadcast");
+    mQSettings->setValue("AudioPlaybackMuted", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVisibilityContactsWidget(bool pActive)
 {
     mQSettings->beginGroup("Global");
@@ -987,6 +994,11 @@ bool Configuration::GetParticipantWidgetsSeparation()
 bool Configuration::GetParticipantWidgetsCloseImmediately()
 {
     return mQSettings->value("Global/ParticipantWidgetsCloseImmediately", true).toBool();
+}
+
+bool Configuration::GetBroadcastAudioPlaybackMuted()
+{
+    return mQSettings->value("Broadcast/AudioPlaybackMuted", false).toBool();
 }
 
 bool Configuration::GetVisibilityContactsWidget()

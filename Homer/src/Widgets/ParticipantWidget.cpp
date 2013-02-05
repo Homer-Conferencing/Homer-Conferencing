@@ -153,6 +153,8 @@ ParticipantWidget::~ParticipantWidget()
             CONF.SetVisibilityBroadcastWidget(isVisible());
             CONF.SetVisibilityBroadcastAudio(mAudioWidget->isVisible());
             CONF.SetVisibilityBroadcastVideo(mVideoWidget->isVisible());
+            LOG(LOG_ERROR, "########## %d", mAudioWidget->GetWorker()->GetMuteState());
+            CONF.SetBroadcastAudioPlaybackMuted(mAudioWidget->GetWorker()->GetMuteState());
             break;
         case PARTICIPANT:
             {
@@ -268,7 +270,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
                     }
                     LOG(LOG_VERBOSE, "..init broadcast audio widget");
                     if (mAudioSourceMuxer != NULL)
-                        mAudioWidget->Init(this, mAudioSourceMuxer, pAudioMenu, mSessionName, CONF.GetVisibilityBroadcastAudio(), true);
+                        mAudioWidget->Init(this, mAudioSourceMuxer, pAudioMenu, mSessionName, CONF.GetVisibilityBroadcastAudio(), CONF.GetBroadcastAudioPlaybackMuted());
                     setFeatures(QDockWidget::NoDockWidgetFeatures);
 
                     // push-to-talk mode
