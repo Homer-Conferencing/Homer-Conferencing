@@ -2254,8 +2254,8 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 
                     int tInputAudioBytesPerSample = av_get_bytes_per_sample(mInputAudioFormat);
                     int tInputSamplesPerChannel = pSourceFrame->nb_samples; // nr. of samples of source frames
-                    int tWrittenFifoSize = tInputSamplesPerChannel * tOutputAudioBytesPerSample * mRecorderAudioChannels;
-                    int tWrittenFifoSizePerChannel = tInputSamplesPerChannel * tOutputAudioBytesPerSample;
+
+                    int tResamplingOutputSamples = 0;
 
                     if (pSourceFrame->nb_samples != mCodecContext->frame_size)
                         LOG(LOG_ERROR, "Number of samples in source framme differs from the defined frame size in the codec context");
@@ -2278,14 +2278,15 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                             LOG(LOG_VERBOSE, "Converting %d samples/channel from %p and store it to %p", tInputSamplesPerChannel, *tInputSamplesPlanes, mRecorderResampleBuffer);
                         #endif
                         //LOG(LOG_VERBOSE, "planes are %p and %p", mRecorderResampleBufferPlanes[0], mRecorderResampleBufferPlanes[1]);
-                        int tResamplingOutputSamples = HM_swr_convert(mRecorderAudioResampleContext, &mRecorderResampleBufferPlanes[0], MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL, (const uint8_t**)tInputSamplesPlanes, tInputSamplesPerChannel);
-                        if (tResamplingOutputSamples != tInputSamplesPerChannel)
-                            LOG(LOG_ERROR, "Got %d samples instead of %d from audio resampling", tResamplingOutputSamples, tInputSamplesPerChannel);
+                        tResamplingOutputSamples = HM_swr_convert(mRecorderAudioResampleContext, &mRecorderResampleBufferPlanes[0], MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL, (const uint8_t**)tInputSamplesPlanes, tInputSamplesPerChannel);
                         if (tResamplingOutputSamples <= 0)
                             LOG(LOG_ERROR, "Amount of resampled samples (%d) is invalid", tResamplingOutputSamples);
 
                         tInputSamplesPlanes = mRecorderResampleBufferPlanes;
                     }
+
+                    int tWrittenFifoSize = tResamplingOutputSamples * tOutputAudioBytesPerSample * mRecorderAudioChannels;
+                    int tWrittenFifoSizePerChannel = tResamplingOutputSamples * tOutputAudioBytesPerSample;
 
                     // ####################################################################
                     // ### buffer the input (resampled?) audio date for frame size conversion
@@ -3502,8 +3503,6 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 		    mVideoScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
 			break;
 		case MEDIA_AUDIO:
-			// create resample context
-			if ((mInputAudioSampleRate != mOutputAudioSampleRate) || (mInputAudioChannels != mOutputAudioChannels) || (mInputAudioFormat != mOutputAudioFormat))
 			{
                 // create resample context
                 if (mAudioResampleContext != NULL)
@@ -3561,7 +3560,6 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
                     LOG(LOG_VERBOSE, "Plane %d index points to: %p (diff: %u)", i, mResampleBufferPlanes[i], (i > 0) ? (mResampleBufferPlanes[i] - mResampleBufferPlanes[i - 1]) : 0);
                 }
                 LOG(LOG_VERBOSE, "Output audio format is planar: %d", av_sample_fmt_is_planar(mOutputAudioFormat));
-
 			}
 			break;
 		default:
