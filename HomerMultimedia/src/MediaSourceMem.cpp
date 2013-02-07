@@ -1421,7 +1421,7 @@ void* MediaSourceMem::Run(void* pArgs)
                 tChunkBufferSize = avpicture_get_size(mCodecContext->pix_fmt, mSourceResX, mSourceResY) + FF_INPUT_BUFFER_PADDING_SIZE;
 
                 // allocate chunk buffer
-                tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
+                tChunkBuffer = (uint8_t*)av_malloc(tChunkBufferSize);
 
                 // create video scaler
                 tVideoScaler = CreateVideoScaler();
@@ -1435,7 +1435,7 @@ void* MediaSourceMem::Run(void* pArgs)
                 tChunkBufferSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) + FF_INPUT_BUFFER_PADDING_SIZE;
 
                 // allocate chunk buffer
-                tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
+                tChunkBuffer = (uint8_t*)av_malloc(tChunkBufferSize);
 
                 LOG(LOG_VERBOSE, "Decoder thread does not need the scaler thread because input is a picture");
 
@@ -1460,7 +1460,7 @@ void* MediaSourceMem::Run(void* pArgs)
             tChunkBufferSize = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
 
             // allocate chunk buffer
-            tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
+            tChunkBuffer = (uint8_t*)av_malloc(tChunkBufferSize);
 
             mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr() + "(Data)");
 
@@ -1645,13 +1645,13 @@ void* MediaSourceMem::Run(void* pArgs)
                                         tVideoScaler->ChangeInputResolution(mCodecContext->width, mCodecContext->height);
 
                                         // free the old chunk buffer
-                                        free(tChunkBuffer);
+                                        av_free(tChunkBuffer);
 
                                         // calculate a new chunk buffer size for the new source video resolution
                                         tChunkBufferSize = avpicture_get_size(mCodecContext->pix_fmt, mCodecContext->width, mCodecContext->height) + FF_INPUT_BUFFER_PADDING_SIZE;
 
                                         // allocate the new chunk buffer
-                                        tChunkBuffer = (uint8_t*)malloc(tChunkBufferSize);
+                                        tChunkBuffer = (uint8_t*)av_malloc(tChunkBufferSize);
 
                                         LOG(LOG_INFO, "Video resolution changed from %d*%d to %d * %d", mSourceResX, mSourceResY, mCodecContext->width, mCodecContext->height);
 
@@ -2101,7 +2101,7 @@ void* MediaSourceMem::Run(void* pArgs)
     CloseFormatConverter();
 
     LOG(LOG_VERBOSE, "..releasing chunk buffer");
-    free(tChunkBuffer);
+    av_free(tChunkBuffer);
 
     LOG(LOG_WARN, "%s decoder main loop finished for %s media source <<<<<<<<<<<<<<<<", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
