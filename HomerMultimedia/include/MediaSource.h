@@ -46,6 +46,7 @@ namespace Homer { namespace Multimedia {
 
 // the following de/activates debugging of packets
 //#define MS_DEBUG_PACKETS
+//#define MS_DEBUG_ENCODER_PACKETS
 // the following de/activates debugging of ffmpag mutex management
 //#define MS_DEBUG_FFMPEG_MUTEX
 
@@ -175,6 +176,7 @@ struct FrameDescriptor
 #define OpenFormatConverter()								FfmpegOpenFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
 #define CloseFormatConverter()                              FfmpegCloseFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
 #define CloseAll()											FfmpegCloseAll(GetObjectNameStr(this).c_str(), __LINE__)
+#define EncodeAndWritePacket(FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames) FfmpegEncodeAndWritePacket(GetObjectNameStr(this).c_str(), __LINE__, FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -405,6 +407,7 @@ public:
     static bool FfmpegCreateIOContext(string pSource/* caller source */, int pLine /* caller line */, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext);
 
 protected:
+    /* decoder helpers */
     bool FfmpegOpenInput(string pSource /* caller source */, int pLine /* caller line */, const char *pInputName, AVInputFormat *pInputFormat = NULL, AVIOContext *pIOContext = NULL);
     bool FfmpegDetectAllStreams(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input must be called before, returns true on success
     bool FfmpegSelectStream(string pSource /* caller source */, int pLine /* caller line */); //avformat_open_input & avformat_find_stream_info must be called before, returns true on success
@@ -412,6 +415,9 @@ protected:
     bool FfmpegOpenFormatConverter(string pSource /* caller source */, int pLine /* caller line */);
     bool FfmpegCloseFormatConverter(string pSource /* caller source */, int pLine /* caller line */);
     bool FfmpegCloseAll(string pSource /* caller source */, int pLine /* caller line */);
+
+    /* encoder helpers */
+    bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int pBufferedFrames);
 
     bool                mMediaSourceOpened;
     bool                mGrabbingStopped;

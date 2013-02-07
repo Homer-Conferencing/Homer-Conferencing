@@ -2143,6 +2143,8 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
     int                 tEncoderResult = 0;
     int64_t             tCurrentPts = 1;
     int                 tFrameFinished = 0;
+    bool                tKeyFrame;
+    int                 tBufferedFrames;
 
     if (!mRecording)
     {
@@ -2201,47 +2203,11 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                     LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
                 #endif
 
-                // #########################################
-                // init. packet structure
-                // #########################################
-                av_init_packet(tPacket);
-                tPacket->data = NULL;
-                tPacket->size = 0;
-
-                // #########################################
-                // re-encode the frame
-                // #########################################
-                tEncoderResult = HM_avcodec_encode_video2(mRecorderCodecContext, tPacket, mRecorderFinalFrame, &tFrameFinished);
-
-                // #########################################
-                // write encoded frame
-                // #########################################
-                if (tEncoderResult >= 0)
+                if (EncodeAndWritePacket(mRecorderFormatContext, mRecorderCodecContext, mRecorderFinalFrame, tKeyFrame, tBufferedFrames))
                 {
-                    if (tFrameFinished == 1)
-                    {
-                        #ifdef MS_DEBUG_RECORDER_PACKETS
-                            LOG(LOG_VERBOSE, "Recording packet..");
-                            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (fps: %3.2f)", tPacket->pts, GetInputFrameRate());
-                            LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
-                            LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-                            LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
-                        #endif
-
-                         // distribute the encoded frame
-                         if (av_write_frame(mRecorderFormatContext, tPacket) != 0)
-                             LOG(LOG_ERROR, "Couldn't write %s frame to file", GetMediaTypeStr().c_str());
-
-                         mRecorderFrameNumber++;
-                    }else
-                    {// video frame was buffered by ffmpeg
-                        LOG(LOG_VERBOSE, "Video frame was buffered");
-                    }
-                }else
-                    LOG(LOG_ERROR, "Couldn't re-encode current %s frame", GetMediaTypeStr().c_str());
-
-                av_free_packet(tPacket);
+                    // increase the frame counter (used for PTS generation)
+                    mRecorderFrameNumber++;
+                }
 
                 break;
 
@@ -2372,63 +2338,11 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                             LOG(LOG_VERBOSE, "Filling audio frame with buffer size: %d", tReadFifoSize);
                         #endif
 
-                        // #########################################
-                        // init. packet structure
-                        // #########################################
-                        av_init_packet(tPacket);
-                        tPacket->data = NULL;
-                        tPacket->size = 0;
-
-                        // #########################################
-                        // re-encode the frame
-                        // #########################################
-                        // re-encode the sample
-                        #ifdef MS_DEBUG_RECORDER_FRAMES
-                            LOG(LOG_VERBOSE, "Recording audio frame..");
-                            LOG(LOG_VERBOSE, "      ..key frame: %d", mRecorderFinalFrame->key_frame);
-                            LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(mRecorderFinalFrame).c_str());
-                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", mRecorderFinalFrame->pts);
-                            LOG(LOG_VERBOSE, "      ..coded pic number: %d", mRecorderFinalFrame->coded_picture_number);
-                            LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
-                            LOG(LOG_VERBOSE, "      ..nr. of samples: %d", mRecorderFinalFrame->nb_samples);
-                            LOG(LOG_VERBOSE, "Recorder audio output data planes...");
-                            for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
-                            {
-                                LOG(LOG_VERBOSE, "%d - %p - %d", i, mRecorderFinalFrame->data[i], mRecorderFinalFrame->linesize[i]);
-                            }
-                        #endif
-
-                        tEncoderResult = avcodec_encode_audio2(mRecorderCodecContext, tPacket, mRecorderFinalFrame, &tFrameFinished);
-
-                        // #########################################
-                        // write encoded frame
-                        // #########################################
-                        if (tEncoderResult >= 0)
+                        if (EncodeAndWritePacket(mRecorderFormatContext, mRecorderCodecContext, mRecorderFinalFrame, tKeyFrame, tBufferedFrames))
                         {
-                            if (tFrameFinished == 1)
-                            {
-                                #ifdef MS_DEBUG_RECORDER_PACKETS
-                                    LOG(LOG_VERBOSE, "Recording packet..");
-                                    LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (fps: %3.2f)", tPacket->pts, GetInputFrameRate());
-                                    LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
-                                    LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-                                    LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
-                                #endif
-
-                                 // distribute the encoded frame
-                                 if (av_write_frame(mRecorderFormatContext, tPacket) != 0)
-                                     LOG(LOG_ERROR, "Couldn't write %s frame to file", GetMediaTypeStr().c_str());
-
-                                 mRecorderFrameNumber++;
-                            }else
-                            {// audio frame was buffered by ffmpeg
-                                LOG(LOG_VERBOSE, "Audio frame was buffered");
-                            }
-                        }else
-                            LOG(LOG_ERROR, "Couldn't re-encode current %s frame", GetMediaTypeStr().c_str());
-
-                        av_free_packet(tPacket);
+                            // increase the frame counter (used for PTS generation)
+                            mRecorderFrameNumber++;
+                        }
                     }
                 }
 
@@ -3139,13 +3053,13 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
     // alocate new format context
     mFormatContext = AV_NEW_FORMAT_CONTEXT(); // make sure we have default values in format context, otherwise avformat_open_input() will crash
     if (mFormatContext == NULL)
-        LOG(LOG_ERROR, "Couldn't allocate and initialize format context");
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't allocate and initialize format context");
 
     // define IO context if there is a customized one
     mFormatContext->pb = pIOContext;
 
     // open input: automatic content detection is done inside ffmpeg
-    LOG(LOG_VERBOSE, "    ..calling avformat_open_input() for %s source", GetMediaTypeStr().c_str());
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..calling avformat_open_input() for %s source", GetMediaTypeStr().c_str());
     mFormatContext->interrupt_callback.callback = FindStreamInfoCallback;
     mFormatContext->interrupt_callback.opaque = this;
 	if ((tRes = avformat_open_input(&mFormatContext, pInputName, pInputFormat, NULL)) < 0)
@@ -3161,7 +3075,7 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
 
     if (mGrabbingStopped)
     {
-        LOG(LOG_WARN, "%s-Grabbing was stopped during avformat_open_input(), returning immediately", GetMediaTypeStr().c_str());
+        LOG_REMOTE(LOG_WARN, pSource, pLine, "%s-Grabbing was stopped during avformat_open_input(), returning immediately", GetMediaTypeStr().c_str());
         return false;
     }
 
@@ -3202,7 +3116,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     // verbose timestamp debugging
     if (LOGGER.GetLogLevel() == LOG_WORLD)
     {
-        LOG(LOG_WARN, "Enabling ffmpeg timestamp debugging for %s decoder", GetMediaTypeStr().c_str());
+        LOG_REMOTE(LOG_WARN, pSource, pLine, "Enabling ffmpeg timestamp debugging for %s decoder", GetMediaTypeStr().c_str());
         mFormatContext->debug = FF_FDEBUG_TS;
     }
 
@@ -3210,7 +3124,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
 
     //LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Current format context flags: %d, packet buffer: %p, raw packet buffer: %p, nb streams: %d", mFormatContext->flags, mFormatContext->packet_buffer, mFormatContext->raw_packet_buffer, mFormatContext->nb_streams);
-    LOG(LOG_VERBOSE, "    ..calling avformat_find_stream_info() for %s source", GetMediaTypeStr().c_str());
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..calling avformat_find_stream_info() for %s source", GetMediaTypeStr().c_str());
     if ((tRes = avformat_find_stream_info(mFormatContext, NULL)) < 0)
     {
         if (!mGrabbingStopped)
@@ -3315,7 +3229,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     // make sure we have a defined frame size
     if (mCodecContext->frame_size < 32)
     {
-        LOG(LOG_WARN, "Found invalid frame size %d, setting to %d", mCodecContext->frame_size, MEDIA_SOURCE_SAMPLES_PER_BUFFER);
+        LOG_REMOTE(LOG_WARN, pSource, pLine, "Found invalid frame size %d, setting to %d", mCodecContext->frame_size, MEDIA_SOURCE_SAMPLES_PER_BUFFER);
         mCodecContext->frame_size = MEDIA_SOURCE_SAMPLES_PER_BUFFER;
     }
 
@@ -3428,7 +3342,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
                 mCodecContext->thread_count = 1;
             }else
             {// we have a file based media source and we can try to decode in MT mode
-                LOG(LOG_WARN, "Trying to decode H.264 with MT support");
+                LOG_REMOTE(LOG_WARN, pSource, pLine, "Trying to decode H.264 with MT support");
             }
     }
 
@@ -3455,9 +3369,9 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     if (tCodec->capabilities & CODEC_CAP_DELAY)
     {
-        LOG(LOG_WARN, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
-        LOG(LOG_WARN, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
-        LOG(LOG_WARN, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+        LOG_REMOTE(LOG_WARN, pSource, pLine, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+        LOG_REMOTE(LOG_WARN, pSource, pLine, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+        LOG_REMOTE(LOG_WARN, pSource, pLine, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
     }
 
     //HINT: we allow the input bit stream to be truncated at packet boundaries instead of frame boundaries,
@@ -3468,10 +3382,10 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     if (mFormatContext->duration > 0)
     {
         mNumberOfFrames = GetInputFrameRate() * mFormatContext->duration / AV_TIME_BASE;
-        LOG(LOG_VERBOSE, "Number of frames set to: %.2f, fps: %.2f, format context duration: %"PRId64"", (float)mNumberOfFrames, GetInputFrameRate(), mFormatContext->duration);
+        LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Number of frames set to: %.2f, fps: %.2f, format context duration: %"PRId64"", (float)mNumberOfFrames, GetInputFrameRate(), mFormatContext->duration);
     }else
     {
-    	LOG(LOG_WARN, "Found duration of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
+        LOG_REMOTE(LOG_WARN, pSource, pLine, "Found duration of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
     	mNumberOfFrames = 0;
     }
 
@@ -3479,10 +3393,10 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     if (mFormatContext->start_time > 0)
     {
     	mInputStartPts = GetInputFrameRate() * mFormatContext->start_time / AV_TIME_BASE;
-    	LOG(LOG_WARN, "Setting %s start time to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
+    	LOG_REMOTE(LOG_WARN, pSource, pLine, "Setting %s start time to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
     }else
     {
-    	LOG(LOG_WARN, "Found start time of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
+        LOG_REMOTE(LOG_WARN, pSource, pLine, "Found start time of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
     	mInputStartPts = 0;
     }
 
@@ -3506,7 +3420,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 			{
                 // create resample context
                 if (mAudioResampleContext != NULL)
-                    LOG(LOG_ERROR, "State of audio resample context inconsistent");
+                    LOG_REMOTE(LOG_ERROR, pSource, pLine, "State of audio resample context inconsistent");
                 LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
                 mAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mOutputAudioChannels), mOutputAudioFormat, mOutputAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
                 if (mAudioResampleContext != NULL)
@@ -3514,18 +3428,18 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
                     int tRes = 0;
                     if ((tRes = HM_swr_init(mAudioResampleContext)) < 0)
                     {
-                        LOG(LOG_ERROR, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
                         return false;
                     }
                 }else
                 {
-                    LOG(LOG_ERROR, "Failed to create audio-resample context");
+                    LOG_REMOTE(LOG_ERROR, pSource, pLine, "Failed to create audio-resample context");
                 }
 
                 // resample buffer
-                LOG(LOG_VERBOSE, "..allocating audio resample memory");
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..allocating audio resample memory");
                 if (mResampleBuffer != NULL)
-                    LOG(LOG_ERROR, "Resample buffer of %s source was already allocated", GetSourceTypeStr().c_str());
+                    LOG_REMOTE(LOG_ERROR, pSource, pLine, "Resample buffer of %s source was already allocated", GetSourceTypeStr().c_str());
                 mResampleBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL * 32 + FF_INPUT_BUFFER_PADDING_SIZE);
 
 //                LOG(LOG_VERBOSE, "..allocating final frame memory");
@@ -3547,19 +3461,19 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 
                 // planes indexing resample buffer
                 int InputFrameSize = (mCodecContext != NULL) ? (mCodecContext->frame_size > 0 ? mCodecContext->frame_size : MEDIA_SOURCE_SAMPLES_PER_BUFFER) : MEDIA_SOURCE_SAMPLES_PER_BUFFER;
-                LOG(LOG_VERBOSE, "..assigning planes memory for indexing resample memory with frame size: %d", InputFrameSize /* we use the source frame size! */);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..assigning planes memory for indexing resample memory with frame size: %d", InputFrameSize /* we use the source frame size! */);
                 memset(mResampleBufferPlanes, 0, sizeof(mResampleBufferPlanes));
                 if (HM_av_samples_fill_arrays(&mResampleBufferPlanes[0], NULL, (uint8_t *)mResampleBuffer, mOutputAudioChannels, InputFrameSize /* we use the source frame size! */, mOutputAudioFormat, 1) < 0)
                 {
-                    LOG(LOG_ERROR, "Could not fill the audio plane pointer array");
+                    LOG_REMOTE(LOG_ERROR, pSource, pLine, "Could not fill the audio plane pointer array");
                 }
                 //AVCODEC_MAX_AUDIO_FRAME_SIZE / (av_get_bytes_per_sample(mOutputAudioFormat) * mOutputAudioChannels) /* amount of possible output samples */;
-                LOG(LOG_VERBOSE, "Resampling buffer is at: %p", mResampleBuffer);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Resampling buffer is at: %p", mResampleBuffer);
                 for(int i = 0; i < mOutputAudioChannels; i++)
                 {
-                    LOG(LOG_VERBOSE, "Plane %d index points to: %p (diff: %u)", i, mResampleBufferPlanes[i], (i > 0) ? (mResampleBufferPlanes[i] - mResampleBufferPlanes[i - 1]) : 0);
+                    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Plane %d index points to: %p (diff: %u)", i, mResampleBufferPlanes[i], (i > 0) ? (mResampleBufferPlanes[i] - mResampleBufferPlanes[i - 1]) : 0);
                 }
-                LOG(LOG_VERBOSE, "Output audio format is planar: %d", av_sample_fmt_is_planar(mOutputAudioFormat));
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Output audio format is planar: %d", av_sample_fmt_is_planar(mOutputAudioFormat));
 			}
 			break;
 		default:
@@ -3580,13 +3494,13 @@ bool MediaSource::FfmpegCloseFormatConverter(string pSource, int pLine)
         case MEDIA_AUDIO:
             if (mAudioResampleContext != NULL)
             {
-                LOG(LOG_VERBOSE, "    ..releasing %s resample context", GetMediaTypeStr().c_str());
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..releasing %s resample context", GetMediaTypeStr().c_str());
                 HM_swr_free(&mAudioResampleContext);
                 mAudioResampleContext = NULL;
             }
             if (mResampleBuffer != NULL)
             {
-                LOG(LOG_VERBOSE, "    ..releasing %s resample buffer", GetMediaTypeStr().c_str());
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..releasing %s resample buffer", GetMediaTypeStr().c_str());
                 free(mResampleBuffer);
                 mResampleBuffer = NULL;
             }
@@ -3594,14 +3508,14 @@ bool MediaSource::FfmpegCloseFormatConverter(string pSource, int pLine)
             {
                 if(mResampleFifo[i] != NULL)
                 {
-                    LOG(LOG_VERBOSE, "    ..releasing resample FIFO %d", i);
+                    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..releasing resample FIFO %d", i);
                     av_fifo_free(mResampleFifo[i]);
                     mResampleFifo[i] = NULL;
                 }
             }
             if (mResampleBuffer != NULL)
             {
-                LOG(LOG_VERBOSE, "    ..releasing resample buffer");
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..releasing resample buffer");
                 free(mResampleBuffer);
                 mResampleBuffer = NULL;
             }
@@ -3610,7 +3524,7 @@ bool MediaSource::FfmpegCloseFormatConverter(string pSource, int pLine)
             if (mVideoScalerContext != NULL)
             {
                 // free the software scaler context
-                LOG(LOG_VERBOSE, "    ..releasing %s scale context", GetMediaTypeStr().c_str());
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..releasing %s scale context", GetMediaTypeStr().c_str());
                 sws_freeContext(mVideoScalerContext);
                 mVideoScalerContext = NULL;
             }
@@ -3623,26 +3537,26 @@ bool MediaSource::FfmpegCloseFormatConverter(string pSource, int pLine)
 
 bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 {
-    LOG(LOG_VERBOSE, "%s %s source closing..", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "%s %s source closing..", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
 	if (mMediaSourceOpened)
 	{
 		mMediaSourceOpened = false;
 
 		// stop A/V recorder
-	    LOG(LOG_VERBOSE, "    ..stopping %s recorder", GetMediaTypeStr().c_str());
+		LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..stopping %s recorder", GetMediaTypeStr().c_str());
         StopRecording();
 
         if (!FfmpegCloseFormatConverter(pSource, pLine))
         {
-            LOG(LOG_ERROR, "Failed to close %s format converter", GetMediaTypeStr().c_str());
+            LOG_REMOTE(LOG_ERROR, pSource, pLine, "Failed to close %s format converter", GetMediaTypeStr().c_str());
             return false;
         }
 
 		// Close the codec
 		if (mCodecContext != NULL)
 		{
-            LOG(LOG_VERBOSE, "    ..closing %s codec", GetMediaTypeStr().c_str());
+		    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..closing %s codec", GetMediaTypeStr().c_str());
 	    	mFormatContext->streams[mMediaStreamIndex]->discard = AVDISCARD_ALL;
 			avcodec_close(mCodecContext);
 			mCodecContext = NULL;
@@ -3655,7 +3569,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 		// Close the file
 		if (mFormatContext != NULL)
 		{
-            LOG(LOG_VERBOSE, "    ..closing %s format context and releasing codec context", GetMediaTypeStr().c_str());
+		    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..closing %s format context and releasing codec context", GetMediaTypeStr().c_str());
 			HM_avformat_close_input(mFormatContext);
 			mFormatContext = NULL;
 		}else
@@ -3664,12 +3578,83 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 			return false;
 		}
 
-		LOG(LOG_INFO, "...%s source closed", GetMediaTypeStr().c_str());
+		LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "...%s source closed", GetMediaTypeStr().c_str());
 	}
 
     return true;
 }
 
+bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int pBufferedFrames)
+{
+    AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
+    int                 tEncoderResult;
+    int                 tFrameFinished;
+    bool                tResult = false;
+
+    // #########################################
+    // init. packet structure
+    // #########################################
+    av_init_packet(tPacket);
+    tPacket->data = NULL;
+    tPacket->size = 0;
+
+    // #########################################
+    // re-encode the frame
+    // #########################################
+    switch(mMediaType)
+    {
+        case MEDIA_VIDEO:
+                tEncoderResult = HM_avcodec_encode_video2(pCodecContext, tPacket, pInputFrame, &tFrameFinished);
+                break;
+        case MEDIA_AUDIO:
+                tEncoderResult = avcodec_encode_audio2(pCodecContext, tPacket, pInputFrame, &tFrameFinished);
+                break;
+        default:
+                break;
+    }
+
+    // #########################################
+    // write encoded frame
+    // #########################################
+    if (tEncoderResult >= 0)
+    {
+        if (tFrameFinished == 1)
+        {
+            if (tPacket->flags & AV_PKT_FLAG_KEY)
+                pIsKeyFrame = true;
+            else
+                pIsKeyFrame = false;
+
+            #ifdef MS_DEBUG_ENCODER_PACKETS
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Writing %s packet..", GetMediaTypeStr().c_str());
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..duration: %d", tPacket->duration);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..flags: %d", tPacket->flags);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..pts: %"PRId64" (delay: %d / %d)", tPacket->pts, pBufferedFrames, pFormatContext->max_delay);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..dts: %"PRId64"", tPacket->dts);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..size: %d", tPacket->size);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..pos: %"PRId64"", tPacket->pos);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..key frame: %d", pIsKeyFrame);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..codec delay: %d", pCodecContext->delay);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..codec max. b frames: %d", pCodecContext->max_b_frames);
+            #endif
+
+             // distribute the encoded frame
+             if (av_write_frame(pFormatContext, tPacket) != 0)
+                 LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't write %s frame to file", GetMediaTypeStr().c_str());
+
+             tResult = true;
+        }else
+        {// video frame was buffered by ffmpeg
+            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "%s frame was buffered in encoder", GetMediaTypeStr().c_str());
+            pBufferedFrames++;
+        }
+    }else
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't re-encode current %s frame %"PRId64" because %s(%d)", GetMediaTypeStr().c_str(), pInputFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
+
+    av_free_packet(tPacket);
+
+    return tResult;
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace
