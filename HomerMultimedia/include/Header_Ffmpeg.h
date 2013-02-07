@@ -234,7 +234,7 @@ inline int HM_avcodec_decode_audio(AVCodecContext *avctx, int16_t *samples, int 
 
 inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, const AVFrame *frame, int *got_packet_ptr)
 {
-    #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(154, 23, 100))
+    #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 23, 100))
 		if (avpkt == NULL)
 			return -1;
 
@@ -248,6 +248,8 @@ inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, cons
 
 		avpkt->pts = frame->pts;
 		avpkt->dts = frame->pts;
+        if ((avctx) && (avctx->coded_frame) && (avctx->coded_frame->key_frame))
+            avpkt->flags |= AV_PKT_FLAG_KEY;
 
 		if (got_packet_ptr != NULL)
 			*got_packet_ptr = (tResult > 0);
