@@ -1940,7 +1940,11 @@ void VideoWidget::customEvent(QEvent *pEvent)
 						//if (tlFrameNumber == tFrameNumber)
 							//printf("VideoWidget-unnecessary frame grabbing detected!\n");
 					}else
-						LOG(LOG_WARN, "Current frame number is invalid (%d)", mCurrentFrameNumber);
+					{
+                        #ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+					        LOG(LOG_WARN, "Current frame number is invalid (%d)", mCurrentFrameNumber);
+                        #endif
+					}
 				}
 				// release the reference to the last grabbed frame
 				mVideoWorker->ReleaseCurrentFrameRef();
