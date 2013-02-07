@@ -590,27 +590,26 @@ void* NetworkListener::Run(void* pArgs)
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaSourceNet::Init(bool pRtpActivated)
+void MediaSourceNet::Init()
 {
     mSourceType = SOURCE_NETWORK;
     mOpenInputStream = false;
-    mRtpActivated = pRtpActivated;
 
     mSourceCodecId = CODEC_ID_NONE;
 }
 
-MediaSourceNet::MediaSourceNet(Socket *pDataSocket, bool pRtpActivated):
-    MediaSourceMem("NET-IN:", pRtpActivated)
+MediaSourceNet::MediaSourceNet(Socket *pDataSocket):
+    MediaSourceMem("NET-IN:")
 {
 	LOG(LOG_VERBOSE, "Created with pre-defined socket object");
 
-    mNetworkListener = new NetworkListener(this, pDataSocket, pRtpActivated);
+    mNetworkListener = new NetworkListener(this, pDataSocket);
 
-    Init(pRtpActivated);
+    Init();
 }
 
-MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType,  bool pRtpActivated):
-    MediaSourceMem("NET-IN:", pRtpActivated)
+MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType):
+    MediaSourceMem("NET-IN:")
 {
 	LOG(LOG_VERBOSE, "Created, have to create socket");
     if ((pPortNumber == 0) || (pPortNumber > 65535))
@@ -618,19 +617,19 @@ MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTra
 
     LOG(LOG_VERBOSE, "Local media listener at: <%d>%s", pPortNumber, mRtpActivated ? "(RTP)" : "");
 
-    mNetworkListener = new NetworkListener(this, pPortNumber, pTransportType, pRtpActivated);
+    mNetworkListener = new NetworkListener(this, pPortNumber, pTransportType);
 
-    Init(pRtpActivated);
+    Init();
 }
 
-MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequirements, bool pRtpActivated):
-    MediaSourceMem("NET-IN:", pRtpActivated)
+MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequirements):
+    MediaSourceMem("NET-IN:")
 {
 	LOG(LOG_VERBOSE, "Created via NAPI, local name: &s, requirements: %s", pLocalName.c_str(), (pTransportRequirements != NULL) ? pTransportRequirements->getDescription().c_str() : "");
 
-    mNetworkListener = new NetworkListener(this, pLocalName, pTransportRequirements, pRtpActivated);
+    mNetworkListener = new NetworkListener(this, pLocalName, pTransportRequirements);
 
-    Init(pRtpActivated);
+    Init();
 }
 
 MediaSourceNet::~MediaSourceNet()

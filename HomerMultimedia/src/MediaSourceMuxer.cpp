@@ -2060,10 +2060,10 @@ string MediaSourceMuxer::GetCodecLongName()
         return "";
 }
 
-bool MediaSourceMuxer::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset)
+bool MediaSourceMuxer::SetInputStreamPreferences(std::string pStreamCodec, bool pRtpActivated, bool pDoReset)
 {
     if (mMediaSource != NULL)
-        return mMediaSource->SetInputStreamPreferences(pStreamCodec, pDoReset);
+        return mMediaSource->SetInputStreamPreferences(pStreamCodec, pRtpActivated, pDoReset);
     else
         return 0;
 }

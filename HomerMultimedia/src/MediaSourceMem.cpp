@@ -72,7 +72,7 @@ using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
+MediaSourceMem::MediaSourceMem(string pName):
     MediaSource(pName), RTP()
 {
     mDecoderFrameBufferTimeMax = MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME;
@@ -97,7 +97,6 @@ MediaSourceMem::MediaSourceMem(string pName, bool pRtpActivated):
     mFragmentNumber = 0;
     mPacketStatAdditionalFragmentSize = 0;
     mOpenInputStream = false;
-    mRtpActivated = pRtpActivated;
     RTPRegisterPacketStatistic(this);
 
     mRtpSourceCodecIdHint = CODEC_ID_NONE;
@@ -633,12 +632,12 @@ void MediaSourceMem::DoSetVideoGrabResolution(int pResX, int pResY)
     LOG(LOG_VERBOSE, "DoSetVideoGrabResolution() finished");
 }
 
-bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset)
+bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pRtpActivated, bool pDoReset)
 {
     bool tResult = false;
     enum CodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
 
-    if (mSourceCodecId != tStreamCodecId)
+    if ((mSourceCodecId != tStreamCodecId) || (mRtpActivated != pRtpActivated))
     {
         LOG(LOG_VERBOSE, "Setting new input streaming preferences");
 
@@ -647,6 +646,7 @@ bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pD
         // set new codec
         LOG(LOG_VERBOSE, "    ..stream codec: %d => %d (%s)", mSourceCodecId, tStreamCodecId, pStreamCodec.c_str());
         mSourceCodecId = tStreamCodecId;
+        mRtpActivated = pRtpActivated;
         mRtpSourceCodecIdHint = tStreamCodecId;
 
         if ((pDoReset) && (mMediaSourceOpened))
@@ -2286,7 +2286,9 @@ void MediaSourceMem::WaitForRTGrabbing()
 	// return immediately if PTS from grabber is invalid
 	if ((mRtpActivated) && (mCurrentOutputFrameIndex == 0))
 	{
-		LOG(LOG_WARN, "PTS from grabber is invalid: %.2f", (float)mCurrentOutputFrameIndex);
+        #ifdef MSMEM_DEBUG_TIMING
+	        LOG(LOG_WARN, "PTS from grabber is invalid: %.2f", (float)mCurrentOutputFrameIndex);
+        #endif
 		return;
 	}
 
@@ -2295,7 +2297,9 @@ void MediaSourceMem::WaitForRTGrabbing()
     // return immediately if RT-grabbing is not possible
     if (tNormalizedFrameIndexFromGrabber < 0)
     {
-        LOG(LOG_WARN, "Normalized frame index is invalid");
+        #ifdef MSMEM_DEBUG_TIMING
+            LOG(LOG_WARN, "Normalized frame index is invalid");
+        #endif
         return;
     }
 

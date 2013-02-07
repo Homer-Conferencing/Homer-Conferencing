@@ -59,7 +59,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
-    MediaSourceMem("FILE: " + pSourceFile, false)
+    MediaSourceMem("FILE: " + pSourceFile)
 {
 	mLastDecoderFilePosition = 0;
     mDecoderFrameBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME;

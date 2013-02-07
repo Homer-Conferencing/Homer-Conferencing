@@ -87,7 +87,7 @@ class MediaSourceMem :
 {
 public:
     /// The default constructor
-    MediaSourceMem(string pName = "SOURCE:", bool pRtpActivated = true);
+    MediaSourceMem(string pName = "SOURCE:");
     /// The destructor.
     virtual ~MediaSourceMem();
 
@@ -124,7 +124,7 @@ public:
     /* multi stream input interface */
     virtual bool HasInputStreamChanged();
 
-    virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false);
+    virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pRtpActivated = false, bool pDoReset = false);
 
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);

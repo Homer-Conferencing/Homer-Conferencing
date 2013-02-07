@@ -138,7 +138,7 @@ public:
     virtual enum CodecID GetCodecID();
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
-    virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pDoReset = false);
+    virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pRtpActivated = false, bool pDoReset = false);
     virtual int GetChunkDropCounter();
     virtual int GetChunkBufferCounter();
 

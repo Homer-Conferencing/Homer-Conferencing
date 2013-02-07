@@ -62,9 +62,9 @@ class MediaSourceNet :
 {
 public:
     /// The constructor
-    MediaSourceNet(Socket *pDataSocket, bool pRtpActivated = true);
-    MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType, bool pRtpActivated = true);
-    MediaSourceNet(std::string pLocalName, Requirements *pTransportRequirements, bool pRtpActivated = true);
+    MediaSourceNet(Socket *pDataSocket);
+    MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType);
+    MediaSourceNet(std::string pLocalName, Requirements *pTransportRequirements);
 
     /// The destructor
     virtual ~MediaSourceNet();
@@ -82,7 +82,7 @@ protected:
     /* network socket listener thread */
     friend class NetworkListener;
 
-    void Init(bool pRtpActivated = true);
+    void Init();
 
     NetworkListener     *mNetworkListener;
 };
