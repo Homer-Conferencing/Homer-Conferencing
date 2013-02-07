@@ -175,7 +175,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
 
                 tOldNAPIImpl = NAPI.getCurrentImplName();
                 NAPI.selectImpl(mCbNAPIImplVideo->currentText().toStdString());
-                tNetSource = new MediaSourceNet(tHost.toStdString(), tRequs, mCbRtpVideo->isChecked());
+                tNetSource = new MediaSourceNet(tHost.toStdString(), tRequs);
                 NAPI.selectImpl(tOldNAPIImpl);
             #else
                 MediaSourceNet *tNetSource = new MediaSourceNet(mSbPortVideo->value(), (enum TransportType)mCbTransportVideo->currentIndex(), mCbRtpVideo->isChecked());
@@ -188,7 +188,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
             }
             tNetSource->SetPreBufferingActivation(mGrpPreBuffering->isChecked());
             tNetSource->SetPreBufferingAutoRestartActivation(mCbRestartPreBuffering->isChecked());
-            tNetSource->SetInputStreamPreferences(mCbCodecVideo->currentText().toStdString(), false);
+            tNetSource->SetInputStreamPreferences(mCbCodecVideo->currentText().toStdString(), mCbRtpVideo->isChecked(), false);
             return tNetSource;
             break;
         default:
@@ -302,7 +302,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
 
                 tOldNAPIImpl = NAPI.getCurrentImplName();
                 NAPI.selectImpl(mCbNAPIImplAudio->currentText().toStdString());
-                tNetSource = new MediaSourceNet(tHost.toStdString(), tRequs, mCbRtpAudio->isChecked());
+                tNetSource = new MediaSourceNet(tHost.toStdString(), tRequs);
                 NAPI.selectImpl(tOldNAPIImpl);
             #else
                 MediaSourceNet *tNetSource = new MediaSourceNet(mSbPortAudio->value(), (enum TransportType)mCbTransportAudio->currentIndex(), mCbRtpAudio->isChecked());
@@ -315,7 +315,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
             }
             tNetSource->SetPreBufferingActivation(mGrpPreBuffering->isChecked());
             tNetSource->SetPreBufferingAutoRestartActivation(mCbRestartPreBuffering->isChecked());
-            tNetSource->SetInputStreamPreferences(mCbCodecAudio->currentText().toStdString(), false);
+            tNetSource->SetInputStreamPreferences(mCbCodecAudio->currentText().toStdString(), mCbRtpAudio->isChecked(), false);
             return tNetSource;
             break;
         default:

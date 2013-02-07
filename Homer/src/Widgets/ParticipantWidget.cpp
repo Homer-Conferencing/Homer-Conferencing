@@ -302,22 +302,22 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 					mAudioReceiveSocket = MEETING.GetAudioReceiveSocket(mSessionName.toStdString(), mSessionTransport);
 					if (mVideoReceiveSocket != NULL)
 					{
-						mVideoSource = new MediaSourceNet(mVideoReceiveSocket, true);
+						mVideoSource = new MediaSourceNet(mVideoReceiveSocket);
 						mVideoSource->SetPreBufferingActivation(true);
 						mVideoSource->SetPreBufferingAutoRestartActivation(true);
 						mVideoSource->SetFrameBufferPreBufferingTime(AV_CONFERENCE_BUFFER);
-						mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString());
+						mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString(), true);
 						mVideoWidgetFrame->hide();
 						mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName);
 					}else
 						LOG(LOG_ERROR, "Determined video socket is NULL");
 					if (mAudioReceiveSocket != NULL)
 					{
-						mAudioSource = new MediaSourceNet(mAudioReceiveSocket, true);
+						mAudioSource = new MediaSourceNet(mAudioReceiveSocket);
 						mAudioSource->SetPreBufferingActivation(true);
 						mAudioSource->SetPreBufferingAutoRestartActivation(true);
 						mAudioSource->SetFrameBufferPreBufferingTime(AV_CONFERENCE_BUFFER);
-						mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString());
+						mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString(), true);
 						mAudioWidget->Init(this, mAudioSource, pAudioMenu, mSessionName);
 					}else
 						LOG(LOG_ERROR, "Determined audio socket is NULL");
