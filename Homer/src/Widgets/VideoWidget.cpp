@@ -2150,7 +2150,7 @@ void VideoWorkerThread::DoSetGrabResolution()
     // check if resolution changed
     int tGotResX, tGotResY;
     mMediaSource->GetVideoGrabResolution(tGotResX, tGotResY);
-    if ((tGotResX != mResX) || (tGotResY != mResY))
+    if ((tGotResX != mDesiredResX) || (tGotResY != mDesiredResY))
     	LOG(LOG_WARN, "Got resolution %d*%d but we requested %d*%d", tGotResX, tGotResY, mDesiredResX, mDesiredResY);
 
     mResX = tGotResX;
