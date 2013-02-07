@@ -245,10 +245,6 @@ private:
     int                 mCurrentStreamingResX, mRequestedStreamingResX;
     int                 mCurrentStreamingResY, mRequestedStreamingResY;
     bool                mVideoHFlip, mVideoVFlip;
-    /* audio */
-    AVFifoBuffer        *mSampleFifo;
-    char                *mSamplesTempBuffer;
-
 };
 
 ///////////////////////////////////////////////////////////////////////////////

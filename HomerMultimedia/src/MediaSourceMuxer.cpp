@@ -64,7 +64,7 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     MediaSource("Muxer: encoder output")
 {
     mSourceType = SOURCE_MUXER;
-    mStreamPacketBuffer = (char*)malloc(MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE);
+    mStreamPacketBuffer = (char*)av_malloc(MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE);
     SetOutgoingStream();
     mStreamCodecId = CODEC_ID_NONE;
     mStreamMaxPacketSize = 500;
@@ -76,6 +76,8 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mMediaSource = pMediaSource;
     if (mMediaSource != NULL)
     	mMediaSources.push_back(mMediaSource);
+    for (int i = 0; i < 32; i++)
+        mResampleFifo[i] = NULL;
     mCurrentStreamingResX = 0;
     mCurrentStreamingResY = 0;
     mRequestedStreamingResX = 352;
@@ -86,7 +88,6 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mEncoderThreadNeeded = true;
     mEncoderHasKeyFrame = false;
     mEncoderFifo = NULL;
-    mAudioResampleContext = NULL;
 }
 
 MediaSourceMuxer::~MediaSourceMuxer()
@@ -100,7 +101,7 @@ MediaSourceMuxer::~MediaSourceMuxer()
     StopEncoder();
 
 	LOG(LOG_VERBOSE, "..freeing stream packet buffer");
-    free(mStreamPacketBuffer);
+    av_free(mStreamPacketBuffer);
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
@@ -825,17 +826,11 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 
     mOutputAudioFormat = mCodecContext->sample_fmt;
 
-    if (!OpenFormatConverter())
-    	return false;
-
     // update the real frame rate depending on the actual encoder sample rate and the encoder frame size
     mOutputFrameRate = (float)mOutputAudioSampleRate /* usually 44100 samples per second */ / mCodecContext->frame_size /* usually 1024 samples per frame */;
 
     // init transcoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
     StartEncoder();
-
-    // init fifo buffer
-    mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2);
 
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mFormatContext->pb->max_packet_size);
@@ -845,8 +840,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     else
         LOG(LOG_INFO, "    ..rtp encapsulation: no");
     LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
-    LOG(LOG_INFO, "Fifo opened...");
-    LOG(LOG_INFO, "    ..fill size: %d bytes", av_fifo_size(mSampleFifo));
 
     return true;
 }
@@ -902,20 +895,6 @@ bool MediaSourceMuxer::CloseMuxer()
         // make sure we can free the memory structures
         StopEncoder();
 
-        switch(mMediaType)
-        {
-            case MEDIA_VIDEO:
-                    break;
-            case MEDIA_AUDIO:
-                    // free fifo buffer
-                    av_fifo_free(mSampleFifo);
-
-                    break;
-            case MEDIA_UNKNOWN:
-                    LOG(LOG_ERROR, "Media type unknown");
-                    break;
-        }
-
         LOG(LOG_VERBOSE, "..closing %s codec", GetMediaTypeStr().c_str());
 
         // Close the codec
@@ -928,18 +907,6 @@ bool MediaSourceMuxer::CloseMuxer()
 
         // Close the format context
         av_free(mFormatContext);
-
-        if (mAudioResampleContext != NULL)
-        {
-        	HM_swr_free(&mAudioResampleContext);
-            mAudioResampleContext = NULL;
-        }
-
-        if (mResampleBuffer != NULL)
-        {
-            free(mResampleBuffer);
-            mResampleBuffer = NULL;
-        }
 
         LOG(LOG_INFO, "...%s-muxer closed", GetMediaTypeStr().c_str());
 
@@ -1337,10 +1304,16 @@ void MediaSourceMuxer::ResetEncoderBuffers()
     if (mEncoderFifo != NULL)
         mEncoderFifo->ClearFifo();
 
-    if ((mMediaType == MEDIA_AUDIO) && (mSampleFifo != NULL) && (av_fifo_size(mSampleFifo) > 0))
+    if (mMediaType == MEDIA_AUDIO)
     {
-        LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
-        av_fifo_drain(mSampleFifo, av_fifo_size(mSampleFifo));
+        for (int i = 0; i < MEDIA_SOURCE_MAX_AUDIO_CHANNELS; i++)
+        {
+            if ((mResampleFifo[i] != NULL) && (av_fifo_size(mResampleFifo[i]) > 0))
+            {
+                LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+                av_fifo_drain(mResampleFifo[i], av_fifo_size(mResampleFifo[i]));
+            }
+        }
     }
 
     // reset buffer counter
@@ -1355,7 +1328,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     int                 tBufferSize;
     int                 tFifoEntry = 0;
     int                 tResult;
-    AVFrame             *tYUVFrame;
+    AVFrame             *tYUVFrame, *tAudioFrame;
     AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
     int                 tEncoderResult;
     int                 tChunkBufferSize = 0;
@@ -1364,7 +1337,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     int                 tFrameFinished = 0;
     int64_t             tReadFrameNumber;
 
-    LOG(LOG_VERBOSE, "%s-Encoding thread started", GetMediaTypeStr().c_str());
+    LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Encoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
     switch(mMediaType)
     {
@@ -1375,7 +1348,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
             if ((tYUVFrame = AllocFrame()) == NULL)
                 LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
 
-            mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
+            mEncoderChunkBuffer = (char*)av_malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
             if (mEncoderChunkBuffer == NULL)
                 LOG(LOG_ERROR, "Out of video memory for encoder chunk buffer");
 
@@ -1399,11 +1372,11 @@ void* MediaSourceMuxer::Run(void* pArgs)
         case MEDIA_AUDIO:
             SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Encoder(" + GetFormatName(mStreamCodecId) + ")");
 
-            mSamplesTempBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
-            if (mSamplesTempBuffer == NULL)
-                LOG(LOG_ERROR, "Out of memory for sample buffer");
+            // Allocate video frame for YUV format
+            if ((tAudioFrame = AllocFrame()) == NULL)
+                LOG(LOG_ERROR, "Out of video memory in avcodec_alloc_frame()");
 
-            mEncoderChunkBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
+            mEncoderChunkBuffer = (char*)av_malloc(MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE);
             if (mEncoderChunkBuffer == NULL)
                 LOG(LOG_ERROR, "Out of memory for encoder chunk buffer");
 
@@ -1421,6 +1394,11 @@ void* MediaSourceMuxer::Run(void* pArgs)
             break;
     }
 
+    if (!OpenFormatConverter())
+    {
+        LOG(LOG_ERROR, "Failed to open %s format converter", GetMediaTypeStr().c_str());
+    }
+
     // check the actually used bit rate, does it matches the desired one?
     if (mStreamBitRate != mCodecContext->bit_rate)
         LOG(LOG_WARN, "%s codec adapted encoder bit rate from %d to %d", GetMediaTypeStr().c_str(), mStreamBitRate, mCodecContext->bit_rate);
@@ -1436,6 +1414,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     // trigger an avcodec_flush_buffers()
     ResetEncoderBuffers();
+
+    LOG(LOG_WARN, "================ Entering main %s encoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
     while(mEncoderThreadNeeded)
     {
@@ -1485,6 +1465,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 // calculate the packet's PTS value
                                 int64_t tInputFramePts = CalculateEncoderPts(mFrameNumber);
 
+                                tYUVFrame->pict_type = AV_PICTURE_TYPE_NONE;
                                 tYUVFrame->coded_picture_number = mFrameNumber;
                                 tYUVFrame->display_picture_number = mFrameNumber;
                                 tYUVFrame->pts = tInputFramePts;
@@ -1498,222 +1479,165 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "      ..display pic number: %d", tYUVFrame->display_picture_number);
                                 #endif
 
-                                // #########################################
-                                // ### ENCODE FRAME
-                                // #########################################
-                                int64_t tTime = Time::GetTimeStamp();
-
-#if 0
-                                av_init_packet(tPacket);
-                                tPacket->data = (uint8_t*)mEncoderChunkBuffer;
-                                tPacket->size = MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE;
-                                tEncoderResult = avcodec_encode_video2(mCodecContext, tPacket, tYUVFrame, &tFrameFinished);
-#endif
-
-                                tEncoderResult = avcodec_encode_video(mCodecContext, (uint8_t *)mEncoderChunkBuffer, MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, tYUVFrame);
-                                #ifdef MSM_DEBUG_TIMING
-                                    int64_t tTime2 = Time::GetTimeStamp();
-                                    LOG(LOG_VERBOSE, "     encoding video frame took %"PRId64" us", tTime2 - tTime);
-                                #endif
-
-                                tFrameFinished =1;
-                                // #########################################
-                                // ### DISTRIBUTE FRAME
-                                // #########################################
-                                if (tEncoderResult > 0)
+                                if (EncodeAndWritePacket(mFormatContext, mCodecContext, tYUVFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames))
                                 {
-                                    if (tFrameFinished == 1)
-                                    {
-                                        // compensate frame delay, which is caused by video encoder, and derive a correct PTS value for output packets
-                                        int tOutputPacketPts = CalculateEncoderPts(mFrameNumber);
-
-                                        av_init_packet(tPacket);
-
-                                        // mark i-frame
-                                        if (mCodecContext->coded_frame->key_frame)
-                                        {
-                                            mEncoderHasKeyFrame = true;
-                                            tPacket->flags |= AV_PKT_FLAG_KEY;
-                                        }
-
-                                        // we only have one stream per audio stream
-                                        tPacket->stream_index = 0;
-                                        tPacket->data = (uint8_t *)mEncoderChunkBuffer;
-                                        tPacket->size = tEncoderResult;
-                                        tPacket->pts = tOutputPacketPts;
-                                        tPacket->dts = tOutputPacketPts;
-
-                                        #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
-                                            LOG(LOG_VERBOSE, "Sending video packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
-                                            LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                                            LOG(LOG_VERBOSE, "      ..flags: %d", tPacket->flags);
-                                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64" (delay: %d / %d)", tPacket->pts, mEncoderBufferedFrames, mFormatContext->max_delay);
-                                            LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
-    //                                        LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-    //                                        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
-    //                                        LOG(LOG_VERBOSE, "      ..key frame: %d", mEncoderHasKeyFrame);
-    //                                        LOG(LOG_VERBOSE, "      ..codec delay: %d", mCodecContext->delay);
-    //                                        LOG(LOG_VERBOSE, "      ..codec max. b frames: %d", mCodecContext->max_b_frames);
-                                        #endif
-
-                                        // write the encoded frame
-                                        int64_t tTime = Time::GetTimeStamp();
-                                        if (av_write_frame(mFormatContext, tPacket) != 0)
-                                        {
-                                            LOG(LOG_ERROR, "Couldn't distribute video frame among registered video sinks");
-                                        }
-                                        #ifdef MSM_DEBUG_TIMING
-                                            int64_t tTime2 = Time::GetTimeStamp();
-                                            LOG(LOG_VERBOSE, "     writing video frame to sinks took %"PRId64" us", tTime2 - tTime);
-                                        #endif
-
-                                        // free packet buffer
-                                        av_free_packet(tPacket);
-
-                                        // increase the frame counter (used for PTS generation)
-                                        mFrameNumber++;
-                                    }
-                                }else
-                                {
-                                    if (tEncoderResult != 0)
-                                    {
-                                        LOG(LOG_WARN, "Couldn't re-encode current video frame %"PRId64" because %s(%d)", tYUVFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
-                                        mFrameNumber--;
-                                    }else
-                                    {
-                                        LOG(LOG_VERBOSE, "Video frame was buffered in encoder");
-                                        mEncoderBufferedFrames++;
-                                    }
+                                    // increase the frame counter (used for PTS generation)
+                                    mFrameNumber++;
                                 }
-#if 0
-    // free packet buffer
-    av_free_packet(tPacket);
-#endif
-                                #ifdef MSM_DEBUG_TIMING
-                                    int64_t tTime4 = Time::GetTimeStamp();
-                                    LOG(LOG_VERBOSE, "Entire transcoding step took %"PRId64" us", tTime4 - tTime3);
-                                #endif
                             }
                             break;
 
                         case MEDIA_AUDIO:
                             {
                                 int tOutputAudioBytesPerSample = av_get_bytes_per_sample(mOutputAudioFormat);
+                                int tOutputSamplesPerChannel = mCodecContext->frame_size; // nr. of samples of output frames
+                                int tReadFifoSize = tOutputSamplesPerChannel * tOutputAudioBytesPerSample * mOutputAudioChannels;
+                                int tReadFifoSizePerChannel = tOutputSamplesPerChannel * tOutputAudioBytesPerSample;
+
                                 int tInputAudioBytesPerSample = av_get_bytes_per_sample(mInputAudioFormat);
+                                int tInputSamplesPerChannel = tBufferSize / (tInputAudioBytesPerSample * mInputAudioChannels); // nr. of samples of source frames
 
-                                // do we need audio resampling?
-								if (mAudioResampleContext != NULL)
-								{
-									//HINT: we always assume 16 bit samples
-									int tResampledBytes = (tOutputAudioBytesPerSample * mOutputAudioChannels) * HM_swr_convert(mAudioResampleContext, (uint8_t**)&mResampleBuffer, 2048 /* amount of possible output samples */, (const uint8_t**)&tBuffer, tBufferSize / (tInputAudioBytesPerSample * mInputAudioChannels));
-									if(tResampledBytes > 0)
-									{
-										tBuffer = mResampleBuffer;
-										tBufferSize = tResampledBytes;
-									}else
-									{
-										LOG(LOG_ERROR, "Audio resampling finished with faulty result %d", tResampledBytes);
-										tBufferSize = 0;
-									}
-								}
+                                int tResamplingOutputSamples = 0;
 
-								if (tBufferSize > 0)
-								{
-									// increase fifo buffer size by size of input buffer size
-									#ifdef MSM_DEBUG_PACKETS
-										LOG(LOG_VERBOSE, "Adding %d bytes to AUDIO FIFO with size of %d bytes", tBufferSize, av_fifo_size(mSampleFifo));
-									#endif
-									if (av_fifo_realloc2(mSampleFifo, av_fifo_size(mSampleFifo) + tBufferSize) < 0)
-									{
-										// acknowledge failed
-										LOG(LOG_ERROR, "Reallocation of FIFO audio buffer failed");
-									}
+                                uint8_t **tInputSamplesPlanes = (uint8_t**)&tBuffer; // we have only one audio input plane because we use PCM S16 for playback everywhere, which is the input here
+                                if (mAudioResampleContext != NULL)
+                                {// audio resampling needed: we have to insert an intermediate step, which resamples the audio chunk
+                                    // ############################
+                                    // ### resample input
+                                    // ############################
+                                    #ifdef MSM_DEBUG_PACKETS
+                                        LOG(LOG_VERBOSE, "Converting %d samples/channel from %p and store it to %p", tInputSamplesPerChannel, *tInputSamplesPlanes, mResampleBuffer);
+                                    #endif
+                                    //LOG(LOG_VERBOSE, "planes are %p and %p", mResampleBufferPlanes[0], mResampleBufferPlanes[1]);
+                                    tResamplingOutputSamples = HM_swr_convert(mAudioResampleContext, &mResampleBufferPlanes[0], MEDIA_SOURCE_SAMPLE_BUFFER_PER_CHANNEL, (const uint8_t**)tInputSamplesPlanes, tInputSamplesPerChannel);
+                                    if (tResamplingOutputSamples <= 0)
+                                        LOG(LOG_ERROR, "Amount of resampled samples (%d) is invalid", tResamplingOutputSamples);
 
-									// write new samples into fifo buffer
-									av_fifo_generic_write(mSampleFifo, tBuffer, tBufferSize, NULL);
+                                    tInputSamplesPlanes = mResampleBufferPlanes;
+                                }
 
-									while (av_fifo_size(mSampleFifo) >= tOutputAudioBytesPerSample * mCodecContext->frame_size * mOutputAudioChannels)
-									{
-										#ifdef MSM_DEBUG_PACKETS
-											LOG(LOG_VERBOSE, "Reading %d bytes from %d bytes of fifo", tOutputAudioBytesPerSample * mCodecContext->frame_size * mCodecContext->channels, av_fifo_size(mSampleFifo));
-										#endif
-										// read sample data from the fifo buffer
-                                        int tReadSamplesSize = tOutputAudioBytesPerSample * mCodecContext->frame_size * mCodecContext->channels;
-										HM_av_fifo_generic_read(mSampleFifo, (void*)mSamplesTempBuffer, tReadSamplesSize);
+                                int tWrittenFifoSize = tResamplingOutputSamples * tOutputAudioBytesPerSample * mOutputAudioChannels;
+                                int tWrittenFifoSizePerChannel = tResamplingOutputSamples * tOutputAudioBytesPerSample;
 
-										if ((!mRelayingSkipAudioSilence) || (!ContainsOnlySilence((void*)mSamplesTempBuffer, tReadSamplesSize) /* we have to check if the current chunk contains only silence */))
-										{// okay, we should process this audio frame
-											//####################################################################
-											// re-encode the frame
-											// ###################################################################
-											// re-encode the frame
-											#ifdef MSM_DEBUG_PACKETS
-												LOG(LOG_VERBOSE, "Encoding audio frame.. (frame size: %d, channels: %d, enc. buffeR: %p, samples buffer: %p)", mCodecContext->frame_size, mCodecContext->channels, mEncoderChunkBuffer, mSamplesTempBuffer);
-											#endif
-											//printf("Gonna encode with frame_size %d and channels %d\n", mCodecContext->frame_size, mCodecContext->channels);
-											tEncoderResult = avcodec_encode_audio(mCodecContext, (uint8_t *)mEncoderChunkBuffer, /* assume signed 16 bit */ tOutputAudioBytesPerSample * mCodecContext->frame_size * mCodecContext->channels, (const short *)mSamplesTempBuffer);
-											mEncoderHasKeyFrame = true;
+                                // ####################################################################
+                                // ### buffer the input (resampled?) audio date for frame size conversion
+                                // ###################################################################
+                                for (int i = 0; i < mOutputAudioChannels; i++)
+                                {
+                                    int tFifoIndex = i;
+                                    void *tInputBuffer = (void*)tInputSamplesPlanes[i];
+                                    if (!av_sample_fmt_is_planar(mOutputAudioFormat))
+                                    {
+                                        tInputBuffer = (void*)(tInputSamplesPlanes[0] + i * tWrittenFifoSizePerChannel);
+                                        tFifoIndex = 0;
+                                    }
 
-											//printf("encoded to mp3: %d\n\n", tSampleSize);
-											if (tEncoderResult > 0)
-											{
-												av_init_packet(tPacket);
+                                    // ############################
+                                    // ### reallocate FIFO space
+                                    // ############################
+                                    #ifdef MS_DEBUG_RECORDER_PACKETS
+                                        LOG(LOG_VERBOSE, "Adding %d bytes (%d bytes/sample, input channels: %d, frame size: %d) to AUDIO FIFO %d", tWrittenFifoSizePerChannel, tInputAudioBytesPerSample, mInputAudioChannels, mCodecContext->frame_size, tFifoIndex);
+                                    #endif
+                                    // is there enough space in the FIFO?
+                                    if (av_fifo_space(mResampleFifo[tFifoIndex]) < tWrittenFifoSizePerChannel)
+                                    {// no, we need reallocation
+                                        if (av_fifo_realloc2(mResampleFifo[tFifoIndex], av_fifo_size(mResampleFifo[tFifoIndex]) + tWrittenFifoSizePerChannel - av_fifo_space(mResampleFifo[tFifoIndex])) < 0)
+                                        {
+                                            // acknowledge failed
+                                            LOG(LOG_ERROR, "Reallocation of resample FIFO audio buffer for channel %d failed", i);
+                                        }
+                                    }
+                                    // ############################
+                                    // ### write frame content to FIFO
+                                    // ############################
+                                    #ifdef MSM_DEBUG_PACKETS
+                                        LOG(LOG_VERBOSE, "Writing %d bytes from %u(%u) to FIFO %d", tWrittenFifoSizePerChannel, tInputBuffer, mResampleBufferPlanes[tFifoIndex], tFifoIndex);
+                                    #endif
+                                    av_fifo_generic_write(mResampleFifo[tFifoIndex], tInputBuffer, tWrittenFifoSizePerChannel, NULL);
+                                }
 
-												tPacket->flags |= AV_PKT_FLAG_KEY;
 
-												// calculate the packet's PTS value
-												int64_t tPacketPts = CalculateEncoderPts(mFrameNumber);
 
-												// we only have one stream per audio stream
-												tPacket->stream_index = 0;
-												tPacket->data = (uint8_t *)mEncoderChunkBuffer;
-												tPacket->size = tEncoderResult;
-												tPacket->pts = tPacketPts;
-												tPacket->dts = tPacketPts;
+                                // ############################
+                                // ### check FIFO for available frames
+                                // ############################
+                                while (/* planar */((av_sample_fmt_is_planar(mOutputAudioFormat) &&
+                                                        (av_fifo_size(mResampleFifo[0]) >= tReadFifoSizePerChannel))) ||
+                                      (/* packed/interleaved */((!av_sample_fmt_is_planar(mOutputAudioFormat)) &&
+                                                        (av_fifo_size(mResampleFifo[0]) >= tReadFifoSizePerChannel * mOutputAudioChannels /* FIFO 0 stores all samples */))))
+                                {
+                                    //####################################################################
+                                    // create audio planes
+                                    // ###################################################################
+                                    uint8_t* tOutputBuffer = (uint8_t*)mResampleBuffer;
+                                    bool tSilenceAudioFrame = true;
+                                    for (int i = 0; i < mOutputAudioChannels; i++)
+                                    {
+                                        int tFifoIndex = i;
+                                        if (!av_sample_fmt_is_planar(mOutputAudioFormat))
+                                            tFifoIndex = 0;
 
-												#ifdef MSM_DEBUG_PACKET_DISTRIBUTION
-													LOG(LOG_VERBOSE, "Sending audio packet: %5d to %2d sink(s):", mFrameNumber, mMediaSinks.size());
-													LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tPacket->pts);
-													LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket->dts);
-													LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
-													LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket->pos);
-												#endif
+                                        // ############################
+                                        // ### read buffer from FIFO
+                                        // ############################
+                                        #ifdef MSM_DEBUG_PACKETS
+                                            LOG(LOG_VERBOSE, "Reading %d bytes (%d bytes/sample, frame size: %d samples per packet) from %d bytes of FIFO %d", tReadFifoSizePerChannel, tInputAudioBytesPerSample, mOutputCodecContext->frame_size, av_fifo_size(mOutputResampleFifo[tFifoIndex]), tFifoIndex);
+                                        #endif
+                                        HM_av_fifo_generic_read(mResampleFifo[tFifoIndex], (void*)tOutputBuffer, tReadFifoSizePerChannel);
 
-												//####################################################################
-												// distribute the encoded frame
-												// ###################################################################
-												int64_t tTime = Time::GetTimeStamp();
-												if (av_write_frame(mFormatContext, tPacket) != 0)
-												{
-													LOG(LOG_ERROR, "Couldn't distribute audio sample among registered audio sinks");
-												}
-												#ifdef MSM_DEBUG_TIMING
-													int64_t tTime2 = Time::GetTimeStamp();
-													LOG(LOG_VERBOSE, "         writing audio frame to sinks took %"PRId64" us", tTime2 - tTime);
-												#endif
+                                        if ((!mRelayingSkipAudioSilence) || (!ContainsOnlySilence((void*)tOutputBuffer, tReadFifoSizePerChannel) /* we have to check if the current chunk contains only silence */))
+                                        {// okay, we should process this audio frame
+                                            tSilenceAudioFrame = false;
+                                        }
 
-												// free packet buffer
-												av_free_packet(tPacket);
+                                        tOutputBuffer += tReadFifoSizePerChannel;
+                                    }
 
-												// increase the frame counter (used for PTS generation)
-		                                        mFrameNumber++;
-											}else
-											{
-			                                    if (tEncoderResult != 0)
-			                                    {
-			                                        LOG(LOG_WARN, "Couldn't re-encode current audio frame because %s(%d)", strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
-			                                    }else
-			                                    {
-			                                        LOG(LOG_VERBOSE, "Audio frame was buffered in encoder");
-			                                        mEncoderBufferedFrames++;
-			                                    }
-											}
-										}else
-										{// we should skip this audio frame because it includes only silence
-											mRelayingSkipAudioSilenceSkippedChunks++;
-											//LOG(LOG_WARN, "Skipping %s data, overall skipped chunks: %"PRId64"", GetMediaTypeStr().c_str(), mRelayingSkipAudioSilenceSkippedChunks);
-										}
-									}
+                                    if (!tSilenceAudioFrame)
+                                    {
+                                        //####################################################################
+                                        // create final frame for audio encoder
+                                        // ###################################################################
+                                        avcodec_get_frame_defaults(tAudioFrame);
+                                        // nb_samples
+                                        tAudioFrame->nb_samples = tOutputSamplesPerChannel;
+                                        // pts
+                                        int64_t tCurPts = av_rescale_q(mFrameNumber * mCodecContext->frame_size, (AVRational){1, mOutputAudioSampleRate}, mCodecContext->time_base);
+                                        tAudioFrame->pts = tCurPts;
+                                        //data
+                                        int tRes = 0;
+                                        if ((tRes = avcodec_fill_audio_frame(tAudioFrame, mOutputAudioChannels, mOutputAudioFormat, (const uint8_t *)mResampleBuffer, tReadFifoSize, 1)) < 0)
+                                            LOG(LOG_ERROR, "Could not fill the audio frame with the provided data from the audio resampling step because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                                        #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
+                                            LOG(LOG_VERBOSE, "Distributing sample buffer with PTS: %"PRId64" (chunk: %"PRId64"", tCurPts, mOutputFrameNumber);
+                                            LOG(LOG_VERBOSE, "Filling audio frame with buffer size: %d", tReadFifoSize);
+                                        #endif
+
+                                        #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
+                                            LOG(LOG_VERBOSE, "Distributing audio frame..");
+                                            LOG(LOG_VERBOSE, "      ..key frame: %d", mOutputFinalFrame->key_frame);
+                                            LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(mOutputFinalFrame).c_str());
+                                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", mOutputFinalFrame->pts);
+                                            LOG(LOG_VERBOSE, "      ..coded pic number: %d", mOutputFinalFrame->coded_picture_number);
+                                            LOG(LOG_VERBOSE, "      ..display pic number: %d", mOutputFinalFrame->display_picture_number);
+                                            LOG(LOG_VERBOSE, "      ..nr. of samples: %d", mOutputFinalFrame->nb_samples);
+                                            LOG(LOG_VERBOSE, "Output audio output data planes...");
+                                            for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
+                                            {
+                                                LOG(LOG_VERBOSE, "%d - %p - %d", i, mOutputFinalFrame->data[i], mOutputFinalFrame->linesize[i]);
+                                            }
+                                        #endif
+
+                                        if (EncodeAndWritePacket(mFormatContext, mCodecContext, tAudioFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames))
+                                        {
+                                            // increase the frame counter (used for PTS generation)
+                                            mFrameNumber++;
+                                        }
+                                    }else
+                                    {// silence audio frame
+                                        mRelayingSkipAudioSilenceSkippedChunks++;
+                                        //LOG(LOG_WARN, "Skipping %s data, overall skipped chunks: %"PRId64"", GetMediaTypeStr().c_str(), mRelayingSkipAudioSilenceSkippedChunks);
+                                    }
                                 }
                                 break;
                             }
@@ -1770,13 +1694,20 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
             break;
         case MEDIA_AUDIO:
-            free(mSamplesTempBuffer);
+            av_free(tAudioFrame);
             break;
         default:
             break;
     }
 
-    free(mEncoderChunkBuffer);
+    av_free(mEncoderChunkBuffer);
+
+    LOG(LOG_VERBOSE, "..closing %s format converter", GetMediaTypeStr().c_str());
+    if (!CloseFormatConverter())
+    {
+        LOG(LOG_ERROR, "Failed to close %s format converter", GetMediaTypeStr().c_str());
+        return false;
+    }
 
     mEncoderFifoState.lock();
     delete mEncoderFifo;
@@ -1785,7 +1716,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     mEncoderFifoAvailableMutex.unlock();
 
-    LOG(LOG_WARN, "%s encoder thread finished", GetMediaTypeStr().c_str());
+    LOG(LOG_WARN, "%s encoder main loop finished for %s media source <<<<<<<<<<<<<<<<", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
     return NULL;
 }
