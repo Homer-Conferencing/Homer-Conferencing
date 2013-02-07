@@ -495,6 +495,8 @@ void RTP::Init()
     mRtpEncoderStream = NULL;
     mRtcpLastSenderReport = NULL;
     mRtpRemoteSourceChanged = false;
+    mRTCPPacketCounter = 0;
+    mRTPPacketCounter = 0;
 }
 
 bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
@@ -899,6 +901,16 @@ int RTP::StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
 
     // return the size of the entire RTP packet buffer as result of write operation
     return pBufferSize;
+}
+
+int64_t RTP::ReceivedRTPPackets()
+{
+	return mRTPPacketCounter;
+}
+
+int64_t RTP::ReceivedRTCPPackets()
+{
+	return mRTCPPacketCounter;
 }
 
 bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
@@ -1516,7 +1528,7 @@ bool RTP::ReceivedCorrectPayload(unsigned int pType)
 }
 
 // assumption: we are getting one single RTP encapsulated packet, not auto detection of following additional packets included
-bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly)
+bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pLoggingOnly)
 {
     pIsLastFragment = false;
     pIsSenderReport= false;
@@ -1566,7 +1578,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     // #############################################################
     // count packets in order to conclude packet loss based on RTCP
     // #############################################################
-    if (!pReadOnly)
+    if (!pLoggingOnly)
         mReceivedPackets++;
 
     // #############################################################
@@ -1619,7 +1631,10 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     // #############################################################
     if ((tRtpHeader->PayloadType >= 72) && (tRtpHeader->PayloadType <= 76))
     {// RTCP intermediate packet for streaming feedback received
-        // RTCP in-stream feedback starts at the beginning of RTP header
+    	if (!pLoggingOnly)
+    		mRTCPPacketCounter++;
+
+    	// RTCP in-stream feedback starts at the beginning of RTP header
         RtcpHeader* tRtcpHeader = (RtcpHeader*)tDataOriginal;
 
         pIsLastFragment = false;
@@ -1648,7 +1663,10 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         return false;
     }else
     {// usual RTP packet
-        #ifdef RTP_DEBUG_PACKET_DECODER
+    	if (!pLoggingOnly)
+    		mRTPPacketCounter++;
+
+    	#ifdef RTP_DEBUG_PACKET_DECODER
             for (int i = 0; i < 3; i++)
                 tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
@@ -1663,7 +1681,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
     // #############################################################
     // HEADER: rtp => parse and update internal state information
     // #############################################################
-    if (!pReadOnly)
+    if (!pLoggingOnly)
     {
         // ###################################################
         // PAYLOAD ID: use RTP header to set the payload type
@@ -2113,7 +2131,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
 									#endif
 									pData -= 2; // 2 bytes backward
 									//HINT: see section 6.1.1 in RFC 4629
-									if (!pReadOnly)
+									if (!pLoggingOnly)
 									{
 										pData[0] = 0;
 										pData[1] = 0;
@@ -2178,7 +2196,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
                                                 		LOG(LOG_VERBOSE, "..H264 start fragment");
 													#endif
                                                     // use FU header as NAL header, reconstruct the original NAL header
-                                                    if (!pReadOnly)
+                                                    if (!pLoggingOnly)
                                                     {
                                                         #ifdef RTP_DEBUG_PACKET_DECODER
                                                             LOG(LOG_VERBOSE, "S bit is set: reconstruct NAL header");
@@ -2213,7 +2231,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
                             {
                             	#ifdef RTP_DEBUG_PACKET_DECODER
 								#endif
-                            	if (!pReadOnly)
+                            	if (!pLoggingOnly)
                             	{
     								//HINT: make sure that the byte order is correct here because we abuse the former RTP header memory
 									pData -= 3;
@@ -2349,7 +2367,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
 			LOG(LOG_VERBOSE, "MESSAGE COMPLETE");
 	#endif
 
-	if (!pReadOnly)
+	if (!pLoggingOnly)
 	{// update the status variables
 		// check if there was a new frame begun before the last was finished
 		if ((mRemoteTimestampLastCompleteFrame != mRemoteTimestampLastPacket) && (mRemoteTimestampLastPacket != mRemoteTimestamp))

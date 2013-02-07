@@ -2392,7 +2392,7 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
             if (tReferenceNtpTime == 0)
             {// reference values from RTP are still invalid, RTCP packet is needed (expected in some seconds)
                 // nothing to complain about, we return 0 to signal we have no valid synchronization timestamp yet
-                LOG(LOG_WARN, "NTP time invalid");
+                LOG(LOG_WARN, "NTP time is invalid, received RTCP packets: %"PRId64, ReceivedRTCPPackets());
                 return 0;
             }
 

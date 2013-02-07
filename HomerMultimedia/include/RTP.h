@@ -132,6 +132,10 @@ public:
     static void SetH261PayloadSizeMax(unsigned int pMaxSize);
     static unsigned int GetH261PayloadSizeMax();
 
+    /* packet statistic */
+    int64_t ReceivedRTPPackets();
+    int64_t ReceivedRTCPPackets();
+
     /* RTP packetizing/parsing */
     bool RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts);
     unsigned int GetLostPacketsFromRTP();
@@ -139,7 +143,7 @@ public:
 
     static void LogRtpHeader(RtpHeader *pRtpHeader);
     bool ReceivedCorrectPayload(unsigned int pType);
-    bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pReadOnly);
+    bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pLoggingOnly);
     bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool CloseRtpEncoder();
 
@@ -234,6 +238,9 @@ private:
     unsigned int        mRtcpLastRemotePackets; // sent packets, reported via RTCP
     unsigned int        mRtcpLastRemoteOctets; // sent bytes, reported via RTCP
     uint64_t            mRtcpLastReceivedPackets;
+    /* packet statistic */
+    int64_t				mRTCPPacketCounter;
+    int64_t				mRTPPacketCounter;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
