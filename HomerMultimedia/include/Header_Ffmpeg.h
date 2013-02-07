@@ -234,6 +234,8 @@ inline int HM_avcodec_decode_audio(AVCodecContext *avctx, int16_t *samples, int 
 
 inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, const AVFrame *frame, int *got_packet_ptr)
 {
+    int tResult;
+
     #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 23, 100))
 		if (avpkt == NULL)
 			return -1;
@@ -244,20 +246,21 @@ inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, cons
 			avpkt->data = (uint8_t*)malloc(avpkt->size);
 		}
 
-		int tResult = avcodec_encode_video(avctx, avpkt->data, avpkt->size, (const AVFrame *)frame);
+		tResult = avcodec_encode_video(avctx, avpkt->data, avpkt->size, (const AVFrame *)frame);
 
-		avpkt->pts = frame->pts;
-		avpkt->dts = frame->pts;
         if ((avctx) && (avctx->coded_frame) && (avctx->coded_frame->key_frame))
             avpkt->flags |= AV_PKT_FLAG_KEY;
 
 		if (got_packet_ptr != NULL)
 			*got_packet_ptr = (tResult > 0);
-
-		return tResult;
     #else
-        return avcodec_encode_video2(avctx, avpkt, frame, got_packet_ptr);
+        tResult = avcodec_encode_video2(avctx, avpkt, frame, got_packet_ptr);
     #endif
+
+	avpkt->pts = frame->pts;
+	avpkt->dts = frame->pts;
+
+    return tResult;
 }
 
 inline AVFifoBuffer *HM_av_fifo_alloc(unsigned int size)
