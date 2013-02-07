@@ -90,8 +90,6 @@ using namespace Homer::Monitor;
 
 #define RTP_PAYLOAD_TYPE_NONE											0x7F
 
-#define RTCP_SENDER_REPORT                  200
-
 ///////////////////////////////////////////////////////////////////////////////
 
 /* ##################################################################################
@@ -1528,10 +1526,9 @@ bool RTP::ReceivedCorrectPayload(unsigned int pType)
 }
 
 // assumption: we are getting one single RTP encapsulated packet, not auto detection of following additional packets included
-bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pLoggingOnly)
+bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum RtcpType &pRtcpType, enum CodecID pCodecId, bool pLoggingOnly)
 {
     pIsLastFragment = false;
-    pIsSenderReport= false;
 
     // is there some data?
     if (pDataSize == 0)
@@ -1638,16 +1635,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         RtcpHeader* tRtcpHeader = (RtcpHeader*)tDataOriginal;
 
         pIsLastFragment = false;
-        switch(tRtcpHeader->General.Type)
-        {
-            case RTCP_SENDER_REPORT:
-                pIsSenderReport = true;
-                break;
-            default:
-                LOG(LOG_VERBOSE, "Received unsupported RTCP packet (type %d)", tRtcpHeader->General.Type);
-                pIsSenderReport = false;
-                break;
-        }
+        pRtcpType = (enum RtcpType)tRtcpHeader->General.Type;
         pData = (char*)tRtcpHeader;
         pDataSize = (tRtcpHeader->Feedback.Length + 1) * 4;
 
@@ -1663,6 +1651,8 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
         return false;
     }else
     {// usual RTP packet
+    	pRtcpType = RTCP_NOT_FOUND;
+
     	if (!pLoggingOnly)
     		mRTPPacketCounter++;
 
@@ -1720,7 +1710,6 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pI
                     }
 
                     pIsLastFragment = false;
-                    pIsSenderReport = false;
 
                     // inform that this is not a usable packet
                     return false;

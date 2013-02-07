@@ -56,6 +56,14 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+enum RtcpType{
+	RTCP_NOT_FOUND = 0,
+	RTCP_SENDER_REPORT = 200,
+	RTCP_SOURCE_DESCRIPTION = 202
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 // ########################## RTCP ###########################################
 union RtcpHeader{
     struct{ // send via separate port
@@ -143,7 +151,7 @@ public:
 
     static void LogRtpHeader(RtpHeader *pRtpHeader);
     bool ReceivedCorrectPayload(unsigned int pType);
-    bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, bool &pIsSenderReport, enum CodecID pCodecId, bool pLoggingOnly);
+    bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum RtcpType &pRtcpType, enum CodecID pCodecId, bool pLoggingOnly);
     bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool CloseRtpEncoder();
 

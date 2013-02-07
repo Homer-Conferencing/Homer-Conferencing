@@ -153,7 +153,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
         int tFragmentDataSize;
         bool tLastFragment;
         bool tFragmenHasAVData;
-        bool tFragmentIsSenderReport;
+        enum RtcpType tFragmentRtcpType;
 
         tBufferSize = 0;
 
@@ -184,7 +184,7 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
             {
                 tFragmentDataSize = tFragmentBufferSize;
                 // parse and remove the RTP header, extract the encapsulated frame fragment
-                tFragmenHasAVData = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentIsSenderReport, tMediaSourceMemInstance->mSourceCodecId, false);
+                tFragmenHasAVData = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentRtcpType, tMediaSourceMemInstance->mSourceCodecId, false);
                 #ifdef MSMEM_DEBUG_PACKETS
                     LOGEX(MediaSourceMem, LOG_VERBOSE, "Got %d bytes %s payload from %d bytes RTP packet", tFragmentDataSize, GetGuiNameFromCodecID(tMediaSourceMemInstance->mSourceCodecId).c_str(), tFragmentBufferSize);
                 #endif
@@ -216,18 +216,28 @@ int MediaSourceMem::GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSi
                     }
                 }else
                 {// fragment has no valid A/V data
-                    if (tFragmentIsSenderReport)
+                    if (tFragmentRtcpType > 0)
                     {// we have received a sender report
-                        unsigned int tPacketCountReportedBySender = 0;
-                        unsigned int tOctetCountReportedBySender = 0;
-                        if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender, tMediaSourceMemInstance->mRelativeLoss))
+                        switch(tFragmentRtcpType)
                         {
-                            tMediaSourceMemInstance->mDecoderSynchPoints++;
-                            #ifdef MSMEM_DEBUG_SENDER_REPORTS
-                                LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
-                            #endif
-                        }else
-                            LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
+                        	case RTCP_SENDER_REPORT:
+												{
+							                    	unsigned int tPacketCountReportedBySender = 0;
+							                        unsigned int tOctetCountReportedBySender = 0;
+							                        if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender, tMediaSourceMemInstance->mRelativeLoss))
+							                        {
+							                            tMediaSourceMemInstance->mDecoderSynchPoints++;
+							                            #ifdef MSMEM_DEBUG_SENDER_REPORTS
+							                                LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
+							                            #endif
+							                        }else
+							                            LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
+												}
+												break;
+                        	default:
+                        						LOGEX(MediaSourceMem, LOG_WARN, "Unsupported RTCP packet type: %d", (int)tFragmentRtcpType);
+                        						break;
+                        }
                     }else
                     {// we have a received an unsupported RTCP packet/RTP payload or something went completely wrong
                         if (tMediaSourceMemInstance->HasInputStreamChanged())
