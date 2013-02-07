@@ -1556,8 +1556,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     av_fifo_generic_write(mResampleFifo[tFifoIndex], tInputBuffer, tWrittenFifoSizePerChannel, NULL);
                                 }
 
-
-
                                 // ############################
                                 // ### check FIFO for available frames
                                 // ############################
