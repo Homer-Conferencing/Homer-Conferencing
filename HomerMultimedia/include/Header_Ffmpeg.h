@@ -235,8 +235,24 @@ inline int HM_avcodec_decode_audio(AVCodecContext *avctx, int16_t *samples, int 
 inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, const AVFrame *frame, int *got_packet_ptr)
 {
     #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(154, 23, 100))
-        LOGEX(Logger, LOG_ERROR, "We need avcodec_encode_video2(), your ffmpeg version is too old, use version 0.11.1 at above.");
-        return -1;
+		if (avpkt == NULL)
+			return -1;
+
+		if (avpkt->data == NULL)
+		{
+			avpkt->size = avpicture_get_size(avctx->pix_fmt, avctx->width, avctx->height) + FF_INPUT_BUFFER_PADDING_SIZE;
+			avpkt->data = (uint8_t*)malloc(avpkt->size);
+		}
+
+		int tResult = avcodec_encode_video(avctx, avpkt->data, avpkt->size, (const AVFrame *)frame);
+
+		avpkt->pts = frame->pts;
+		avpkt->dts = frame->pts;
+
+		if (got_packet_ptr != NULL)
+			*got_packet_ptr = (tResult > 0);
+
+		return tResult;
     #else
         return avcodec_encode_video2(avctx, avpkt, frame, got_packet_ptr);
     #endif
