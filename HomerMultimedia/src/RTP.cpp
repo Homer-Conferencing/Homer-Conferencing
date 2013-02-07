@@ -543,6 +543,7 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
 bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
 {
     AVDictionary        *tOptions = NULL;
+    int					tRes;
 
     if (mEncoderOpened)
         return false;
@@ -631,11 +632,15 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     mRtpFormatContext->start_time_realtime = av_gettime();
 
+    if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "cname", "www.homer-conferencing.com", 0)) < 0)
+    	LOG(LOG_ERROR, "Failed to set A/V option \"cname\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
+
     switch(mStreamCodecID)
     {
         case CODEC_ID_H263:
                 // use older rfc2190 for RTP packetizing
-                av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0);
+                if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0)) < 0)
+                	LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
                 break;
         default:
                 break;
