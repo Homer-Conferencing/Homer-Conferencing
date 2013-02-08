@@ -647,7 +647,7 @@ void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t
     {
     	case SIP_STATE_AUTH_REQUIRED: // needs auth.
         case SIP_STATE_PROXY_AUTH_REQUIRED:
-        	LOG(LOG_VERBOSE, "Got SIP message %d, have to register with authentication information included", pStatus);
+        	LOG(LOG_VERBOSE, "Got SIP message %d, authentication needed for registration", pStatus);
 
             if (mSipRegisterHandle != NULL)
             {
