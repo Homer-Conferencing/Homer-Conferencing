@@ -517,6 +517,12 @@ endif()
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeCore.txt)
 
 ##############################################################
+# check if "lang" directory exists
+IF(NOT EXISTS "${TARGET_DIRECTORY}lang/")
+	MESSAGE("##### Creating directory: ${TARGET_DIRECTORY}lang/")
+	ADD_CUSTOM_COMMAND(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${TARGET_DIRECTORY}lang/)
+ENDIF()
+
 # copy translation binaries to destination folder
 FOREACH(QT_LANG_BINS_ENTRY ${QT_LANG_BINS})
     ADD_CUSTOM_COMMAND(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${QT_LANG_BINS_ENTRY} ${TARGET_DIRECTORY}lang/)
