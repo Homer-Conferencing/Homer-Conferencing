@@ -1704,7 +1704,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
     if (!CloseFormatConverter())
     {
         LOG(LOG_ERROR, "Failed to close %s format converter", GetMediaTypeStr().c_str());
-        return false;
     }
 
     mEncoderFifoState.lock();
