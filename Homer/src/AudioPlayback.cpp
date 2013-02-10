@@ -65,11 +65,20 @@ void AudioPlayback::OpenPlaybackDevice(QString pOutputName)
             mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
 		#endif
 		#if defined(LINUX)
-			LOG(LOG_VERBOSE, "Opening PortAudio based playback");
-			if (WaveOutPulseAudio::PulseAudioAvailable())
-				mWaveOut = new WaveOutPulseAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
-			else
-				mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+            #if FEATURE_PULSEAUDIO
+                if (!WaveOutPulseAudio::PulseAudioAvailable())
+                {
+                    LOG(LOG_VERBOSE, "Opening PortAudio based playback");
+                    mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+                }else
+                {
+                    LOG(LOG_VERBOSE, "Opening PulseAudio based playback");
+                    mWaveOut = new WaveOutPulseAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+                }
+            #else
+                LOG(LOG_VERBOSE, "Opening PortAudio based playback");
+                mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+            #endif
 		#endif
 		#if defined(APPLE)
             LOG(LOG_VERBOSE, "Opening SDL based playback");

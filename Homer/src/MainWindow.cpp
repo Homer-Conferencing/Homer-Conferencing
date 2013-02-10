@@ -533,11 +533,11 @@ void MainWindow::initializeVideoAudioIO()
     mOwnAudioMuxer = new MediaSourceMuxer();
     if (CONF.AudioCaptureEnabled())
     {
-		#ifdef LINUX
-    		if (!(WaveOutPulseAudio::PulseAudioAvailable()))
-    			mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
-    		else
-    			mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePulseAudio());
+		#if defined(LINUX) && FEATURE_PULSEAUDIO
+            if (!(WaveOutPulseAudio::PulseAudioAvailable()))
+                mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+            else
+                mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePulseAudio());
 		#else
         	mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
 		#endif

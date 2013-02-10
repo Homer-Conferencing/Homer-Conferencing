@@ -273,7 +273,7 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
     switch(mSwPreviewPages->currentIndex())
     {
         case 0: // devices
-			#ifdef LINUX
+            #if defined(LINUX) && FEATURE_PULSEAUDIO
         		if (!(WaveOutPulseAudio::PulseAudioAvailable()))
         			return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
         		else
@@ -405,7 +405,7 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
 
 	if (CONF.AudioCaptureEnabled())
     {
-		#ifdef LINUX
+        #if defined(LINUX) && FEATURE_PULSEAUDIO
     		if (!(WaveOutPulseAudio::PulseAudioAvailable()))
 				tASource = new MediaSourcePortAudio("");
     		else
