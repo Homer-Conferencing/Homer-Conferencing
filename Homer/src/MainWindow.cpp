@@ -841,7 +841,7 @@ void MainWindow::loadSettings()
         MEETING.SetAudioCodecsSupport(CODEC_MP3);
     if (tAudioStreamCodec == "G711 A-law")
         MEETING.SetAudioCodecsSupport(CODEC_G711ALAW);
-    if (tAudioStreamCodec == "G711 ï¿½-law")
+    if (tAudioStreamCodec == "G711 µ-law")
         MEETING.SetAudioCodecsSupport(CODEC_G711ULAW);
     if (tAudioStreamCodec == "AAC")
         MEETING.SetAudioCodecsSupport(CODEC_AAC);

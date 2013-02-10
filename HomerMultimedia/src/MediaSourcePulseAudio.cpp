@@ -502,6 +502,8 @@ int MediaSourcePulseAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool p
 		LOG(LOG_ERROR, "Couldn't write audio chunk of %d bytes to output stream because %s(%d)", pChunkSize, pa_strerror(tRes), tRes);
 	}
 
+	//TODO: use pa_simple_get_latency() and determine the grabber latency -> but until now we do not support timestamps for A/V grabber
+
     // re-encode the frame and write it to file
     if ((mRecording) && (pChunkSize > 0))
         RecordSamples((int16_t *)pChunkBuffer, pChunkSize);

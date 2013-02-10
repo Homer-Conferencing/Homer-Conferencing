@@ -153,7 +153,6 @@ ParticipantWidget::~ParticipantWidget()
             CONF.SetVisibilityBroadcastWidget(isVisible());
             CONF.SetVisibilityBroadcastAudio(mAudioWidget->isVisible());
             CONF.SetVisibilityBroadcastVideo(mVideoWidget->isVisible());
-            LOG(LOG_ERROR, "########## %d", mAudioWidget->GetWorker()->GetMuteState());
             CONF.SetBroadcastAudioPlaybackMuted(mAudioWidget->GetWorker()->GetMuteState());
             break;
         case PARTICIPANT:
