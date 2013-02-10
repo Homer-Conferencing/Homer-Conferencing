@@ -26,6 +26,7 @@
  */
 
 #include <WaveOutPortAudio.h>
+#include <WaveOutPulseAudio.h>
 #include <WaveOutSdl.h>
 #include <Configuration.h>
 #include <AudioPlayback.h>
@@ -59,17 +60,31 @@ void AudioPlayback::OpenPlaybackDevice(QString pOutputName)
 
     if (CONF.AudioOutputEnabled())
     {
-        #ifndef APPLE
+        #if defined(WINDOWS)
             LOG(LOG_VERBOSE, "Opening PortAudio based playback");
             mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
-        #else
+		#endif
+		#if defined(LINUX)
+			LOG(LOG_VERBOSE, "Opening PortAudio based playback");
+			if (WaveOutPulseAudio::PulseAudioAvailable())
+				mWaveOut = new WaveOutPulseAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+			else
+				mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+		#endif
+		#if defined(APPLE)
             LOG(LOG_VERBOSE, "Opening SDL based playback");
            mWaveOut = new WaveOutSdl("WaveOut: " + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
         #endif
         if (mWaveOut != NULL)
-            mWaveOut->OpenWaveOutDevice();
-        else
-            LOG(LOG_ERROR, "Error when creating wave out object");
+        {
+            if (!mWaveOut->OpenWaveOutDevice())
+            {
+            	LOG(LOG_ERROR, "Couldn't open wave out device");
+            	delete mWaveOut;
+            	mWaveOut = NULL;
+            }
+        }else
+            LOG(LOG_ERROR, "Couldn't create wave out object");
     }
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }

@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2011 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2013 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,16 +20,18 @@
  *****************************************************************************/
 
 /*
- * Purpose: PortAudio capturing
+ * Purpose: PulseAudio capturing
  * Author:  Thomas Volkert
- * Since:   2012-04-25
+ * Since:   2013-02-09
  */
 
-#ifndef _MULTIMEDIA_MEDIA_SOURCE_PORT_AUDIO_
-#define _MULTIMEDIA_MEDIA_SOURCE_PORT_AUDIO_
+#if defined(LINUX)
+#ifndef _MULTIMEDIA_MEDIA_SOURCE_PULSE_AUDIO_
+#define _MULTIMEDIA_MEDIA_SOURCE_PULSE_AUDIO_
 
 #include <MediaFifo.h>
 #include <MediaSource.h>
+#include <WaveOutPulseAudio.h>
 
 #include <string.h>
 struct PaStreamCallbackTimeInfo;
@@ -39,18 +41,29 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 // de/activate debugging of grabbed packets
-//#define MSPA_DEBUG_PACKETS
-//#define MSPA_DEBUG_HANDLER
+//#define MSPUA_DEBUG_PACKETS
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class MediaSourcePortAudio:
+#define MAX_PULSEAUDIO_DEVICES_IN_LIST					32
+
+struct PulseAudioDeviceDescriptor
+{
+		char 		Name[512];
+		char 		Description[256];
+		uint32_t 	Index;
+		uint8_t 	Initialized;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class MediaSourcePulseAudio:
     public MediaSource
 {
 public:
-    MediaSourcePortAudio(std::string pDesiredDevice = "");
+    MediaSourcePulseAudio(std::string pDesiredDevice = "");
 
-    ~MediaSourcePortAudio();
+    ~MediaSourcePulseAudio();
 
     /* device control */
     virtual void getAudioDevices(AudioDevices &pAList);
@@ -59,16 +72,11 @@ public:
     virtual bool SupportsRecording();
 
     /* grabbing control */
-    virtual void StopGrabbing();
     virtual std::string GetCodecName();
     virtual std::string GetCodecLongName();
 
-    /* global mutexing for port audio */
-    // put some additional locking around portaudio's PaInit()
-    static void PortAudioInit();
-    // put some additional locking around portaudio's stream interface
-    static void PortAudioLockStreamInterface();
-    static void PortAudioUnlockStreamInterface();
+    static int GetPulseAudioDevices(PulseAudioDeviceDescriptor *pInputDevicesList, PulseAudioDeviceDescriptor *pOutputDevicesList);    friend class WaveOutPulseAudio;
+    static bool PulseAudioAvailable();
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
@@ -77,19 +85,8 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropFrame = false);
 
 private:
-    static int RecordedAudioHandler(const void *pInputBuffer, void *pOutputBuffer, unsigned long pInputSize, const PaStreamCallbackTimeInfo* pTimeInfo, unsigned long pStatus, void *pUserData);
-    void AssignThreadName();
 
-    bool                mHaveToAssignThreadName;
-    /* capturing */
-    void                *mStream;
-    MediaFifo           *mCaptureFifo;
-    int64_t             mCapturedChunks;
-    /* portaudio init. */
-    static Mutex        sPaInitMutex;
-    static bool         sPaInitiated;
-    /* stream open/close mutex */
-    static Mutex        sPaStreamMutex;
+	struct pa_simple 		*mInputStream;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
