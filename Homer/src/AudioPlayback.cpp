@@ -26,6 +26,7 @@
  */
 
 #include <WaveOutPortAudio.h>
+#include <WaveOutPulseAudio.h>
 #include <WaveOutSdl.h>
 #include <Configuration.h>
 #include <AudioPlayback.h>
@@ -59,10 +60,18 @@ void AudioPlayback::OpenPlaybackDevice(QString pOutputName)
 
     if (CONF.AudioOutputEnabled())
     {
-        #ifndef APPLE
+        #if defined(WINDOWS)
             LOG(LOG_VERBOSE, "Opening PortAudio based playback");
             mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
-        #else
+		#endif
+		#if defined(LINUX)
+			LOG(LOG_VERBOSE, "Opening PortAudio based playback");
+			if (WaveOutPulseAudio::PulseAudioAvailable())
+				mWaveOut = new WaveOutPulseAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+			else
+				mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+		#endif
+		#if defined(APPLE)
             LOG(LOG_VERBOSE, "Opening SDL based playback");
            mWaveOut = new WaveOutSdl("WaveOut: " + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
         #endif

@@ -46,6 +46,7 @@
 #include <Logger.h>
 #include <Meeting.h>
 #include <MediaSourcePortAudio.h>
+#include <MediaSourcePulseAudio.h>
 #include <MediaSourceV4L2.h>
 #include <MediaSourceDShow.h>
 #include <MediaSourceCoreVideo.h>
@@ -53,6 +54,7 @@
 #include <MediaSourceFile.h>
 #include <MediaSourceDesktop.h>
 #include <MediaSourceLogo.h>
+#include <WaveOutPulseAudio.h>
 #include <Header_NetworkSimulator.h>
 #include <ProcessStatisticService.h>
 #include <Snippets.h>
@@ -531,7 +533,14 @@ void MainWindow::initializeVideoAudioIO()
     mOwnAudioMuxer = new MediaSourceMuxer();
     if (CONF.AudioCaptureEnabled())
     {
-        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+		#ifdef LINUX
+    		if (!(WaveOutPulseAudio::PulseAudioAvailable()))
+    			mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+    		else
+    			mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePulseAudio());
+		#else
+        	mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+		#endif
     }
 }
 
@@ -832,7 +841,7 @@ void MainWindow::loadSettings()
         MEETING.SetAudioCodecsSupport(CODEC_MP3);
     if (tAudioStreamCodec == "G711 A-law")
         MEETING.SetAudioCodecsSupport(CODEC_G711ALAW);
-    if (tAudioStreamCodec == "G711 µ-law")
+    if (tAudioStreamCodec == "G711 ï¿½-law")
         MEETING.SetAudioCodecsSupport(CODEC_G711ULAW);
     if (tAudioStreamCodec == "AAC")
         MEETING.SetAudioCodecsSupport(CODEC_AAC);

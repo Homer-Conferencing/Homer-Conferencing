@@ -112,7 +112,9 @@ ENDIF (BSD)
 IF (LINUX)
 SET (SOURCES
 	${SOURCES}
+	../src/MediaSourcePulseAudio
 	../src/MediaSourceV4L2
+	../src/WaveOutPulseAudio
 )
 ENDIF (LINUX)
 
@@ -208,6 +210,8 @@ IF (${BUILD} MATCHES "Default")
 		x264
 		${SDL_LIBRARY}		
 		portaudio
+		pulse-simple
+		pulse
 	)
 ELSE ()
 	# USED LIBRARIES for linux environment
@@ -216,6 +220,8 @@ ELSE ()
 		HomerNAPI
 		HomerMonitor
 		asound
+		pulse-simple
+		pulse
 	)
 
 	SET (LIBS_LINUX_STATIC
