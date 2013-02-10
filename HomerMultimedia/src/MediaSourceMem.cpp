@@ -81,6 +81,7 @@ MediaSourceMem::MediaSourceMem(string pName):
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     mDecoderSinglePictureGrabbed = false;
     mDecoderFifo = NULL;
+    mRtpActivated = false;
     mDecoderFragmentFifo = NULL;
 	mResXLastGrabbedFrame = 0;
 	mResYLastGrabbedFrame = 0;
@@ -1268,7 +1269,7 @@ void MediaSourceMem::ReadPacketFromInputStream(AVPacket *pPacket, double &pPacke
                 { // DTS value
                     pPacketFrameNumber = pPacket->dts;
                     #ifdef MSMEM_DEBUG_TIMING
-                        LOG(LOG_VERBOSE, "Found %d bytes with DTS: %ld => %.2f %lf", pPacket->size, pPacket->dts, (float)pPacketFrameNumber, av_q2d(mFormatContext->streams[pPacket->stream_index]->time_base));
+                        LOG(LOG_VERBOSE, "Found %d bytes of %s data with DTS: %ld => %.2f %lf", pPacket->size, GetMediaTypeStr().c_str(), Packet->dts, (float)pPacketFrameNumber, av_q2d(mFormatContext->streams[pPacket->stream_index]->time_base));
                     #endif
                     #ifdef MSMEM_DEBUG_PACKETS
                         if ((pPacket->dts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (pPacket->dts > 16 /* ignore the first frames */))
@@ -2286,9 +2287,7 @@ void MediaSourceMem::WaitForRTGrabbing()
 	// return immediately if PTS from grabber is invalid
 	if ((mRtpActivated) && (mCurrentOutputFrameIndex == 0))
 	{
-        #ifdef MSMEM_DEBUG_TIMING
-	        LOG(LOG_WARN, "PTS from grabber is invalid: %.2f", (float)mCurrentOutputFrameIndex);
-        #endif
+        LOG(LOG_WARN, "PTS from grabber is invalid: %.2f", (float)mCurrentOutputFrameIndex);
 		return;
 	}
 
