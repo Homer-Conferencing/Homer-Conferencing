@@ -90,7 +90,7 @@ private:
     bool DoOpenNewFile();
 
 protected:
-    virtual void DoWriteChunk(char *ChunkBuffer, int pChunkSize);
+    virtual void DoWriteChunk(char *pChunkBuffer, int pChunkSize);
 
     /* helper functions */
     virtual void AdjustVolume(void *pBuffer, int pBufferSize);
