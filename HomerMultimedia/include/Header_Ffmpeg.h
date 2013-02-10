@@ -304,7 +304,7 @@ inline void HM_avformat_close_input(AVFormatContext *s)
 inline AVStream *HM_avformat_new_stream(AVFormatContext *s, int id)
 {
 	#if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 10, 0))
-		return av_new_stream(s, c);
+		return av_new_stream(s, id);
 	#else
 		AVStream *st = avformat_new_stream(s, NULL);
 		if (st)
