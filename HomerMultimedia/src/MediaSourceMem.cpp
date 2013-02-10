@@ -2280,14 +2280,14 @@ void MediaSourceMem::WaitForRTGrabbing()
 {
     if (mGrabbingStopped)
     {
-        LOG(LOG_WARN, "Grabbing was stopped, returning immediately");
+        LOG(LOG_WARN, "%s-grabbing was stopped, returning immediately", GetMediaTypeStr().c_str());
         return;
     }
 
 	// return immediately if PTS from grabber is invalid
 	if ((mRtpActivated) && (mCurrentOutputFrameIndex == 0))
 	{
-        LOG(LOG_WARN, "PTS from grabber is invalid: %.2f", (float)mCurrentOutputFrameIndex);
+        LOG(LOG_WARN, "PTS from %s grabber is invalid: %.2f", GetMediaTypeStr().c_str(), (float)mCurrentOutputFrameIndex);
 		return;
 	}
 
@@ -2390,7 +2390,7 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
             if (tReferenceNtpTime == 0)
             {// reference values from RTP are still invalid, RTCP packet is needed (expected in some seconds)
                 // nothing to complain about, we return 0 to signal we have no valid synchronization timestamp yet
-                LOG(LOG_WARN, "NTP time is invalid, received RTCP packets: %"PRId64, ReceivedRTCPPackets());
+                LOG(LOG_WARN, "%s NTP time is invalid, received RTCP packets: %"PRId64, GetMediaTypeStr().c_str(), ReceivedRTCPPackets());
                 return 0;
             }
 
