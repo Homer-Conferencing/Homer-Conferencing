@@ -329,6 +329,7 @@ void MediaSourcePulseAudio::getAudioDevices(AudioDevices &pAList)
         tDevice.Card = string(tInputDevicesList[i].Name);
         tDevice.Desc = "PulseAudio based audio device";
         tDevice.IoType = "Input";
+        tDevice.Type = Microphone;
         pAList.push_back(tDevice);
 
         if (tFirstCall)
