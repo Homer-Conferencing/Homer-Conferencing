@@ -2193,6 +2193,8 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                 // #########################################
                 HM_sws_scale(mRecorderVideoScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, mRecorderFinalFrame->data, mRecorderFinalFrame->linesize);
                 mRecorderFinalFrame->pict_type = pSourceFrame->pict_type;
+                mRecorderFinalFrame->pts = pSourceFrame->pts;
+                mRecorderFinalFrame->key_frame = pSourceFrame->key_frame;
 
                 #ifdef MS_DEBUG_RECORDER_FRAMES
                     LOG(LOG_VERBOSE, "Recording video frame..");
