@@ -1003,7 +1003,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     //####################################################################
     if ((tResult = av_write_frame(mRtpFormatContext, &tPacket)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't write encoded frame of %u bytes into RTP buffer because \"%s\".", pDataSize, strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't write encoded frame of %u bytes at %p with PTS %"PRId64" into RTP buffer because \"%s\".", pDataSize, pData, pPacketPts, strerror(AVUNERROR(tResult)));
 
         return false;
     }

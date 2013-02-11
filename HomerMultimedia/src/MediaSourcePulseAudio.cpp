@@ -111,10 +111,10 @@ void CallbackAudioSourcesList(pa_context *pContext, const pa_source_info *pSourc
     }
 
     LOGEX(MediaSourcePulseAudio, LOG_INFO, "Detected PulseAudio source device..");
-    LOGEX(MediaSourcePulseAudio, LOG_INFO, "..name: %s", pSourceInfo->name);
-    LOGEX(MediaSourcePulseAudio, LOG_INFO, "..index: %u", pSourceInfo->index);
-    LOGEX(MediaSourcePulseAudio, LOG_INFO, "..description: %s", pSourceInfo->description);
-    LOGEX(MediaSourcePulseAudio, LOG_INFO, "..monitor_of_sink: %u", pSourceInfo->monitor_of_sink);
+    LOGEX(MediaSourcePulseAudio, LOG_INFO, "    ..name: %s", pSourceInfo->name);
+    LOGEX(MediaSourcePulseAudio, LOG_INFO, "    ..index: %u", pSourceInfo->index);
+    LOGEX(MediaSourcePulseAudio, LOG_INFO, "    ..description: %s", pSourceInfo->description);
+    LOGEX(MediaSourcePulseAudio, LOG_INFO, "    ..monitor_of_sink: %u", pSourceInfo->monitor_of_sink);
 
     // we don't want to use monitors
     if (pSourceInfo->monitor_of_sink != PA_INVALID_INDEX)
@@ -443,7 +443,8 @@ bool MediaSourcePulseAudio::CloseGrabDevice()
         	LOG(LOG_VERBOSE, "..draining stream");
         	if (pa_simple_drain(mInputStream, &tRes) < 0)
         	{
-        	    LOG(LOG_ERROR, "Couldn't drain the output stream because %s(%d)", pa_strerror(tRes), tRes);
+        	    if (tRes != 15 /* bad state */)
+        	        LOG(LOG_ERROR, "Couldn't drain the output stream because %s(%d)", pa_strerror(tRes), tRes);
         	}
         	LOG(LOG_VERBOSE, "..closing stream");
         	pa_simple_free(mInputStream);
