@@ -632,8 +632,11 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     mRtpFormatContext->start_time_realtime = av_gettime();
 
-    if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "cname", "www.homer-conferencing.com", 0)) < 0)
-    	LOG(LOG_ERROR, "Failed to set A/V option \"cname\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
+//    if ((tRes = av_dict_set(&tOptions, "cname", "www.homer-conferencing.com", 0)) < 0)
+//    	LOG(LOG_ERROR, "Failed to set A/V option \"cname\" because %s(0x%x) [option not found = 0x%x]", strerror(AVUNERROR(tRes)), tRes, AVERROR_OPTION_NOT_FOUND);
+//
+//    if ((tRes = av_dict_set(&tOptions, "ssrc", toString(mLocalSourceIdentifier).c_str(), 0)) < 0)
+//        LOG(LOG_ERROR, "Failed to set A/V option \"ssrc\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
 
     switch(mStreamCodecID)
     {
@@ -1540,7 +1543,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
         return false;
 
     bool tOldH263PayloadDetected = false;
-    char *tDataOriginal = pData;
+    char *tRtpPacketStart = pData;
 
     if ((mStreamCodecID != CODEC_ID_NONE) && (mStreamCodecID != pCodecId))
         LOG(LOG_WARN, "Codec change from %d(%s) to %d(%s) in inout stream detected", mStreamCodecID, avcodec_get_name(mStreamCodecID), pCodecId, avcodec_get_name(pCodecId));
@@ -1637,7 +1640,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     		mRTCPPacketCounter++;
 
     	// RTCP in-stream feedback starts at the beginning of RTP header
-        RtcpHeader* tRtcpHeader = (RtcpHeader*)tDataOriginal;
+        RtcpHeader* tRtcpHeader = (RtcpHeader*)tRtpPacketStart;
 
         pIsLastFragment = false;
         pRtcpType = (enum RtcpType)tRtcpHeader->General.Type;
@@ -1942,18 +1945,18 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                 LOG(LOG_VERBOSE, "Fragmentation offset: %hu", tMPAHeader->Offset);
                                 if (tMPAHeader->Mbz > 0)
                                 {
-                                    LOG(LOG_VERBOSE, "HACK: calculated fragment size: %u", (pDataSize - (pData - tDataOriginal)));
+                                    LOG(LOG_VERBOSE, "HACK: calculated fragment size: %u", (pDataSize - (pData - tRtpPacketStart)));
                                     LOG(LOG_VERBOSE, "HACK: original frame size: %hu", tMPAHeader->Mbz);
                                 }
 
                             #endif
 
-                            // HACK: auto detect hack which marks the last fragment for us (need this because of stupid payload definition in rfc)
+                            // HACK: auto detect hack which marks the last fragment for us
                             //       we do this by storing the size of the original audio packet within the MBZ value
                             if (tMPAHeader->Mbz > 0)
                             {
                                 // if fragment ends at packet size or behind (to make sure we are not running into inconsistency) we should mark as complete packet
-                                if ((int)tMPAHeader->Offset + ((int)pDataSize - (pData - tDataOriginal)) >= (int)tMPAHeader->Mbz -1 /* a difference of 1 is sometimes caused by the MP3 encoder */)
+                                if ((int)tMPAHeader->Offset + ((int)pDataSize - (pData - tRtpPacketStart)) >= (int)tMPAHeader->Mbz -1 /* a difference of 1 is sometimes caused by the MP3 encoder */)
                                     mIntermediateFragment = false;
                                 else
                                     mIntermediateFragment = true;
@@ -2384,15 +2387,15 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 	}
 
     // decrease data size by the size of the found header structures
-    if ((pData - tDataOriginal) > (int)pDataSize)
+    if ((pData - tRtpPacketStart) > (int)pDataSize)
     {
-        LOG(LOG_ERROR, "Illegal value for calculated data size (%u - %u)", pDataSize, pData - tDataOriginal);
+        LOG(LOG_ERROR, "Illegal value for calculated data size (%u - %u)", pDataSize, pData - tRtpPacketStart);
 
         pIsLastFragment = true;
 
         return false;
     }
-    pDataSize -= (pData - tDataOriginal);
+    pDataSize -= (pData - tRtpPacketStart);
 
     // return if packet contains the last fragment of the current frame
     pIsLastFragment = !mIntermediateFragment;
