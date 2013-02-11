@@ -72,6 +72,7 @@ MediaSource::MediaSource(string pName):
 	mDecodedBIFrames = 0;
 	mDecoderOutputFrameDelay = 0;
 	mAudioSilenceThreshold = MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD;
+	mDecoderFrameBufferTime = 0;
     mDecoderFrameBufferTimeMax = 0;
     mDecoderFramePreBufferTime = 0;
     mSourceType = SOURCE_ABSTRACT;
