@@ -978,6 +978,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     tPacket.data = (uint8_t *)pData;
     tPacket.size = pDataSize;
     tPacket.pts = pPacketPts * CalculateClockRateFactor(); // clock rate adaption according to rfc (mpeg uses 90 kHz)
+    tPacket.dts = tPacket.pts;
 
     #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Encapsulating codec packet:");
