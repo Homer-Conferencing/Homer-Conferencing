@@ -58,6 +58,8 @@ namespace Homer { namespace Multimedia {
 
 //#define MSMEM_DEBUG_SEEKING
 //#define MSMEM_DEBUG_CALIBRATION
+//#define MSMEM_DEBUG_PACKET_TIMING
+//#define MSMEM_DEBUG_WAITING_TIMING
 //#define MSMEM_DEBUG_TIMING
 //#define MSMEM_DEBUG_DECODER_STATE
 //#define MSMEM_DEBUG_PRE_BUFFERING
@@ -138,7 +140,7 @@ protected:
     /* internal video resolution switch */
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
 
-    static int GetNextPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
+    static int GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
     void ReadFragment(char *pBuffer, int &pBufferSize, int64_t &pFragmentNumber);
 
     virtual bool InputIsPicture();
@@ -179,6 +181,7 @@ protected:
     int                 mWrappingHeaderSize;
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
     enum CodecID        mRtpSourceCodecIdHint;
+    int                 mRtpBufferedFrames; // used to conclude the correct frame number based on the RTP timestamp of the last received RTP packet
     /* grabber */
     double              mCurrentOutputFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     double              mLastBufferedOutputFrameIndex; // we use this for calibrating RT grabbing
