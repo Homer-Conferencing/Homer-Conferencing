@@ -117,6 +117,8 @@ MediaSource::MediaSource(string pName):
     mCurrentInputChannel = 0;
     mDesiredInputChannel = 0;
     mMediaType = MEDIA_UNKNOWN;
+    for (int i = 0; i < MEDIA_SOURCE_MAX_AUDIO_CHANNELS; i++)
+		mResampleFifo[i] = NULL;
 
     FfmpegInit();
 
