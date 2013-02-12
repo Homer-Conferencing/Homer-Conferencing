@@ -1870,6 +1870,10 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 			#ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
             	LOG(LOG_VERBOSE, "New remote timestamp: abs=%u(max: %u), start=%u, normalized=%"PRIu64"", tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
 			#endif
+            #ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS_CONTINUITY
+                LOG(LOG_VERBOSE, "New remote timestamp: normalized=%"PRIu64", diff. to last=%"PRIu64, mRemoteTimestamp, mRemoteTimestamp - mRemoteTimestampLastPacket);
+            #endif
+
         }
         mLastTimestampFromRTPHeader = tRtpHeader->Timestamp;
 
