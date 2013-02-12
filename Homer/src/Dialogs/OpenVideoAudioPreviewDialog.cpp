@@ -31,9 +31,11 @@
 #include <MediaSourceV4L2.h>
 #include <MediaSourceDShow.h>
 #include <MediaSourcePortAudio.h>
+#include <MediaSourcePulseAudio.h>
 #include <MediaSourceAlsa.h>
 #include <MediaSourceNet.h>
 #include <MediaSourceFile.h>
+#include <WaveOutPulseAudio.h>
 #include <Snippets.h>
 #include <HBSocket.h>
 #include <NAPI.h>
@@ -271,7 +273,14 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
     switch(mSwPreviewPages->currentIndex())
     {
         case 0: // devices
-            return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
+            #if defined(LINUX) && FEATURE_PULSEAUDIO
+        		if (!(WaveOutPulseAudio::PulseAudioAvailable()))
+        			return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
+        		else
+        			return new MediaSourcePulseAudio(mCbDeviceAudio->currentText().toStdString());
+			#else
+            	return new MediaSourcePortAudio(mCbDeviceAudio->currentText().toStdString());
+			#endif
             break;
         case 1: // file
             if (mLbFile->text() != "")
@@ -367,6 +376,8 @@ void OpenVideoAudioPreviewDialog::NAPIAudioSelectionChanged(QString pSelection)
 
 void OpenVideoAudioPreviewDialog::LoadConfiguration()
 {
+	MediaSource *tVSource = NULL;
+	MediaSource *tASource = NULL;
 
     //########################
     //### capture source
@@ -375,30 +386,38 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
 		MediaSourceDShow *tVSource = new MediaSourceDShow("");
     #endif
 	#ifdef WIN64
-		MediaSource *tVSource = null; //TODO
+		//TODO
 	#endif
     #ifdef APPLE
-        MediaSourceCoreVideo *tVSource = new MediaSourceCoreVideo("");
+        tVSource = new MediaSourceCoreVideo("");
     #endif
 	#if (defined BSD) && (not defined APPLE)
-        MediaSource *tVSource = NULL; //TODO: replace with a specialized implementation
+        //TODO: replace with a specialized implementation
 	#endif
     #ifdef LINUX
-        MediaSourceV4L2 *tVSource = new MediaSourceV4L2("");
+        tVSource = new MediaSourceV4L2("");
     #endif
-    if (CONF.AudioCaptureEnabled())
+	if (tVSource != NULL)
+	{
+		tVSource->getVideoDevices(mVideoDevicesList);
+		delete tVSource;
+	}
+
+	if (CONF.AudioCaptureEnabled())
     {
-        MediaSourcePortAudio *tASource = new MediaSourcePortAudio("");
-        if (tASource != NULL)
-        {
-            tASource->getAudioDevices(mAudioDevicesList);
-            delete tASource;
-        }
+        #if defined(LINUX) && FEATURE_PULSEAUDIO
+    		if (!(WaveOutPulseAudio::PulseAudioAvailable()))
+				tASource = new MediaSourcePortAudio("");
+    		else
+    			tASource = new MediaSourcePulseAudio("");
+		#else
+        	tASource = new MediaSourcePortAudio("");
+		#endif
     }
-    if (tVSource != NULL)
+    if (tASource != NULL)
     {
-        tVSource->getVideoDevices(mVideoDevicesList);
-        delete tVSource;
+        tASource->getAudioDevices(mAudioDevicesList);
+        delete tASource;
     }
 
     mCbDeviceVideo->clear();

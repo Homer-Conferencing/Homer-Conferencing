@@ -89,60 +89,67 @@ SET (SOURCES
 )
 
 IF (WIN32 AND NOT WIN64)
-SET (SOURCES
-	${SOURCES}
-	../src/MediaSourceDShow
-)
+	SET (SOURCES
+		${SOURCES}
+		../src/MediaSourceDShow
+	)
 ENDIF()
 
 IF (APPLE)
-SET (SOURCES
-	${SOURCES}
-	../src/MediaSourceCoreVideo
-	../src/WaveOutSdl
-)
+	SET (SOURCES
+		${SOURCES}
+		../src/MediaSourceCoreVideo
+		../src/WaveOutSdl
+	)
 ENDIF (APPLE)
 
 IF (BSD)
-SET (SOURCES
-	${SOURCES}
-)
+	SET (SOURCES
+		${SOURCES}
+	)
 ENDIF (BSD)
 
 IF (LINUX)
-SET (SOURCES
-	${SOURCES}
-	../src/MediaSourceV4L2
-)
+	SET (SOURCES
+		${SOURCES}
+		../src/MediaSourceV4L2
+	)
+	IF (FEATURE_PULSEAUDIO)
+		SET (SOURCES
+			${SOURCES}
+			../src/MediaSourcePulseAudio
+			../src/WaveOutPulseAudio
+		)
+	ENDIF()
 ENDIF (LINUX)
 
 ##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
-    avutil-52
-    avcodec-54
-    avdevice-54
-    avfilter-3
-    avformat-54
-    libgcc_s_dw2-1
-    libstdc++-6
-    portaudio
+	avutil-52
+    	avcodec-54
+    	avdevice-54
+    	avfilter-3
+    	avformat-54
+    	libgcc_s_dw2-1
+    	libstdc++-6
+    	portaudio
 	postproc-52
-    swresample-0
-    swscale-2
+    	swresample-0
+    	swscale-2
 )
 SET (LIBS_WINDOWS
-    avutil-52
-    avcodec-54
-    avfilter-3
-    avformat-54
-    avdevice-54
+    	avutil-52
+    	avcodec-54
+    	avfilter-3
+	avformat-54
+	avdevice-54
 	HomerBase
 	HomerNAPI
 	HomerMonitor
 	portaudio
-    swscale-2
-    swresample-0
+	swscale-2
+	swresample-0
 	ws2_32
 	Avicap32
 	Winmm
@@ -243,6 +250,15 @@ ELSE ()
 		portaudio
 	)
 ENDIF ()
+
+# FEATURE pulseaudio
+IF (FEATURE_PULSEAUDIO)
+	SET (LIBS_LINUX
+		${LIBS_LINUX}
+		pulse-simple
+		pulse
+	)	
+ENDIF()	
 
 #################
 # USED LIBRARIES for BSD environment

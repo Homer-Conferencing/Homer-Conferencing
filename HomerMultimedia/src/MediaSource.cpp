@@ -72,6 +72,7 @@ MediaSource::MediaSource(string pName):
 	mDecodedBIFrames = 0;
 	mDecoderOutputFrameDelay = 0;
 	mAudioSilenceThreshold = MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD;
+	mDecoderFrameBufferTime = 0;
     mDecoderFrameBufferTimeMax = 0;
     mDecoderFramePreBufferTime = 0;
     mSourceType = SOURCE_ABSTRACT;
@@ -1824,7 +1825,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                     // define audio format for recording
                     mRecorderAudioChannels = 2;
                     if (mRecorderCodecContext->codec_id == CODEC_ID_MP3)
-                        mRecorderAudioFormat = mInputAudioFormat;
+                        mRecorderAudioFormat = AV_SAMPLE_FMT_S16P;
                     else
                         mRecorderAudioFormat = AV_SAMPLE_FMT_S16;
                     mRecorderAudioChannelLayout = av_get_default_channel_layout(mRecorderAudioChannels);
@@ -1846,7 +1847,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                         int tRes = 0;
                         if ((tRes = HM_swr_init(mRecorderAudioResampleContext)) < 0)
                         {
-                            LOG(LOG_ERROR, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                            LOG(LOG_ERROR, "Couldn't initialize resample context because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
                             return false;
                         }
                     }else
@@ -1922,7 +1923,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_VERBOSE, "..opening %s codec", GetMediaTypeStr().c_str());
     if ((tResult = HM_avcodec_open(mRecorderCodecContext, tCodec, NULL)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open %s codec because of \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't open %s codec because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
 
         HM_avformat_close_input(mRecorderFormatContext);
 
@@ -1955,7 +1956,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
         mRecorderCodecContext->frame_size = MEDIA_SOURCE_SAMPLES_PER_BUFFER;
     }
 
-    // we have to delay the following to this point because of "mRecorderCodecContext->frame_size" access
+    // we have to delay the following to this point because "mRecorderCodecContext->frame_size" access
     if (mMediaType == MEDIA_AUDIO)
     {
         // planes indexing resample buffer
@@ -2193,6 +2194,8 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                 // #########################################
                 HM_sws_scale(mRecorderVideoScalerContext, pSourceFrame->data, pSourceFrame->linesize, 0, mSourceResY, mRecorderFinalFrame->data, mRecorderFinalFrame->linesize);
                 mRecorderFinalFrame->pict_type = pSourceFrame->pict_type;
+                mRecorderFinalFrame->pts = pSourceFrame->pts;
+                mRecorderFinalFrame->key_frame = pSourceFrame->key_frame;
 
                 #ifdef MS_DEBUG_RECORDER_FRAMES
                     LOG(LOG_VERBOSE, "Recording video frame..");
@@ -2223,8 +2226,11 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 
                     int tResamplingOutputSamples = 0;
 
-                    if (pSourceFrame->nb_samples != mCodecContext->frame_size)
-                        LOG(LOG_ERROR, "Number of samples in source framme differs from the defined frame size in the codec context");
+                    if (mCodecContext != NULL)
+                    {
+                        if (pSourceFrame->nb_samples != mCodecContext->frame_size)
+                            LOG(LOG_ERROR, "Number of samples in source frame differs from the defined frame size in the codec context");
+                    }
 
                     #ifdef MS_DEBUG_RECORDER_PACKETS
                         LOG(LOG_VERBOSE, "Recorder audio input data planes...");
@@ -2332,7 +2338,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                         //data
                         int tRes = 0;
                         if ((tRes = avcodec_fill_audio_frame(mRecorderFinalFrame, mRecorderAudioChannels, mRecorderAudioFormat, (const uint8_t *)mRecorderResampleBuffer, tReadFifoSize, 1)) < 0)
-                            LOG(LOG_ERROR, "Could not fill the audio frame with the provided data from the audio resampling step because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                            LOG(LOG_ERROR, "Could not fill the audio frame with the provided data from the audio resampling step because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
                         #ifdef MS_DEBUG_RECORDER_PACKETS
                             LOG(LOG_VERBOSE, "Recording sample buffer with PTS: %"PRId64" (chunk: %"PRId64"", tCurPts, mRecorderFrameNumber);
                             LOG(LOG_VERBOSE, "Filling audio frame with buffer size: %d", tReadFifoSize);
@@ -2356,19 +2362,27 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 
 void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
 {
-    AVFrame *tFrame = AllocFrame();
+    int     tRes;
+    AVFrame *tAudioFrame = AllocFrame();
+    if (tAudioFrame == NULL)
+    {
+        LOG(LOG_ERROR, "Out of memory");
+        return;
+    }
 
     //####################################################################
     // create final frame for audio encoder
     // ###################################################################
-    // nb_samples
-    tFrame->nb_samples = pSourceSamplesSize / (mInputAudioChannels * av_get_bytes_per_sample(mInputAudioFormat));
-    // data
-    tFrame->data[0] = (uint8_t*)pSourceSamples;
+    #ifdef MS_DEBUG_RECORDER_PACKETS
+        LOG(LOG_VERBOSE, "Recording sample buffer of %d bytes", pSourceSamplesSize);
+    #endif
+    tAudioFrame->nb_samples = pSourceSamplesSize / (mOutputAudioChannels * av_get_bytes_per_sample(mOutputAudioFormat));
+    if ((tRes = avcodec_fill_audio_frame(tAudioFrame, mOutputAudioChannels, mOutputAudioFormat, (const uint8_t *)pSourceSamples, pSourceSamplesSize, 1)) < 0)
+        LOG(LOG_ERROR, "Could not fill the audio frame with the provided data because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+    else
+        RecordFrame(tAudioFrame);
 
-    RecordFrame(tFrame);
-
-    av_free(tFrame);
+    av_free(tAudioFrame);
 }
 
 bool MediaSource::IsKeyFrame(AVFrame *pFrame)
@@ -3064,7 +3078,7 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
     mFormatContext->interrupt_callback.opaque = this;
 	if ((tRes = avformat_open_input(&mFormatContext, pInputName, pInputFormat, NULL)) < 0)
 	{
-    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open %s input because of \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
+    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open %s input because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
 
 		return false;
 	}
@@ -3128,7 +3142,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     if ((tRes = avformat_find_stream_info(mFormatContext, NULL)) < 0)
     {
         if (!mGrabbingStopped)
-        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s stream information because of \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
+        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s stream information because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
         else
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped during avformat_find_stream_info()");
 
@@ -3360,7 +3374,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..going to open %s codec..", GetMediaTypeStr().c_str());
     if ((tRes = HM_avcodec_open(mCodecContext, tCodec, &tOptions)) < 0)
     {
-    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open video codec because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open video codec because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
 
     	HM_avformat_close_input(mFormatContext);
 
@@ -3428,7 +3442,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
                     int tRes = 0;
                     if ((tRes = HM_swr_init(mAudioResampleContext)) < 0)
                     {
-                        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't initialize resample context because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+                        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't initialize resample context because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
                         return false;
                     }
                 }else

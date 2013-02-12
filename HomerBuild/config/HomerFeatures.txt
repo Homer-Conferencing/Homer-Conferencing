@@ -1,10 +1,37 @@
+######################################################################################
+######################################################################################
+# flexible feature selection: modify as desired
+######################################################################################
+######################################################################################
+set(FEATURE_PULSEAUDIO OFF)
+
+
+
+######################################################################################
+######################################################################################
+# fixed configuration: don't change anything beyond this line
+######################################################################################
+######################################################################################
 set(MIN_SUPPORTED_OSX_VERSION 10.6)
 set(HOMER_LIBS_WITH_VERSIONING ON)
 set(HOMER_APP_WITH_VERSIONING OFF)
 
+###########################################
+# automatically include network simulator
+###########################################
 IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../HomerNetworkSimulator/HomerNetworkSimulator" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../../HomerNetworkSimulator/HomerNetworkSimulator")
 	MESSAGE("---------- NetworkSimulator found and integrated into build process -----------")
-	SET(HOMER_NETWORK_SIMULATOR true)
+	SET(HOMER_NETWORK_SIMULATOR ON)
 ELSE()
-	SET(HOMER_NETWORK_SIMULATOR false)
-ENDIF()	
+	SET(HOMER_NETWORK_SIMULATOR OFF)
+ENDIF()
+
+######################################################################################
+# automatically inform the source about the activated features
+######################################################################################
+IF (FEATURE_PULSEAUDIO)
+	SET(FEATURES
+		${FEATURES}
+		-DFEATURE_PULSEAUDIO
+	)
+ENDIF()

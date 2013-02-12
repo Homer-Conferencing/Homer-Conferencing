@@ -777,9 +777,12 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     // set max. packet size for RTP based packets
     mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
 
-    // some formats want stream headers to be separate
-//    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
-//        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    // some formats want stream headers to be separate, but this produces some very small packets!
+    if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
+        mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    // allow ffmpeg its speedup tricks
+    mCodecContext->flags2 |= CODEC_FLAG2_FAST;
 
     // Dump information about device file
     av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (audio)", true);
@@ -1704,7 +1707,6 @@ void* MediaSourceMuxer::Run(void* pArgs)
     if (!CloseFormatConverter())
     {
         LOG(LOG_ERROR, "Failed to close %s format converter", GetMediaTypeStr().c_str());
-        return false;
     }
 
     mEncoderFifoState.lock();

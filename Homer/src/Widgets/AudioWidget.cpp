@@ -685,7 +685,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
     {
         if (tMSecs % 500 < 250)
         {
-            QPixmap tPixmap = QPixmap(":/images/22_22/AV_Record_active.png");
+            QPixmap tPixmap = QPixmap(":/images/22_22/AV_Recording_active.png");
             mLbRecording->setPixmap(tPixmap);
         }else
         {

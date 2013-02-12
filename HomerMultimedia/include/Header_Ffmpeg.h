@@ -304,7 +304,7 @@ inline void HM_avformat_close_input(AVFormatContext *s)
 inline AVStream *HM_avformat_new_stream(AVFormatContext *s, int id)
 {
 	#if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 10, 0))
-		return av_new_stream(s, c);
+		return av_new_stream(s, id);
 	#else
 		AVStream *st = avformat_new_stream(s, NULL);
 		if (st)
@@ -314,10 +314,9 @@ inline AVStream *HM_avformat_new_stream(AVFormatContext *s, int id)
 }
 
 #if (LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 35, 0))
-// ffmpeg would say: "better than nothing"
 inline int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
 {
-    return 0;
+    return av_set_string3(obj, name, val, 0, NULL);
 }
 #endif
 #endif

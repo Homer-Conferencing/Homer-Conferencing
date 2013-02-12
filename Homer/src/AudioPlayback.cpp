@@ -26,6 +26,7 @@
  */
 
 #include <WaveOutPortAudio.h>
+#include <WaveOutPulseAudio.h>
 #include <WaveOutSdl.h>
 #include <Configuration.h>
 #include <AudioPlayback.h>
@@ -59,17 +60,40 @@ void AudioPlayback::OpenPlaybackDevice(QString pOutputName)
 
     if (CONF.AudioOutputEnabled())
     {
-        #ifndef APPLE
+        #if defined(WINDOWS)
             LOG(LOG_VERBOSE, "Opening PortAudio based playback");
             mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
-        #else
+		#endif
+		#if defined(LINUX)
+            #if FEATURE_PULSEAUDIO
+                if (!WaveOutPulseAudio::PulseAudioAvailable())
+                {
+                    LOG(LOG_VERBOSE, "Opening PortAudio based playback");
+                    mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+                }else
+                {
+                    LOG(LOG_VERBOSE, "Opening PulseAudio based playback");
+                    mWaveOut = new WaveOutPulseAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+                }
+            #else
+                LOG(LOG_VERBOSE, "Opening PortAudio based playback");
+                mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+            #endif
+		#endif
+		#if defined(APPLE)
             LOG(LOG_VERBOSE, "Opening SDL based playback");
            mWaveOut = new WaveOutSdl("WaveOut: " + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
         #endif
         if (mWaveOut != NULL)
-            mWaveOut->OpenWaveOutDevice();
-        else
-            LOG(LOG_ERROR, "Error when creating wave out object");
+        {
+            if (!mWaveOut->OpenWaveOutDevice())
+            {
+            	LOG(LOG_ERROR, "Couldn't open wave out device");
+            	delete mWaveOut;
+            	mWaveOut = NULL;
+            }
+        }else
+            LOG(LOG_ERROR, "Couldn't create wave out object");
     }
     LOG(LOG_VERBOSE, "Finished to open playback device");
 }

@@ -2539,7 +2539,9 @@ void VideoWorkerThread::run()
                         mVideoWidget->InformAboutNewFrame();
                     }else
                     {
-                        LOG(LOG_WARN, "System too slow?, frame buffer of %d entries is full, will drop all frames, grab index: %d, current read index: %d", FRAME_BUFFER_SIZE, mFrameGrabIndex, mFrameCurrentIndex);
+						#ifdef DEBUG_VIDEOWIDGET_FRAME_DELIVERY
+                    		LOG(LOG_WARN, "System too slow?, frame buffer of %d entries is full, will drop all frames, grab index: %d, current read index: %d", FRAME_BUFFER_SIZE, mFrameGrabIndex, mFrameCurrentIndex);
+						#endif
                         mPendingNewFrames = 1;
                         mFrameCurrentIndex = mFrameGrabIndex -1;
                         if (mFrameCurrentIndex < 0)

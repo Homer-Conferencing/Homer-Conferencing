@@ -46,6 +46,7 @@
 #include <Logger.h>
 #include <Meeting.h>
 #include <MediaSourcePortAudio.h>
+#include <MediaSourcePulseAudio.h>
 #include <MediaSourceV4L2.h>
 #include <MediaSourceDShow.h>
 #include <MediaSourceCoreVideo.h>
@@ -53,6 +54,7 @@
 #include <MediaSourceFile.h>
 #include <MediaSourceDesktop.h>
 #include <MediaSourceLogo.h>
+#include <WaveOutPulseAudio.h>
 #include <Header_NetworkSimulator.h>
 #include <ProcessStatisticService.h>
 #include <Snippets.h>
@@ -531,7 +533,14 @@ void MainWindow::initializeVideoAudioIO()
     mOwnAudioMuxer = new MediaSourceMuxer();
     if (CONF.AudioCaptureEnabled())
     {
-        mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+		#if defined(LINUX) && FEATURE_PULSEAUDIO
+            if (!(WaveOutPulseAudio::PulseAudioAvailable()))
+                mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+            else
+                mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePulseAudio());
+		#else
+        	mOwnAudioMuxer->RegisterMediaSource(new MediaSourcePortAudio());
+		#endif
     }
 }
 
