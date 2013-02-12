@@ -68,6 +68,7 @@ void CallButton::HandleClick()
                 MEETING.SendHangUp(QString(mParticipant.toLocal8Bit()).toStdString(), mParticipantTransport);
                 break;
     }
+    ShowNewState();
 }
 
 void CallButton::ShowNewState()
