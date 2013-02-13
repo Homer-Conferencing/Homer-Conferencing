@@ -2882,7 +2882,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.num, mFormatContext->streams[mMediaStreamIndex]->time_base.den); // inverse
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den); // inverse
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..bit rate: %d", mCodecContext->bit_rate);
+    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..bit rate: %d bit/s", mCodecContext->bit_rate);
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
     LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
@@ -3238,6 +3238,12 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     	if (mCodecContext->codec->capabilities & CODEC_CAP_SUBFRAMES)
         	LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports SUB FRAMES!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+
+        if (mCodecContext->codec->capabilities & CODEC_CAP_DELAY)
+            LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports might DELAY FRAMES!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+
+        if (mCodecContext->codec->capabilities & CODEC_CAP_TRUNCATED)
+            LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports TRUNCATED PACKETS!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
 	}
 
     // make sure we have a defined frame size
@@ -3359,11 +3365,6 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
                 LOG_REMOTE(LOG_WARN, pSource, pLine, "Trying to decode H.264 with MT support");
             }
     }
-
-//    // Inform the codec that we can handle truncated bitstreams
-//    // bitstreams where sample boundaries can fall in the middle of packets
-//    if ((mMediaType == MEDIA_VIDEO) && (tCodec->capabilities & CODEC_CAP_TRUNCATED))
-//        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
     if (tCodec->capabilities & CODEC_CAP_DR1)
     	mCodecContext->flags |= CODEC_FLAG_EMU_EDGE;

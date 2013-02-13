@@ -683,7 +683,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     LOG(LOG_INFO, "    ..sample rate: %d Hz", mRtpEncoderStream->codec->sample_rate);
     LOG(LOG_INFO, "    ..channels: %d", mRtpEncoderStream->codec->channels);
     LOG(LOG_INFO, "    ..i-frame distance: %d pictures", mRtpEncoderStream->codec->gop_size);
-    LOG(LOG_INFO, "    ..bit rate: %d Hz", mRtpEncoderStream->codec->bit_rate);
+    LOG(LOG_INFO, "    ..bit rate: %d bit/s", mRtpEncoderStream->codec->bit_rate);
     LOG(LOG_INFO, "    ..qmin: %d", mRtpEncoderStream->codec->qmin);
     LOG(LOG_INFO, "    ..qmax: %d", mRtpEncoderStream->codec->qmax);
     LOG(LOG_INFO, "    ..mpeg quant: %d", mRtpEncoderStream->codec->mpeg_quant);

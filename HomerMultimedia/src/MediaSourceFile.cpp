@@ -405,7 +405,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                 LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f, ts: %.2f), max. sec.: %.2f (pts %.2f), source start pts: %"PRId64, GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentOutputFrameIndex, pSeconds, tFrameIndex, tTargetTimestamp, tSeekEnd, tNumberOfFrames, mInputStartPts);
 
                 int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentOutputFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
-                mDecoderTargetFrameIndex = (int64_t)tFrameIndex;
+                mDecoderTargetOutputFrameIndex = tFrameIndex;
 
                 if ((tRes = avformat_seek_file(mFormatContext, -1, INT64_MIN, tTargetTimestamp, INT64_MAX, 0)) < 0)
                 {
