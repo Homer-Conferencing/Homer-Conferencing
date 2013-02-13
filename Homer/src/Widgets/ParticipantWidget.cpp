@@ -1500,6 +1500,9 @@ bool ParticipantWidget::IsAVDriftOkay()
 {
     bool tResult = true;
 
+    if (!mAVSynchActive)
+        return true;
+
     float tTimeDiff = GetAVDrift();
 
     if ((tTimeDiff < -AV_SYNC_MAX_DRIFT_FOR_OKAY) || (tTimeDiff > AV_SYNC_MAX_DRIFT_FOR_OKAY))
@@ -1510,9 +1513,6 @@ bool ParticipantWidget::IsAVDriftOkay()
 
 double ParticipantWidget::GetAVDrift(int64_t *pVideoSyncTime, int64_t *pAudioSyncTime)
 {
-    if (!mAVSynchActive)
-        return 0;
-
     if (mVideoWidget->GetWorker() == NULL)
         return 0;
 
