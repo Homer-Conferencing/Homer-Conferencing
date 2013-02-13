@@ -381,7 +381,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
     if (pSeconds <= 0)
         tFrameIndex = 0;
     else
-        tFrameIndex = CalculateOutputFrameNumber(mInputStartPts + (double)pSeconds * GetInputFrameRate()); // later the value for mCurrentFrameIndex will be changed to the same value like tAbsoluteTimestamp
+        tFrameIndex = CalculateOutputFrameNumber(mInputStartPts + (double)pSeconds * GetInputFrameRate());
     float tTimeDiff = pSeconds - GetSeekPos();
 
     //LOG(LOG_VERBOSE, "Rel: %"PRId64" Abs: %"PRId64"", tRelativeTimestamp, tAbsoluteTimestamp);
@@ -414,7 +414,6 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                 }else
                 {
                     LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful, current dts is %"PRId64"", GetMediaTypeStr().c_str(), (float)tFrameIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
-                    mCurrentOutputFrameIndex = tFrameIndex;
 
                     // seeking was successful
                     tResult = true;
@@ -431,9 +430,6 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
             {
                 LOG(LOG_VERBOSE, "WAITING for %2.2f sec., SEEK/WAIT threshold is %2.2f", tTimeDiff, MSF_SEEK_WAIT_THRESHOLD);
                 LOG(LOG_VERBOSE, "%s-we are at frame %.2f and we should be at frame %.2f", GetMediaTypeStr().c_str(), (float)mCurrentOutputFrameIndex, (float)tFrameIndex);
-
-                // simulate a frame index
-                mCurrentOutputFrameIndex = tFrameIndex;
 
                 // seek by adjusting the start time of RT grabbing
                 mSourceStartTimeForRTGrabbing = mSourceStartTimeForRTGrabbing - tTimeDiff/* in us */ * 1000 * 1000;
