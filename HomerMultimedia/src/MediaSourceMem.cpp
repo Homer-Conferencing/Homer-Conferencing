@@ -1338,7 +1338,7 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
 
                 // for seeking: is the currently read frame close to target frame index?
                 //HINT: we need a key frame in the remaining distance to the target frame)
-                if ((mDecoderTargetOutputFrameIndex != 0) && (pFrameTimestamp < mDecoderTargetOutputFrameIndex - MEDIA_SOURCE_MEM_SEEK_MAX_EXPECTED_GOP_SIZE))
+                if ((mDecoderTargetOutputFrameIndex != 0) && (CalculateOutputFrameNumber(pFrameTimestamp) < mDecoderTargetOutputFrameIndex - MEDIA_SOURCE_MEM_SEEK_MAX_EXPECTED_GOP_SIZE))
                 {// we are still waiting for a special frame number
                     #ifdef MSMEM_DEBUG_SEEKING
                         LOG(LOG_VERBOSE, "Dropping %s frame %"PRId64" because we are waiting for frame %.2f", GetMediaTypeStr().c_str(), pFrameTimestamp, mDecoderTargetOutputFrameIndex);
@@ -2398,7 +2398,7 @@ bool MediaSourceMem::WaitForRTGrabbing()
     {
 	    float tDelay = (float)tResultingTimeOffset / (-1000);
         LOG(LOG_WARN, "System too slow?, %s %s grabbing is %f ms too late", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay);
-        if (tDelay < MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000)
+        if (tDelay < MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000 /* we are still in play-range */)
             return true;
         else
             return false;
