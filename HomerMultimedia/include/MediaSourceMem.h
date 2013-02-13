@@ -151,7 +151,7 @@ protected:
     virtual void* Run(void* pArgs = NULL); // decoder main loop
     VideoScaler *CreateVideoScaler();
     void CloseVideoScaler(VideoScaler *pScaler);
-    void ReadPacketFromInputStream(AVPacket *pPacket, double &pPacketFrameNumber);
+    void ReadFrameFromInputStream(AVPacket *pPacket, double &pPacketFrameNumber);
 
     /* buffering */
     void UpdateBufferTime();
@@ -170,7 +170,7 @@ protected:
 
     /* real-time playback */
     virtual void CalibrateRTGrabbing();
-    virtual void WaitForRTGrabbing();
+    virtual bool WaitForRTGrabbing();
 
     unsigned long       mFragmentNumber;
     char                *mStreamPacketBuffer;
@@ -198,7 +198,7 @@ protected:
     int                 mDecoderExpectedMaxOutputPerInputFrame; // how many output frames can be calculated of one input frame?
     /* decoder thread seeking */
     Mutex               mDecoderSeekMutex;
-    double              mDecoderTargetFrameIndex;
+    double              mDecoderTargetOutputFrameIndex;
     bool                mDecoderWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames
     bool                mDecoderRecalibrateRTGrabbingAfterSeeking;
     bool                mDecoderWaitForNextKeyFrame; // after seeking we wait for next i -frames
