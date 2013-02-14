@@ -121,23 +121,23 @@ void VideoScaler::StopScaler()
     LOG(LOG_VERBOSE, "Scaler stopped");
 }
 
-void VideoScaler::WriteFifo(char* pBuffer, int pBufferSize, int64_t pFrameNumber)
+void VideoScaler::WriteFifo(char* pBuffer, int pBufferSize, int64_t pFrameTimestamp)
 {
     mInputFifoMutex.lock();
     if (mInputFifo != NULL)
     {
     	if (pBufferSize <= mInputFifo->GetEntrySize())
-    		mInputFifo->WriteFifo(pBuffer, pBufferSize, pFrameNumber);
+    		mInputFifo->WriteFifo(pBuffer, pBufferSize, pFrameTimestamp);
     	else
     		LOG(LOG_ERROR, "Input buffer of %d bytes is too big for input FIFO of video scaler %s with %d bytes per entry", pBufferSize, mName.c_str(), mInputFifo->GetEntrySize());
     }
     mInputFifoMutex.unlock();
 }
 
-void VideoScaler::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pFrameNumber)
+void VideoScaler::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pFrameTimestamp)
 {
     if (mOutputFifo != NULL)
-        mOutputFifo->ReadFifo(pBuffer, pBufferSize, pFrameNumber);
+        mOutputFifo->ReadFifo(pBuffer, pBufferSize, pFrameTimestamp);
     else
         pBufferSize = 0;
 }
@@ -152,11 +152,11 @@ void VideoScaler::ClearFifo()
     mInputFifoMutex.unlock();
 }
 
-int VideoScaler::ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pFrameNumber)
+int VideoScaler::ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pFrameTimestamp)
 {
     // no locking, context of scaler thread
     if ((mInputFifo != NULL) && (mOutputFifo != NULL))
-        return mOutputFifo->ReadFifoExclusive(pBuffer, pBufferSize, pFrameNumber);
+        return mOutputFifo->ReadFifoExclusive(pBuffer, pBufferSize, pFrameTimestamp);
     else
     {
     	LOG(LOG_WARN, "Video scaler not ready yet");
@@ -287,8 +287,8 @@ void* VideoScaler::Run(void* pArgs)
 			#ifdef VS_DEBUG_PACKETS
         		LOG(LOG_VERBOSE, "Waiting for new input for scaling");
 			#endif
-            int64_t tReadFrameNumber;
-            tFifoEntry = mInputFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tReadFrameNumber);
+            int64_t tInputFrameTimestamp;
+            tFifoEntry = mInputFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tInputFrameTimestamp);
 			#ifdef VS_DEBUG_PACKETS
 	            LOG(LOG_VERBOSE, "Got new input of %d bytes for scaling", tBufferSize);
 			#endif
@@ -391,7 +391,7 @@ void* VideoScaler::Run(void* pArgs)
                         #endif
                         if (tCurrentChunkSize <= mOutputFifo->GetEntrySize())
                         {
-                            mOutputFifo->WriteFifo((char*)tOutputBuffer, tCurrentChunkSize, tReadFrameNumber);
+                            mOutputFifo->WriteFifo((char*)tOutputBuffer, tCurrentChunkSize, tInputFrameTimestamp);
                             #ifdef VS_DEBUG_PACKETS
                                 LOG(LOG_VERBOSE, "SCALER-successful scaler loop");
                             #endif

@@ -86,7 +86,7 @@ MediaFifo::~MediaFifo()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferNumber)
+void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferTimestamp)
 {
     int tCurrentFifoReadPtr;
 
@@ -136,7 +136,7 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferNumber
     if (pBufferSize >= mFifo[tCurrentFifoReadPtr].Size)
     {// input buffer is okay
         // get the number from Fifo
-        pBufferNumber = mFifo[tCurrentFifoReadPtr].Number;
+        pBufferTimestamp = mFifo[tCurrentFifoReadPtr].Number;
         // get captured data from Fifo
         pBufferSize = mFifo[tCurrentFifoReadPtr].Size;
         memcpy((void*)pBuffer, mFifo[tCurrentFifoReadPtr].Data, (size_t)pBufferSize);
@@ -206,7 +206,7 @@ int MediaFifo::GetSize()
     return tResult;
 }
 
-int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pBufferNumber)
+int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pBufferTimestamp)
 {
     int tCurrentFifoReadPtr;
 
@@ -249,7 +249,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pBuf
     mFifoMutex.unlock();
 
     // get number
-    pBufferNumber = mFifo[tCurrentFifoReadPtr].Number;
+    pBufferTimestamp = mFifo[tCurrentFifoReadPtr].Number;
     // get captured data from Fifo
     pBufferSize = mFifo[tCurrentFifoReadPtr].Size;
     // don't copy, use pointer to data instead
@@ -276,7 +276,7 @@ void MediaFifo::ReadFifoExclusiveFinished(int pEntryPointer)
     mFifo[pEntryPointer].EntryMutex.unlock();
 }
 
-void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferNumber)
+void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferTimestamp)
 {
     int tCurrentFifoWritePtr;
 
@@ -329,7 +329,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferNumber)
     mFifo[tCurrentFifoWritePtr].Size = pBufferSize;
     if ((pBuffer != NULL) && (pBufferSize > 0))
         memcpy((void*)mFifo[tCurrentFifoWritePtr].Data, (const void*)pBuffer, (size_t)pBufferSize);
-    mFifo[tCurrentFifoWritePtr].Number = pBufferNumber;
+    mFifo[tCurrentFifoWritePtr].Number = pBufferTimestamp;
 
     // unlock fine grained mutex again
     mFifo[tCurrentFifoWritePtr].EntryMutex.unlock();
