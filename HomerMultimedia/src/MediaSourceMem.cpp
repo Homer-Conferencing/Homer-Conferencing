@@ -66,7 +66,7 @@ using namespace Homer::Base;
 #define MSM_WAITING_FOR_FIRST_KEY_FRAME_TIMEOUT                             7 // seconds
 
 // how much delay for frame playback do we allow before we drop the frame?
-#define MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD                               0.1 // seconds
+#define MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD                               0.4 // seconds
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -2487,6 +2487,9 @@ bool MediaSourceMem::TimeShift(int64_t pOffset)
         LOG(LOG_WARN, "Desired time shift of %d s is out of allowed range (%d) and will be ignored", (int)(pOffset / AV_TIME_BASE), (int)MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME);
         return true; //we signal success because this isn't a real problem
     }
+
+    if (pOffset < 0)
+        ResetDecoderBuffers();
 
     LOG(LOG_WARN, "Shifting %s time by: %"PRId64, GetMediaTypeStr().c_str(), pOffset);
     mSourceTimeShiftForRTGrabbing -= pOffset;
