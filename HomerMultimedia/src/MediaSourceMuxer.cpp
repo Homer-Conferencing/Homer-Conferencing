@@ -744,6 +744,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 		case CODEC_ID_ADPCM_G722:
 			mOutputAudioChannels = 1;
 			mOutputAudioSampleRate = 16000;
+			mEncoderStream->time_base = (AVRational){1, 16000};
 			break;
 		case CODEC_ID_AMR_NB:
 			mCodecContext->bit_rate = 7950; // force to 7.95kHz , limit is given by libopencore_amrnb
@@ -755,10 +756,12 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 		case CODEC_ID_PCM_MULAW:
 			mOutputAudioChannels = 1;
 			mOutputAudioSampleRate = 8000;
+            mEncoderStream->time_base = (AVRational){1, 8000};
 			break;
     	case CODEC_ID_PCM_S16BE:
 			mOutputAudioChannels = 2;
 			mOutputAudioSampleRate = 44100;
+            mEncoderStream->time_base = (AVRational){1, 44100};
 			break;
         case CODEC_ID_MP3:
 		    mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16P;
@@ -770,7 +773,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 			break;
 
     }
-
 	mCodecContext->channels = mOutputAudioChannels;
 	mCodecContext->channel_layout = av_get_default_channel_layout(mOutputAudioChannels);
     mCodecContext->sample_rate = mOutputAudioSampleRate;
@@ -1178,7 +1180,8 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     {
 		// we relay this chunk to all registered media sinks based on the dedicated relay thread
 		int64_t tTime = Time::GetTimeStamp();
-		mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize, 0 /* TODO: find a frame numbering here */);
+
+		mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize, (int64_t)RTP::GetNtpTime());
 		#ifdef MSM_DEBUG_TIMING
 			int64_t tTime2 = Time::GetTimeStamp();
 			//LOG(LOG_VERBOSE, "Writing %d bytes to Encoder-FIFO took %"PRId64" us", pChunkSize, tTime2 - tTime);
@@ -1338,7 +1341,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     uint8_t             *tChunkBuffer;
     VideoScaler         *tVideoScaler = NULL;
     int                 tFrameFinished = 0;
-    int64_t             tReadFrameNumber;
+    int64_t             tInputFrameTimestamp;
 
     LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Encoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
@@ -1415,6 +1418,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
     // set marker to "active"
     mEncoderThreadNeeded = true;
 
+    mFrameNumber = 0;
+
     // trigger an avcodec_flush_buffers()
     ResetEncoderBuffers();
 
@@ -1430,7 +1435,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
             //####################################################################
             //### get next frame data
             //###################################################################
-            tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tReadFrameNumber);
+            tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tInputFrameTimestamp /* NTP time */);
 
             mEncoderSeekMutex.lock();
 
@@ -1465,28 +1470,24 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "     preparing data structures took %"PRId64" us", tTime5 - tTime3);
                                 #endif
 
-                                // calculate the packet's PTS value
-                                int64_t tInputFramePts = CalculateEncoderPts(mFrameNumber);
-
                                 tYUVFrame->pict_type = AV_PICTURE_TYPE_NONE;
-                                tYUVFrame->coded_picture_number = mFrameNumber;
-                                tYUVFrame->display_picture_number = mFrameNumber;
-                                tYUVFrame->pts = tInputFramePts;
+                                tYUVFrame->pts = (int64_t)rint(CalculateEncoderPts(mFrameNumber));
 
                                 #ifdef MSM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Scaler returned video frame..");
                                     LOG(LOG_VERBOSE, "      ..key frame: %d", tYUVFrame->key_frame);
                                     LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tYUVFrame).c_str());
-                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64"(scaler pts: %"PRId64")", tYUVFrame->pts, tReadFrameNumber);
+                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64"(scaler pts: %"PRId64")", tYUVFrame->pts, tInputFrameTimestamp);
                                     LOG(LOG_VERBOSE, "      ..coded pic number: %d", tYUVFrame->coded_picture_number);
                                     LOG(LOG_VERBOSE, "      ..display pic number: %d", tYUVFrame->display_picture_number);
                                 #endif
 
-                                if (EncodeAndWritePacket(mFormatContext, mCodecContext, tYUVFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames))
-                                {
-                                    // increase the frame counter (used for PTS generation)
-                                    mFrameNumber++;
-                                }
+                                RelaySyncTimestampToMediaSinks((uint64_t)tInputFrameTimestamp, tYUVFrame->pts);
+
+                                EncodeAndWritePacket(mFormatContext, mCodecContext, tYUVFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames);
+
+                                // increase the frame counter (used for PTS generation)
+                                mFrameNumber++;
                             }
                             break;
 
@@ -1629,11 +1630,13 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                             }
                                         #endif
 
-                                        if (EncodeAndWritePacket(mFormatContext, mCodecContext, tAudioFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames))
-                                        {
-                                            // increase the frame counter (used for PTS generation)
-                                            mFrameNumber++;
-                                        }
+                                        //TODO: the following is only an approximation, we should use the correct NTP here!
+                                        RelaySyncTimestampToMediaSinks((uint64_t)tInputFrameTimestamp, tAudioFrame->pts);
+
+                                        EncodeAndWritePacket(mFormatContext, mCodecContext, tAudioFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames);
+
+                                        // increase the frame counter (used for PTS generation)
+                                        mFrameNumber++;
                                     }else
                                     {// silence audio frame
                                         mRelayingSkipAudioSilenceSkippedChunks++;

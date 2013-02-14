@@ -2488,9 +2488,6 @@ bool MediaSourceMem::TimeShift(int64_t pOffset)
         return true; //we signal success because this isn't a real problem
     }
 
-    if (pOffset < 0)
-        ResetDecoderBuffers();
-
     LOG(LOG_WARN, "Shifting %s time by: %"PRId64, GetMediaTypeStr().c_str(), pOffset);
     mSourceTimeShiftForRTGrabbing -= pOffset;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;

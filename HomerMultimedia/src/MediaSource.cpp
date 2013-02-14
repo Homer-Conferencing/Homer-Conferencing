@@ -1663,6 +1663,29 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
     mMediaSinksMutex.unlock();
 }
 
+void MediaSource::RelaySyncTimestampToMediaSinks(uint64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
+{
+    MediaSinks::iterator tIt;
+
+    #ifdef MS_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Update synch. for all media sinks");
+    #endif
+
+    // lock
+    mMediaSinksMutex.lock();
+
+    if (mMediaSinks.size() > 0)
+    {
+        for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
+        {
+            (*tIt)->UpdateSynchronization(pReferenceNtpTimestamp, pReferenceFrameTimestamp);
+        }
+    }
+
+    // unlock
+    mMediaSinksMutex.unlock();
+}
+
 bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality, bool pRealTime /*TODO: delete this*/)
 {
     int                 tResult;
