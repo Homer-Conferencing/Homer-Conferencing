@@ -1400,11 +1400,6 @@ void ParticipantWidget::ResetAVSync()
 void ParticipantWidget::AVSync()
 {
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
-
-        // only try to synch. if it is desired
-        if (!mAVSynchActive)
-            return;
-
         int64_t tCurTime = Time::GetTimeStamp();
         if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
         {
@@ -1420,9 +1415,27 @@ void ParticipantWidget::AVSync()
                     mVideoWidget->GetWorker()->SyncClock();
                     ResetAVSync();
                 }
+                if (!mAVSynchActive)
+                {
+                    //############################
+                    //### limit audio buffering
+                    //############################
+                    tBufferTime = mAudioSource->GetFrameBufferTime();
+                    tBufferTimeLimit = mAudioSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
+                    if ((mAudioSource != NULL) && (tBufferTime > tBufferTimeLimit))
+                    {// buffer has too many frames, this can be the case if the system has temporary high load
+                        LOG(LOG_WARN, "Detected over-buffering for audio stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
+                        mAudioWidget->GetWorker()->SyncClock();
+                        ResetAVSync();
+                    }
+                }
             #endif
 
             //HINT: we have to keep the audio buffering flexible! otherwise, the A/V synchronizatino won't work anymore
+
+            // only try to synch. if it is desired
+            if (!mAVSynchActive)
+                return;
 
             //############################
             //### synch. audio and video
