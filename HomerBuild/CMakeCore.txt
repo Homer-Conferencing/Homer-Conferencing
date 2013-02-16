@@ -133,7 +133,6 @@ MESSAGE("### Header search path: ${INCLUDE_DIRS}")
 SET (FLAGS
 	${FLAGS}
 	-D_GNU_SOURCE
-	-m${ARCH_BITS}
 	-W
 	-Wall
 	-Wno-overloaded-virtual
@@ -145,6 +144,12 @@ SET (FLAGS
 	-Wno-uninitialized
 	-Wno-unused-parameter
 )
+IF (DEFINED FORCE_ARCH_BITS)
+	SET (FLAGS
+		${FLAGS}
+		-m${FORCE_ARCH_BITS}
+s	)
+ENDIF()
 IF (NOT (${BUILD} MATCHES "Default"))
 	SET (FLAGS
 		${FLAGS}
