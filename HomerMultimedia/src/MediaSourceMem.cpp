@@ -266,7 +266,7 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
         // store the amount of buffered frames which were extracted from RTP packets
         if (tBufferSize > 0)
         {
-            if (tMediaSourceMemInstance->GetCodecID() == AV_CODEC_ID_MP3)
+            if (tMediaSourceMemInstance->GetCodecID() == CODEC_ID_MP3)
             {
                 //TODO, HACK: estimate the number of mp3 packets in this frame
                 int tAdd = (rint(tBufferSize / 418));
