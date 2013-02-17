@@ -40,7 +40,7 @@
   pcma (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
   pcmu (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
 adpcm(G722):     ok (Hc, Ekiga)                 ok (HC, Ekiga)
-		  mp3:   ok (HC)                        ok (HC)
+		  mp3:   ok (HC)                        ok (HC) (sync. needs to be reworked)
 	  pcm16be:   ok (HC)                        ok (HC)
 
 
