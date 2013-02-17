@@ -3671,7 +3671,7 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Writing %s packet..", GetMediaTypeStr().c_str());
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..duration: %d", tPacket->duration);
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..flags: %d", tPacket->flags);
-                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..pts: %"PRId64" (delay: %d / %d)", tPacket->pts, pBufferedFrames, pFormatContext->max_delay);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..pts: %"PRId64" (frame pts: %"PRId64", buffered frames: %d)", tPacket->pts, pInputFrame->pts, pBufferedFrames);
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..dts: %"PRId64"", tPacket->dts);
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..size: %d", tPacket->size);
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..pos: %"PRId64"", tPacket->pos);
