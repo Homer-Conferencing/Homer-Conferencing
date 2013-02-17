@@ -1583,7 +1583,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         // ### read buffer from FIFO
                                         // ############################
                                         #ifdef MSM_DEBUG_PACKETS
-                                            LOG(LOG_VERBOSE, "Reading %d bytes (%d bytes/sample, frame size: %d samples per packet) from %d bytes of FIFO %d", tReadFifoSizePerChannel, tInputAudioBytesPerSample, mOutputCodecContext->frame_size, av_fifo_size(mOutputResampleFifo[tFifoIndex]), tFifoIndex);
+                                            LOG(LOG_VERBOSE, "Reading %d bytes (%d bytes/sample, frame size: %d samples per packet) from %d bytes of FIFO %d", tReadFifoSizePerChannel, tInputAudioBytesPerSample, mCodecContext->frame_size, av_fifo_size(mResampleFifo[tFifoIndex]), tFifoIndex);
                                         #endif
                                         HM_av_fifo_generic_read(mResampleFifo[tFifoIndex], (void*)tOutputBuffer, tReadFifoSizePerChannel);
 
