@@ -79,6 +79,8 @@ namespace Homer { namespace Gui {
 #define STREAM_POS_UPDATE_DELAY                                    250 // ms
 // max. allowed drift between audio and video playback
 #define AV_SYNC_MAX_DRIFT_UNTIL_RESYNC                             0.08 // seconds
+// max. allowed drift between audio and video playback
+#define AV_SYNC_MAX_UNDER_BUFFERING_DRIFT_UNTIL_RESYNC             0.5 // seconds
 // max. allowed drift until we deliver an error by IsAVDriftOkay()
 #define AV_SYNC_MAX_DRIFT_FOR_OKAY                                 (AV_SYNC_MAX_DRIFT_UNTIL_RESYNC * 2) // seconds
 
@@ -1403,35 +1405,61 @@ void ParticipantWidget::AVSync()
         int64_t tCurTime = Time::GetTimeStamp();
         if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
         {
-            #ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
-                //############################
-                //### limit vieo buffering
-                //############################
-                float tBufferTime = mVideoSource->GetFrameBufferTime();
-                float tBufferTimeLimit = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
-                if ((mVideoSource != NULL) && (tBufferTime > tBufferTimeLimit))
-                {// buffer has too many frames, this can be the case if the system has temporary high load
-                    LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
-                    mVideoWidget->GetWorker()->SyncClock();
-                    ResetAVSync();
-                }
-                if (!mAVSynchActive)
-                {
-                    //############################
-                    //### limit audio buffering
-                    //############################
-                    tBufferTime = mAudioSource->GetFrameBufferTime();
-                    tBufferTimeLimit = mAudioSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
-                    if ((mAudioSource != NULL) && (tBufferTime > tBufferTimeLimit))
-                    {// buffer has too many frames, this can be the case if the system has temporary high load
-                        LOG(LOG_WARN, "Detected over-buffering for audio stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
-                        mAudioWidget->GetWorker()->SyncClock();
-                        ResetAVSync();
-                    }
-                }
-            #endif
+            float tBufferTime = 0;
+            float tPreBufferTime = 0;
+            bool tSourceNeedsResync = false;
+            //############################
+            //### limit video buffering
+            //############################
+            if (mVideoSource != NULL)
+            {
+                tBufferTime = mVideoSource->GetFrameBufferTime();
+                tPreBufferTime = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
+				#ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
+					if ((tBufferTime > 0) && (tBufferTime > tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC))
+					{
+	                    LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC);
+	                    tSourceNeedsResync = true;
+					}
+				#endif
+				#ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_UNDER_BUFFERING
+					if ((tBufferTime > 0) && (tBufferTime < tPreBufferTime - AV_SYNC_MAX_UNDER_BUFFERING_DRIFT_UNTIL_RESYNC))
+					{
+	                    LOG(LOG_WARN, "Detected under-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tPreBufferTime - AV_SYNC_MAX_UNDER_BUFFERING_DRIFT_UNTIL_RESYNC);
+	                    tSourceNeedsResync = true;
+					}
+				#endif
+				if (tSourceNeedsResync)
+				{// buffer has too many frames, this can be the case if the system has temporary high load
+					mVideoWidget->GetWorker()->SyncClock();
+					ResetAVSync();
+				}
+            }
 
-            //HINT: we have to keep the audio buffering flexible! otherwise, the A/V synchronizatino won't work anymore
+            //############################
+            //### limit audio buffering
+            //############################
+			tSourceNeedsResync = false;
+			if ((mAudioSource != NULL) && (!mAVSynchActive))
+			{
+				tBufferTime = mAudioSource->GetFrameBufferTime();
+				tPreBufferTime = mAudioSource->GetFrameBufferPreBufferingTime();
+				#ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
+					if ((tBufferTime > 0) && (tBufferTime > tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC))
+					{
+						LOG(LOG_WARN, "Detected over-buffering for audio stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC);
+						tSourceNeedsResync = true;
+					}
+				#endif
+				if (tSourceNeedsResync)
+				{// buffer has too many frames, this can be the case if the system has temporary high load
+					LOG(LOG_WARN, "Detected over-buffering for audio stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC);
+					mAudioWidget->GetWorker()->SyncClock();
+					ResetAVSync();
+				}
+			}
+
+            //HINT: we have to keep the audio buffering flexible! otherwise, the A/V synchronization won't work anymore
 
             // only try to synch. if it is desired
             if (!mAVSynchActive)
@@ -1481,9 +1509,9 @@ void ParticipantWidget::AVSync()
                             mAVASyncCounter++;
                             #ifdef PARTICIPANT_WIDGET_DEBUG_AV_SYNC
                                 if (tTimeDiff > 0)
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", mAVAsyncCounterSinceLastSynchronization, tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64, mAVAsyncCounterSinceLastSynchronization, tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
                                 else
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", mAVAsyncCounterSinceLastSynchronization, tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64, mAVAsyncCounterSinceLastSynchronization, tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
                             #endif
                         }
                     }
