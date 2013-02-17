@@ -1552,7 +1552,7 @@ void AudioWorkerThread::run()
                     mDeliverMutex.unlock();
 
                     if ((mLastFrameNumber > tFrameNumber) && (tFrameNumber > 9 /* -1 means error, 1 is received after every reset, use "9" because of possible latencies */))
-                        LOG(LOG_ERROR, "Sample ordering problem detected");
+                        LOG(LOG_ERROR, "Sample ordering problem detected (%d -> %d)", mLastFrameNumber, tFrameNumber);
                 }else
                 {
                     LOG(LOG_VERBOSE, "Invalid grabbing result: %d, current sample size: %d", tFrameNumber, mSamplesSize[mSampleGrabIndex]);
