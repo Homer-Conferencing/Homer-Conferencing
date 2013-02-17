@@ -127,21 +127,21 @@ ENDIF (LINUX)
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
 	avutil-52
-    	avcodec-54
-    	avdevice-54
-    	avfilter-3
-    	avformat-54
-    	libgcc_s_dw2-1
-    	libstdc++-6
-    	portaudio
+	avcodec-54
+	avdevice-54
+	avfilter-3
+	avformat-54
+	libgcc_s_dw2-1
+	libstdc++-6
+	portaudio
 	postproc-52
-    	swresample-0
-    	swscale-2
+	swresample-0
+	swscale-2
 )
 SET (LIBS_WINDOWS
-    	avutil-52
-    	avcodec-54
-    	avfilter-3
+	avutil-52
+	avcodec-54
+	avfilter-3
 	avformat-54
 	avdevice-54
 	HomerBase
@@ -173,10 +173,6 @@ SET (LIBS_APPLE_STATIC
 	avutil
 	postproc
 	mp3lame
-	opencore-amrnb
-	opencore-amrwb
-	theoraenc
-	theoradec
 	ogg
 	x264
 	vpx
