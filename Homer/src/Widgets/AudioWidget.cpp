@@ -1512,10 +1512,8 @@ void AudioWorkerThread::run()
 			            mWaveOut->LimitQueue(AUDIO_MAX_PLAYBACK_QUEUE);
 			    }else
 			    {
-                    #ifdef DEBUG_AUDIOWIDGET_PLAYBACK
-			            if (mWaveOut != NULL)
-			                LOG(LOG_VERBOSE, "Dropping this audio frame because A/V drift is out of allowed range");
-			        #endif
+					if (mWaveOut != NULL)
+						LOG(LOG_VERBOSE, "Dropping this audio frame because it is out of play-range, A/V drift is too high");
 			    }
 
 			}else
