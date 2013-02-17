@@ -986,7 +986,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                     {// source is a file
                         if (mDecoderTargetOutputFrameIndex == 0)
                         {// we aren't waiting for a special frame
-                            LOG(LOG_WARN, "System too slow?, %s grabber detected a buffer underrun", GetMediaTypeStr().c_str());
+                            LOG(LOG_WARN, "System too slow?, %s %s grabber detected a buffer underrun", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
                         }
                     }else
                     {// source is memory/network
@@ -1112,7 +1112,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 // RT grabbing - do we have to wait?
                 if (!WaitForRTGrabbing())
                 {
-                    LOG(LOG_WARN, "%s frame is too late, frame dropped", GetMediaTypeStr().c_str());
+                    LOG(LOG_WARN, "%s frame from %s source is too late, frame dropped", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
                     tShouldGrabNext = true;
                 }
             }
@@ -1490,7 +1490,7 @@ void* MediaSourceMem::Run(void* pArgs)
                 // Assign appropriate parts of buffer to image planes in tRGBFrame
                 avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
 
-                mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr() + "(Data)");
+                mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr());
             }
 
             break;
@@ -1506,7 +1506,7 @@ void* MediaSourceMem::Run(void* pArgs)
             // allocate chunk buffer
             tChunkBuffer = (uint8_t*)av_malloc(tChunkBufferSize);
 
-            mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr() + "(Data)");
+            mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr());
 
             break;
         default:
@@ -2001,7 +2001,6 @@ void* MediaSourceMem::Run(void* pArgs)
                                             }
                                         }
 
-                                        //LOG(LOG_VERBOSE, "ChunkSize: %d", pChunkSize);
                                         // write new samples into fifo buffer
                                         av_fifo_generic_write(mResampleFifo[0], tDecodedAudioSamples, tCurrentChunkSize, NULL);
 

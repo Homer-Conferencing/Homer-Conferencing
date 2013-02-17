@@ -1663,7 +1663,7 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
     mMediaSinksMutex.unlock();
 }
 
-void MediaSource::RelaySyncTimestampToMediaSinks(uint64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
+void MediaSource::RelaySyncTimestampToMediaSinks(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
 {
     MediaSinks::iterator tIt;
 
@@ -3502,7 +3502,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
                 // planes indexing resample buffer
                 int InputFrameSize = (mCodecContext != NULL) ? (mCodecContext->frame_size > 0 ? mCodecContext->frame_size : MEDIA_SOURCE_SAMPLES_PER_BUFFER) : MEDIA_SOURCE_SAMPLES_PER_BUFFER;
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..assigning planes memory for indexing resample memory with frame size: %d", InputFrameSize /* we use the source frame size! */);
-                memset(mResampleBufferPlanes, 0, sizeof(mResampleBufferPlanes));
+                memset(mResampleBufferPlanes, 0, sizeof(uint8_t*) * MEDIA_SOURCE_MAX_AUDIO_CHANNELS);
                 if (HM_av_samples_fill_arrays(&mResampleBufferPlanes[0], NULL, (uint8_t *)mResampleBuffer, mOutputAudioChannels, InputFrameSize /* we use the source frame size! */, mOutputAudioFormat, 1) < 0)
                 {
                     LOG_REMOTE(LOG_ERROR, pSource, pLine, "Could not fill the audio plane pointer array");
@@ -3517,6 +3517,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 			}
 			break;
 		default:
+        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid media source type");
 			break;
 
 	}
@@ -3570,7 +3571,8 @@ bool MediaSource::FfmpegCloseFormatConverter(string pSource, int pLine)
             }
             break;
         default:
-            break;
+        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid media source type");
+			break;
     }
     return true;
 }

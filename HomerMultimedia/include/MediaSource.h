@@ -377,7 +377,7 @@ protected:
 
     /* internal interface for packet relaying */
     virtual void RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, bool pIsKeyFrame = false);
-    virtual void RelaySyncTimestampToMediaSinks(uint64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp);
+    virtual void RelaySyncTimestampToMediaSinks(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp);
 
     /* internal interface for stream recordring */
     void RecordFrame(AVFrame *pSourceFrame);

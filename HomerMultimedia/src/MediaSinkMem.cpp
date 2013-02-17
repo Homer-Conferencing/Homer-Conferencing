@@ -272,10 +272,10 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
     }
 }
 
-void MediaSinkMem::UpdateSynchronization(uint64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
+void MediaSinkMem::UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
 {
     if ((mRtpActivated) && (mRtpStreamOpened))
-        SetSynchronizationReferenceForRTP(pReferenceNtpTimestamp, (uint32_t)(pReferenceFrameTimestamp- mIncomingAVStreamStartPts));
+        SetSynchronizationReferenceForRTP((uint64_t)pReferenceNtpTimestamp, (uint32_t)(pReferenceFrameTimestamp- mIncomingAVStreamStartPts));
 }
 
 int MediaSinkMem::GetFragmentBufferCounter()

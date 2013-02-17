@@ -170,7 +170,7 @@ public:
 protected:
     uint64_t GetCurrentPtsFromRTP(); // returns the timestamp of the last received RTP packet
     void GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, uint64_t &pReferencePts);
-    void SetSynchronizationReferenceForRTP(uint64_t &pReferenceNtpTime, uint32_t pReferencePts);
+    void SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint32_t pReferencePts);
     unsigned int GetSourceIdentifierFromRTP(); // returns the RTP source identifier
     bool HasSourceChangedFromRTP(); // return if RTP source identifier has changed and resets the flag
 

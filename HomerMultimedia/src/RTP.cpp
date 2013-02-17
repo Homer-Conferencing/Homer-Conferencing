@@ -1078,7 +1078,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                 {
                     if (mRtcpLastSenderReport != NULL)
                     {
-                        //RtcpPatchLiveSenderReport(mRtcpLastSenderReport, tRtpHeader->Timestamp);
+                        RtcpPatchLiveSenderReport(mRtcpLastSenderReport, tRtpHeader->Timestamp);
                         mRtcpLastSenderReport = NULL;
                     }
                 }
@@ -2766,19 +2766,19 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
     return tResult;
 }
 
-void RTP::SetSynchronizationReferenceForRTP(uint64_t &pReferenceNtpTime, uint32_t pReferencePts)
+void RTP::SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint32_t pReferencePts)
 {
-    return;
-
     if (!mRtpEncoderOpened)
         return;
 
     if (pReferencePts < 1)
         return;
 
-    LOG(LOG_VERBOSE, "New synchronization for %d codec: %u, clock: %.2f, RTP timestamp: %.2f, timestamp offset: %lu", mStreamCodecID, pReferencePts, CalculateClockRateFactor(), (float)pReferencePts * CalculateClockRateFactor(), mLocalTimestampOffset);
+	#ifdef RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
+    	LOG(LOG_VERBOSE, "New synchronization for %d codec: %u, clock: %.2f, RTP timestamp: %.2f, timestamp offset: %lu", mStreamCodecID, pReferencePts, CalculateClockRateFactor(), (float)pReferencePts * CalculateClockRateFactor(), mLocalTimestampOffset);
+	#endif
 
-    mSyncDataMutex.lock();
+	mSyncDataMutex.lock();
     mSyncNTPTime = pReferenceNtpTime;
     mSyncPTS = mLocalTimestampOffset + (uint64_t)(pReferencePts * CalculateClockRateFactor()); // clock rate adaption according to rfc (mpeg uses 90 kHz)
     mSyncDataMutex.unlock();

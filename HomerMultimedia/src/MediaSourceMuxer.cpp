@@ -1342,6 +1342,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     VideoScaler         *tVideoScaler = NULL;
     int                 tFrameFinished = 0;
     int64_t             tInputFrameTimestamp;
+    int64_t				tOutputFrameTimestamp;
 
     LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Encoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
@@ -1401,9 +1402,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     }
 
     if (!OpenFormatConverter())
-    {
         LOG(LOG_ERROR, "Failed to open %s format converter", GetMediaTypeStr().c_str());
-    }
 
     // check the actually used bit rate, does it matches the desired one?
     if (mStreamBitRate != mCodecContext->bit_rate)
@@ -1411,9 +1410,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     // allocate streams private data buffer and write the streams header, if any
     if ((tResult = avformat_write_header(mFormatContext, NULL)) < 0)
-    {
         LOG(LOG_ERROR, "Couldn't write %s codec header because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
-    }
 
     // set marker to "active"
     mEncoderThreadNeeded = true;
@@ -1482,8 +1479,19 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "      ..display pic number: %d", tYUVFrame->display_picture_number);
                                 #endif
 
-                                RelaySyncTimestampToMediaSinks((uint64_t)tInputFrameTimestamp, tYUVFrame->pts);
+								// ####################################################################
+								// ### calculate output frame timestamp from input frame timestamp
+								// ####################################################################
+								tOutputFrameTimestamp = tInputFrameTimestamp;
 
+                                // ####################################################################
+                                // ### update synch. for all media sinks
+                                // ####################################################################
+								RelaySyncTimestampToMediaSinks(tOutputFrameTimestamp, tYUVFrame->pts);
+
+                                // ####################################################################
+                                // ### generate new output frame
+                                // ####################################################################
                                 EncodeAndWritePacket(mFormatContext, mCodecContext, tYUVFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames);
 
                                 // increase the frame counter (used for PTS generation)
@@ -1524,8 +1532,23 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 int tWrittenFifoSizePerChannel = tResamplingOutputSamples * tOutputAudioBytesPerSample;
 
                                 // ####################################################################
+                                // ### calculate output frame timestamp from input frame timestamp
+                                // ####################################################################
+                                // calculate how many samples are already stored within the FIFOs
+                                int tAlreadyAvailableSamplesPerChannel = av_fifo_size(mResampleFifo[0]) / tOutputAudioBytesPerSample;
+                                // is everything stored within resample FIFO 0?
+                                if (!av_sample_fmt_is_planar(mOutputAudioFormat))
+                                	tAlreadyAvailableSamplesPerChannel /= mOutputAudioChannels;
+                                // calculate the time offset by which we have to shift the input timestamp in order to calculate the output timestamp of the first sample from the FIFOs
+                                int64_t tOutputFrameTimestampOffset = 1000 * 1000 * tAlreadyAvailableSamplesPerChannel / GetOutputSampleRate();
+								#ifdef MSM_DEBUG_PACKET_DISTRIBUTION
+									LOG(LOG_VERBOSE, "Shifting output frame timestamp of %ld by %6ld for %d(FIFO 0: %d) samples and output sample rate of %d Hz", tOutputFrameTimestamp, tOutputFrameTimestampOffset, tAlreadyAvailableSamplesPerChannel, av_fifo_size(mResampleFifo[0]), GetOutputSampleRate());
+								#endif
+                                tOutputFrameTimestamp = tInputFrameTimestamp - tOutputFrameTimestampOffset;
+
+                                // ####################################################################
                                 // ### buffer the input (resampled?) audio date for frame size conversion
-                                // ###################################################################
+                                // ####################################################################
                                 for (int i = 0; i < mOutputAudioChannels; i++)
                                 {
                                     int tFifoIndex = i;
@@ -1630,10 +1653,24 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                             }
                                         #endif
 
-                                        //TODO: the following is only an approximation, we should use the correct NTP here!
-                                        RelaySyncTimestampToMediaSinks((uint64_t)tInputFrameTimestamp, tAudioFrame->pts);
+										// ####################################################################
+										// ### update synch. for all media sinks
+										// ####################################################################
+                                        RelaySyncTimestampToMediaSinks(tOutputFrameTimestamp, tAudioFrame->pts);
 
-                                        EncodeAndWritePacket(mFormatContext, mCodecContext, tAudioFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames);
+                                        // ####################################################################
+                                        // ### correct the NTP time by the time the current audio frame would take during playback
+                                        // ####################################################################
+                                        tOutputFrameTimestampOffset = 1000 * 1000 * tOutputSamplesPerChannel / GetOutputSampleRate();
+										#ifdef MSM_DEBUG_PACKET_DISTRIBUTION
+                                        	LOG(LOG_VERBOSE, "Shifting output frame timestamp of %ld by %6ld for %d samples and output sample rate of %d Hz", tOutputFrameTimestamp, tOutputFrameTimestampOffset, tOutputSamplesPerChannel, GetOutputSampleRate());
+										#endif
+										tOutputFrameTimestamp += tOutputFrameTimestampOffset;
+
+                                        // ####################################################################
+                                        // ### generate new output frame
+                                        // ####################################################################
+										EncodeAndWritePacket(mFormatContext, mCodecContext, tAudioFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames);
 
                                         // increase the frame counter (used for PTS generation)
                                         mFrameNumber++;

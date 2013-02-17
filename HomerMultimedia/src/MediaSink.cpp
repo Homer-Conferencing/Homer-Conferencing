@@ -66,7 +66,7 @@ MediaSink::~MediaSink()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaSink::UpdateSynchronization(uint64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
+void MediaSink::UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
 {
     // nothing to do
 }
