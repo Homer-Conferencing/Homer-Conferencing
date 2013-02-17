@@ -1326,11 +1326,12 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
                 if (mRtpActivated)
                 {// derive the frame number from the RTP timestamp, which works independent from packet loss
                     pFrameTimestamp = CalculateFrameNumberFromRTP();
+                    int64_t tPacketPts = rint(pFrameTimestamp);
                     #ifdef MSMEM_DEBUG_PACKET_TIMING
-                        LOG(LOG_VERBOSE, "Read frame with %d bytes with PTS: %ld => %.2f %lf", pPacket->size, pPacket->pts, (float)pFrameTimestamp, av_q2d(mFormatContext->streams[pPacket->stream_index]->time_base));
+                        LOG(LOG_VERBOSE, "Read frame with %d bytes with PTS: %ld => %ld %lf", pPacket->size, pPacket->pts, tPacketPts, av_q2d(mFormatContext->streams[pPacket->stream_index]->time_base));
                     #endif
-                    pPacket->pts = pFrameTimestamp;
-                    pPacket->dts = pFrameTimestamp;
+                    pPacket->pts = tPacketPts;
+                    pPacket->dts = tPacketPts;
                     #ifdef MSMEM_DEBUG_PRE_BUFFERING
                         LOG(LOG_VERBOSE, "Got from RTP data the frame number: %d", pFrameTimestamp);
                     #endif
@@ -1384,9 +1385,15 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
             }else
             {
                 tShouldReadNext = true;
-                #ifdef MSMEM_DEBUG_PACKETS
-                    LOG(LOG_VERBOSE, "Read frame %d of stream %d instead of desired stream %d", pPacket->pts, pPacket->stream_index, mMediaStreamIndex);
-                #endif
+                if (mRtpActivated)
+                {
+					LOG(LOG_ERROR, "Read %s frame %d of stream %d instead of desired stream %d, this should never happen in case of a single RTP stream", GetMediaTypeStr().c_str(), pPacket->pts, pPacket->stream_index, mMediaStreamIndex);
+                }else
+                {
+					#ifdef MSMEM_DEBUG_PACKETS
+						LOG(LOG_VERBOSE, "Read %s frame %d of stream %d instead of desired stream %d", GetMediaTypeStr().c_str(), pPacket->pts, pPacket->stream_index, mMediaStreamIndex);
+					#endif
+                }
             }
         }
     }while ((tShouldReadNext) && (!mEOFReached) && (mDecoderThreadNeeded));
@@ -2509,10 +2516,16 @@ double MediaSourceMem::CalculateFrameNumberFromRTP()
                 {
                     double tTimeBetweenFrames = 1000 / tFrameRate;
                     tResult = (double) GetCurrentPtsFromRTP() / tTimeBetweenFrames;
+					#ifdef MSMEM_DEBUG_PACKET_TIMING
+						LOG(LOG_VERBOSE, "RTP has VIDEO PTS: %lu", GetCurrentPtsFromRTP());
+                    #endif
                 }
                 break;
         case MEDIA_AUDIO:
                 tResult = (double) GetCurrentPtsFromRTP() / mCodecContext->frame_size;
+				#ifdef MSMEM_DEBUG_PACKET_TIMING
+					LOG(LOG_VERBOSE, "RTP has AUDIO PTS: %lu", GetCurrentPtsFromRTP());
+				#endif
                 break;
         default:
                 break;
