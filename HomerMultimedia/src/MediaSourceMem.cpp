@@ -54,9 +54,6 @@ using namespace Homer::Base;
 // seeking: expected maximum GOP size, used if frames are dropped after seeking to find the next key frame close to the target frame
 #define MEDIA_SOURCE_MEM_SEEK_MAX_EXPECTED_GOP_SIZE                         30 // every x frames a key frame
 
-// should we use reordered PTS values from ffmpeg video decoder?
-#define MEDIA_SOURCE_MEM_USE_REORDERED_PTS                                  0 // on/off
-
 // how much time do we want to buffer at maximum?
 #define MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME                         ((System::GetTargetMachineType() != "x86") ? 6.0 : 2.0) // use less memory for 32 bit targets
 
@@ -1712,28 +1709,28 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // ############################
                                 // ### calculate PTS value
                                 // ############################
+                                int64_t tDecodedFrameTimestamp = 0;
                                 // save PTS value to deliver it later to the frame grabbing thread
-                                if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) && (!MEDIA_SOURCE_MEM_USE_REORDERED_PTS))
-                                {// use DTS value from decoder
+                                if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) || (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE))
+                                {// use PTS/DTS
+                                	tDecodedFrameTimestamp = av_frame_get_best_effort_timestamp(tSourceFrame);
                                     #ifdef MSMEM_DEBUG_TIMING
-                                        LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet DTS %"PRId64, tSourceFrame->pkt_dts);
+                                        LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet BE PTS %"PRId64, tDecodedFrameTimestamp);
                                     #endif
-                                    tCurrentOutputFrameTimestamp = CalculateOutputFrameNumber(tSourceFrame->pkt_dts);
-                                }else if (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE)
-                                {// fall back to reordered PTS value
-                                    #ifdef MSMEM_DEBUG_TIMING
-                                        LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet PTS %"PRId64, tSourceFrame->pkt_pts);
-                                    #endif
-                                    tCurrentOutputFrameTimestamp = CalculateOutputFrameNumber(tSourceFrame->pkt_pts);
                                 }else
                                 {// fall back to packet's PTS value
                                     #ifdef MSMEM_DEBUG_TIMING
                                         LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS %.2f", (float)tCurrentInputFrameTimestamp);
                                     #endif
-                                    tCurrentOutputFrameTimestamp = CalculateOutputFrameNumber(tCurrentInputFrameTimestamp);
+									tDecodedFrameTimestamp = tCurrentInputFrameTimestamp;
                                 }
-                                if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
-                                    LOG(LOG_VERBOSE, "PTS(%"PRId64") and DTS(%"PRId64") differ after %s decoding step", tSourceFrame->pkt_pts, tSourceFrame->pkt_dts, GetMediaTypeStr().c_str());
+
+                                tCurrentOutputFrameTimestamp = CalculateOutputFrameNumber(tDecodedFrameTimestamp);
+
+								#ifdef MSMEM_DEBUG_TIMING
+                                	if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
+                                		LOG(LOG_VERBOSE, "PTS(%"PRId64") and DTS(%"PRId64") differ after %s decoding step, using as PTS %"PRId64, tSourceFrame->pkt_pts, tSourceFrame->pkt_dts, GetMediaTypeStr().c_str(), tDecodedFrameTimestamp);
+								#endif
                             }else
                             {// reuse the stored picture
                                 // ############################
