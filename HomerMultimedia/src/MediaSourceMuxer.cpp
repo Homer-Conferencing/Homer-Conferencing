@@ -1350,6 +1350,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
     int64_t				tLastInputFrameTimestamp = -1;
     int64_t             tInputFrameTimestamp = 0;
     int64_t				tOutputFrameTimestamp = 0;
+    int64_t				tVideoEncoderFrameTimestamp = 0;
+    int64_t				tLastVideoEncoderFrameTimestamp = 0;
 
     LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Encoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
@@ -1441,8 +1443,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
             //### get next frame data
             //###################################################################
             tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tInputFrameTimestamp /* NTP time */);
-            if ((tLastInputFrameTimestamp != -1) && (tInputFrameTimestamp != 0) && (tInputFrameTimestamp <= tLastInputFrameTimestamp))
-            	LOG(LOG_ERROR, "Input %s frame timestamp is too low: %"PRId64" <= %"PRId64", diff: %"PRId64, GetMediaTypeStr().c_str(), tInputFrameTimestamp, tLastInputFrameTimestamp, tInputFrameTimestamp - tLastInputFrameTimestamp);
+            if ((tLastInputFrameTimestamp != -1) && (tInputFrameTimestamp != 0) && (tInputFrameTimestamp < tLastInputFrameTimestamp))
+            	LOG(LOG_WARN, "Input %s frame timestamp is too low: %"PRId64" <= %"PRId64", diff: %"PRId64, GetMediaTypeStr().c_str(), tInputFrameTimestamp, tLastInputFrameTimestamp, tInputFrameTimestamp - tLastInputFrameTimestamp);
             tLastInputFrameTimestamp = tInputFrameTimestamp;
 
             mEncoderSeekMutex.lock();
@@ -1481,7 +1483,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 tYUVFrame->pict_type = AV_PICTURE_TYPE_NONE;
                                 if (!mMediaSource->HasVariableVideoOutputFrameRate())
                                 {// base source delivers a stable output frame rate
-                                	tYUVFrame->pts = (int64_t)rint(CalculateEncoderPts(mFrameNumber));
+									tVideoEncoderFrameTimestamp = (int64_t)rint(CalculateEncoderPts(mFrameNumber));
                                 }else
                                 {// base source delivers a variable output frame rate (we cannot rely on equidistant times between two grabbed frames
                                 	if (mEncoderStartTime == 0)
@@ -1489,11 +1491,30 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 		LOG(LOG_WARN, "Encoder start time is still invalid, setting a default value");
                                 		mEncoderStartTime = tInputFrameTimestamp;
                                 	}
-                                	tYUVFrame->pts = (tInputFrameTimestamp - mEncoderStartTime) / 1000; // grab time in ms
+                                	tVideoEncoderFrameTimestamp = (tInputFrameTimestamp - mEncoderStartTime) / 1000; // grab time in ms
 									#ifdef MSM_DEBUG_PACKETS
                                 		LOG(LOG_VERBOSE, "Setting PTS to %ld (%ld - %ld) for frame %d", tYUVFrame->pts, tInputFrameTimestamp, mEncoderStartTime, mFrameNumber);
 									#endif
                                 }
+
+                                // check encoder frame timestamp
+                                if ((tLastVideoEncoderFrameTimestamp != 0) && (tVideoEncoderFrameTimestamp <= tLastVideoEncoderFrameTimestamp))
+                                {// timestamp is too low
+                                	LOG(LOG_WARN, "Encoder VIDEO frame timestamp is too low (%"PRId64" < %"PRId64")", tVideoEncoderFrameTimestamp, tLastVideoEncoderFrameTimestamp);
+
+                                	int64_t tTimestamp = tVideoEncoderFrameTimestamp;
+
+                                	// enforce a monotonously increasing time base
+                                	tVideoEncoderFrameTimestamp = tLastVideoEncoderFrameTimestamp + 1;
+
+                                	// store as last timestamp the original value
+                                	tLastVideoEncoderFrameTimestamp = tTimestamp;
+                                }else
+                                {// timestamp is okay
+                                	tLastVideoEncoderFrameTimestamp = tVideoEncoderFrameTimestamp;
+                                }
+
+								tYUVFrame->pts = tVideoEncoderFrameTimestamp;
                                 tYUVFrame->pkt_pts = tYUVFrame->pts;
                                 tYUVFrame->pkt_dts = tYUVFrame->pts;
                                 tYUVFrame->coded_picture_number = mFrameNumber;
