@@ -1074,7 +1074,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                 //#################################################################################
                 //### patch last audio RTCP sender report if there was any
                 //#################################################################################
-                if (mRtpEncoderStream->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+//                if (mRtpEncoderStream->codec->codec_type == AVMEDIA_TYPE_AUDIO)
                 {
                     if (mRtcpLastSenderReport != NULL)
                     {
