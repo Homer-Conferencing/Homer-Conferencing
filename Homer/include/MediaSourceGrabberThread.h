@@ -94,6 +94,7 @@ public:
     void PauseFile();
     bool IsPaused();
     bool PlayingFile();
+    bool IsSeeking();
     void StopFile();
     bool EofReached();
     QString CurrentFile();

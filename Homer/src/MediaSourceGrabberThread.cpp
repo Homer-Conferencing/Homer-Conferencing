@@ -280,6 +280,14 @@ bool MediaSourceGrabberThread::PlayingFile()
         return false;
 }
 
+bool MediaSourceGrabberThread::IsSeeking()
+{
+    if ((mMediaSource != NULL) && (mMediaSource->SupportsSeeking()) && (mMediaSource->IsSeeking()))
+        return true;
+    else
+        return false;
+}
+
 void MediaSourceGrabberThread::StopFile()
 {
     if (mMediaSource->SupportsSeeking())
@@ -498,23 +506,29 @@ void MediaSourceGrabberThread::DoSeek()
 {
     LOG(LOG_VERBOSE, "DoSeek now...");
 
-    // lock
-    mDeliverMutex.lock();
+    if (!mMediaSource->IsSeeking())
+    {// no seeking running, we are allowed to start a new seek process
+		// lock
+		mDeliverMutex.lock();
 
-    LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
-    if (mMediaSource->SupportsSeeking())
-    {
-        mSourceAvailable = mMediaSource->Seek(mSeekPos);
-        if(!mSourceAvailable)
-        {
-            LOG(LOG_WARN, "Source isn't available anymore after seeking");
-        }
+		LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
+		if (mMediaSource->SupportsSeeking())
+		{
+			mSourceAvailable = mMediaSource->Seek(mSeekPos);
+			if(!mSourceAvailable)
+			{
+				LOG(LOG_WARN, "Source isn't available anymore after seeking");
+			}
+		}
+		mEofReached = false;
+		mSeekAsap = false;
+
+		// unlock
+		mDeliverMutex.unlock();
+    }else
+    {// another seek process is already running
+
     }
-    mEofReached = false;
-    mSeekAsap = false;
-
-    // unlock
-    mDeliverMutex.unlock();
 }
 
 void MediaSourceGrabberThread::StopGrabber()
