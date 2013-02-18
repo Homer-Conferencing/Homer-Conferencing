@@ -1181,7 +1181,13 @@ int MediaSourceMuxer::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 		// we relay this chunk to all registered media sinks based on the dedicated relay thread
 		int64_t tTime = Time::GetTimeStamp();
 
-		mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize, (int64_t)RTP::GetNtpTime());
+		int64_t tNtpTime = (int64_t)RTP::GetNtpTime();
+
+		// set encoder start time in order to be able to support variable output frame rates
+		if (mFrameNumber == 0)
+			mEncoderStartTime = tNtpTime;
+
+		mEncoderFifo->WriteFifo((char*)pChunkBuffer, pChunkSize, tNtpTime);
 		#ifdef MSM_DEBUG_TIMING
 			int64_t tTime2 = Time::GetTimeStamp();
 			//LOG(LOG_VERBOSE, "Writing %d bytes to Encoder-FIFO took %"PRId64" us", pChunkSize, tTime2 - tTime);
@@ -1416,6 +1422,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     mEncoderThreadNeeded = true;
 
     mFrameNumber = 0;
+    mEncoderStartTime = 0;
 
     // trigger an avcodec_flush_buffers()
     ResetEncoderBuffers();
@@ -1468,7 +1475,21 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 #endif
 
                                 tYUVFrame->pict_type = AV_PICTURE_TYPE_NONE;
-                                tYUVFrame->pts = (int64_t)rint(CalculateEncoderPts(mFrameNumber));
+                                if (!mMediaSource->HasVariableVideoOutputFrameRate())
+                                {// base source delivers a stable output frame rate
+                                	tYUVFrame->pts = (int64_t)rint(CalculateEncoderPts(mFrameNumber));
+                                }else
+                                {// base source delivers a variable output frame rate (we cannot rely on equidistant times between two grabbed frames
+                                	if (mEncoderStartTime == 0)
+                                	{
+                                		LOG(LOG_WARN, "Encoder start time is still invalid, setting a default value");
+                                		mEncoderStartTime = tInputFrameTimestamp;
+                                	}
+                                	tYUVFrame->pts = (tInputFrameTimestamp - mEncoderStartTime) / 1000; // grab time in ms
+									#ifdef MSM_DEBUG_PACKETS
+                                		LOG(LOG_VERBOSE, "Setting PTS to %ld (%ld - %ld) for frame %d", tYUVFrame->pts, tInputFrameTimestamp, mEncoderStartTime, mFrameNumber);
+									#endif
+                                }
 
                                 #ifdef MSM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Scaler returned video frame..");
@@ -2028,6 +2049,14 @@ void MediaSourceMuxer::SetVideoFlipping(bool pHFlip, bool pVFlip)
 {
     mVideoHFlip = pHFlip;
     mVideoVFlip = pVFlip;
+}
+
+bool MediaSourceMuxer::HasVariableVideoOutputFrameRate()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->HasVariableVideoOutputFrameRate();
+    else
+        return false;
 }
 
 void MediaSourceMuxer::StopGrabbing()

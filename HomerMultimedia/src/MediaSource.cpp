@@ -821,6 +821,11 @@ int MediaSource::GetInputBitRate()
 	return mInputBitRate;
 }
 
+bool MediaSource::HasVariableVideoOutputFrameRate()
+{
+	return false;
+}
+
 AVFrame *MediaSource::AllocFrame()
 {
     AVFrame *tResult = avcodec_alloc_frame();

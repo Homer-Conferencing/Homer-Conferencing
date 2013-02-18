@@ -649,6 +649,11 @@ GrabResolutions MediaSourceV4L2::GetSupportedVideoGrabResolutions()
     return mSupportedVideoFormats;
 }
 
+bool MediaSourceV4L2::HasVariableVideoOutputFrameRate()
+{
+	return true;
+}
+
 bool MediaSourceV4L2::SupportsDecoderFrameStatistics()
 {
     return (mMediaType == MEDIA_VIDEO);
