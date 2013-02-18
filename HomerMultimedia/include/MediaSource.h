@@ -420,7 +420,7 @@ protected:
     bool FfmpegCloseAll(string pSource /* caller source */, int pLine /* caller line */);
 
     /* encoder helpers */
-    bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int pBufferedFrames);
+    bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int &pBufferedFrames);
 
     bool                mMediaSourceOpened;
     bool                mGrabbingStopped;

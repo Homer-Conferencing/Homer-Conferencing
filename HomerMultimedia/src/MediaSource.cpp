@@ -3636,7 +3636,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
     return true;
 }
 
-bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int pBufferedFrames)
+bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int &pBufferedFrames)
 {
     AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
     int                 tEncoderResult;
