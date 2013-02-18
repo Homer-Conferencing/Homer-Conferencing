@@ -54,10 +54,14 @@ using namespace Homer::Base;
 // seeking: expected maximum GOP size, used if frames are dropped after seeking to find the next key frame close to the target frame
 #define MEDIA_SOURCE_MEM_SEEK_MAX_EXPECTED_GOP_SIZE                         30 // every x frames a key frame
 
+// timeout until we give up to find a suitable A/V frame in GrabChunk()
+#define MEDIA_SOURCE_MEM_GRABBING_TIMEOUT									0.25 // seconds
+
+// assumed default jitter for end-to-end delay for an A/V transmission
+#define MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER							0.1 //seconds
+
 // how much time do we want to buffer at maximum?
 #define MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME                         ((System::GetTargetMachineType() != "x86") ? 6.0 : 2.0) // use less memory for 32 bit targets
-
-#define MEDIA_SOURCE_MEM_PRE_BUFFER_TIME                                    (MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME / 2) // leave some seconds for high system load situations so that this part of the input queue can be used for compensating it
 
 // how long do we want to wait for the first key frame when starting decoder loop?
 #define MSM_WAITING_FOR_FIRST_KEY_FRAME_TIMEOUT                             7 // seconds
@@ -71,7 +75,7 @@ MediaSourceMem::MediaSourceMem(string pName):
     MediaSource(pName), RTP()
 {
     mDecoderFrameBufferTimeMax = MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME;
-    mDecoderFramePreBufferTime = MEDIA_SOURCE_MEM_PRE_BUFFER_TIME;
+    mDecoderFramePreBufferTime = MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER;
     mDecoderTargetOutputFrameIndex = 0;
     mRtpBufferedFrames = 0;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
@@ -926,6 +930,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 
     bool tShouldGrabNext = false;
     int tGrabLoops = 0;
+    int64_t tGrabStartTime = Time::GetTimeStamp();
 
     do{
         tShouldGrabNext = false;
@@ -1113,6 +1118,11 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                     tShouldGrabNext = true;
                 }
             }
+        }
+        if (Time::GetTimeStamp() >= tGrabStartTime + MEDIA_SOURCE_MEM_GRABBING_TIMEOUT * AV_TIME_BASE)
+        {
+        	LOG(LOG_VERBOSE, "Timeout of %d seconds occurred for %s grabbing, didn't found a suitable frame", MEDIA_SOURCE_MEM_GRABBING_TIMEOUT, GetMediaTypeStr().c_str());
+        	tShouldGrabNext = false;
         }
     }while (tShouldGrabNext);
 
@@ -2383,14 +2393,13 @@ bool MediaSourceMem::WaitForRTGrabbing()
     #endif
     // adapt timing to real-time
     if (tResultingTimeOffset > 0)
-    {
+    {// waiting time is okay, we have to do active waiting
         #ifdef MSMEM_DEBUG_WAITING_TIMING
             LOG(LOG_WARN, "%s-%s-sleeping for %"PRId64" ms (%"PRId64" - %"PRId64") for frame %.2f, RT ref. time: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, tDesiredPlayOutTime, tCurrentPlayOutTime, (float)mCurrentOutputFrameIndex, (float)mSourceStartTimeForRTGrabbing);
         #endif
 		if (tResultingTimeOffset <= MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME * AV_TIME_BASE)
 		{
 			Thread::Suspend(tResultingTimeOffset);
-		    return true;
 		}else
 		{
 			LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %"PRId64" s, pre-buffer time: %.2f, PTS of last queued frame: %"PRId64", PTS of last grabbed frame: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, (float)mCurrentOutputFrameIndex);
@@ -2398,23 +2407,34 @@ bool MediaSourceMem::WaitForRTGrabbing()
 			mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 		}
 	}else
-    {
+    {// waiting time invalid, frame is too late
 	    float tDelay = (float)tResultingTimeOffset / (-1000);
-        LOG(LOG_WARN, "System too slow?, %s %s grabbing is %f ms too late", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay);
-        if (tDelay < MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000 /* we are still in play-range */)
-            return true;
-        else
-            return false;
+
+	    if (mRtpActivated)
+		{
+	    	if (tDelay > MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000)
+	    	{
+	    		LOG(LOG_WARN, "Waiting time invalid, %s %s grabbing is %f ms too late but pre-buffering is deactivated, trigger re-calibration of RT-grabbing", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay);
+	    		mDecoderRecalibrateRTGrabbingAfterSeeking = true;
+	    	}
+		}else
+		{
+			LOG(LOG_WARN, "System too slow?, %s %s grabbing is %f ms too late", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay);
+
+			// check if we are still in play-range
+			if (tDelay >= MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000)
+				return false;
+		}
     }
 
-    return false;
+    return true;
 }
 
 int64_t MediaSourceMem::GetSynchronizationTimestamp()
 {
     int64_t tResult = 0;
 
-    if ((mCurrentOutputFrameIndex != 0) && (!mDecoderRecalibrateRTGrabbingAfterSeeking))
+    if (mCurrentOutputFrameIndex != 0)
     {// we have some first passed A/V frames, the decoder does not need to re-calibrate the RT grabber
         /******************************************
          * The following lines do the following:
