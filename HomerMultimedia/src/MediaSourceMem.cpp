@@ -2420,12 +2420,12 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
          * The following lines do the following:
          *   - use the RTCP sender reports and extract the reference RTP timestamps and NTP time
          *     =>> we know when exactly (NTP time!) a given RTP play-out time index passed the processing chain at sender side
-         *   - interpolate the given NTP time from sender side to conclude the NTP time (at sender side!) for the currently grabbed frame
-         *     =>> we know (this is the hope!) exactly when the current frame passed the processing chain at sender side
+         *   - shift the given NTP time from sender side according to the time difference of the local playback in order to conclude the NTP time (at sender side!) for the current output frame
+         *     =>> we know exactly when the current frame passed the processing chain at sender side
          *   - return the calculated NTP time as synchronization timestamp in micro seconds
          *
          *   - when this approach is applied for both the video and audio stream (which is received from the same physical host with the same real-time clock inside!),
-         *     a time difference can be derived, which corresponds to the A/V drift in micro seconds of the video and audio playback on the local(!) machine
+         *     a time difference can be derived, which corresponds to the A/V drift in micro seconds between the video and audio playback on the local(!) machine
          ******************************************/
         if (mRtpActivated)
         {// RTP active
@@ -2441,7 +2441,7 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
                 else
                 {
 					#ifdef MSMEM_DEBUG_AV_SYNC
-                		LOG(LOG_WARN, "%s NTP time is invalid, received RTCP packets: %"PRId64, GetMediaTypeStr().c_str(), tReceivedSyncPackets);
+                		LOG(LOG_WARN, "%s NTP time is invalid, no RTCP packets received yet", GetMediaTypeStr().c_str());
 					#endif
                 }
                 // nothing to complain about, we return 0 to signal we have no valid synchronization timestamp yet
@@ -2476,7 +2476,7 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
             //    LOG(LOG_WARN, "Received %s reference (from RTP) PTS value: %u is in the future, last received (RTP) PTS value: %"PRIu64")", GetMediaTypeStr().c_str(), tReferencePts, tCurrentPtsFromRTP);
         }else
         {// no RTP available
-            //TODO: we have to implement support for A/V sync. of plain (without RTP encapsulation) A/V streams
+            //TODO: we have to implement support for A/V sync. of plain (without RTP encapsulation) A/V streams -> based on relative pre-buffer times (we don't have absolute time references in this case)
         }
     }
 
