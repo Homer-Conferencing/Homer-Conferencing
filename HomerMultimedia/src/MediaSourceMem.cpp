@@ -1127,7 +1127,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         }
         if (Time::GetTimeStamp() >= tGrabStartTime + MEDIA_SOURCE_MEM_GRABBING_TIMEOUT * AV_TIME_BASE)
         {
-        	LOG(LOG_VERBOSE, "Timeout of %.2f seconds occurred for %s grabbing, didn't found a suitable frame", (float)MEDIA_SOURCE_MEM_GRABBING_TIMEOUT, GetMediaTypeStr().c_str());
+        	LOG(LOG_VERBOSE, "Timeout of %.2f seconds occurred for %s grabbing, didn't found a suitable frame, using the current one anyhow", (float)MEDIA_SOURCE_MEM_GRABBING_TIMEOUT, GetMediaTypeStr().c_str());
         	tShouldGrabNext = false;
         }
     }while (tShouldGrabNext);

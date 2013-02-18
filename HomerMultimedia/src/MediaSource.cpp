@@ -3701,8 +3701,15 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
             pBufferedFrames++;
         }
     }else
-        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't re-encode current %s frame %"PRId64" because %s(%d)", GetMediaTypeStr().c_str(), pInputFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
-
+    	if (AVUNERROR(tEncoderResult) != EPERM)
+    	{// failure reason is "operation not permitted"
+    		LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't re-encode current %s frame %"PRId64" because %s(%d)", GetMediaTypeStr().c_str(), pInputFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
+    	}else
+    	{// failure reason is something different
+			#ifdef MS_DEBUG_ENCODER_PACKETS
+    			LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't re-encode current %s frame %"PRId64" because %s(%d)", GetMediaTypeStr().c_str(), pInputFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
+			#endif
+    	}
     av_free_packet(tPacket);
 
     return tResult;
