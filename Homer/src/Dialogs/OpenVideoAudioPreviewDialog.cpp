@@ -190,6 +190,9 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceVideo()
             }
             tNetSource->SetPreBufferingActivation(mGrpPreBuffering->isChecked());
             tNetSource->SetPreBufferingAutoRestartActivation(mCbRestartPreBuffering->isChecked());
+			// leave some seconds for high system load situations so that this part of the input queue can be used for compensating it
+            if (mGrpPreBuffering->isChecked())
+            	tNetSource->SetFrameBufferPreBufferingTime(tNetSource->GetFrameBufferTimeMax() / 2);
             tNetSource->SetInputStreamPreferences(mCbCodecVideo->currentText().toStdString(), mCbRtpVideo->isChecked(), false);
             return tNetSource;
             break;
@@ -324,6 +327,9 @@ MediaSource* OpenVideoAudioPreviewDialog::GetMediaSourceAudio()
             }
             tNetSource->SetPreBufferingActivation(mGrpPreBuffering->isChecked());
             tNetSource->SetPreBufferingAutoRestartActivation(mCbRestartPreBuffering->isChecked());
+			// leave some seconds for high system load situations so that this part of the input queue can be used for compensating it
+            if (mGrpPreBuffering->isChecked())
+            	tNetSource->SetFrameBufferPreBufferingTime(tNetSource->GetFrameBufferTimeMax() / 2);
             tNetSource->SetInputStreamPreferences(mCbCodecAudio->currentText().toStdString(), mCbRtpAudio->isChecked(), false);
             return tNetSource;
             break;
