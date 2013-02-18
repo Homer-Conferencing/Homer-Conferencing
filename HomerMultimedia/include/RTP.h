@@ -141,7 +141,7 @@ public:
     static void SetH261PayloadSizeMax(unsigned int pMaxSize);
     static unsigned int GetH261PayloadSizeMax();
 
-    static uint64_t GetNtpTime();
+    static uint64_t GetNtpTime(); // delivers US ntp time
 
     /* packet statistic */
     int64_t ReceivedRTPPackets();
