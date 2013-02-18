@@ -526,7 +526,7 @@ void MediaSourceGrabberThread::StopGrabber()
     while(isRunning())
     {
         if (tSignalingRound > 0)
-            LOG(LOG_WARN, "Signaling attempt %d to stop  %s-Grabber...", tSignalingRound, mMediaSource->GetMediaTypeStr().c_str());
+            LOG(LOG_WARN, "Signaling attempt %d to stop %s %s grabber...", tSignalingRound, mMediaSource->GetMediaTypeStr().c_str(), mMediaSource->GetSourceTypeStr().c_str());
         tSignalingRound++;
 
         LOG(LOG_VERBOSE, "...setting %s grabbing-condition", mMediaSource->GetMediaTypeStr().c_str());
