@@ -264,6 +264,7 @@ public:
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
     virtual void GetVideoSourceResolution(int &pResX, int &pResY);
     virtual bool HasVariableVideoOutputFrameRate();
+    virtual bool IsSeeking();
 
     /* grabbing control */
     virtual void StopGrabbing();

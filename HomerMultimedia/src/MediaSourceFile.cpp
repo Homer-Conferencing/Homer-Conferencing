@@ -345,6 +345,11 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
     float tSeekEnd = GetSeekEnd();
     float tNumberOfFrames = mNumberOfFrames;
 
+    if (IsSeeking())
+    {
+    	LOG(LOG_ERROR, "%s decoder is currently seeking for an explicit stream position, seeking isn't reentrant", GetMediaTypeStr().c_str());
+    }
+
     //HINT: we need the original PTS values from the file
     // correcting PTS value by a possible start PTS value (offset)
     if (mInputStartPts > 0)

@@ -113,6 +113,7 @@ public:
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
+    virtual bool IsSeeking();
 
     /* fps */
     virtual void SetFrameRate(float pFps);
@@ -197,7 +198,7 @@ protected:
     MediaFifo           *mDecoderFifo; // for frames
     int                 mDecoderExpectedMaxOutputPerInputFrame; // how many output frames can be calculated of one input frame?
     /* decoder thread seeking */
-    Mutex               mDecoderSeekMutex;
+    Mutex               mDecoderResetBuffersMutex;
     double              mDecoderTargetOutputFrameIndex;
     bool                mDecoderWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames
     bool                mDecoderRecalibrateRTGrabbingAfterSeeking;

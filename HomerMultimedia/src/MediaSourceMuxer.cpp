@@ -2059,6 +2059,14 @@ bool MediaSourceMuxer::HasVariableVideoOutputFrameRate()
         return false;
 }
 
+bool MediaSourceMuxer::IsSeeking()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->IsSeeking();
+    else
+        return false;
+}
+
 void MediaSourceMuxer::StopGrabbing()
 {
     LOG(LOG_VERBOSE, "Going to stop %s-muxer", GetMediaTypeStr().c_str());

@@ -132,6 +132,7 @@ public:
     virtual void GetVideoSourceResolution(int &pResX, int &pResY);
     virtual void SetVideoFlipping(bool pHFlip, bool pVFlip);
     virtual bool HasVariableVideoOutputFrameRate();
+    virtual bool IsSeeking();
 
     /* grabbing control */
     virtual void StopGrabbing();

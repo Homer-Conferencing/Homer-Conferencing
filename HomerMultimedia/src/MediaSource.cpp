@@ -826,6 +826,11 @@ bool MediaSource::HasVariableVideoOutputFrameRate()
 	return false;
 }
 
+bool MediaSource::IsSeeking()
+{
+	return false;
+}
+
 AVFrame *MediaSource::AllocFrame()
 {
     AVFrame *tResult = avcodec_alloc_frame();

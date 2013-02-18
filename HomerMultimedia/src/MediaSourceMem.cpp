@@ -562,13 +562,7 @@ void MediaSourceMem::StopGrabbing()
 
     WriteFragment(NULL, 0, 0);
 
-    if (mDecoderFifo != NULL)
-    {// everything is okay
-        WriteFrameOutputBuffer(NULL, 0, 0);
-    }else
-    {// decoder FIFO is invalid
-        //the decoder thread wasn't started yet? - maybe because of input errors during Open(Video/Audio)GrabDevice
-    }
+	WriteFrameOutputBuffer(NULL, 0, 0);
 
     LOG(LOG_VERBOSE, "Memory based %s source successfully stopped", GetMediaTypeStr().c_str());
 }
@@ -912,6 +906,11 @@ bool MediaSourceMem::CloseGrabDevice()
     return tResult;
 }
 
+bool MediaSourceMem::IsSeeking()
+{
+	return (mDecoderTargetOutputFrameIndex > 0);
+}
+
 int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
     int64_t tCurrentFramePts;
@@ -986,7 +985,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 {// okay, we want more output from the decoder thread
                     if (GetSourceType() == SOURCE_FILE)
                     {// source is a file
-                        if (mDecoderTargetOutputFrameIndex == 0)
+                        if (!IsSeeking())
                         {// we aren't waiting for a special frame
                             LOG(LOG_WARN, "System too slow?, %s %s grabber detected a buffer underrun", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
                         }
@@ -1054,11 +1053,18 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
             LOG(LOG_VERBOSE, "Grabbed chunk %d of size %d with pts %"PRId64" from decoder FIFO", mFrameNumber, pChunkSize, tCurrentFramePts);
         #endif
 
-        if ((mDecoderTargetOutputFrameIndex != 0) && (tCurrentFramePts < mDecoderTargetOutputFrameIndex))
-        {// we are waiting for some special frame number
-            LOG(LOG_VERBOSE, "Dropping grabbed %s frame %"PRId64" because we are still waiting for frame %.2f", GetMediaTypeStr().c_str(), tCurrentFramePts, mDecoderTargetOutputFrameIndex);
-            tShouldGrabNext = true;
-        }
+        if (IsSeeking())
+		{
+        	if (tCurrentFramePts < mDecoderTargetOutputFrameIndex)
+			{// we are waiting for some special frame number
+				LOG(LOG_VERBOSE, "Dropping grabbed %s frame %"PRId64" because we are still waiting for frame %.2lf", GetMediaTypeStr().c_str(), tCurrentFramePts, mDecoderTargetOutputFrameIndex);
+				tShouldGrabNext = true;
+			}else
+			{
+			    // reset seeking flag because we have found the desired frame
+			    mDecoderTargetOutputFrameIndex = 0;
+			}
+		}
 
         // update current PTS value if the read frame is okay
         if (!tShouldGrabNext)
@@ -1073,7 +1079,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         int64_t tCurrentRelativeFramePts = tCurrentFramePts - CalculateOutputFrameNumber(mInputStartPts);
         if ((tCurrentRelativeFramePts >= mNumberOfFrames) && (mNumberOfFrames != 0) && (!InputIsPicture()))
         {// PTS value is bigger than possible max. value, EOF reached
-            LOG(LOG_VERBOSE, "%s PTS value %"PRId64" (%"PRId64" - %.2f) is bigger than or equal to maximum %.2f", GetMediaTypeStr().c_str(), tCurrentRelativeFramePts, tCurrentFramePts, (float)mInputStartPts, (float)mNumberOfFrames);
+            LOG(LOG_VERBOSE, "%s PTS value %"PRId64" (%"PRId64" - %.2lf) is bigger than or equal to maximum %.2lf", GetMediaTypeStr().c_str(), tCurrentRelativeFramePts, tCurrentFramePts, mInputStartPts, mNumberOfFrames);
 
             //no panic, ignore this and continue playback
         }
@@ -1121,13 +1127,10 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         }
         if (Time::GetTimeStamp() >= tGrabStartTime + MEDIA_SOURCE_MEM_GRABBING_TIMEOUT * AV_TIME_BASE)
         {
-        	LOG(LOG_VERBOSE, "Timeout of %d seconds occurred for %s grabbing, didn't found a suitable frame", MEDIA_SOURCE_MEM_GRABBING_TIMEOUT, GetMediaTypeStr().c_str());
+        	LOG(LOG_VERBOSE, "Timeout of %.2f seconds occurred for %s grabbing, didn't found a suitable frame", (float)MEDIA_SOURCE_MEM_GRABBING_TIMEOUT, GetMediaTypeStr().c_str());
         	tShouldGrabNext = false;
         }
     }while (tShouldGrabNext);
-
-    // reset seeking flagbecause we have already found a valid frame
-    mDecoderTargetOutputFrameIndex = 0;
 
     // acknowledge success
     MarkGrabChunkSuccessful(mFrameNumber);
@@ -1229,6 +1232,7 @@ void MediaSourceMem::CloseVideoScaler(VideoScaler *pScaler)
 void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameTimestamp)
 {
     int             tRes;
+    int 			tReadLoop = 0;
 
     // #########################################
     // read new packet
@@ -1254,8 +1258,11 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
         pPacket->data = NULL;
         pPacket->size = 0;
 
+        tReadLoop++;
+
         // read next sample from source - blocking
-        if ((tRes = av_read_frame(mFormatContext, pPacket)) < 0)
+        tRes = av_read_frame(mFormatContext, pPacket);
+        if (tRes < 0)
         {// failed to read frame
             #ifdef MSMEM_DEBUG_PACKETS
                 if (!InputIsPicture())
@@ -1282,6 +1289,14 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
 
                     // signal EOF instead of I/O error
                     LOG(LOG_VERBOSE, "Returning EOF in %s stream because of I/O error", GetMediaTypeStr().c_str());
+                    mEOFReached = true;
+                }else if (tRes == (int)AVUNERROR(ENOMEM))
+                {
+                    // acknowledge failed"
+                    MarkGrabChunkFailed(GetMediaTypeStr() + " source has out-of-memory");
+
+                    // signal EOF instead of I/O error
+                    LOG(LOG_VERBOSE, "Returning EOF in %s stream because of out-of-memory", GetMediaTypeStr().c_str());
                     mEOFReached = true;
                 }else if (tRes != (int)AVUNERROR(EAGAIN))
                 {// we should grab again, we signaled this ourself
@@ -1346,7 +1361,7 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
 
                 // for seeking: is the currently read frame close to target frame index?
                 //HINT: we need a key frame in the remaining distance to the target frame)
-                if ((mDecoderTargetOutputFrameIndex != 0) && (CalculateOutputFrameNumber(pFrameTimestamp) < mDecoderTargetOutputFrameIndex - MEDIA_SOURCE_MEM_SEEK_MAX_EXPECTED_GOP_SIZE))
+                if ((IsSeeking()) && (CalculateOutputFrameNumber(pFrameTimestamp) < mDecoderTargetOutputFrameIndex - MEDIA_SOURCE_MEM_SEEK_MAX_EXPECTED_GOP_SIZE))
                 {// we are still waiting for a special frame number
                     #ifdef MSMEM_DEBUG_SEEKING
                         LOG(LOG_VERBOSE, "Dropping %s frame %"PRId64" because we are waiting for frame %.2f", GetMediaTypeStr().c_str(), pFrameTimestamp, mDecoderTargetOutputFrameIndex);
@@ -1391,6 +1406,11 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
                 mDecoderLastReadPts = pFrameTimestamp;
             }else
             {
+            	if (pPacket->stream_index < 0)
+            	{
+            		LOG(LOG_ERROR, "Read a packet with invalid stream index: %d", pPacket->stream_index);
+            	}
+
                 tShouldReadNext = true;
                 if (mRtpActivated)
                 {
@@ -1403,8 +1423,12 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
                 }
             }
         }
-    }while ((tShouldReadNext) && (!mEOFReached) && (mDecoderThreadNeeded));
+    }while ((tShouldReadNext) && (!mEOFReached) && (mDecoderThreadNeeded) && (!mGrabbingStopped));
 
+    if (mGrabbingStopped)
+    {
+    	LOG(LOG_VERBOSE, "%s %s grabbing was stopped while ReadFrameFromInputStream() was running", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
+    }
     #ifdef MSMEM_DEBUG_PACKETS
         if (tReadIteration > 1)
             LOG(LOG_VERBOSE, "Needed %d read iterations to get next %s  packet from source stream", tReadIteration, GetMediaTypeStr().c_str());
@@ -1560,7 +1584,9 @@ void* MediaSourceMem::Run(void* pArgs)
 
             if ((!tInputIsPicture) || (!mDecoderSinglePictureGrabbed))
             {// we try to read packet(s) from input stream -> either the desired picture or a single frame
+                mDecoderNeedWorkConditionMutex.lock();
                 ReadFrameFromInputStream(tPacket, tCurrentInputFrameTimestamp);
+                mDecoderNeedWorkConditionMutex.unlock();
             }else
             {// no packet was read
                 //LOG(LOG_VERBOSE, "No packet was read");
@@ -1572,7 +1598,7 @@ void* MediaSourceMem::Run(void* pArgs)
             // #########################################
             // start packet processing
             // #########################################
-            if (((tPacket->data != NULL) && (tPacket->size > 0)) || (mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */))
+            if ((((tPacket->data != NULL) && (tPacket->size > 0)) || (mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */)) && (!mGrabbingStopped))
             {
                 #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                     if ((tPacket->data != NULL) && (tPacket->size > 0))
@@ -1597,7 +1623,7 @@ void* MediaSourceMem::Run(void* pArgs)
                 // #########################################
                 // process packet
                 // #########################################
-                mDecoderSeekMutex.lock();
+                mDecoderResetBuffersMutex.lock();
                 tCurrentChunkSize = 0;
                 switch(mMediaType)
                 {
@@ -2074,7 +2100,7 @@ void* MediaSourceMem::Run(void* pArgs)
                             LOG(LOG_ERROR, "Media type unknown");
                             break;
                 }
-                mDecoderSeekMutex.unlock();
+                mDecoderResetBuffersMutex.unlock();                
             }
 
             // free packet buffer
@@ -2162,7 +2188,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
 void MediaSourceMem::ResetDecoderBuffers()
 {
-    mDecoderSeekMutex.lock();
+    mDecoderResetBuffersMutex.lock();
 
     // flush ffmpeg internal buffers
     LOG(LOG_WARN, "Reseting %s decoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
@@ -2186,7 +2212,7 @@ void MediaSourceMem::ResetDecoderBuffers()
     mDecoderWaitForNextKeyFrame = true;
     mDecoderWaitForNextKeyFrameTimeout = av_gettime() + MSM_WAITING_FOR_FIRST_KEY_FRAME_TIMEOUT * 1000 * 1000;
 
-    mDecoderSeekMutex.unlock();
+    mDecoderResetBuffersMutex.unlock();
 }
 
 void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputFrameNumber)
