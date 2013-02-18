@@ -1347,6 +1347,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     uint8_t             *tChunkBuffer;
     VideoScaler         *tVideoScaler = NULL;
     int                 tFrameFinished = 0;
+    int64_t				tLastInputFrameTimestamp = -1;
     int64_t             tInputFrameTimestamp;
     int64_t				tOutputFrameTimestamp;
 
@@ -1440,6 +1441,13 @@ void* MediaSourceMuxer::Run(void* pArgs)
             //### get next frame data
             //###################################################################
             tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tInputFrameTimestamp /* NTP time */);
+            if ((tLastInputFrameTimestamp != -1) && (tInputFrameTimestamp <= tLastInputFrameTimestamp))
+            {
+            	LOG(LOG_WARN, "Input frame timestamp is too low: %"PRId64" < %"PRId64, tInputFrameTimestamp, tLastInputFrameTimestamp);
+            	tInputFrameTimestamp+= AV_TIME_BASE; // fake a monotonous increasing time
+
+            }
+            tLastInputFrameTimestamp = tInputFrameTimestamp;
 
             mEncoderSeekMutex.lock();
 
