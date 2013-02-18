@@ -998,7 +998,7 @@ bool Configuration::GetParticipantWidgetsCloseImmediately()
 
 bool Configuration::GetBroadcastAudioPlaybackMuted()
 {
-    return mQSettings->value("Broadcast/AudioPlaybackMuted", false).toBool();
+    return mQSettings->value("Broadcast/AudioPlaybackMuted", true).toBool();
 }
 
 bool Configuration::GetVisibilityContactsWidget()
