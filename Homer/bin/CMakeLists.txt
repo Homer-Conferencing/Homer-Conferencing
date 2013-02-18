@@ -451,13 +451,13 @@ IF (NOT(${BUILD} MATCHES "Default"))
 		libQtXml.4.8.4
 		libQtXmlPatterns.4.8.4
 		libQtWebKit.4.9.3
-		plugins/imageformats/libqgif4
-		plugins/imageformats/libqico4
-		plugins/imageformats/libqjpeg4
-		plugins/imageformats/libqmng4
-		plugins/imageformats/libqsvg4
-		plugins/imageformats/libqtga4
-		plugins/imageformats/libqtiff4
+		plugins/imageformats/libqgif
+		plugins/imageformats/libqico
+		plugins/imageformats/libqjpeg
+		plugins/imageformats/libqmng
+		plugins/imageformats/libqsvg
+		plugins/imageformats/libqtga
+		plugins/imageformats/libqtiff
 	)
 	SET (LIBS_APPLE
 		${LIBS_APPLE}
