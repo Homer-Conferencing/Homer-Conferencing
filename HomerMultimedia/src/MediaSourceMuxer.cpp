@@ -1348,8 +1348,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
     VideoScaler         *tVideoScaler = NULL;
     int                 tFrameFinished = 0;
     int64_t				tLastInputFrameTimestamp = -1;
-    int64_t             tInputFrameTimestamp;
-    int64_t				tOutputFrameTimestamp;
+    int64_t             tInputFrameTimestamp = 0;
+    int64_t				tOutputFrameTimestamp = 0;
 
     LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Encoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
@@ -1441,12 +1441,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
             //### get next frame data
             //###################################################################
             tFifoEntry = mEncoderFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tInputFrameTimestamp /* NTP time */);
-            if ((tLastInputFrameTimestamp != -1) && (tInputFrameTimestamp <= tLastInputFrameTimestamp))
-            {
-            	LOG(LOG_WARN, "Input frame timestamp is too low: %"PRId64" < %"PRId64, tInputFrameTimestamp, tLastInputFrameTimestamp);
-            	tInputFrameTimestamp+= AV_TIME_BASE; // fake a monotonous increasing time
-
-            }
+            if ((tLastInputFrameTimestamp != -1) && (tInputFrameTimestamp != 0) && (tInputFrameTimestamp <= tLastInputFrameTimestamp))
+            	LOG(LOG_ERROR, "Input %s frame timestamp is too low: %"PRId64" <= %"PRId64", diff: %"PRId64, GetMediaTypeStr().c_str(), tInputFrameTimestamp, tLastInputFrameTimestamp, tInputFrameTimestamp - tLastInputFrameTimestamp);
             tLastInputFrameTimestamp = tInputFrameTimestamp;
 
             mEncoderSeekMutex.lock();
@@ -1498,12 +1494,18 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 		LOG(LOG_VERBOSE, "Setting PTS to %ld (%ld - %ld) for frame %d", tYUVFrame->pts, tInputFrameTimestamp, mEncoderStartTime, mFrameNumber);
 									#endif
                                 }
+                                tYUVFrame->pkt_pts = tYUVFrame->pts;
+                                tYUVFrame->pkt_dts = tYUVFrame->pts;
+                                tYUVFrame->coded_picture_number = mFrameNumber;
+                                tYUVFrame->coded_picture_number = mFrameNumber;
 
                                 #ifdef MSM_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "Scaler returned video frame..");
+                                    LOG(LOG_VERBOSE, "Distributing VIDEO frame..");
                                     LOG(LOG_VERBOSE, "      ..key frame: %d", tYUVFrame->key_frame);
                                     LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tYUVFrame).c_str());
                                     LOG(LOG_VERBOSE, "      ..pts: %"PRId64"(scaler pts: %"PRId64")", tYUVFrame->pts, tInputFrameTimestamp);
+                                    LOG(LOG_VERBOSE, "      ..pkt_pts: %"PRId64, tYUVFrame->pkt_pts);
+                                    LOG(LOG_VERBOSE, "      ..pkt_dts: %"PRId64, tYUVFrame->pkt_dts);
                                     LOG(LOG_VERBOSE, "      ..coded pic number: %d", tYUVFrame->coded_picture_number);
                                     LOG(LOG_VERBOSE, "      ..display pic number: %d", tYUVFrame->display_picture_number);
                                 #endif
@@ -1523,7 +1525,11 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 // ####################################################################
                                 EncodeAndWritePacket(mFormatContext, mCodecContext, tYUVFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames);
 
-                                // increase the frame counter (used for PTS generation)
+                                #ifdef MSM_DEBUG_PACKETS
+                                	LOG(LOG_VERBOSE, "Encoder buffered frames: %d, flags: 0x%x", mEncoderBufferedFrames, mCodecContext->codec->capabilities);
+								#endif
+
+								// increase the frame counter (used for PTS generation)
                                 mFrameNumber++;
                             }
                             break;
@@ -1658,7 +1664,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         // pts
                                         int64_t tCurPts = av_rescale_q(mFrameNumber * mCodecContext->frame_size, (AVRational){1, mOutputAudioSampleRate}, mCodecContext->time_base);
                                         tAudioFrame->pts = tCurPts;
-                                        //data
+                                        tAudioFrame->pkt_pts = tAudioFrame->pts;
+                                        tAudioFrame->pkt_dts = tAudioFrame->pts;
+
+                                         //data
                                         int tRes = 0;
                                         if ((tRes = avcodec_fill_audio_frame(tAudioFrame, mOutputAudioChannels, mOutputAudioFormat, (const uint8_t *)mResampleBuffer, tReadFifoSize, 1)) < 0)
                                             LOG(LOG_ERROR, "Could not fill the audio frame with the provided data from the audio resampling step because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
@@ -1668,17 +1677,19 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         #endif
 
                                         #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
-                                            LOG(LOG_VERBOSE, "Distributing audio frame..");
-                                            LOG(LOG_VERBOSE, "      ..key frame: %d", mOutputFinalFrame->key_frame);
-                                            LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(mOutputFinalFrame).c_str());
-                                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", mOutputFinalFrame->pts);
-                                            LOG(LOG_VERBOSE, "      ..coded pic number: %d", mOutputFinalFrame->coded_picture_number);
-                                            LOG(LOG_VERBOSE, "      ..display pic number: %d", mOutputFinalFrame->display_picture_number);
-                                            LOG(LOG_VERBOSE, "      ..nr. of samples: %d", mOutputFinalFrame->nb_samples);
+                                            LOG(LOG_VERBOSE, "Distributing AUDIO frame..");
+                                            LOG(LOG_VERBOSE, "      ..key frame: %d", tAudioFrame->key_frame);
+                                            LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tAudioFrame).c_str());
+                                            LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tAudioFrame->pts);
+                                            LOG(LOG_VERBOSE, "      ..pkt_pts: %"PRId64, tAudioFrame->pkt_pts);
+                                            LOG(LOG_VERBOSE, "      ..pkt_dts: %"PRId64, tAudioFrame->pkt_dts);
+                                            LOG(LOG_VERBOSE, "      ..coded pic number: %d", tAudioFrame->coded_picture_number);
+                                            LOG(LOG_VERBOSE, "      ..display pic number: %d", tAudioFrame->display_picture_number);
+                                            LOG(LOG_VERBOSE, "      ..nr. of samples: %d", tAudioFrame->nb_samples);
                                             LOG(LOG_VERBOSE, "Output audio output data planes...");
                                             for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
                                             {
-                                                LOG(LOG_VERBOSE, "%d - %p - %d", i, mOutputFinalFrame->data[i], mOutputFinalFrame->linesize[i]);
+                                                LOG(LOG_VERBOSE, "%d - %p - %d", i, tAudioFrame->data[i], tAudioFrame->linesize[i]);
                                             }
                                         #endif
 
