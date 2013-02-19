@@ -505,6 +505,9 @@ float MediaSourceFile::GetSeekPos()
 	if (!SupportsSeeking())
 		return 0;
 
+	if (mEOFReached)
+	    return tSeekEnd;
+
 	if (tCurrentFrameIndex > 0)
 	{
         //HINT: we need the corrected PTS values and the one from the file
