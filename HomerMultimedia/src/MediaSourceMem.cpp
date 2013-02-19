@@ -980,6 +980,10 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 MarkGrabChunkSuccessful(mFrameNumber); // don't panic, it is only EOF
 
                 LOG(LOG_WARN, "%s-Grabber reached EOF", GetMediaTypeStr().c_str());
+
+                // we have reached the end, there is no need to wait for an explicit frame
+                mDecoderTargetOutputFrameIndex = 0;
+
                 return GRAB_RES_EOF;
             }else
             {// queue empty but EOF not reached
