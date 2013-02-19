@@ -1015,7 +1015,7 @@ void VideoWidget::ShowFrame(void* pBuffer)
     //### draw status text per OSD
     //#############################################################
     // are we a fullscreen widget?
-    if ((IsFullScreen()) && (mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
+    if ((mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
     {
         // define font for OSD text
         QFont tFont1 = QFont("Arial", 26, QFont::Light);
@@ -1616,7 +1616,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
             return;
         }
     }
-    if ((pEvent->key() == Qt::Key_Right) && (IsFullScreen()))
+    if (pEvent->key() == Qt::Key_Right)
     {
         if (pEvent->modifiers() & Qt::ControlModifier)
             mParticipantWidget->SeekMovieFileRelative(SEEK_BIG_STEP);
@@ -1627,7 +1627,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         pEvent->accept();
         return;
     }
-    if ((pEvent->key() == Qt::Key_Left) && (IsFullScreen()))
+    if (pEvent->key() == Qt::Key_Left)
     {
         if (pEvent->modifiers() & Qt::ControlModifier)
             mParticipantWidget->SeekMovieFileRelative(-SEEK_BIG_STEP -SEEK_BACKWARD_DRIFT);
