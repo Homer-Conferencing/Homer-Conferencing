@@ -3503,9 +3503,13 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
                 {// planar audio buffering
                     // init fifo buffer per channel
                     for (int i = 0; i < mOutputAudioChannels; i++)
-                        mResampleFifo[i] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                    {
+                    	LOG(LOG_VERBOSE, "Allocating AUDIO resample FIFO %d", i);
+                    	mResampleFifo[i] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                    }
                 }else
                 {// one interleaved audio buffer
+                	LOG(LOG_VERBOSE, "Allocating AUDIO resample FIFO %d", 0);
                     mResampleFifo[0] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
                 }
 

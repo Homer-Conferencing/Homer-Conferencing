@@ -90,6 +90,7 @@ MediaSourceMem::MediaSourceMem(string pName):
     mDecoderUsesPTSFromInputPackets = false;
     mCurrentOutputFrameIndex = -1;
     mLastBufferedOutputFrameIndex = 0;
+    mLastTimeWaitForRTGrabbing = 0;
 	mWrappingHeaderSize= 0;
     mGrabberProvidesRTGrabbing = true;
     mSourceType = SOURCE_MEMORY;
@@ -892,6 +893,7 @@ bool MediaSourceMem::CloseGrabDevice()
     mRtpBufferedFrames = 0;
     mCurrentOutputFrameIndex = -1;
     mLastBufferedOutputFrameIndex = 0;
+    mLastTimeWaitForRTGrabbing = 0;
     mSourceTimeShiftForRTGrabbing = 0;
     mDecoderSinglePictureGrabbed = false;
     mEOFReached = false;
@@ -1555,6 +1557,7 @@ void* MediaSourceMem::Run(void* pArgs)
     mRtpBufferedFrames = 0;
     mCurrentOutputFrameIndex = -1;
     mLastBufferedOutputFrameIndex = 0;
+    mLastTimeWaitForRTGrabbing = 0;
 
     // signal that decoder thread has finished init.
     mDecoderThreadNeeded = true;
@@ -2417,7 +2420,23 @@ bool MediaSourceMem::WaitForRTGrabbing()
         LOG(LOG_VERBOSE, "%s-current relative frame index: %f, relative time: %"PRIu64" ms (Fps: %3.2f), stream start time: %f us, packet's relative play out time: %f us, time difference: %f us", GetMediaTypeStr().c_str(), tNormalizedFrameIndexFromGrabber, tCurrentPtsFromGrabber, GetInputFrameRate(), (float)mInputStartPts, tDesiredPlayOutTime, tResultingTimeOffset);
         LOG(LOG_VERBOSE, "%s waiting time: (%"PRId64" - %"PRId64")", GetMediaTypeStr().c_str(), tDesiredPlayOutTime, tCurrentPlayOutTime);
     #endif
-    // adapt timing to real-time
+
+	#ifdef MSMEM_DEBUG_WAITING_TIMING
+        // calculate passed time since last call
+		int64_t tTimeToLastcall = 0;
+		if (mLastTimeWaitForRTGrabbing == 0)
+		{// first call
+			mLastTimeWaitForRTGrabbing = Time::GetTimeStamp();
+		}else
+		{// 1+ call
+			int64_t tTime = Time::GetTimeStamp();
+			tTimeToLastcall = tTime - mLastTimeWaitForRTGrabbing;
+			mLastTimeWaitForRTGrabbing = tTime;
+		}
+		LOG(LOG_VERBOSE, "Time since last call of %s WaitForRTGrabbing(): %"PRId64" ms", GetMediaTypeStr().c_str(), tTimeToLastcall / 1000);
+	#endif
+
+	// adapt timing to real-time
     if (tResultingTimeOffset > 0)
     {// waiting time is okay, we have to do active waiting
         #ifdef MSMEM_DEBUG_WAITING_TIMING
