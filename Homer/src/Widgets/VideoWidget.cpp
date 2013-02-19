@@ -1532,7 +1532,7 @@ bool VideoWidget::IsFullScreen()
 
 void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 {
-	//LOG(LOG_VERBOSE, "Got video window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+	//LOG(LOG_VERBOSE, "Got video window key press event with key %s(0x%x, mod: 0x%x)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
     if ((pEvent->key() == Qt::Key_T) && (pEvent->modifiers() == 0) && (!pEvent->isAutoRepeat()))
     {
@@ -1647,7 +1647,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     	pEvent->accept();
     	return;
     }
-    if (((pEvent->key() == Qt::Key_Plus) || (pEvent->key() == Qt::Key_Up))  && (pEvent->modifiers() == 0))
+    if ((pEvent->key() == Qt::Key_Plus) || (pEvent->key() == Qt::Key_Up))
     {
 		int tOffset = 25;
 		int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;
@@ -1657,7 +1657,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 			mParticipantWidget->GetAudioWorker()->SetVolume(tNewVolumeValue);
 		}
 	}
-    if (((pEvent->key() == Qt::Key_Minus) || (pEvent->key() == Qt::Key_Down))  && (pEvent->modifiers() == 0))
+    if ((pEvent->key() == Qt::Key_Minus) || (pEvent->key() == Qt::Key_Down))
     {
 		int tOffset = -25;
 		int tNewVolumeValue = mParticipantWidget->GetAudioWorker()->GetVolume() + tOffset;

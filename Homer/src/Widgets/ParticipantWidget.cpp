@@ -835,7 +835,7 @@ void ParticipantWidget::dropEvent(QDropEvent *pEvent)
 
 void ParticipantWidget::keyPressEvent(QKeyEvent *pEvent)
 {
-	//LOG(LOG_VERBOSE, "Got participant window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+	//LOG(LOG_VERBOSE, "Got participant window key press event with key %s(0x%x, mod: 0x%x)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
     if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()) && (pEvent->modifiers() == 0))
     {
