@@ -504,7 +504,7 @@ void MediaSourceGrabberThread::DoSetInputStreamPreferences()
 
 void MediaSourceGrabberThread::DoSeek()
 {
-    LOG(LOG_VERBOSE, "DoSeek now...");
+    LOG(LOG_VERBOSE, "%s-DoSeek now...", mMediaSource->GetMediaTypeStr().c_str());
 
     if (!mMediaSource->IsSeeking())
     {// no seeking running, we are allowed to start a new seek process
@@ -527,7 +527,7 @@ void MediaSourceGrabberThread::DoSeek()
 		mDeliverMutex.unlock();
     }else
     {// another seek process is already running
-
+        LOG(LOG_VERBOSE, "Delaying %s seek request", mMediaSource->GetMediaTypeStr().c_str());
     }
 }
 
