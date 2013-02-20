@@ -66,6 +66,11 @@ MediaSink::~MediaSink()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void MediaSink::UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
+{
+    // nothing to do
+}
+
 void MediaSink::Start()
 {
     mRunning = true;

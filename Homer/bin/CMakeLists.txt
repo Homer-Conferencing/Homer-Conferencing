@@ -407,13 +407,13 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libgstpbutils-0.10.so.0.24.0     
 		libgstvideo-0.10.so          
 		libstdc++.so.6
-		plugins/imageformats/qgif4
-		plugins/imageformats/qico4
-		plugins/imageformats/qjpeg4
-		plugins/imageformats/qmng4
-		plugins/imageformats/qsvg4
-		plugins/imageformats/qtga4
-		plugins/imageformats/qtiff4
+		plugins/imageformats/libqgif4
+		plugins/imageformats/libqico4
+		plugins/imageformats/libqjpeg4
+		plugins/imageformats/libqmng4
+		plugins/imageformats/libqsvg4
+		plugins/imageformats/libqtga4
+		plugins/imageformats/libqtiff4
 	)
 	SET (LIBS_LINUX_STATIC
 		glib-2.0  # avoid link problems in QtWebKit
@@ -433,31 +433,31 @@ SET (LIBS_APPLE
 )
 IF (NOT(${BUILD} MATCHES "Default"))
 	SET (LIBS_APPLE_INSTALL
-		QtCore
-		QtGui
-		QtNetwork
-		QtXml
-		QtXmlPatterns
-		QtWebKit
-		QtCore.4
-		QtGui.4
-		QtNetwork.4
-		QtXml.4
-		QtXmlPatterns.4
-		QtWebKit.4
-		QtCore.4.8.4
-		QtGui.4.8.4
-		QtNetwork.4.8.4
-		QtXml.4.8.4
-		QtXmlPatterns.4.8.4
-		QtWebKit.4.9.3
-		plugins/imageformats/qgif4
-		plugins/imageformats/qico4
-		plugins/imageformats/qjpeg4
-		plugins/imageformats/qmng4
-		plugins/imageformats/qsvg4
-		plugins/imageformats/qtga4
-		plugins/imageformats/qtiff4
+		libQtCore
+		libQtGui
+		libQtNetwork
+		libQtXml
+		libQtXmlPatterns
+		libQtWebKit
+		libQtCore.4
+		libQtGui.4
+		libQtNetwork.4
+		libQtXml.4
+		libQtXmlPatterns.4
+		libQtWebKit.4
+		libQtCore.4.8.4
+		libQtGui.4.8.4
+		libQtNetwork.4.8.4
+		libQtXml.4.8.4
+		libQtXmlPatterns.4.8.4
+		libQtWebKit.4.9.3
+		plugins/imageformats/libqgif
+		plugins/imageformats/libqico
+		plugins/imageformats/libqjpeg
+		plugins/imageformats/libqmng
+		plugins/imageformats/libqsvg
+		plugins/imageformats/libqtga
+		plugins/imageformats/libqtiff
 	)
 	SET (LIBS_APPLE
 		${LIBS_APPLE}

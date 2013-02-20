@@ -113,6 +113,7 @@ public:
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
+    virtual bool IsSeeking();
 
     /* fps */
     virtual void SetFrameRate(float pFps);
@@ -151,7 +152,7 @@ protected:
     virtual void* Run(void* pArgs = NULL); // decoder main loop
     VideoScaler *CreateVideoScaler();
     void CloseVideoScaler(VideoScaler *pScaler);
-    void ReadPacketFromInputStream(AVPacket *pPacket, double &pPacketFrameNumber);
+    void ReadFrameFromInputStream(AVPacket *pPacket, double &pPacketFrameNumber);
 
     /* buffering */
     void UpdateBufferTime();
@@ -170,7 +171,7 @@ protected:
 
     /* real-time playback */
     virtual void CalibrateRTGrabbing();
-    virtual void WaitForRTGrabbing();
+    virtual bool WaitForRTGrabbing();
 
     unsigned long       mFragmentNumber;
     char                *mStreamPacketBuffer;
@@ -186,6 +187,7 @@ protected:
     double              mCurrentOutputFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     double              mLastBufferedOutputFrameIndex; // we use this for calibrating RT grabbing
     bool                mGrabberProvidesRTGrabbing;
+    int64_t				mLastTimeWaitForRTGrabbing;
     /* decoder thread */
     bool                mDecoderUsesPTSFromInputPackets;
     bool                mDecoderThreadNeeded; // also used to signal that the decoder thread has finished the init. process
@@ -197,8 +199,8 @@ protected:
     MediaFifo           *mDecoderFifo; // for frames
     int                 mDecoderExpectedMaxOutputPerInputFrame; // how many output frames can be calculated of one input frame?
     /* decoder thread seeking */
-    Mutex               mDecoderSeekMutex;
-    double              mDecoderTargetFrameIndex;
+    Mutex               mDecoderResetBuffersMutex;
+    double              mDecoderTargetOutputFrameIndex;
     bool                mDecoderWaitForNextKeyFramePackets; // after seeking we wait for next key frame packets -> either i-frames or p-frames
     bool                mDecoderRecalibrateRTGrabbingAfterSeeking;
     bool                mDecoderWaitForNextKeyFrame; // after seeking we wait for next i -frames

@@ -198,14 +198,14 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         if (mIncomingFirstPacket)
         {
             mIncomingFirstPacket = false;
-            mIncomingAVStreamStartPts = tAVPacketPts;
+            //mIncomingAVStreamStartPts = tAVPacketPts;
         }
 
         // normalize the PTS values for the RTP packetizer of ffmpeg, otherwise we have synchronization problems at receiver side because of PTS offsets
-        int64_t tRtpPacketPts = tAVPacketPts;// - mIncomingAVStreamStartPts;
+        int64_t tRtpPacketPts = tAVPacketPts - mIncomingAVStreamStartPts;
 
         #ifdef MSIM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Processing packet with A/V PTS: %"PRId64" and normalized PTS: %"PRId64"", tAVPacketPts, tRtpPacketPts);
+            LOG(LOG_VERBOSE, "Processing packet with A/V PTS: %"PRId64" and normalized PTS: %"PRId64", offset: %"PRId64, tAVPacketPts, tRtpPacketPts, mIncomingAVStreamStartPts);
         #endif
 
 
@@ -270,6 +270,12 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         // send final packet
         WriteFragment(pPacketData, pPacketSize, ++mPacketNumber);
     }
+}
+
+void MediaSinkMem::UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
+{
+    if ((mRtpActivated) && (mRtpStreamOpened))
+        SetSynchronizationReferenceForRTP((uint64_t)pReferenceNtpTimestamp, (uint32_t)(pReferenceFrameTimestamp- mIncomingAVStreamStartPts));
 }
 
 int MediaSinkMem::GetFragmentBufferCounter()

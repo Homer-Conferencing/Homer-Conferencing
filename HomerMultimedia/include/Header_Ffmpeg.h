@@ -257,8 +257,14 @@ inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, cons
         tResult = avcodec_encode_video2(avctx, avpkt, frame, got_packet_ptr);
     #endif
 
-	avpkt->pts = frame->pts;
-	avpkt->dts = frame->pts;
+	if ((!avctx) || (!(avctx->codec->capabilities & CODEC_CAP_DELAY)))
+	{// no delay by encoder
+		avpkt->pts = frame->pts;
+		avpkt->dts = frame->pts;
+	}else
+	{// possible delay by encoder, e.g., H.264 encoder
+		// encoder has set the pts/dts value during "avcodec_encode_video(2)"
+	}
 
     return tResult;
 }

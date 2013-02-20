@@ -131,6 +131,8 @@ public:
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
     virtual void GetVideoSourceResolution(int &pResX, int &pResY);
     virtual void SetVideoFlipping(bool pHFlip, bool pVFlip);
+    virtual bool HasVariableVideoOutputFrameRate();
+    virtual bool IsSeeking();
 
     /* grabbing control */
     virtual void StopGrabbing();
@@ -238,6 +240,7 @@ private:
     Mutex               mEncoderFifoAvailableMutex;
     AVStream            *mEncoderStream;
     int					mEncoderBufferedFrames; // in frames
+    int64_t				mEncoderStartTime;
     /* device control */
     MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;

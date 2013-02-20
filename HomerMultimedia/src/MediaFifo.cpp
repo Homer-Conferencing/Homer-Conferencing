@@ -25,6 +25,7 @@
  * Since:   2011-05-05
  */
 
+#include <Header_Ffmpeg.h>
 #include <MediaFifo.h>
 #include <Logger.h>
 
@@ -61,7 +62,7 @@ MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
     for (int i = 0; i < mFifoSize; i++)
 	{
 		mFifo[i].Size = 0;
-		mFifo[i].Data = (char*)malloc(mFifoEntrySize);
+		mFifo[i].Data = (char*)av_malloc(mFifoEntrySize);
 		if (mFifo[i].Data == NULL)
 			LOG(LOG_ERROR, "Unable to allocate %d bytes of memory for FIFO %s", mFifoEntrySize, pName.c_str());
 	}
@@ -77,7 +78,7 @@ MediaFifo::~MediaFifo()
         for (int i = 0; i < mFifoSize; i++)
         {
             mFifo[i].Size = 0;
-            free(mFifo[i].Data);
+            av_free(mFifo[i].Data);
         }
         delete[] mFifo;
         mFifo = NULL;
@@ -86,7 +87,7 @@ MediaFifo::~MediaFifo()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferNumber)
+void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferTimestamp)
 {
     int tCurrentFifoReadPtr;
 
@@ -136,7 +137,7 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferNumber
     if (pBufferSize >= mFifo[tCurrentFifoReadPtr].Size)
     {// input buffer is okay
         // get the number from Fifo
-        pBufferNumber = mFifo[tCurrentFifoReadPtr].Number;
+        pBufferTimestamp = mFifo[tCurrentFifoReadPtr].Number;
         // get captured data from Fifo
         pBufferSize = mFifo[tCurrentFifoReadPtr].Size;
         memcpy((void*)pBuffer, mFifo[tCurrentFifoReadPtr].Data, (size_t)pBufferSize);
@@ -206,7 +207,7 @@ int MediaFifo::GetSize()
     return tResult;
 }
 
-int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pBufferNumber)
+int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pBufferTimestamp)
 {
     int tCurrentFifoReadPtr;
 
@@ -249,7 +250,7 @@ int MediaFifo::ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pBuf
     mFifoMutex.unlock();
 
     // get number
-    pBufferNumber = mFifo[tCurrentFifoReadPtr].Number;
+    pBufferTimestamp = mFifo[tCurrentFifoReadPtr].Number;
     // get captured data from Fifo
     pBufferSize = mFifo[tCurrentFifoReadPtr].Size;
     // don't copy, use pointer to data instead
@@ -276,7 +277,7 @@ void MediaFifo::ReadFifoExclusiveFinished(int pEntryPointer)
     mFifo[pEntryPointer].EntryMutex.unlock();
 }
 
-void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferNumber)
+void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferTimestamp)
 {
     int tCurrentFifoWritePtr;
 
@@ -329,7 +330,7 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferNumber)
     mFifo[tCurrentFifoWritePtr].Size = pBufferSize;
     if ((pBuffer != NULL) && (pBufferSize > 0))
         memcpy((void*)mFifo[tCurrentFifoWritePtr].Data, (const void*)pBuffer, (size_t)pBufferSize);
-    mFifo[tCurrentFifoWritePtr].Number = pBufferNumber;
+    mFifo[tCurrentFifoWritePtr].Number = pBufferTimestamp;
 
     // unlock fine grained mutex again
     mFifo[tCurrentFifoWritePtr].EntryMutex.unlock();

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>877</width>
-    <height>606</height>
+    <height>676</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,7 +37,7 @@
         <number>1</number>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>4</number>
        </property>
        <widget class="QWidget" name="mVideo">
         <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -3066,8 +3066,8 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>670</width>
-              <height>542</height>
+              <width>654</width>
+              <height>666</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -3127,29 +3127,21 @@ background-color: rgb(150, 150, 150);
                    </widget>
                   </item>
                   <item>
-                   <widget class="QCheckBox" name="mCbNotifySystrayStart">
-                    <property name="font">
-                     <font>
-                      <pointsize>9</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
-                     </font>
+                   <widget class="QLabel" name="label_18">
+                    <property name="minimumSize">
+                     <size>
+                      <width>44</width>
+                      <height>0</height>
+                     </size>
                     </property>
-                    <property name="toolTip">
-                     <string>show message in the systray</string>
+                    <property name="maximumSize">
+                     <size>
+                      <width>44</width>
+                      <height>16777215</height>
+                     </size>
                     </property>
                     <property name="text">
                      <string/>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                    </property>
-                    <property name="iconSize">
-                     <size>
-                      <width>22</width>
-                      <height>22</height>
-                     </size>
                     </property>
                    </widget>
                   </item>
@@ -3338,29 +3330,21 @@ background-color: rgb(150, 150, 150);
                    </widget>
                   </item>
                   <item>
-                   <widget class="QCheckBox" name="mCbNotifySystrayStop">
-                    <property name="font">
-                     <font>
-                      <pointsize>9</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
-                     </font>
+                   <widget class="QLabel" name="label_20">
+                    <property name="minimumSize">
+                     <size>
+                      <width>44</width>
+                      <height>0</height>
+                     </size>
                     </property>
-                    <property name="toolTip">
-                     <string>show message in the systray</string>
+                    <property name="maximumSize">
+                     <size>
+                      <width>44</width>
+                      <height>16777215</height>
+                     </size>
                     </property>
                     <property name="text">
                      <string/>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="../../resources/Icons.qrc">
-                      <normaloff>:/images/22_22/Message.png</normaloff>:/images/22_22/Message.png</iconset>
-                    </property>
-                    <property name="iconSize">
-                     <size>
-                      <width>22</width>
-                      <height>22</height>
-                     </size>
                     </property>
                    </widget>
                   </item>

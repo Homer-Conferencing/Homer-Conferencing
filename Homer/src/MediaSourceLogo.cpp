@@ -229,6 +229,11 @@ bool MediaSourceLogo::CloseGrabDevice()
     return tResult;
 }
 
+bool MediaSourceLogo::HasVariableVideoOutputFrameRate()
+{
+	return true;
+}
+
 int MediaSourceLogo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
     // lock grabbing

@@ -269,6 +269,11 @@ bool MediaSourceDesktop::CloseGrabDevice()
     return tResult;
 }
 
+bool MediaSourceDesktop::HasVariableVideoOutputFrameRate()
+{
+	return true;
+}
+
 void MediaSourceDesktop::SetVideoGrabResolution(int pResX, int pResY)
 {
     mMutexGrabberActive.lock();

@@ -53,6 +53,7 @@ public:
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
+    virtual bool HasVariableVideoOutputFrameRate();
 
     /* grabbing control */
     virtual std::string GetCodecName();

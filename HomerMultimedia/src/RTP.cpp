@@ -29,24 +29,19 @@
 		 Result of functional validation (09.Jan. 2013):
 				 Sending                        Receiving
 		--------------------------------------------------------------------
-		 h261:   ok (HC)                        ok (HC) [A/V synch. not possible at the moment]
+		 h261:   ok (HC)                        ok (HC)
 		 h263:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
 		h263+:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
 		 h264:   ok (Hc, Ekiga)                 ok (HC, Ekiga) [time compensation needed]
 		Mpeg1:   ok (HC)                        ok (HC)
 		Mpeg2:   ok (HC)                        ok (HC)
 		Mpeg4:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
-	   theora:   ?								?
 
-  pcma (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga) [buggy on Linux]
-  pcmu (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga) [buggy on Linux]
+  pcma (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+  pcmu (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
 adpcm(G722):     ok (Hc, Ekiga)                 ok (HC, Ekiga)
-		  mp3:   ok (HC)                        ok (HC)
+		  mp3:   ok (HC)                        ok (HC) (sync. needs to be reworked)
 	  pcm16be:   ok (HC)                        ok (HC)
-
-     unsupported:
-       mjpeg
-
 
 
      RTP parameters: http://www.iana.org/assignments/rtp-parameters
@@ -416,7 +411,7 @@ union VP8ExtendedHeader{
 #define NTP_OFFSET                          2208988800ULL
 #define NTP_OFFSET_US                       (NTP_OFFSET * 1000000ULL)
 
-uint64_t GetNtpTime(void)
+uint64_t RTP::GetNtpTime()
 {
     return (av_gettime() / 1000) * 1000 + NTP_OFFSET_US;
 }
@@ -430,7 +425,7 @@ RTP::RTP()
     mIntermediateFragment = 0;
     mPacketStatistic = NULL;
     mRtpFormatContext = NULL;
-    mEncoderOpened = false;
+    mRtpEncoderOpened = false;
     mH261UseInternalEncoder = false;
     mRtpPacketStream = NULL;
     mRtpPacketBuffer = NULL;
@@ -462,6 +457,7 @@ unsigned int RTP::GetH261PayloadSizeMax()
 
 void RTP::Init()
 {
+    mLocalTimestampOffset = 0;
     mRemoteSourceChangedLastPayload = 0;
     mRemoteSourceChangedResetScore = 0;
     mRtcpLastReceivedPackets = 0;
@@ -495,14 +491,12 @@ void RTP::Init()
     mRtpRemoteSourceChanged = false;
     mRTCPPacketCounter = 0;
     mRTPPacketCounter = 0;
+    mSyncPTS = 0;
+    mSyncNTPTime = 0;
 }
 
 bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
 {
-    // get a timestamp
-    time_t tTimestamp;
-    time(&tTimestamp);
-
     LOG(LOG_VERBOSE, "Using lib internal rtp packetizer for H261 codec");
     LOG(LOG_INFO, "Opened...");
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
@@ -528,7 +522,7 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
     LOG(LOG_INFO, "    ..frame size: %d bytes", pInnerStream->codec->frame_size);
     //LOG(LOG_INFO, "    ..max packet size: %d bytes", mRtpFormatContext->pb->max_packet_size);
     LOG(LOG_INFO, "    ..rtp payload size: %d bytes", pInnerStream->codec->rtp_payload_size);
-    mEncoderOpened = true;
+    mRtpEncoderOpened = true;
     mH261UseInternalEncoder = true;
     mH261FirstPacket = true;
     mH261SentPackets = 0;
@@ -545,7 +539,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     AVDictionary        *tOptions = NULL;
     int					tRes;
 
-    if (mEncoderOpened)
+    if (mRtpEncoderOpened)
         return false;
 
     mRtpPacketStream = (char*)malloc(MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE);
@@ -678,12 +672,12 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     LOG(LOG_INFO, "    ..audio preload: %d", mRtpFormatContext->audio_preload);
     LOG(LOG_INFO, "    ..start A/V PTS: %"PRId64"", tAVPacketPts);
     LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRtpEncoderStream->r_frame_rate.num, mRtpEncoderStream->r_frame_rate.den);
-    LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRtpEncoderStream->time_base.den, mRtpEncoderStream->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRtpEncoderStream->codec->time_base.den, mRtpEncoderStream->codec->time_base.num); // inverse
+    LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRtpEncoderStream->time_base.num, mRtpEncoderStream->time_base.den);
+    LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRtpEncoderStream->codec->time_base.num, mRtpEncoderStream->codec->time_base.den);
     LOG(LOG_INFO, "    ..sample rate: %d Hz", mRtpEncoderStream->codec->sample_rate);
     LOG(LOG_INFO, "    ..channels: %d", mRtpEncoderStream->codec->channels);
     LOG(LOG_INFO, "    ..i-frame distance: %d pictures", mRtpEncoderStream->codec->gop_size);
-    LOG(LOG_INFO, "    ..bit rate: %d Hz", mRtpEncoderStream->codec->bit_rate);
+    LOG(LOG_INFO, "    ..bit rate: %d bit/s", mRtpEncoderStream->codec->bit_rate);
     LOG(LOG_INFO, "    ..qmin: %d", mRtpEncoderStream->codec->qmin);
     LOG(LOG_INFO, "    ..qmax: %d", mRtpEncoderStream->codec->qmax);
     LOG(LOG_INFO, "    ..mpeg quant: %d", mRtpEncoderStream->codec->mpeg_quant);
@@ -693,7 +687,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mAVIOContext->max_packet_size);
     LOG(LOG_INFO, "    ..rtp payload size: %d bytes", mRtpEncoderStream->codec->rtp_payload_size);
 
-    mEncoderOpened = true;
+    mRtpEncoderOpened = true;
     mMp3Hack_EntireBufferSize = 0;
 
     return true;
@@ -703,7 +697,7 @@ bool RTP::CloseRtpEncoder()
 {
     LOG(LOG_VERBOSE, "Going to close");
 
-    if (mEncoderOpened)
+    if (mRtpEncoderOpened)
     {
         if (!mH261UseInternalEncoder /* h261 */)
         {
@@ -731,7 +725,7 @@ bool RTP::CloseRtpEncoder()
     }else
         LOG(LOG_INFO, "...wasn't open");
 
-    mEncoderOpened = false;
+    mRtpEncoderOpened = false;
     mH261UseInternalEncoder = false;
 
     return true;
@@ -886,7 +880,7 @@ int RTP::StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
             #endif
         }
     #endif
-    if (!tRTPInstance->mEncoderOpened)
+    if (!tRTPInstance->mRtpEncoderOpened)
         LOGEX(RTP, LOG_ERROR, "RTP instance wasn't opened yet, RTP packetizing not available");
 
     // write RTP packet size
@@ -924,7 +918,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     AVPacket                    tPacket;
     int                         tResult;
     unsigned int                tMp3Hack_EntireBufferSize;
-    if (!mEncoderOpened)
+    if (!mRtpEncoderOpened)
         return false;
 
     if (pData == NULL)
@@ -1031,6 +1025,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
         uint32_t tRtpPacketSize = 0;
         uint32_t tRemainingRtpDataSize = pDataSize;
         MPAHeader* tMPAHeader = NULL;
+        bool tFirstOutgoingPacket = true;
 
         // go through all created RTP packets
         do{
@@ -1054,6 +1049,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                 LOG(LOG_VERBOSE, "RTP packet has payload type: %d", tRtpHeader->PayloadType);
             #endif
 
+
             //#################################################################################
             //### patch payload type and hack packet size for MP3 streaming
             //### do this only if we don't have a RTCP packet from the ffmpeg lib
@@ -1063,9 +1059,22 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
             if (!IS_RTCP_TYPE(tRtpHeader->PayloadType))
             {// usual RTP packet
                 //#################################################################################
+                //### derive ffmpeg'S internal RTP timestamp offset
+                //#################################################################################
+                if (tFirstOutgoingPacket)
+                {
+                    tFirstOutgoingPacket = false;
+                    mLocalTimestampOffset = tRtpHeader->Timestamp - tPacket.pts;
+                }
+
+                #ifdef RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
+                    LOG(LOG_VERBOSE, "Sending RTP packet with timestamp: %u, offset: %lu, RTP-PTS: %ld", tRtpHeader->Timestamp, mLocalTimestampOffset, tPacket.pts);
+                #endif
+
+                //#################################################################################
                 //### patch last audio RTCP sender report if there was any
                 //#################################################################################
-                if (mRtpEncoderStream->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+//                if (mRtpEncoderStream->codec->codec_type == AVMEDIA_TYPE_AUDIO)
                 {
                     if (mRtcpLastSenderReport != NULL)
                     {
@@ -1226,7 +1235,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 // HINT: ffmpeg lacks support for rtp encapsulation for h261  codec
 bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 {
-    if (!mEncoderOpened)
+    if (!mRtpEncoderOpened)
         return false;
 
     #ifdef RTP_DEBUG_PACKET_ENCODER
@@ -1868,8 +1877,12 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
             mRemoteTimestampConsecutiveOverflows = 0;
 
 			#ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
-            	LOG(LOG_VERBOSE, "New remote timestamp: abs=%u(max: %u), start=%u, normalized=%"PRIu64"", tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
+            	LOG(LOG_VERBOSE, "New remote timestamp: abs=%u(max: %u), start=%u, normalized=%"PRIu64", pts=%"PRIu64, tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp, GetCurrentPtsFromRTP());
 			#endif
+            #ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS_CONTINUITY
+                LOG(LOG_VERBOSE, "New remote timestamp: normalized=%"PRIu64", diff. to last=%"PRIu64, mRemoteTimestamp, mRemoteTimestamp - mRemoteTimestampLastPacket);
+            #endif
+
         }
         mLastTimestampFromRTPHeader = tRtpHeader->Timestamp;
 
@@ -2753,9 +2766,40 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
     return tResult;
 }
 
+void RTP::SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint32_t pReferencePts)
+{
+    if (!mRtpEncoderOpened)
+        return;
+
+    if (pReferencePts < 1)
+        return;
+
+	#ifdef RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
+    	LOG(LOG_VERBOSE, "New synchronization for %d codec: %u, clock: %.2f, RTP timestamp: %.2f, timestamp offset: %lu", mStreamCodecID, pReferencePts, CalculateClockRateFactor(), (float)pReferencePts * CalculateClockRateFactor(), mLocalTimestampOffset);
+	#endif
+
+	mSyncDataMutex.lock();
+    mSyncNTPTime = pReferenceNtpTime;
+    mSyncPTS = mLocalTimestampOffset + (uint64_t)(pReferencePts * CalculateClockRateFactor()); // clock rate adaption according to rfc (mpeg uses 90 kHz)
+    mSyncDataMutex.unlock();
+}
+
 void RTP::RtcpPatchLiveSenderReport(char *pHeader, uint32_t pTimestamp)
 {
-    uint64_t tNtpTime = GetNtpTime();
+    uint64_t tNtpTime;
+    uint32_t tPts = pTimestamp;
+
+    if (mSyncNTPTime != 0)
+    {// use the NTP time which was explicitly given (should be determined right before the A/V encoding step)
+        mSyncDataMutex.lock();
+        tNtpTime = mSyncNTPTime;
+        tPts = mSyncPTS;
+        mSyncDataMutex.unlock();
+    }else
+    {// use the NTP time of the processed A/V packets
+        tNtpTime = GetNtpTime();
+        tPts = pTimestamp;
+    }
 
     RtcpHeader* tRtcpHeader = (RtcpHeader*)pHeader;
 
@@ -2765,7 +2809,7 @@ void RTP::RtcpPatchLiveSenderReport(char *pHeader, uint32_t pTimestamp)
 
     tRtcpHeader->Feedback.TimestampHigh = tNtpTime / 1000000;
     tRtcpHeader->Feedback.TimestampLow = ((tNtpTime % 1000000) << 32) / 1000000;
-    tRtcpHeader->Feedback.RtpTimestamp = pTimestamp;
+    tRtcpHeader->Feedback.RtpTimestamp = tPts;
 
     #ifdef RTCP_DEBUG_PACKET_ENCODER_FFMPEG
         LOG(LOG_VERBOSE, "Setting RTCP synch.: (RTP %u, NTP: US %lu, high %u/%lu, low %u/%lu,  DE %lu / %lu)", pTimestamp, tNtpTime, tRtcpHeader->Feedback.TimestampHigh, tNtpTime / 1000000, tRtcpHeader->Feedback.TimestampLow, ((tNtpTime % 1000000) << 32) / 1000000, tNtpTime - NTP_OFFSET_US, av_gettime());

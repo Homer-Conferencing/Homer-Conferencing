@@ -74,9 +74,17 @@ void GetSignalDescription(int pSignal, string &pSignalName, string &pSignalDescr
             pSignalName = "SIGKILL";
             pSignalDescription = "kill signal";
             break;
+        case 10:
+            pSignalName = "SIGBUS";
+            pSignalDescription = "bus error";
+            break;
         case 11:
             pSignalName = "SIGSEGV";
             pSignalDescription = "invalid memory reference";
+            break;
+        case 12:
+            pSignalName = "SIGSYS";
+            pSignalDescription = "bad argument to system call";
             break;
         case 13:
             pSignalName = "SIGPIPE";
@@ -90,13 +98,19 @@ void GetSignalDescription(int pSignal, string &pSignalName, string &pSignalDescr
             pSignalName = "SIGTERM";
             pSignalDescription = "termination signal";
             break;
-        case 10:
+        case 18:
+            pSignalName = "SIGTSTP";
+            pSignalDescription = "stop signal from tty";
+            break;
+        case 19:
+            pSignalName = "SIGCONT";
+            pSignalDescription = "continue signal from tty";
+            break;
         case 16:
         case 30:
             pSignalName = "SIGUSR1";
             pSignalDescription = "user-defined signal 1";
             break;
-        case 12:
         case 17:
         case 31:
             pSignalName = "SIGUSR2";
@@ -109,12 +123,13 @@ void GetSignalDescription(int pSignal, string &pSignalName, string &pSignalDescr
     }
 }
 
+int64_t sStopTime = -1;
 static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
 {
     string tSignalName;
     string tSignalDescription;
     GetSignalDescription(pSignal, tSignalName, tSignalDescription);
-    LOGEX(MainWindow, LOG_ERROR, "Signal \"%s\"(%s) detected, Homer Conferencing will exit now. Please, report this to the Homer development team.", tSignalName.c_str(), tSignalDescription.c_str());
+    LOGEX(MainWindow, LOG_WARN, "Signal \"%s\"(%s) detected.", tSignalName.c_str(), tSignalDescription.c_str());
     if (pSignalInfo != NULL)
     {
         switch(pSignal)
@@ -135,8 +150,45 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
                         LOGEX(MainWindow, LOG_ERROR, "#%2d %s", i, tBtStrings[i]);
 
                     free(tBtStrings);
+                    LOGEX(MainWindow, LOG_ERROR, "Homer Conferencing will exit now. Please, report this to the Homer development team.", tSignalName.c_str(), tSignalDescription.c_str());
+                    LOGEX(MainWindow, LOG_ERROR, "-");
+                    LOGEX(MainWindow, LOG_ERROR, "Restart Homer Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
+                    LOGEX(MainWindow, LOG_ERROR, "Afterwards attach the file debug.log to your bug report and send both by mail to homer@homer-conferencing.com.");
+                    LOGEX(MainWindow, LOG_ERROR, " ");
+                    exit(0);
                 }
                 break;
+            case SIGINT:
+				{
+					LOGEX(MainWindow, LOG_WARN, "Homer Conferencing will exit now...");
+					exit(0);
+				}
+				break;
+            case SIGTERM:
+				{
+					LOGEX(MainWindow, LOG_WARN, "Homer Conferencing will exit now...");
+					exit(0);
+				}
+				break;
+            case SIGTSTP:
+            	{
+            		LOGEX(MainWindow, LOG_WARN, "Suspending Homer Conferencing now...");
+            		sStopTime = Time::GetTimeStamp();
+            		kill(getpid(), SIGSTOP);
+            	}
+				break;
+            case SIGCONT:
+            	{
+            		//TODO: re-sync. RT - grabbing and all time measurements
+            		LOGEX(MainWindow, LOG_WARN, "Continuing Homer Conferencing now...");
+            		if (sStopTime != -1)
+            		{
+            			float tSuspendTime = ((float)(Time::GetTimeStamp() - sStopTime)) / 1000 / 1000;
+						LOGEX(MainWindow, LOG_WARN, "Homer Conferencing was suspended for %.2f seconds.", tSuspendTime);
+            		}else
+                		LOGEX(MainWindow, LOG_ERROR, "Invalid timestamp found as start time of suspend mode");
+            	}
+				break;
             default:
                 break;
         }
@@ -145,11 +197,6 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
         if (pSignalInfo->si_code != 0)
             LOGEX(MainWindow, LOG_ERROR, "Signal code is %d", pSignalInfo->si_code);
     }
-    LOGEX(MainWindow, LOG_ERROR, "-");
-    LOGEX(MainWindow, LOG_ERROR, "Restart Homer Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
-    LOGEX(MainWindow, LOG_ERROR, "Afterwards attach the file debug.log to your bug report and send both by mail to homer@homer-conferencing.com.");
-    LOGEX(MainWindow, LOG_ERROR, " ");
-    exit(0);
 }
 
 static void SetHandlers()
@@ -160,6 +207,10 @@ static void SetHandlers()
     sigemptyset(&tSigAction.sa_mask);
     tSigAction.sa_sigaction = HandlerSignal;
     tSigAction.sa_flags   = SA_SIGINFO; // Invoke signal-catching function with three arguments instead of one
+    sigaction(SIGINT, &tSigAction, NULL);
+    sigaction(SIGTERM, &tSigAction, NULL);
+    sigaction(SIGTSTP, &tSigAction, NULL);
+    sigaction(SIGCONT, &tSigAction, NULL);
     sigaction(SIGSEGV, &tSigAction, NULL);
 
     // set handler stack

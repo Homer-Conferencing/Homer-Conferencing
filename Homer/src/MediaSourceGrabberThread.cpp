@@ -280,6 +280,14 @@ bool MediaSourceGrabberThread::PlayingFile()
         return false;
 }
 
+bool MediaSourceGrabberThread::IsSeeking()
+{
+    if ((mMediaSource != NULL) && (mMediaSource->SupportsSeeking()) && (mMediaSource->IsSeeking()))
+        return true;
+    else
+        return false;
+}
+
 void MediaSourceGrabberThread::StopFile()
 {
     if (mMediaSource->SupportsSeeking())
@@ -496,25 +504,31 @@ void MediaSourceGrabberThread::DoSetInputStreamPreferences()
 
 void MediaSourceGrabberThread::DoSeek()
 {
-    LOG(LOG_VERBOSE, "DoSeek now...");
+    LOG(LOG_VERBOSE, "%s-DoSeek now...", mMediaSource->GetMediaTypeStr().c_str());
 
-    // lock
-    mDeliverMutex.lock();
+    if (!mMediaSource->IsSeeking())
+    {// no seeking running, we are allowed to start a new seek process
+		// lock
+		mDeliverMutex.lock();
 
-    LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
-    if (mMediaSource->SupportsSeeking())
-    {
-        mSourceAvailable = mMediaSource->Seek(mSeekPos);
-        if(!mSourceAvailable)
-        {
-            LOG(LOG_WARN, "Source isn't available anymore after seeking");
-        }
+		LOG(LOG_VERBOSE, "Seeking now to position %5.2f", mSeekPos);
+		if (mMediaSource->SupportsSeeking())
+		{
+			mSourceAvailable = mMediaSource->Seek(mSeekPos);
+			if(!mSourceAvailable)
+			{
+				LOG(LOG_WARN, "Source isn't available anymore after seeking");
+			}
+		}
+		mEofReached = false;
+		mSeekAsap = false;
+
+		// unlock
+		mDeliverMutex.unlock();
+    }else
+    {// another seek process is already running
+        LOG(LOG_VERBOSE, "Delaying %s seek request", mMediaSource->GetMediaTypeStr().c_str());
     }
-    mEofReached = false;
-    mSeekAsap = false;
-
-    // unlock
-    mDeliverMutex.unlock();
 }
 
 void MediaSourceGrabberThread::StopGrabber()
@@ -526,7 +540,7 @@ void MediaSourceGrabberThread::StopGrabber()
     while(isRunning())
     {
         if (tSignalingRound > 0)
-            LOG(LOG_WARN, "Signaling attempt %d to stop  %s-Grabber...", tSignalingRound, mMediaSource->GetMediaTypeStr().c_str());
+            LOG(LOG_WARN, "Signaling attempt %d to stop %s %s grabber...", tSignalingRound, mMediaSource->GetMediaTypeStr().c_str(), mMediaSource->GetSourceTypeStr().c_str());
         tSignalingRound++;
 
         LOG(LOG_VERBOSE, "...setting %s grabbing-condition", mMediaSource->GetMediaTypeStr().c_str());

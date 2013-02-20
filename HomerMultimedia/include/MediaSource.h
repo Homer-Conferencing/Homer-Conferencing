@@ -263,6 +263,8 @@ public:
     virtual void GetVideoGrabResolution(int &pResX, int &pResY);
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
     virtual void GetVideoSourceResolution(int &pResX, int &pResY);
+    virtual bool HasVariableVideoOutputFrameRate();
+    virtual bool IsSeeking();
 
     /* grabbing control */
     virtual void StopGrabbing();
@@ -377,6 +379,7 @@ protected:
 
     /* internal interface for packet relaying */
     virtual void RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, bool pIsKeyFrame = false);
+    virtual void RelaySyncTimestampToMediaSinks(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp);
 
     /* internal interface for stream recordring */
     void RecordFrame(AVFrame *pSourceFrame);
@@ -417,7 +420,7 @@ protected:
     bool FfmpegCloseAll(string pSource /* caller source */, int pLine /* caller line */);
 
     /* encoder helpers */
-    bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int pBufferedFrames);
+    bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int &pBufferedFrames);
 
     bool                mMediaSourceOpened;
     bool                mGrabbingStopped;

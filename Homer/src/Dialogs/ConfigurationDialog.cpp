@@ -403,11 +403,11 @@ void ConfigurationDialog::LoadConfiguration()
     //### NOTIFICATION configuration
     //######################################################################
     mCbNotifySoundStart->setChecked(CONF.GetStartSound());
-    mCbNotifySystrayStart->setChecked(CONF.GetStartSystray());
+//    mCbNotifySystrayStart->setChecked(CONF.GetStartSystray());
     mLbNotifySoundStartFile->setText(CONF.GetStartSoundFile());
 
     mCbNotifySoundStop->setChecked(CONF.GetStopSound());
-    mCbNotifySystrayStop->setChecked(CONF.GetStopSystray());
+//    mCbNotifySystrayStop->setChecked(CONF.GetStopSystray());
     mLbNotifySoundStopFile->setText(CONF.GetStopSoundFile());
 
     mCbNotifySoundIm->setChecked(CONF.GetImSound());
@@ -688,11 +688,11 @@ void ConfigurationDialog::SaveConfiguration()
     //### NOTIFICATION configuration
     //######################################################################
     CONF.SetStartSound(mCbNotifySoundStart->isChecked());
-    CONF.SetStartSystray(mCbNotifySystrayStart->isChecked());
+//    CONF.SetStartSystray(mCbNotifySystrayStart->isChecked());
     CONF.SetStartSoundFile(mLbNotifySoundStartFile->text());
 
     CONF.SetStopSound(mCbNotifySoundStop->isChecked());
-    CONF.SetStopSystray(mCbNotifySystrayStop->isChecked());
+//    CONF.SetStopSystray(mCbNotifySystrayStop->isChecked());
     CONF.SetStopSoundFile(mLbNotifySoundStopFile->text());
 
     CONF.SetImSound(mCbNotifySoundIm->isChecked());
@@ -1181,8 +1181,8 @@ void ConfigurationDialog::DeselectAllSound()
 
 void ConfigurationDialog::SelectAllSystray()
 {
-    mCbNotifySystrayStart->setChecked(true);
-    mCbNotifySystrayStop->setChecked(true);
+//    mCbNotifySystrayStart->setChecked(true);
+//    mCbNotifySystrayStop->setChecked(true);
 
     mCbNotifySystrayIm->setChecked(true);
 
@@ -1200,8 +1200,8 @@ void ConfigurationDialog::SelectAllSystray()
 
 void ConfigurationDialog::DeselectAllSystray()
 {
-    mCbNotifySystrayStart->setChecked(false);
-    mCbNotifySystrayStop->setChecked(false);
+//    mCbNotifySystrayStart->setChecked(false);
+//    mCbNotifySystrayStop->setChecked(false);
 
     mCbNotifySystrayIm->setChecked(false);
 

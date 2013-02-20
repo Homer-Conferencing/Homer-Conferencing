@@ -42,12 +42,13 @@ namespace Homer { namespace Multimedia {
 //#define RTP_DEBUG_PACKET_ENCODER_FFMPEG
 //#define RTP_DEBUG_PACKET_ENCODER
 //#define RTP_DEBUG_PACKET_ENCODER_PTS
+//#define RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
 
 // the following de/activates debugging of received RTP packets
 //#define RTP_DEBUG_PACKET_DECODER
 //#define RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
 //#define RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
-
+//#define RTP_DEBUG_PACKET_DECODER_TIMESTAMPS_CONTINUITY
 //#define RTCP_DEBUG_PACKETS_ENCODER
 //#define RTCP_DEBUG_PACKET_ENCODER_FFMPEG
 
@@ -140,6 +141,8 @@ public:
     static void SetH261PayloadSizeMax(unsigned int pMaxSize);
     static unsigned int GetH261PayloadSizeMax();
 
+    static uint64_t GetNtpTime(); // delivers US ntp time
+
     /* packet statistic */
     int64_t ReceivedRTPPackets();
     int64_t ReceivedRTCPPackets();
@@ -167,6 +170,7 @@ public:
 protected:
     uint64_t GetCurrentPtsFromRTP(); // returns the timestamp of the last received RTP packet
     void GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, uint64_t &pReferencePts);
+    void SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint32_t pReferencePts);
     unsigned int GetSourceIdentifierFromRTP(); // returns the RTP source identifier
     bool HasSourceChangedFromRTP(); // return if RTP source identifier has changed and resets the flag
 
@@ -195,7 +199,7 @@ private:
     AVFormatContext     *mRtpFormatContext;
     unsigned int        mPayloadId;
     bool                mIntermediateFragment;
-    bool                mEncoderOpened;
+    bool                mRtpEncoderOpened;
     std::string         mTargetHost;
     unsigned int        mTargetPort;
     uint64_t	        mLostPackets;
@@ -209,6 +213,7 @@ private:
     int					mRemoteSequenceNumberConsecutiveOverflows;
     unsigned short int  mRemoteStartSequenceNumber;
     uint64_t            mRemoteTimestamp; // without overflows
+    uint64_t            mLocalTimestampOffset;
     unsigned int		mLastTimestampFromRTPHeader; // for overflow check
     uint64_t			mRemoteTimestampOverflowShift; // offset for shifting the value range
     uint64_t            mRemoteTimestampLastPacket;
@@ -249,6 +254,10 @@ private:
     /* packet statistic */
     int64_t				mRTCPPacketCounter;
     int64_t				mRTPPacketCounter;
+    /* synchronization */
+    Mutex               mSyncDataMutex;
+    uint64_t            mSyncNTPTime;
+    uint64_t            mSyncPTS;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

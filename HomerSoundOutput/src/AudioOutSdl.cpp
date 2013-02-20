@@ -618,7 +618,7 @@ void AudioOutSdl::PlayerCallBack(int pChannel)
         if (tChannelDesc->CallbackRecursionCounter == 0)
         {
 			// lock
-			if (!tChannelDesc->mMutex.tryLock(5000))
+			if (!tChannelDesc->mMutex.lock(5000))
 			{
 				LOGEX(AudioOutSdl, LOG_WARN, "System is so terribly slow?, PlayerCallBack couldn't lock the mutex for channel %d", pChannel);
 				return;

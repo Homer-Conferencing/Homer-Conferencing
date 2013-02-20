@@ -79,6 +79,8 @@ namespace Homer { namespace Gui {
 #define STREAM_POS_UPDATE_DELAY                                    250 // ms
 // max. allowed drift between audio and video playback
 #define AV_SYNC_MAX_DRIFT_UNTIL_RESYNC                             0.08 // seconds
+// max. allowed drift between audio and video playback
+#define AV_SYNC_MAX_UNDER_BUFFERING_DRIFT_UNTIL_RESYNC             0.5 // seconds
 // max. allowed drift until we deliver an error by IsAVDriftOkay()
 #define AV_SYNC_MAX_DRIFT_FOR_OKAY                                 (AV_SYNC_MAX_DRIFT_UNTIL_RESYNC * 2) // seconds
 
@@ -833,7 +835,7 @@ void ParticipantWidget::dropEvent(QDropEvent *pEvent)
 
 void ParticipantWidget::keyPressEvent(QKeyEvent *pEvent)
 {
-	//LOG(LOG_VERBOSE, "Got participant window key press event with key %s(%d, mod: %d)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
+	//LOG(LOG_VERBOSE, "Got participant window key press event with key %s(0x%x, mod: 0x%x)", pEvent->text().toStdString().c_str(), pEvent->key(), (int)pEvent->modifiers());
 
     if ((pEvent->key() == Qt::Key_T) && (!pEvent->isAutoRepeat()) && (pEvent->modifiers() == 0))
     {
@@ -1400,29 +1402,68 @@ void ParticipantWidget::ResetAVSync()
 void ParticipantWidget::AVSync()
 {
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
-
-        // only try to synch. if it is desired
-        if (!mAVSynchActive)
-            return;
-
         int64_t tCurTime = Time::GetTimeStamp();
         if ((tCurTime - mTimeOfLastAVSynch  >= AV_SYNC_MIN_PERIOD * 1000))
         {
-            #ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
-                //############################
-                //### limit vieo buffering
-                //############################
-                float tBufferTime = mVideoSource->GetFrameBufferTime();
-                float tBufferTimeLimit = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
-                if ((mVideoSource != NULL) && (tBufferTime > tBufferTimeLimit))
-                {// buffer has too many frames, this can be the case if the system has temporary high load
-                    LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tBufferTimeLimit);
-                    mVideoWidget->GetWorker()->SyncClock();
-                    ResetAVSync();
-                }
-            #endif
+            float tBufferTime = 0;
+            float tPreBufferTime = 0;
+            bool tSourceNeedsResync = false;
+            //############################
+            //### limit video buffering
+            //############################
+            if (mVideoSource != NULL)
+            {
+                tBufferTime = mVideoSource->GetFrameBufferTime();
+                tPreBufferTime = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
+				#ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
+					if ((tBufferTime > 0) && (tBufferTime > tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC))
+					{
+	                    LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC);
+	                    tSourceNeedsResync = true;
+					}
+				#endif
+				#ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_UNDER_BUFFERING
+					if ((tBufferTime > 0) && (tBufferTime < tPreBufferTime - AV_SYNC_MAX_UNDER_BUFFERING_DRIFT_UNTIL_RESYNC))
+					{
+	                    LOG(LOG_WARN, "Detected under-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tPreBufferTime - AV_SYNC_MAX_UNDER_BUFFERING_DRIFT_UNTIL_RESYNC);
+	                    tSourceNeedsResync = true;
+					}
+				#endif
+				if (tSourceNeedsResync)
+				{// buffer has too many frames, this can be the case if the system has temporary high load
+					mVideoWidget->GetWorker()->SyncClock();
+					ResetAVSync();
+				}
+            }
 
-            //HINT: we have to keep the audio buffering flexible! otherwise, the A/V synchronizatino won't work anymore
+            //############################
+            //### limit audio buffering
+            //############################
+			tSourceNeedsResync = false;
+			if ((mAudioSource != NULL) && (!mAVSynchActive))
+			{
+				tBufferTime = mAudioSource->GetFrameBufferTime();
+				tPreBufferTime = mAudioSource->GetFrameBufferPreBufferingTime();
+				#ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
+					if ((tBufferTime > 0) && (tBufferTime > tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC))
+					{
+						LOG(LOG_WARN, "Detected over-buffering for audio stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC);
+						tSourceNeedsResync = true;
+					}
+				#endif
+				if (tSourceNeedsResync)
+				{// buffer has too many frames, this can be the case if the system has temporary high load
+					LOG(LOG_WARN, "Detected over-buffering for audio stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC);
+					mAudioWidget->GetWorker()->SyncClock();
+					ResetAVSync();
+				}
+			}
+
+            //HINT: we have to keep the audio buffering flexible! otherwise, the A/V synchronization won't work anymore
+
+            // only try to synch. if it is desired
+            if (!mAVSynchActive)
+                return;
 
             //############################
             //### synch. audio and video
@@ -1468,9 +1509,9 @@ void ParticipantWidget::AVSync()
                             mAVASyncCounter++;
                             #ifdef PARTICIPANT_WIDGET_DEBUG_AV_SYNC
                                 if (tTimeDiff > 0)
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", mAVAsyncCounterSinceLastSynchronization, tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (video before audio), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64, mAVAsyncCounterSinceLastSynchronization, tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
                                 else
-                                    LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64", synchronizing now..", mAVAsyncCounterSinceLastSynchronization, tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
+                                    LOG(LOG_WARN, "Detected asynchronous A/V playback %d times, drift is %3.2f seconds (audio before video), max. allowed drift is %3.2f seconds, last synch. was at %"PRId64, mAVAsyncCounterSinceLastSynchronization, tTimeDiff, AV_SYNC_MAX_DRIFT_UNTIL_RESYNC, mTimeOfLastAVSynch);
                             #endif
                         }
                     }
@@ -1500,6 +1541,9 @@ bool ParticipantWidget::IsAVDriftOkay()
 {
     bool tResult = true;
 
+    if (!mAVSynchActive)
+        return true;
+
     float tTimeDiff = GetAVDrift();
 
     if ((tTimeDiff < -AV_SYNC_MAX_DRIFT_FOR_OKAY) || (tTimeDiff > AV_SYNC_MAX_DRIFT_FOR_OKAY))
@@ -1510,9 +1554,6 @@ bool ParticipantWidget::IsAVDriftOkay()
 
 double ParticipantWidget::GetAVDrift(int64_t *pVideoSyncTime, int64_t *pAudioSyncTime)
 {
-    if (!mAVSynchActive)
-        return 0;
-
     if (mVideoWidget->GetWorker() == NULL)
         return 0;
 
@@ -1986,34 +2027,39 @@ AudioWorkerThread* ParticipantWidget::GetAudioWorker()
         return NULL;
 }
 
-void ParticipantWidget::ShowStreamPosition(int64_t pCurPos, int64_t pEndPos)
+void ParticipantWidget::ShowStreamPosition(float pCurPos, float pEndPos)
 {
-    int tHour, tMin, tSec, tEndHour, tEndMin, tEndSec;
+    int tHour, tMin, tSec, tEndHour, tEndMin, tEndSec, tCurPos = pCurPos, tEndPos = pEndPos;
     int tSliderPos;
 
-    if(pEndPos)
+    // do we have valid position data?
+    if ((pCurPos < 0.0) || (pEndPos < 0.0))
+    	return;
+
+    //LOG(LOG_VERBOSE, "Updating slider position, slider is down: %d, pos: %f, end: %f", mSlMovie->isSliderDown(), pCurPos, pEndPos);
+
+    if (pEndPos != 0.0)
         tSliderPos = 1000 * pCurPos / pEndPos;
     else
         tSliderPos = 0;
 
-    tHour = pCurPos / 3600;
-    pCurPos %= 3600;
-    tMin = pCurPos / 60;
-    pCurPos %= 60;
-    tSec = pCurPos;
+    tHour = tCurPos / 3600;
+    tCurPos %= 3600;
+    tMin = tCurPos / 60;
+    tCurPos %= 60;
+    tSec = tCurPos;
 
-    tEndHour = pEndPos / 3600;
-    pEndPos %= 3600;
-    tEndMin = pEndPos / 60;
-    pEndPos %= 60;
-    tEndSec = pEndPos;
+    tEndHour = tEndPos / 3600;
+    tEndPos %= 3600;
+    tEndMin = tEndPos / 60;
+    tEndPos %= 60;
+    tEndSec = tEndPos;
 
     QString tPosText =  QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "\n" + \
                         QString("%1:%2:%3").arg(tEndHour, 2, 10, (QLatin1Char)'0').arg(tEndMin, 2, 10, (QLatin1Char)'0').arg(tEndSec, 2, 10, (QLatin1Char)'0');
 
     mLbCurPos->setText(tPosText);
 
-    //LOG(LOG_VERBOSE, "Updating slider position, slider is down: %d", mSlMovie->isSliderDown());
     // update movie slider only if user doesn't currently adjust the playback position
     if (!mSlMovie->isSliderDown())
     {
@@ -2052,16 +2098,16 @@ void ParticipantWidget::UpdateMovieControls()
     	//#################
         // update movie slider and position display
         //#################
-		int64_t tCurPos = 0;
-		int64_t tEndPos = 0;
-		if (mVideoWidget->GetWorker()->PlayingFile())
+		float tCurPos = 0;
+		float tEndPos = 0;
+		if ((mVideoWidget->GetWorker()->PlayingFile()) && (!mVideoWidget->GetWorker()->IsSeeking()))
 		{
 		    //LOG(LOG_VERBOSE, "Valid video position");
 			// get current stream position from video source and use it as movie position
 			tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
 			tEndPos = mVideoWidget->GetWorker()->GetSeekEnd();
 		}
-        if ((mAudioWidget->GetWorker()->PlayingFile()) && ((tCurPos == 0) || (tCurPos == tEndPos)))
+        if ((mAudioWidget->GetWorker()->PlayingFile()) && (tCurPos == 0) && (!mAudioWidget->GetWorker()->IsSeeking()))
 		{
             //LOG(LOG_VERBOSE, "Valid audio position");
 			// get current stream position from audio source and use it as movie position
@@ -2069,6 +2115,7 @@ void ParticipantWidget::UpdateMovieControls()
 			tEndPos = mAudioWidget->GetWorker()->GetSeekEnd();
 		}
 
+        //LOG(LOG_VERBOSE, "Movie: %f/%f", tCurPos, tEndPos);
         ShowStreamPosition(tCurPos, tEndPos);
 
         // update play/pause button

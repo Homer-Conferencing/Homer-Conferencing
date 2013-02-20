@@ -33,6 +33,9 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QMenu>
+#ifdef APPLE
+#include <ApplicationServices/ApplicationServices.h>
+#endif
 
 namespace Homer { namespace Gui {
 

@@ -274,16 +274,8 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     if (!OpenDecoder())
     	return false;
 
-	if (!OpenFormatConverter())
-		return false;
+	//HINT: OpenFormatConverter() will be called by the Run() method of MediaSourceMem
 		
-    // fix frame size of 0 for some audio codecs and use default caudio capture frame size instead to allow 1:1 transformation
-    // old PCM implementation delivered often a frame size of 1
-    // some audio codecs (excl. MP3) deliver a frame size of 0
-    // ==> we use 32 as threshold to catch most of the inefficient values for the frame size
-//    if (mCodecContext->frame_size < 32)
-//        mCodecContext->frame_size = 1024;
-
 	if (SupportsSeeking())
 	{
 		if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
@@ -345,6 +337,11 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
     float tSeekEnd = GetSeekEnd();
     float tNumberOfFrames = mNumberOfFrames;
 
+    if (IsSeeking())
+    {
+    	LOG(LOG_ERROR, "%s decoder is currently seeking for an explicit stream position, seeking isn't reentrant", GetMediaTypeStr().c_str());
+    }
+
     //HINT: we need the original PTS values from the file
     // correcting PTS value by a possible start PTS value (offset)
     if (mInputStartPts > 0)
@@ -381,7 +378,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
     if (pSeconds <= 0)
         tFrameIndex = 0;
     else
-        tFrameIndex = (mInputStartPts + (double)pSeconds * GetInputFrameRate()); // later the value for mCurrentFrameIndex will be changed to the same value like tAbsoluteTimestamp
+        tFrameIndex = CalculateOutputFrameNumber(mInputStartPts + (double)pSeconds * GetInputFrameRate());
     float tTimeDiff = pSeconds - GetSeekPos();
 
     //LOG(LOG_VERBOSE, "Rel: %"PRId64" Abs: %"PRId64"", tRelativeTimestamp, tAbsoluteTimestamp);
@@ -405,7 +402,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                 LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f, ts: %.2f), max. sec.: %.2f (pts %.2f), source start pts: %"PRId64, GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentOutputFrameIndex, pSeconds, tFrameIndex, tTargetTimestamp, tSeekEnd, tNumberOfFrames, mInputStartPts);
 
                 int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentOutputFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
-                mDecoderTargetFrameIndex = (int64_t)tFrameIndex;
+                mDecoderTargetOutputFrameIndex = rint(tFrameIndex);
 
                 if ((tRes = avformat_seek_file(mFormatContext, -1, INT64_MIN, tTargetTimestamp, INT64_MAX, 0)) < 0)
                 {
@@ -414,7 +411,6 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                 }else
                 {
                     LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful, current dts is %"PRId64"", GetMediaTypeStr().c_str(), (float)tFrameIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
-                    mCurrentOutputFrameIndex = tFrameIndex;
 
                     // seeking was successful
                     tResult = true;
@@ -431,9 +427,6 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
             {
                 LOG(LOG_VERBOSE, "WAITING for %2.2f sec., SEEK/WAIT threshold is %2.2f", tTimeDiff, MSF_SEEK_WAIT_THRESHOLD);
                 LOG(LOG_VERBOSE, "%s-we are at frame %.2f and we should be at frame %.2f", GetMediaTypeStr().c_str(), (float)mCurrentOutputFrameIndex, (float)tFrameIndex);
-
-                // simulate a frame index
-                mCurrentOutputFrameIndex = tFrameIndex;
 
                 // seek by adjusting the start time of RT grabbing
                 mSourceStartTimeForRTGrabbing = mSourceStartTimeForRTGrabbing - tTimeDiff/* in us */ * 1000 * 1000;
@@ -503,6 +496,9 @@ float MediaSourceFile::GetSeekPos()
 
 	if (!SupportsSeeking())
 		return 0;
+
+	if (mEOFReached)
+	    return tSeekEnd;
 
 	if (tCurrentFrameIndex > 0)
 	{

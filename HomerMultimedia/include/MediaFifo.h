@@ -62,11 +62,11 @@ public:
     MediaFifo(int pFifoSize, int pFifoEntrySize, std::string pName = "");
     virtual ~MediaFifo();
 
-    virtual void WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferNumber);
-    virtual void ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferNumber); // memory copy, returns entire memory
+    virtual void WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferTimestamp);
+    virtual void ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferTimestamp); // memory copy, returns entire memory
     virtual void ClearFifo();
 
-    virtual int ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pBufferNumber); // avoids memory copy, returns a pointer to memory
+    virtual int ReadFifoExclusive(char **pBuffer, int &pBufferSize, int64_t &pBufferTimestamp); // avoids memory copy, returns a pointer to memory
     virtual void ReadFifoExclusiveFinished(int pEntryPointer);
 
     virtual int GetEntrySize();

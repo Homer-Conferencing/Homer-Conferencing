@@ -57,6 +57,7 @@
 									<listOptionValue builtIn="false" value="__STDC_LIMIT_MACROS"/>
 									<listOptionValue builtIn="false" value="WIN64=1"/>
 									<listOptionValue builtIn="false" value="WINDOWS=1"/>
+									<listOptionValue builtIn="false" value="APPLE=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1416506455" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
