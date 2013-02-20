@@ -202,7 +202,7 @@ void SegmentSelectionDialog::mousePressEvent(QMouseEvent *pEvent)
 {
     if (pEvent->button() == Qt::LeftButton)
     {
-        mDrapPosition = pEvent->globalPos();// - frameGeometry().topLeft();
+        mDragPosition = pEvent->globalPos();// - frameGeometry().topLeft();
         pEvent->accept();
     }
 }
@@ -211,7 +211,7 @@ void SegmentSelectionDialog::mouseMoveEvent(QMouseEvent *pEvent)
 {
     if (pEvent->buttons() & Qt::LeftButton)
     {
-        QPoint tNewPos = pEvent->globalPos() - mDrapPosition;
+        QPoint tNewPos = pEvent->globalPos() - mDragPosition;
         if (tNewPos.x() < 0)
             tNewPos.setX(0);
         if (tNewPos.y() < 0)

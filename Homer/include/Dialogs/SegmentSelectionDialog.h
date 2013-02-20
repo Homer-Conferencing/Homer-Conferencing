@@ -73,7 +73,7 @@ private:
     void ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight, bool pForceUpdate = false);
 
     MediaSourceDesktop  *mMediaSourceDesktop;
-    QPoint              mDrapPosition;
+    QPoint              mDragPosition;
     int                 mWidth;
     int                 mHeight;
     int                 mOffsetX;
