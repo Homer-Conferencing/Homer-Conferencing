@@ -1496,7 +1496,7 @@ void* MediaSourceMem::Run(void* pArgs)
                 LOG(LOG_ERROR, "Out of video memory");
 
             if (!tInputIsPicture)
-            {
+            {// we have a video stream as input
                 LOG(LOG_VERBOSE, "Allocating all objects for a video input");
 
                 tChunkBufferSize = avpicture_get_size(mCodecContext->pix_fmt, mSourceResX, mSourceResY) + FF_INPUT_BUFFER_PADDING_SIZE;
