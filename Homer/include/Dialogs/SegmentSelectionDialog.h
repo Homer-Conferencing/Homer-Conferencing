@@ -67,13 +67,13 @@ private:
     virtual void contextMenuEvent(QContextMenuEvent *event);
     virtual void mousePressEvent(QMouseEvent *pEvent);
     virtual void mouseMoveEvent(QMouseEvent *pEvent);
-    virtual void moveEvent(QMoveEvent *pEvent);
     virtual void resizeEvent(QResizeEvent *pEvent);
     void initializeGUI();
     void ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight, bool pForceUpdate = false);
 
     MediaSourceDesktop  *mMediaSourceDesktop;
-    QPoint              mDragPosition;
+    QPoint              mDragMousePosition;
+    QPoint              mDragWindowPosition;
     int                 mWidth;
     int                 mHeight;
     int                 mOffsetX;

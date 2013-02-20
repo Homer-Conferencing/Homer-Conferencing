@@ -200,18 +200,23 @@ void SegmentSelectionDialog::contextMenuEvent(QContextMenuEvent *event)
 
 void SegmentSelectionDialog::mousePressEvent(QMouseEvent *pEvent)
 {
+    LOG(LOG_WARN, "mousePressEvent");
+
     if (pEvent->button() == Qt::LeftButton)
     {
-        mDragPosition = pEvent->globalPos();// - frameGeometry().topLeft();
+        mDragMousePosition = pEvent->globalPos();// - frameGeometry().topLeft();
+        mDragWindowPosition = pos();
         pEvent->accept();
     }
 }
 
 void SegmentSelectionDialog::mouseMoveEvent(QMouseEvent *pEvent)
 {
+    LOG(LOG_WARN, "mouseMoveEvent");
+
     if (pEvent->buttons() & Qt::LeftButton)
     {
-        QPoint tNewPos = pEvent->globalPos() - mDragPosition;
+        QPoint tNewPos = mDragWindowPosition + pEvent->globalPos() - mDragMousePosition;
         if (tNewPos.x() < 0)
             tNewPos.setX(0);
         if (tNewPos.y() < 0)
@@ -230,27 +235,6 @@ void SegmentSelectionDialog::mouseMoveEvent(QMouseEvent *pEvent)
 
         pEvent->accept();
     }
-}
-
-void SegmentSelectionDialog::moveEvent(QMoveEvent *pEvent)
-{
-    QPoint tNewPos = pEvent->pos();
-
-    if (tNewPos.x() < 0)
-        tNewPos.setX(0);
-    if (tNewPos.y() < 0)
-        tNewPos.setY(0);
-
-    ConfigureDesktopCapturing(tNewPos.x(), tNewPos.y(), -1, -1);
-
-//    int tNewOffsetX = x();// + (frameGeometry().width() - width()) / 2;
-//    int tNewOffsetY = y();// + (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2;
-//    mMediaSourceDesktop->mGrabOffsetX = tNewOffsetX;
-//    mMediaSourceDesktop->mGrabOffsetY = tNewOffsetY;
-//    mLbOffsetX->setText(QString("%1").arg(tNewOffsetX));
-//    mLbOffsetY->setText(QString("%1").arg(tNewOffsetY));
-
-    pEvent->accept();
 }
 
 void SegmentSelectionDialog::resizeEvent(QResizeEvent *pEvent)
