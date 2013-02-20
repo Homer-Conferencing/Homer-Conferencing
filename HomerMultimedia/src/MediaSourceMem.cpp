@@ -2198,7 +2198,7 @@ void MediaSourceMem::ResetDecoderBuffers()
     mDecoderResetBuffersMutex.lock();
 
     // flush ffmpeg internal buffers
-    LOG(LOG_WARN, "Reseting %s decoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
     avcodec_flush_buffers(mCodecContext);
 
     // reset the library internal frame FIFO

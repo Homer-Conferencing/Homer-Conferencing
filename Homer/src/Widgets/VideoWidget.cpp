@@ -2350,7 +2350,9 @@ int VideoWorkerThread::GetCurrentFrameRef(void **pFrame, float *pFrameRate)
             *pFrame = mFrame[mFrameCurrentIndex];
             tResult = mFrameNumber[mFrameCurrentIndex];
         }else
+        {
             LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d, source available: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetMediaSourceAsap, mSourceAvailable);
+        }
     }else
     {// timeout
 

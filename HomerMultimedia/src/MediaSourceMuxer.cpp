@@ -598,11 +598,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     }
 
     if (tCodec->capabilities & CODEC_CAP_DELAY)
-    {
-        LOG(LOG_WARN, "%s encoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
-        LOG(LOG_WARN, "%s encoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
-        LOG(LOG_WARN, "%s encoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
-    }
+        LOG(LOG_VERBOSE, "%s encoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
 
     // init transcoder FIFO based for RGB32 pictures
     StartEncoder();
@@ -1308,7 +1304,7 @@ void MediaSourceMuxer::ResetEncoderBuffers()
     mEncoderSeekMutex.lock();
 
     // flush ffmpeg internal buffers
-    LOG(LOG_WARN, "Reseting %s encoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Reseting %s encoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
     avcodec_flush_buffers(mCodecContext);
 
     // reset the library internal frame FIFO
