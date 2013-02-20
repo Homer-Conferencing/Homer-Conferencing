@@ -2027,38 +2027,39 @@ AudioWorkerThread* ParticipantWidget::GetAudioWorker()
         return NULL;
 }
 
-void ParticipantWidget::ShowStreamPosition(int64_t pCurPos, int64_t pEndPos)
+void ParticipantWidget::ShowStreamPosition(float pCurPos, float pEndPos)
 {
-    int tHour, tMin, tSec, tEndHour, tEndMin, tEndSec;
+    int tHour, tMin, tSec, tEndHour, tEndMin, tEndSec, tCurPos = pCurPos, tEndPos = pEndPos;
     int tSliderPos;
 
     // do we have valid position data?
-    if ((pCurPos < 0) || (pEndPos < 0))
+    if ((pCurPos < 0.0) || (pEndPos < 0.0))
     	return;
 
-    if(pEndPos)
+    //LOG(LOG_VERBOSE, "Updating slider position, slider is down: %d, pos: %f, end: %f", mSlMovie->isSliderDown(), pCurPos, pEndPos);
+
+    if (pEndPos != 0.0)
         tSliderPos = 1000 * pCurPos / pEndPos;
     else
         tSliderPos = 0;
 
-    tHour = pCurPos / 3600;
-    pCurPos %= 3600;
-    tMin = pCurPos / 60;
-    pCurPos %= 60;
-    tSec = pCurPos;
+    tHour = tCurPos / 3600;
+    tCurPos %= 3600;
+    tMin = tCurPos / 60;
+    tCurPos %= 60;
+    tSec = tCurPos;
 
-    tEndHour = pEndPos / 3600;
-    pEndPos %= 3600;
-    tEndMin = pEndPos / 60;
-    pEndPos %= 60;
-    tEndSec = pEndPos;
+    tEndHour = tEndPos / 3600;
+    tEndPos %= 3600;
+    tEndMin = tEndPos / 60;
+    tEndPos %= 60;
+    tEndSec = tEndPos;
 
     QString tPosText =  QString("%1:%2:%3").arg(tHour, 2, 10, (QLatin1Char)'0').arg(tMin, 2, 10, (QLatin1Char)'0').arg(tSec, 2, 10, (QLatin1Char)'0') + "\n" + \
                         QString("%1:%2:%3").arg(tEndHour, 2, 10, (QLatin1Char)'0').arg(tEndMin, 2, 10, (QLatin1Char)'0').arg(tEndSec, 2, 10, (QLatin1Char)'0');
 
     mLbCurPos->setText(tPosText);
 
-    //LOG(LOG_VERBOSE, "Updating slider position, slider is down: %d", mSlMovie->isSliderDown());
     // update movie slider only if user doesn't currently adjust the playback position
     if (!mSlMovie->isSliderDown())
     {
@@ -2097,8 +2098,8 @@ void ParticipantWidget::UpdateMovieControls()
     	//#################
         // update movie slider and position display
         //#################
-		int64_t tCurPos = -1;
-		int64_t tEndPos = -1;
+		float tCurPos = 0;
+		float tEndPos = 0;
 		if ((mVideoWidget->GetWorker()->PlayingFile()) && (!mVideoWidget->GetWorker()->IsSeeking()))
 		{
 		    //LOG(LOG_VERBOSE, "Valid video position");
@@ -2106,7 +2107,7 @@ void ParticipantWidget::UpdateMovieControls()
 			tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
 			tEndPos = mVideoWidget->GetWorker()->GetSeekEnd();
 		}
-        if ((mAudioWidget->GetWorker()->PlayingFile()) && ((tCurPos == 0) || (tCurPos == tEndPos)) && (!mAudioWidget->GetWorker()->IsSeeking()))
+        if ((mAudioWidget->GetWorker()->PlayingFile()) && (tCurPos == 0) && (!mAudioWidget->GetWorker()->IsSeeking()))
 		{
             //LOG(LOG_VERBOSE, "Valid audio position");
 			// get current stream position from audio source and use it as movie position
@@ -2114,6 +2115,7 @@ void ParticipantWidget::UpdateMovieControls()
 			tEndPos = mAudioWidget->GetWorker()->GetSeekEnd();
 		}
 
+        //LOG(LOG_VERBOSE, "Movie: %f/%f", tCurPos, tEndPos);
         ShowStreamPosition(tCurPos, tEndPos);
 
         // update play/pause button

@@ -220,7 +220,7 @@ private:
     void InitializeMenuAVControls(QMenu *pMenu);
 
     void ShowNewState();
-    void ShowStreamPosition(int64_t pCurPos, int64_t pEndPos);
+    void ShowStreamPosition(float pCurPos, float pEndPos);
     void CallStopped(bool pIncoming);
 
     MainWindow          	*mMainWindow;
