@@ -274,16 +274,8 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     if (!OpenDecoder())
     	return false;
 
-	if (!OpenFormatConverter())
-		return false;
+	//HINT: OpenFormatConverter() will be called by the Run() method of MediaSourceMem
 		
-    // fix frame size of 0 for some audio codecs and use default caudio capture frame size instead to allow 1:1 transformation
-    // old PCM implementation delivered often a frame size of 1
-    // some audio codecs (excl. MP3) deliver a frame size of 0
-    // ==> we use 32 as threshold to catch most of the inefficient values for the frame size
-//    if (mCodecContext->frame_size < 32)
-//        mCodecContext->frame_size = 1024;
-
 	if (SupportsSeeking())
 	{
 		if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
