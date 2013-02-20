@@ -3568,12 +3568,6 @@ bool MediaSource::FfmpegCloseFormatConverter(string pSource, int pLine)
                     mResampleFifo[i] = NULL;
                 }
             }
-            if (mResampleBuffer != NULL)
-            {
-                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..releasing resample buffer");
-                free(mResampleBuffer);
-                mResampleBuffer = NULL;
-            }
             break;
         case MEDIA_VIDEO:
             if (mVideoScalerContext != NULL)
