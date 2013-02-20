@@ -25,6 +25,7 @@
  * Since:   2011-05-05
  */
 
+#include <Header_Ffmpeg.h>
 #include <MediaFifo.h>
 #include <Logger.h>
 
@@ -61,7 +62,7 @@ MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
     for (int i = 0; i < mFifoSize; i++)
 	{
 		mFifo[i].Size = 0;
-		mFifo[i].Data = (char*)malloc(mFifoEntrySize);
+		mFifo[i].Data = (char*)av_malloc(mFifoEntrySize);
 		if (mFifo[i].Data == NULL)
 			LOG(LOG_ERROR, "Unable to allocate %d bytes of memory for FIFO %s", mFifoEntrySize, pName.c_str());
 	}
@@ -77,7 +78,7 @@ MediaFifo::~MediaFifo()
         for (int i = 0; i < mFifoSize; i++)
         {
             mFifo[i].Size = 0;
-            free(mFifo[i].Data);
+            av_free(mFifo[i].Data);
         }
         delete[] mFifo;
         mFifo = NULL;
