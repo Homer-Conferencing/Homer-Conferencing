@@ -300,6 +300,12 @@ void System::SendActivityToSystem()
 	#ifdef APPLE
 		UpdateSystemActivity(UsrActivity);
 	#endif
+	#ifdef WINDOWS
+	    if (SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED) == 0)
+	    {
+	    	LOGEX(System, LOG_ERROR, "Unable to signal activity to the system");
+		}
+	#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
