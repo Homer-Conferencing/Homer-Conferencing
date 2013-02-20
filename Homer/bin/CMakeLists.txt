@@ -24,6 +24,7 @@ ELSE()
 	MESSAGE("Qt4 moc path is: ${QT_MOC_EXECUTABLE}")
 	MESSAGE("Qt4 uic path is: ${QT_UIC_EXECUTABLE}")
 ENDIF ()
+SET(QT_USE_QTDBUS 1)
 SET(QT_USE_QTCOREL 1)
 SET(QT_USE_QTGUI 1)
 SET(QT_USE_QTNETWORK 1)
@@ -362,10 +363,11 @@ ELSE ()
 		stdc++
 		${LIBS_LINUX}
 		QtCore
+		QtDBus
 		QtGui
 		QtNetwork
 		QtXml
-		QtWebKit
+		QtWebKit		
 		resolv
 	)
 ENDIF ()

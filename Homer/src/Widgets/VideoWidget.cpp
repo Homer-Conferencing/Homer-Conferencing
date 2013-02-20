@@ -69,6 +69,9 @@
 #include <QHostInfo>
 #include <QStringList>
 #include <QDesktopWidget>
+#ifdef LINUX
+#include <QDBusInterface>
+#endif
 
 #include <stdlib.h>
 #include <vector>
@@ -103,6 +106,9 @@ using namespace Homer::Monitor;
 
 // de/activate periodic widget updates even if no new input data is received
 #define VIDEO_WIDGET_FORCE_PERIODIC_UPDATE_TIME	                            250 // ms, 0 means "deactivated"
+
+//
+#define VIDEO_WIDGET_MIN_TIME_PERIOD_BETWEEN_ACTIVITY_SIMULATION            500 // ms
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -164,6 +170,7 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+
 VideoWidget::VideoWidget(QWidget* pParent):
     QWidget(pParent)
 {
@@ -281,6 +288,48 @@ VideoWidget::~VideoWidget()
         delete mAssignedAction;
 
     LOG(LOG_VERBOSE, "Destroyed");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+int64_t sLastSendActivityToSystem = 0;
+void VideoWidget::SendActivityToSystem()
+{
+    if (sLastSendActivityToSystem == 0)
+    {// first call
+        sLastSendActivityToSystem = Time::GetTimeStamp();
+    }else
+    {// 1+ call
+        int64_t tTime = Time::GetTimeStamp();
+        if (tTime < sLastSendActivityToSystem + VIDEO_WIDGET_MIN_TIME_PERIOD_BETWEEN_ACTIVITY_SIMULATION * 1000)
+        {
+            //LOG(LOG_VERBOSE, "SendActivityToSystem() will be skipped, because min. period is %"PRId64" ms and last call was only %"PRId64" ms ago", (int64_t)VIDEO_WIDGET_MIN_TIME_PERIOD_BETWEEN_ACTIVITY_SIMULATION, (tTime - sLastSendActivityToSystem) / 1000);
+            return;
+        }
+        //LOG(LOG_VERBOSE, "Starting SendActivityToSystem()..");
+        sLastSendActivityToSystem = tTime;
+    }
+
+    #if defined(APPLE) || defined(BSD)
+        UpdateSystemActivity(UsrActivity);
+    #endif
+
+    #ifdef WINDOWS
+        if (SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED) == 0)
+            LOGEX(System, LOG_ERROR, "Unable to signal activity to the system");
+    #endif
+
+    #ifdef LINUX
+        //The following is based on mediawidget.cpp from "kaffeine" (GPL2) project, Copyright (C) 2007-2010 Christoph Pfister <christophpfister@gmail.com>
+        // KDE
+        QDBusInterface("org.freedesktop.ScreenSaver", "/ScreenSaver", "org.freedesktop.ScreenSaver").call(QDBus::NoBlock, "SimulateUserActivity");
+
+        // GNOME
+        QDBusInterface("org.gnome.ScreenSaver", "/", "org.gnome.ScreenSaver").call(QDBus::NoBlock, "SimulateUserActivity");
+
+        // X11 - deactivated because of namespace pollution regarding "Time" (conflicts between HBTime.h and some definitions in X11 headers) - is there still a need for direct X11 support?
+        //XScreenSaverSuspend(QX11Info::display(), true);
+    #endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1061,9 +1110,7 @@ void VideoWidget::ShowFrame(void* pBuffer)
     //### prevent system sleep mode
     //#############################################################
     if (IsFullScreen())
-    {
-    	System::SendActivityToSystem();
-    }
+    	SendActivityToSystem();
 }
 
 void VideoWidget::ShowHourGlass()

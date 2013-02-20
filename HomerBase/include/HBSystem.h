@@ -49,7 +49,6 @@ public:
     static std::string GetTargetMachineType();
     static int64_t GetMachineMemoryPhysical();
     static int64_t GetMachineMemorySwap();
-    static void SendActivityToSystem(); // informs the system that there is still activity and screensaver/sleep mode isn't needed, has to be called periodically
 private:
 };
 

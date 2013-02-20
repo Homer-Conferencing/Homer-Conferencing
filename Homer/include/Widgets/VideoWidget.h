@@ -118,6 +118,7 @@ private slots:
     void ShowHourGlass();
 
 private:
+    void SendActivityToSystem(); // informs the system that there is still activity and screensaver/sleep mode isn't needed, has to be called periodically
     bool IsFullScreen();
     void DialogAddNetworkSink();
     void ShowFrame(void* pBuffer);
