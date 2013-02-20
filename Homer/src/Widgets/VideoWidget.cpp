@@ -1015,7 +1015,7 @@ void VideoWidget::ShowFrame(void* pBuffer)
     //### draw status text per OSD
     //#############################################################
     // are we a fullscreen widget?
-    if ((mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
+    if ((IsFullScreen()) && (mOsdStatusMessage != "") && (Time::GetTimeStamp() < mOsdStatusMessageTimeout))
     {
         // define font for OSD text
         QFont tFont1 = QFont("Arial", 26, QFont::Light);
@@ -1055,6 +1055,14 @@ void VideoWidget::ShowFrame(void* pBuffer)
     {
     	mNeedBackgroundUpdatesUntillNextFrame = false;
     	mNeedBackgroundUpdate = true;
+    }
+
+    //#############################################################
+    //### prevent system sleep mode
+    //#############################################################
+    if (IsFullScreen())
+    {
+    	System::SendActivityToSystem();
     }
 }
 
@@ -1616,7 +1624,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
             return;
         }
     }
-    if (pEvent->key() == Qt::Key_Right)
+    if ((pEvent->key() == Qt::Key_Right) && (IsFullScreen()))
     {
         if (pEvent->modifiers() & Qt::ControlModifier)
             mParticipantWidget->SeekMovieFileRelative(SEEK_BIG_STEP);
@@ -1627,7 +1635,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         pEvent->accept();
         return;
     }
-    if (pEvent->key() == Qt::Key_Left)
+    if ((pEvent->key() == Qt::Key_Left) && (IsFullScreen()))
     {
         if (pEvent->modifiers() & Qt::ControlModifier)
             mParticipantWidget->SeekMovieFileRelative(-SEEK_BIG_STEP -SEEK_BACKWARD_DRIFT);
@@ -2350,9 +2358,7 @@ int VideoWorkerThread::GetCurrentFrameRef(void **pFrame, float *pFrameRate)
             *pFrame = mFrame[mFrameCurrentIndex];
             tResult = mFrameNumber[mFrameCurrentIndex];
         }else
-        {
             LOG(LOG_WARN, "Can't deliver new frame, pending frames: %d, grab resolution invalid: %d, have to reset source: %d, source available: %d", mPendingNewFrames, mSetGrabResolutionAsap, mResetMediaSourceAsap, mSourceAvailable);
-        }
     }else
     {// timeout
 
