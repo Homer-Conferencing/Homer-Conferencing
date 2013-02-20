@@ -39,6 +39,7 @@
 
 #if defined(APPLE) || defined(BSD)
 #include <sys/sysctl.h>
+#include <CoreServices/CoreServices.h>
 #endif
 
 #if defined(LINUX) || defined(APPLE) || defined(BSD)
@@ -292,6 +293,13 @@ int64_t System::GetMachineMemorySwap()
 
     //LOGEX(System, LOG_VERBOSE, "Found machine memory (swap.): %"PRId64" MB", tResult / 1024 / 1024);
     return tResult;
+}
+
+void System::SendActivityToSystem()
+{
+	#ifdef APPLE
+		UpdateSystemActivity(UsrActivity);
+	#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

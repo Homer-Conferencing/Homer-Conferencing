@@ -49,7 +49,7 @@ public:
     static std::string GetTargetMachineType();
     static int64_t GetMachineMemoryPhysical();
     static int64_t GetMachineMemorySwap();
-
+    static void SendActivityToSystem(); // inmforms system that there is still activity and screensave/sleep mode isn't needed
 private:
 };
 
