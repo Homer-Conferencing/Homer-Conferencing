@@ -501,6 +501,18 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     	mCurrentStreamingResY *= 4;
     }
 
+    // for H.2634 both width and height must be multiples of 2
+    if (mStreamCodecId == CODEC_ID_H264)
+    {
+        mCurrentStreamingResX += 1;
+        mCurrentStreamingResX /= 2;
+        mCurrentStreamingResX *= 2;
+
+        mCurrentStreamingResY += 1;
+        mCurrentStreamingResY /= 2;
+        mCurrentStreamingResY *= 2;
+    }
+
     mCodecContext->width = mCurrentStreamingResX;
     mCodecContext->height = mCurrentStreamingResY;
 
