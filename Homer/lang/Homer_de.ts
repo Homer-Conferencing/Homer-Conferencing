@@ -202,7 +202,7 @@
     </message>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="91"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1008"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1003"/>
         <source>Source selection:</source>
         <translation>Quelle: </translation>
     </message>
@@ -213,8 +213,8 @@
     </message>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="201"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1109"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1257"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1104"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1252"/>
         <source>Description</source>
         <translation>Beschreibung</translation>
     </message>
@@ -255,10 +255,10 @@
     </message>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="466"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1914"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2523"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2600"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2666"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1909"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2518"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2595"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2661"/>
         <source>auto</source>
         <translation>auto</translation>
     </message>
@@ -319,7 +319,7 @@
     </message>
     <message>
         <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="603"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1432"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1427"/>
         <source>Output codec:</source>
         <translation>Ausgabecodec:</translation>
     </message>
@@ -359,625 +359,618 @@
         <translation>MPEG4</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="674"/>
-        <source>THEORA</source>
-        <translation>THEORA</translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="698"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="693"/>
         <source>Output quality:</source>
         <translation>Ausgabequalität:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="734"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="729"/>
         <source>10 %</source>
         <translation>10 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="739"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="734"/>
         <source>20 %</source>
         <translation>20 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="744"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="739"/>
         <source>30 %</source>
         <translation>30 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="749"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="744"/>
         <source>40 %</source>
         <translation>40 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="754"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="749"/>
         <source>50 %</source>
         <translation>50 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="759"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="754"/>
         <source>60 %</source>
         <translation>60 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="764"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="759"/>
         <source>70 %</source>
         <translation>70 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="769"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="764"/>
         <source>80 %</source>
         <translation>80 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="774"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="769"/>
         <source>90 %</source>
         <translation>90 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="779"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="774"/>
         <source>100 %</source>
         <translation>100 %</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="924"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1649"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="919"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1644"/>
         <source>256 (Small)</source>
         <translation>256 (klein)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="929"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1654"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="924"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1649"/>
         <source>576 (IPv4 path)</source>
         <translation>576 (IPv4 Pfad)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="934"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1659"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="929"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1654"/>
         <source>1280 (IPv6 path)</source>
         <translation>1280 (IPv6 Pfad)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="939"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1664"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="934"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1659"/>
         <source>1492 (DSL)</source>
         <translation>1492 (DSL)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="944"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1669"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="939"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1664"/>
         <source>1500 (Eth)</source>
         <translation>1500 (Eth)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="949"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1674"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="944"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1669"/>
         <source>4464 (T-Ring)</source>
         <translation>4464 (T-Ring)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="954"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1679"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="949"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1674"/>
         <source>4500 (FDDI)</source>
         <translation>4500 (FDDI)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="959"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1684"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="954"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1679"/>
         <source>6000 (Jumbo)</source>
         <translation>6000 (Jumbo)</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="982"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="977"/>
         <source> Audio capture </source>
         <translation> Audioaufnahme </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1044"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1039"/>
         <source>/dev/dsp0</source>
         <translation>/dev/dsp0</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1133"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1128"/>
         <source> Audio playback </source>
         <translation> Audiowiedergabe </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1156"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1151"/>
         <source>Device selection:</source>
         <translation>Geräteauswahl:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1192"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1187"/>
         <source>SDL: default</source>
         <translation>SDL default</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1297"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1292"/>
         <source>Audio stream broadcast</source>
         <translation> Audioverteilung </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1335"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1330"/>
         <source>Skip silence:</source>
         <translation>Stilleunterdrückung:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1389"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1384"/>
         <source>Fine tuning</source>
         <translation>Feineinstellung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1474"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1469"/>
         <source>G711 A-law</source>
         <translation>G711 A-law</translation>
     </message>
     <message utf8="true">
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1479"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1474"/>
         <source>G711 µ-law</source>
         <translation>G711 µ-law</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1484"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1479"/>
         <source>G722 adpcm</source>
         <translation>G722 adpcm</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1489"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1484"/>
         <source>MP3</source>
         <translation>MP3</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1494"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1489"/>
         <source>PCM16</source>
         <translation>PCM16</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1554"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1549"/>
         <source>512</source>
         <translation>512</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1559"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1554"/>
         <source>384</source>
         <translation>384</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1564"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1559"/>
         <source>256</source>
         <translation>256</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1569"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1564"/>
         <source>128</source>
         <translation>128</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1574"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1569"/>
         <source>96</source>
         <translation>96</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1579"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1574"/>
         <source>64</source>
         <translation>64</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1584"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1579"/>
         <source>48</source>
         <translation>48</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1589"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1584"/>
         <source>32</source>
         <translation>32</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1719"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1714"/>
         <source> Server based contacting </source>
         <translation> Serverbasierte Kontaktaufnahme   </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1754"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1749"/>
         <source>Server address: </source>
         <translation>Serveradresse:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1806"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2009"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2346"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3298"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3509"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3747"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3982"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4190"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4398"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4606"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4841"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5049"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5284"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5392"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5451"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5559"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5618"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1801"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2004"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2341"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3285"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3488"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3726"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3961"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4169"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4377"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4585"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4820"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5028"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5263"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5371"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5430"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5538"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5597"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1838"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2378"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1833"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2373"/>
         <source>default</source>
         <translation>default</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1876"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1871"/>
         <source>Port: </source>
         <translation>Port:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1958"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1953"/>
         <source>Login: </source>
         <translation>Login:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1993"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1988"/>
         <source>create a SIP account at the selected SIP server</source>
         <translation>erstelle SIP-Account auf dem ausgewählten SIP-Server</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2041"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2036"/>
         <source>user</source>
         <translation>Nutzer</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2073"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2068"/>
         <source>Password: </source>
         <translation>Passwort:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2108"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2103"/>
         <source>toggle password display</source>
         <translation>wechsel die Passwortanzeige</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2183"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2178"/>
         <source> Contacting </source>
         <translation> Kontaktaufnahme  </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2206"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2201"/>
         <source>Check availability of known contacts:</source>
         <translation>Prüfe die Verfügbarkeit von bekannten Kontakten:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2266"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2261"/>
         <source> NAT traversal </source>
         <translation>NAT Durchquerung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2295"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2290"/>
         <source>STUN server:</source>
         <translation>STUN-Server:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2634"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2629"/>
         <source>Video/audio ports start from:</source>
         <translation>Video-/Audioports starten von:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2980"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2975"/>
         <source>(de)activate conferencing functions and related network ports</source>
         <translation>(De-)Aktivierung der Konferenzfunktionen und zugehörigen Netzwerkports</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3006"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3001"/>
         <source>Log events to &quot;Homer.log&quot; in user folder:</source>
         <translation>Ereignisverlauf in &quot;Homer.log&quot; im Nutzerordner:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3144"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3355"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3593"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3831"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4039"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4247"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4455"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4690"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4898"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5133"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3572"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3810"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4018"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4226"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4434"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4669"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4877"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5112"/>
         <source>show message in the systray</source>
         <translation>Anzeigen einer Systemnachricht</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3171"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3382"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3620"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3858"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4066"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4274"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4482"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4717"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4925"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5160"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3158"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3361"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3599"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3837"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4045"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4253"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4461"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4696"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4904"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5139"/>
         <source>play sound file</source>
         <translation>Abspielen einer Sounddatei</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5800"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5779"/>
         <source> Video </source>
         <translation> Video </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5812"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5791"/>
         <source> Audio </source>
         <translation> Audio </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5824"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5803"/>
         <source> Network </source>
         <translation> Netzwerk </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5836"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5815"/>
         <source> General </source>
         <translation> Allgemein </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5848"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5827"/>
         <source> Notifications </source>
         <translation> Hinweise </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2431"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2426"/>
         <source>Session management address:</source>
         <translation>Sitzungsadresse:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1789"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2330"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1784"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2325"/>
         <source>download list of suggestions</source>
         <translation>Vorschlagsliste herunterladen</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2467"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2462"/>
         <source>123.123.123.123</source>
         <translation>123.123.123.123</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2491"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2486"/>
         <source>Session management port:</source>
         <translation>Sitzungsport:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2561"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2556"/>
         <source>Session transport protocol:</source>
         <translation>Sitzungstransportprotokoll:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2605"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2600"/>
         <source>UDP</source>
         <translation>UDP</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2610"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2605"/>
         <source>TCP</source>
         <translation>TCP</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2703"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2698"/>
         <source> GUI look and feel </source>
         <translation> GUI-Aussehen und Verhalten </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2765"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2760"/>
         <source>English</source>
         <translation>English</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2934"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2929"/>
         <source> Software components</source>
         <translation> Softwarekomponenten </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2789"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2784"/>
         <source>Independent participant windows:</source>
         <translation>Unabhängige Teilnehmerfenster:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="803"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1518"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="798"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1513"/>
         <source>Output bit rate [kbit/s]: </source>
         <translation>Ausgabebitrate [kbit/s]:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="839"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="834"/>
         <source>1000</source>
         <translation>1000</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="844"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="839"/>
         <source>500</source>
         <translation>500</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="849"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="844"/>
         <source>200</source>
         <translation>200</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="854"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="849"/>
         <source>90</source>
         <translation>90</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="859"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="854"/>
         <source>50</source>
         <translation>50</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="864"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="859"/>
         <source>10</source>
         <translation>10</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="888"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1613"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="883"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="1608"/>
         <source>Maximum packet size [bytes]: </source>
         <translation>Maximale Paketgröße [Bytes]:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2411"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2406"/>
         <source> Local network interfaces </source>
         <translation> Lokale Netzwerkschnittstelle </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2726"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2721"/>
         <source>Program language: </source>
         <translation>Programmsprache:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2832"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2827"/>
         <source>Close participant windows immediately:</source>
         <translation>Schließe Teilnehmerfenster sofort: </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2870"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2865"/>
         <source> Software updates </source>
         <translation> Softwareaktualisierungen </translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2893"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2888"/>
         <source>Check for software updates during start:</source>
         <translation>Prüfe auf Softwareaktualisierungen während des Starts:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2957"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="2952"/>
         <source>Conferencing functions enabled: </source>
         <translation>Konferenzfunktionen unterstützt:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3088"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3083"/>
         <source> Notifications for program start/stop </source>
         <translation>Benachrichtigungen für Programmstart/-stop</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3127"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3122"/>
         <source>Program start</source>
         <translation>Programmstart</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3214"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3425"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3663"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3901"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4109"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4317"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4525"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4760"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4968"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5203"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3201"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3404"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3642"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3880"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4088"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4296"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4504"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4739"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4947"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5182"/>
         <source>file</source>
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3233"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3444"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3682"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3920"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4128"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4336"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4544"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4779"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4987"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5222"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3220"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3423"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3661"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3899"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4107"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4315"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4523"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4758"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4966"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5201"/>
         <source>select sound file to play</source>
         <translation>wähle Sounddatei zum Abspielen</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3281"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3492"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3730"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3965"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4173"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4381"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4589"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4824"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5032"/>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5267"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3268"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3471"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3709"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3944"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4152"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4360"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4568"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4803"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5011"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5246"/>
         <source>play selected sound file</source>
         <translation>spiele ausgewählte Sounddatei ab</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3338"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3325"/>
         <source>Program stop</source>
         <translation>Programmstopp</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3537"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3516"/>
         <source> Notifications for instant messages </source>
         <translation>Benachrichtigungen für Nachrichten</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3576"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3555"/>
         <source>New message</source>
         <translation>Neue Nachrichten</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3775"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3754"/>
         <source> Notifications for conference calls </source>
         <translation>Benachrichtigungen für Konferenzanrufe</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3814"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="3793"/>
         <source>New call</source>
         <translation>Neue Anrufe</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4022"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4001"/>
         <source>Call acknowledge</source>
         <translation>Anrufbestätigung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4230"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4209"/>
         <source>Call deny</source>
         <translation>Anrufverweigerung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4438"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4417"/>
         <source>Call hangup</source>
         <translation>Anrufbeendigung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4634"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4613"/>
         <source> Notifications for server registration</source>
         <translation>Benachrichtigungen für Serverregistrierung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4673"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4652"/>
         <source>Registration successful</source>
         <translation>Registrierung erfolgreich</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4881"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="4860"/>
         <source>Registration failed</source>
         <translation>Registrierung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5077"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5056"/>
         <source> Notifications for errors</source>
         <translation>Benachrichtigungen für Fehler</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5116"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5095"/>
         <source>General error</source>
         <translation>Allgemeiner Fehler</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5356"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5335"/>
         <source>Select all</source>
         <translation>Alle auswählen</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5523"/>
+        <location filename="../forms/Dialogs/ConfigurationDialog.ui" line="5502"/>
         <source>Deselect all</source>
         <translation>Alle abwählen</translation>
     </message>
@@ -1232,6 +1225,7 @@
     </message>
     <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="566"/>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="588"/>
         <source>frames buffered</source>
         <translation>Frames gepuffert</translation>
     </message>
@@ -1253,7 +1247,6 @@
     </message>
     <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="557"/>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="588"/>
         <source>frames delay</source>
         <translation>Frames Verzögerung</translation>
     </message>
@@ -1307,13 +1300,13 @@
 <context>
     <name>Homer::Gui::CallButton</name>
     <message>
-        <location filename="../src/Widgets/CallButton.cpp" line="78"/>
+        <location filename="../src/Widgets/CallButton.cpp" line="79"/>
         <source>Call</source>
         <translation>Anrufen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/CallButton.cpp" line="81"/>
-        <location filename="../src/Widgets/CallButton.cpp" line="84"/>
+        <location filename="../src/Widgets/CallButton.cpp" line="82"/>
+        <location filename="../src/Widgets/CallButton.cpp" line="85"/>
         <source>Hangup</source>
         <translation>Auflegen</translation>
     </message>
@@ -1646,100 +1639,100 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1224"/>
+        <location filename="../src/MainWindow.cpp" line="1237"/>
         <source>NAT detection failed</source>
         <translation>NAT Erkennung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1224"/>
+        <location filename="../src/MainWindow.cpp" line="1237"/>
         <source>Could not detect NAT address and type via STUN server. The failure reason is</source>
         <translation>Konnte die NAT-Adresse und -Typ nicht via STUN-Server erkennen. Die Fehlerursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1607"/>
-        <location filename="../src/MainWindow.cpp" line="1611"/>
+        <location filename="../src/MainWindow.cpp" line="1620"/>
+        <location filename="../src/MainWindow.cpp" line="1624"/>
         <source>Registration failed</source>
         <translation>Registrierung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1607"/>
-        <location filename="../src/MainWindow.cpp" line="1611"/>
+        <location filename="../src/MainWindow.cpp" line="1620"/>
+        <location filename="../src/MainWindow.cpp" line="1624"/>
         <source>Could not register</source>
         <translation>Registerung fehlgeschlagen für</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1607"/>
-        <location filename="../src/MainWindow.cpp" line="1611"/>
+        <location filename="../src/MainWindow.cpp" line="1620"/>
+        <location filename="../src/MainWindow.cpp" line="1624"/>
         <source>at the SIP server</source>
         <translation>am SIP-Server</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1607"/>
-        <location filename="../src/MainWindow.cpp" line="1627"/>
+        <location filename="../src/MainWindow.cpp" line="1620"/>
+        <location filename="../src/MainWindow.cpp" line="1640"/>
         <source>The reason is</source>
         <translation>Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1608"/>
-        <location filename="../src/MainWindow.cpp" line="1612"/>
-        <location filename="../src/MainWindow.cpp" line="1628"/>
+        <location filename="../src/MainWindow.cpp" line="1621"/>
+        <location filename="../src/MainWindow.cpp" line="1625"/>
+        <location filename="../src/MainWindow.cpp" line="1641"/>
         <source>SIP server runs software</source>
         <translation>Der SIP-Server nutzt die Software</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1611"/>
+        <location filename="../src/MainWindow.cpp" line="1624"/>
         <source>The login name or password is wrong. Check configuration!
 </source>
         <translation>Der Loginname oder das Passwort sind falsch. Bitte die Konfiguration prüfen!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1627"/>
+        <location filename="../src/MainWindow.cpp" line="1640"/>
         <source>Presence publication failed</source>
         <translation>Verfügbarkeitsstatus nicht aktualisiert</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1627"/>
+        <location filename="../src/MainWindow.cpp" line="1640"/>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2111"/>
-        <location filename="../src/MainWindow.cpp" line="2165"/>
+        <location filename="../src/MainWindow.cpp" line="2124"/>
+        <location filename="../src/MainWindow.cpp" line="2178"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2114"/>
-        <location filename="../src/MainWindow.cpp" line="2168"/>
+        <location filename="../src/MainWindow.cpp" line="2127"/>
+        <location filename="../src/MainWindow.cpp" line="2181"/>
         <source>Hide window</source>
         <translation>Fenster minimieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2124"/>
-        <location filename="../src/MainWindow.cpp" line="2178"/>
+        <location filename="../src/MainWindow.cpp" line="2137"/>
+        <location filename="../src/MainWindow.cpp" line="2191"/>
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2128"/>
-        <location filename="../src/MainWindow.cpp" line="2182"/>
+        <location filename="../src/MainWindow.cpp" line="2141"/>
+        <location filename="../src/MainWindow.cpp" line="2195"/>
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2134"/>
-        <location filename="../src/MainWindow.cpp" line="2188"/>
+        <location filename="../src/MainWindow.cpp" line="2147"/>
+        <location filename="../src/MainWindow.cpp" line="2201"/>
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2143"/>
-        <location filename="../src/MainWindow.cpp" line="2197"/>
+        <location filename="../src/MainWindow.cpp" line="2156"/>
+        <location filename="../src/MainWindow.cpp" line="2210"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2152"/>
+        <location filename="../src/MainWindow.cpp" line="2165"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -1781,14 +1774,14 @@ Bitte Konfiguration prüfen!</translation>
     <message>
         <location filename="../src/Widgets/MessageWidget.cpp" line="157"/>
         <location filename="../src/Widgets/MessageWidget.cpp" line="175"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="521"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="525"/>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/MessageWidget.cpp" line="159"/>
         <location filename="../src/Widgets/MessageWidget.cpp" line="170"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="516"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="520"/>
         <source>Show</source>
         <translation>Anzeigen</translation>
     </message>
@@ -1836,39 +1829,39 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::OpenVideoAudioPreviewDialog</name>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="182"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="187"/>
         <source>Video preview not possible</source>
         <translation>Videovorschau nicht möglich</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="182"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="187"/>
         <source>The preview of the incoming video stream at local port</source>
         <translation>Die Vorschau des empfangen Videostroms ist nicht möglich am lokalen Port</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="182"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="187"/>
         <source>with transport</source>
         <translation>und dem eingesetzten Transport</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="182"/>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="309"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="187"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="324"/>
         <source>and codec</source>
         <translation>und Codec</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="182"/>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="309"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="187"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="324"/>
         <source>is not possible!</source>
         <translation>ist nicht möglich!</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="309"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="324"/>
         <source>Audio preview not possible</source>
         <translation>Audiovorschau nicht möglich</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="309"/>
+        <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="324"/>
         <source>The preview of the incoming audio stream at local port</source>
         <translation>Die Vorschau des empfangen Audiostroms ist nicht möglich am lokalen Port</translation>
     </message>
@@ -2234,222 +2227,222 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::ParticipantWidget</name>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="423"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="427"/>
         <source>Video</source>
         <translation>Video</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="428"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="432"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="431"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="435"/>
         <source>A/V controls</source>
         <translation>A/V-Steuerung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="435"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="439"/>
         <source>Messages</source>
         <translation>Nachrichten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="442"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="446"/>
         <source>Session info</source>
         <translation>Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="507"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="511"/>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="509"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="513"/>
         <source>Show</source>
         <translation>Anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="666"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="698"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="670"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="702"/>
         <source>Hide session info</source>
         <translation>Verstecke Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="671"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="693"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="675"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="697"/>
         <source>Show session info</source>
         <translation>Zeige Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="678"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="708"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="724"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="743"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="682"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="712"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="728"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="747"/>
         <source>Hide A/V statistics</source>
         <translation>Verstecke A/V Statistiken</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="684"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="703"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="729"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="738"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="688"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="707"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="733"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="742"/>
         <source>Show A/V statistics</source>
         <translation>Zeige A/V Statistiken</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="863"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="867"/>
         <source>DNS lookup error</source>
         <translation>DNS Auflösungsfehler</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="863"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="867"/>
         <source>Unable to lookup DNS entry for</source>
         <translation>Die DNS-Auflösung war unmöglich für</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="863"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="867"/>
         <source>because</source>
         <translation>, weil</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="980"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="984"/>
         <source>General error occurred</source>
         <translation>Allgemeiner Fehler aufgetreten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="980"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="984"/>
         <source>General error of code</source>
         <translation>Allgemeiner Fehler mit Code</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="980"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="984"/>
         <source>occurred. The error is described with</source>
         <translation>aufgetreten. Der Fehler ist beschrieben mit </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1023"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1210"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1212"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1027"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1214"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1216"/>
         <source>Participant unavailable</source>
         <translation>Teilnehmer nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1023"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1210"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1212"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1027"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1214"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1216"/>
         <source>The participant</source>
         <translation>Der Teilnehmer</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1023"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1027"/>
         <source>is currently unavailable for an instant message! The reason is</source>
         <translation>ist im Moment nicht verfügbar für eine Nachricht. Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1210"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1214"/>
         <source>does not accept your video/audio codecs. Please, check the configuration and use different settings.</source>
         <translation>akzeptiert den Video-/Audiocodec nicht. Bitte die Konfiguration prüfen und andere Einstellungen verwenden.</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1212"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1216"/>
         <source>is currently unavailable for a call! The reason is</source>
         <translation>ist im Moment nicht verfügbar für einen Anruf. Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1646"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1680"/>
         <source>in chat</source>
         <translation>im Chat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1649"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1683"/>
         <source>chat</source>
         <translation>Chat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1654"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1688"/>
         <source>in conference</source>
         <translation>in Konferenz</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1657"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1691"/>
         <source>conference</source>
         <translation>Konferenz</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1662"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1665"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1696"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1699"/>
         <source>ringing</source>
         <translation>Rufen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1775"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1809"/>
         <source>Set file name for video/audio recording</source>
         <translation>Dateinamen für das Aufzeichnen von Video/Audio festlegen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1789"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1823"/>
         <source>Select video recording quality</source>
         <translation>Auswahl der Qualität für die Videoaufzeichnung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1789"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1823"/>
         <source>Record video with quality:</source>
         <translation>Videoaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1809"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1843"/>
         <source>Select audio recording quality</source>
         <translation>Auswahl der Qualität für die Audioaufzeichnung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1809"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1843"/>
         <source>Record audio with quality:</source>
         <translation>Audioaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2132"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2166"/>
         <source>Video statistics:</source>
         <translation>Videostatistiken:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2141"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2175"/>
         <source>Video/audio:</source>
         <translation>Video/Audio:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2143"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2177"/>
         <source>A/V pre-buffering:</source>
         <translation>A/V Vorpufferung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2145"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2154"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2179"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2188"/>
         <source>active</source>
         <translation>aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2147"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2156"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2181"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2190"/>
         <source>inactive</source>
         <translation>inaktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2150"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2184"/>
         <source>(auto restart)</source>
         <translation>(auto. Neustart)</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2152"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2186"/>
         <source>A/V synchronization:</source>
         <translation>A/V Synchronisierung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2158"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2192"/>
         <source>A/V synchronizations:</source>
         <translation>A/V Synchronisierungen:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2166"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2200"/>
         <source>Audio statistics:</source>
         <translation>Audiostatistiken:</translation>
     </message>
@@ -2466,8 +2459,8 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::SegmentSelectionDialog</name>
     <message>
-        <location filename="../src/Dialogs/SegmentSelectionDialog.cpp" line="182"/>
-        <location filename="../src/Dialogs/SegmentSelectionDialog.cpp" line="190"/>
+        <location filename="../src/Dialogs/SegmentSelectionDialog.cpp" line="185"/>
+        <location filename="../src/Dialogs/SegmentSelectionDialog.cpp" line="193"/>
         <source>Default settings</source>
         <translation>Standardeinstellungen</translation>
     </message>
@@ -2549,133 +2542,134 @@ Bitte Konfiguration prüfen!</translation>
     <name>Homer::Gui::UpdateCheckDialog</name>
     <message>
         <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="108"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="172"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="176"/>
         <source>Download of Homer update running</source>
         <translation>Download des Homer-Updates gestartet</translation>
     </message>
     <message>
         <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="108"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="172"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="176"/>
         <source>A download of a Homer update is already started!</source>
         <translation>Ein Download  eines Homer-Updates ist bereits gestartet!</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="137"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="141"/>
         <source>Save Homer archive to..</source>
         <translation>Speichern des Homer-Archivs nach..</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="152"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="156"/>
         <source>Could not store Homer archive</source>
         <translation>Abspeichern des Homer-Archivs fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="152"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="156"/>
         <source>Unable to store the downloaded Homer archive to</source>
         <translation>Abspeichern des Homer-Archivs war fehlerhaft für </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="184"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="188"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="192"/>
         <source>Windows executable file (*.exe)</source>
         <translation>Windows ausführbare Datei (*.exe)</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="188"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="196"/>
         <source>Linux shell script (*.sh)</source>
         <translation>Linux Shell-Script (*.sh)</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="195"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="203"/>
         <source>Apple disc image file (*.dmg)</source>
         <translation>Apple Platten-Abbilddatei (*.dmg)</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="200"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="208"/>
         <source>Save Homer installer to..</source>
         <translation>Speichern des Homer-Installers nach.. </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="215"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="223"/>
         <source>Could not store Homer installer</source>
         <translation>Abspeichern des Homer-Installers fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="215"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="223"/>
         <source>Unable to store the downloaded Homer installer to</source>
         <translation>Abspeichern des heruntergeladenen Homer-Installers war fehlerhaft für</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="273"/>
         <source>Downloading Homer update</source>
         <translation>Download des Homer-Updates</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="273"/>
         <source>from</source>
         <translation>von</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="273"/>
         <source>to</source>
         <translation>nach</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="273"/>
         <source>Loaded:</source>
         <translation>Geladen:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="265"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="273"/>
         <source>bytes</source>
         <translation>Bytes</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="274"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="282"/>
         <source>Failed to download Homer update</source>
         <translation>Herunterladen der Homeraktualisierung fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="274"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="282"/>
         <source>Unable to download Homer update. The reason is:</source>
         <translation>Herunterladen der Homeraktualisierung fehlerhaft. Die Urasche ist:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="322"/>
         <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="330"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="338"/>
         <source>check failed</source>
         <translation>Prüfung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="323"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="352"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="331"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="360"/>
         <source>Communication with server failed</source>
         <translation>Kommunikation mit Server fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="323"/>
         <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="331"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="339"/>
         <source>Could not determine software version which is provided by project server</source>
         <translation>Konnte die Softwareversion auf dem Projektserver nicht bestimmen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="331"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="339"/>
         <source>Version data not found on server</source>
         <translation>Versionsdaten wurden nicht auf dem Server gefunden</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="351"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="360"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="359"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="368"/>
         <source>fetch failed</source>
         <translation>Abfrage fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="352"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="361"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="360"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="369"/>
         <source>Could not determine changelog file which is provided by project server</source>
         <translation>Konnte den Änderungsverlauf nicht vom Projektserver beziehen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="361"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="369"/>
         <source>Changelog data not found on server</source>
         <translation>Änderungsverlauf wurde auf dem Server nicht gefunden</translation>
     </message>
@@ -2697,7 +2691,7 @@ Bitte Konfiguration prüfen!</translation>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="319"/>
         <location filename="../src/Widgets/VideoWidget.cpp" line="541"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1363"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1374"/>
         <source>Save picture</source>
         <translation>Bild speichern</translation>
     </message>
@@ -2871,9 +2865,13 @@ Bitte Konfiguration prüfen!</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="765"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="811"/>
         <source>frames delay</source>
         <translation>Frames Verzögerung</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="811"/>
+        <source>frames buffered</source>
+        <translation>Frames gepuffert</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="944"/>
@@ -2886,84 +2884,84 @@ Bitte Konfiguration prüfen!</translation>
         <translation>Das System ist zu beschäftigt, um eine Glättungstransformation durchzuführen. Schnelle Transformation wird ab jetzt verwendet.</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1191"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1199"/>
         <source>Recording active</source>
         <translation>Aufnahme aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1191"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1199"/>
         <source>The settings for video playback cannot be changed if the recording is active!</source>
         <translation>Die Einstellungen für Videowiedergabe können nicht verändert werden, wenn die Aufnahme aktiv ist!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1311"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1322"/>
         <source>Bilinear filtering activated</source>
         <translation>Bilineare Filterung aktiviert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1313"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1324"/>
         <source>Bilinear filtering deactivated</source>
         <translation>Bilineare Filterung deaktiviert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1387"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1398"/>
         <source>Save recorded video</source>
         <translation>Speichern des aufgezeichneten Videos</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1397"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1408"/>
         <source>Select recording quality</source>
         <translation>Auswahl der Aufzeichnungsqualität</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1397"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1408"/>
         <source>Record with quality:</source>
         <translation>Aufzeichnen mit Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1596"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1607"/>
         <source>Audio muted</source>
         <translation>Audio stumm geschaltet</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1598"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1609"/>
         <source>Audio output active</source>
         <translation>Audiowiedergabe aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1607"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1618"/>
         <source>Playing..</source>
         <translation>Abspielend..</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1613"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1624"/>
         <source>Pausing..</source>
         <translation>Pausierend..</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1656"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1666"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1667"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1677"/>
         <source>Volume:</source>
         <translation>Lautstärke:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1957"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1959"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1972"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1974"/>
         <source>Video source not available</source>
         <translation>Videoquelle nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1957"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1972"/>
         <source>The selected video source &quot;</source>
         <translation>Die ausgewählte Videoquelle &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1957"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1972"/>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot; ist nicht verfügbar. Bitte eine andere auswählen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1959"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1974"/>
         <source>The selected video source auto detection was not successful. Please, connect an additional video device to your hardware!</source>
         <translation>Die ausgewählte automatische Erkennung der Videoquelle war nicht erfolgreich. Bitte ein zusätzliches Gerät anschließen!</translation>
     </message>
@@ -3038,7 +3036,7 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::VideoWorkerThread</name>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2037"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2054"/>
         <source>Waiting for data..</source>
         <translation>Warte auf Daten..</translation>
     </message>
@@ -3110,6 +3108,44 @@ Bitte Konfiguration prüfen!</translation>
         <location filename="../forms/Dialogs/IdentityDialog.ui" line="578"/>
         <source>Type</source>
         <translation>Typ</translation>
+    </message>
+</context>
+<context>
+    <name>MAC_APPLICATION_MENU</name>
+    <message>
+        <location filename="../src/Configuration.cpp" line="91"/>
+        <source>Services</source>
+        <translation>Dienste</translation>
+    </message>
+    <message>
+        <location filename="../src/Configuration.cpp" line="92"/>
+        <source>Hide %1</source>
+        <translation>%1 ausblenden</translation>
+    </message>
+    <message>
+        <location filename="../src/Configuration.cpp" line="93"/>
+        <source>Hide Others</source>
+        <translation>Andere ausblenden</translation>
+    </message>
+    <message>
+        <location filename="../src/Configuration.cpp" line="94"/>
+        <source>Show All</source>
+        <translation>Alle anzeigen</translation>
+    </message>
+    <message>
+        <location filename="../src/Configuration.cpp" line="95"/>
+        <source>Preferences...</source>
+        <translation>Einstellungen...</translation>
+    </message>
+    <message>
+        <location filename="../src/Configuration.cpp" line="96"/>
+        <source>Quit %1</source>
+        <translation>%1 beenden</translation>
+    </message>
+    <message>
+        <location filename="../src/Configuration.cpp" line="97"/>
+        <source>About %1</source>
+        <translation>Über %1</translation>
     </message>
 </context>
 <context>

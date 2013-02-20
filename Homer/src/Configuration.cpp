@@ -87,7 +87,14 @@ QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel"),
 QT_TRANSLATE_NOOP("QDialogButtonBox", "Reset"),
 QT_TRANSLATE_NOOP("QDialogButtonBox", "&Yes"),
 QT_TRANSLATE_NOOP("QDialogButtonBox", "&No"),
-QT_TRANSLATE_NOOP("QDialogButtonBox", "Close")
+QT_TRANSLATE_NOOP("QDialogButtonBox", "Close"),
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Services"),
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Hide %1"),
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Hide Others"),
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Show All"),
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Preferences..."),
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "Quit %1"),
+QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU", "About %1")
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -128,7 +135,7 @@ void Configuration::Init(QString &pAbsBinPath)
 		CFRelease(tMacPath);
 		if (tPath != NULL)
 		{
-			mAbsBinPath = QString(tPath) + "/Contents/Resources/";
+			mAbsBinPath = QString(tPath);
 			pAbsBinPath = mAbsBinPath;
 		}
 	#endif

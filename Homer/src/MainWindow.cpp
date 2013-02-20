@@ -250,6 +250,7 @@ void MainWindow::SetLanguage(QString pLanguage)
 	        // create new translator
 			QString tNewLangFile = CONF.GetLanguagePath() + "Homer_" + pLanguage + ".qm";
             LOG(LOG_VERBOSE, "Searching language files according to pattern: %s", tNewLangFile.toStdString().c_str());
+            LOG(LOG_VERBOSE, "Loading language file: %s", tNewLangFile.toStdString().c_str());
 			if(mTranslator->load(tNewLangFile))
 			{
 				QCoreApplication::installTranslator(mTranslator);
