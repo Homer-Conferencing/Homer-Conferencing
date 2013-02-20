@@ -129,7 +129,7 @@ private:
     void SavePicture();
     void StartRecorder();
     void StopRecorder();
-    void ShowFullScreen();
+    void ShowFullScreen(int &pPosX, int &pPosY); // returns the upper left corner where fullscreen starts
     bool SetOriginalResolution();
 
     /* status message per OSD text */

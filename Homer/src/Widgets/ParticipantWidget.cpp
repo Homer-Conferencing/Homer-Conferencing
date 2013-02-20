@@ -547,7 +547,7 @@ void ParticipantWidget::ToggleAVControlsVisibility()
     }
 }
 
-void ParticipantWidget::HideAudioVideoWidget()
+void ParticipantWidget::StartFullscreenMode(int tFullscreenPosX, int tFullscreenPosY)
 {
     switch(mSessionType)
     {
@@ -565,10 +565,10 @@ void ParticipantWidget::HideAudioVideoWidget()
             hide();
             break;
     }
-    CreateFullscreenControls();
+    CreateFullscreenControls(tFullscreenPosX, tFullscreenPosY);
 }
 
-void ParticipantWidget::ShowAudioVideoWidget()
+void ParticipantWidget::StopFullscreenMode()
 {
     DestroyFullscreenControls();
     switch(mSessionType)
@@ -1945,7 +1945,7 @@ void ParticipantWidget::AVSeek(int pPos)
     #endif
 }
 
-void ParticipantWidget::CreateFullscreenControls()
+void ParticipantWidget::CreateFullscreenControls(int tFullscreenPosX, int tFullscreenPosY)
 {
     if ((mVideoSource) && (mVideoWidget->GetWorker()->SupportsSeeking()))
     {
@@ -1953,7 +1953,9 @@ void ParticipantWidget::CreateFullscreenControls()
         {
             mFullscreeMovieControlWidget = new MovieControlWidget(mVideoWidget);
             mFullscreeMovieControlWidget->resize(mVideoWidget->width(), 58);
-            mFullscreeMovieControlWidget->move(mVideoWidget->pos().x(), mVideoWidget->height() - 58);
+            QPoint tPos = QPoint(tFullscreenPosX, tFullscreenPosY + mVideoWidget->height() - 58);
+            LOG(LOG_VERBOSE, "Creating fullscreen controls at (%d, %d)", tPos.x(), tPos.y());
+            mFullscreeMovieControlWidget->move(tPos.x(), tPos.y());
             if (mVideoWidget->GetWorker()->IsPaused() || mAudioWidget->GetWorker()->IsPaused())
 				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
             else

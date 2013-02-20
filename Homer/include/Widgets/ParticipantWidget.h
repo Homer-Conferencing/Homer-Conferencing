@@ -180,8 +180,8 @@ private:
 	void ResetMediaSinks();
 
 	/* visibility of A/V widget */
-    void HideAudioVideoWidget();
-    void ShowAudioVideoWidget();
+    void StartFullscreenMode(int tFullscreenPosX, int tFullscreenPosY);
+    void StopFullscreenMode();
 
 	void ResizeAVView(int pSize);
 	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport);
@@ -209,7 +209,7 @@ private:
     void AVSeek(int pPos); // position given in x/1000
 
     /* fullscreen movie controls */
-    void CreateFullscreenControls();
+    void CreateFullscreenControls(int tFullscreenPosX, int tFullscreenPosY);
     void DestroyFullscreenControls();
 
     /* user activity handling */

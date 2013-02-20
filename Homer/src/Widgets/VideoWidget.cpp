@@ -1233,7 +1233,7 @@ void VideoWidget::SetResolutionFormat(VideoFormat pFormat)
     SetResolution(tResX, tResY);
 }
 
-void VideoWidget::ShowFullScreen()
+void VideoWidget::ShowFullScreen(int &pPosX, int &pPosY)
 {
     // get the global position of this video widget
     QPoint tWidgetMiddleAsGlobalPos = mMainWindow->pos() + mapTo(mMainWindow, pos()) + QPoint(width() / 2, height() / 2);
@@ -1278,6 +1278,8 @@ void VideoWidget::ShowFullScreen()
         move(QPoint(tUsedScreenRes.x(), tUsedScreenRes.y()));
         resize(tUsedScreenRes.width(), tUsedScreenRes.height());
         LOG(LOG_VERBOSE, "Showing video widget (%d,%d) on screen %d in fullscreen at pos=(%d,%d) and resolution (%d*%d)", tWidgetMiddleAsGlobalPos.x(), tWidgetMiddleAsGlobalPos.y(), tUsedScreen, tUsedScreenRes.x(), tUsedScreenRes.y(), tUsedScreenRes.width(), tUsedScreenRes.height());
+        pPosX = tUsedScreenRes.x();
+        pPosY = tUsedScreenRes.y();
     }
 
 	// trigger fullscreen mode (anyhow)
@@ -1294,7 +1296,7 @@ void VideoWidget::ToggleFullScreenMode()
     {// show the window normal
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
-        mParticipantWidget->ShowAudioVideoWidget();
+        mParticipantWidget->StopFullscreenMode();
         if (cursor().shape() == Qt::BlankCursor)
         {
             FullscreenMarkUserActive();
@@ -1305,8 +1307,9 @@ void VideoWidget::ToggleFullScreenMode()
     {// show the window as fullscreen picture
         setWindowFlags(windowFlags() | Qt::Window);
         mTimeOfLastMouseMove = QTime::currentTime();
-        ShowFullScreen();
-        mParticipantWidget->HideAudioVideoWidget();
+        int tX = -1, tY = -1;
+        ShowFullScreen(tX, tY);
+        mParticipantWidget->StartFullscreenMode(tX, tY);
     }
     setUpdatesEnabled(true);
 	mNeedBackgroundUpdatesUntillNextFrame = true;
