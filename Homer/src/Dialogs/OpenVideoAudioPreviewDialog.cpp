@@ -389,7 +389,7 @@ void OpenVideoAudioPreviewDialog::LoadConfiguration()
     //### capture source
     //########################
     #ifdef WIN32
-		MediaSourceDShow *tVSource = new MediaSourceDShow("");
+		tVSource = new MediaSourceDShow("");
     #endif
 	#ifdef WIN64
 		//TODO
