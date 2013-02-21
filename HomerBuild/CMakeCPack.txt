@@ -31,13 +31,17 @@ set(CPACK_PACKAGE_VERSION_PATCH ${HOMER_VERSION_PATCH})
 
 ###############################################################################
 
-set(CPACK_PACKAGE_NAME "Homer-Conferencing ${HOMER_VERSION}")
+set(CPACK_PACKAGE_NAME "Homer Conferencing ${HOMER_VERSION}")
 set(CPACK_PACKAGE_VENDOR "Homer Conferencing project")
 set(CPACK_PACKAGE_FILE_NAME "Homer-Conferencing")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installs Homer - live conferencing and more")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "Homer")
 set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "Homer-Conferencing")
 set(CPACK_PACKAGE_CONTACT "Thomas Volkert <thomas@homer-conferencing.com>")
+
+###############################################################################
+
+set(CPACK_DOWNLOAD_SITE "http://www.homer-conferencing.com")
 
 ###############################################################################
 
@@ -63,9 +67,9 @@ set(CPACK_COMPONENT_APPLICATION_REQUIRED ON)
 set(CPACK_COMPONENT_LIBRARIES_REQUIRED ON) 
 set(CPACK_COMPONENT_EXTLIBRARIES_REQUIRED ON) 
 
-set(CPACK_COMPONENT_APPLICATION_DESCRIPTION "Homer-Conferencing is a free cross-platform SIP softphone with video support.") 
-set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Homer-Conferencing is a free cross-platform SIP softphone with video support.") 
-set(CPACK_COMPONENT_EXTLIBRARIES_DESCRIPTION "Several libraries from external projects are needed for Homer-Conferencing.") 
+set(CPACK_COMPONENT_APPLICATION_DESCRIPTION "Homer Conferencing is a free cross-platform SIP softphone with video support.") 
+set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Support libraries for Homer Conferencing.") 
+set(CPACK_COMPONENT_EXTLIBRARIES_DESCRIPTION "Several libraries from external projects are needed for Homer Conferencing.") 
 set(CPACK_COMPONENT_SOUNDS_DESCRIPTION "Sound files to notify for new events like messages or calls.") 
 set(CPACK_COMPONENT_LANG_DESCRIPTION "Language packages.") 
   
@@ -93,6 +97,12 @@ ENDIF(LINUX)
 IF (APPLE)
         INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/CMakeCPackOSX.txt)
 ENDIF(APPLE)
+
+##############################################################
+# module path for customized cmake modules, e.g., the NSIS template
+MESSAGE("##### Getting CMake module path: ${CMAKE_MODULE_PATH}")
+MESSAGE("##### Setting CMake module path: ${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/resources/cmake_modules")
+SET (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/resources/cmake_modules")
 
 ###############################################################################
 # include CPack in the end
