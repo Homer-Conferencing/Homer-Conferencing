@@ -643,7 +643,7 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
 
     QDesktopWidget *tDesktop = QApplication::desktop();
     tFormat.Name = MEDIA_SOURCE_DESKTOP_RESOLUTION_ID;
-	#if defined(APPLE) || defined(BSD)
+	#if defined(APPLE)
     	tFormat.ResX = CGDisplayPixelsWide(CGMainDisplayID());
     	tFormat.ResY = CGDisplayPixelsHigh(CGMainDisplayID());
 	#else
