@@ -39,7 +39,6 @@
 
 #if defined(APPLE) || defined(BSD)
 #include <sys/sysctl.h>
-#include <CoreServices/CoreServices.h>
 #endif
 
 #if defined(LINUX) || defined(APPLE) || defined(BSD)
