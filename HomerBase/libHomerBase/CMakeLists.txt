@@ -76,9 +76,6 @@ SET (LIBS_LINUX
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
 )
-SET (FRAMEWORKS_APPLE
-	CoreServices
-)
 ##############################################################
 SET (TARGET_LIB_NAME
 	HomerBase

@@ -497,11 +497,14 @@ void MainWindow::initializeConferenceManagement()
 
 void MainWindow::RegisterAtStunSipServer()
 {
-    if (CONF.GetNatSupportActivation())
-        MEETING.SetStunServer(CONF.GetStunServer().toStdString());
-    // is centralized mode selected activated?
-    if (CONF.GetSipInfrastructureMode() == 1)
-        MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString(), CONF.GetSipServerPort());
+	if (CONF.GetFeatureConferencing())
+	{
+		if (CONF.GetNatSupportActivation())
+			MEETING.SetStunServer(CONF.GetStunServer().toStdString());
+		// is centralized mode selected activated?
+		if (CONF.GetSipInfrastructureMode() == 1)
+			MEETING.RegisterAtServer(CONF.GetSipUserName().toStdString(), CONF.GetSipPassword().toStdString(), CONF.GetSipServer().toStdString(), CONF.GetSipServerPort());
+	}
 }
 
 void MainWindow::initializeVideoAudioIO()

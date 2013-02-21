@@ -11,11 +11,11 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeConfig.txt)
 ##############################################################
 # find package "ALSA"
 IF (LINUX)
-MESSAGE("##### Searching for library ALSA")
-Find_Package(ALSA REQUIRED)
-IF (NOT ALSA_FOUND)
-	MESSAGE(FATAL_ERROR "You need library ALSA")
-ENDIF ()
+	MESSAGE("##### Searching for library ALSA")
+	Find_Package(ALSA REQUIRED)
+	IF (NOT ALSA_FOUND)
+		MESSAGE(FATAL_ERROR "You need library ALSA")
+	ENDIF ()
 ELSE (LINUX)
     SET(ALSA_INCLUDE_DIRS "/usr/include")
 ENDIF (LINUX)
@@ -23,11 +23,11 @@ ENDIF (LINUX)
 ##############################################################
 # find package "SDL"
 IF (LINUX)
-MESSAGE("##### Searching for library SDL")
-Find_Package(SDL REQUIRED)
-IF (NOT SDL_FOUND)
-	MESSAGE(FATAL_ERROR "You need library SDL")
-ENDIF ()
+	MESSAGE("##### Searching for library SDL")
+	Find_Package(SDL REQUIRED)
+	IF (NOT SDL_FOUND)
+		MESSAGE(FATAL_ERROR "You need library SDL")
+	ENDIF ()
 ELSE (LINUX)
     SET(SDL_INCLUDE_DIR "/usr/include")
 ENDIF (LINUX)
@@ -207,6 +207,7 @@ IF (${BUILD} MATCHES "Default")
 		avcodec
 		avutil
 		avfilter
+		swresample
 		swscale
 		x264
 		${SDL_LIBRARY}		
@@ -269,6 +270,7 @@ SET (LIBS_BSD_STATIC
 	avformat
 	avcodec
 	avfilter
+	swresample
 	swscale
 	avutil
 	mp3lame

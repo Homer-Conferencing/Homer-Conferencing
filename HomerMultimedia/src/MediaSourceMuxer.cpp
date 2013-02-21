@@ -750,36 +750,47 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     switch(mCodecContext->codec_id)
     {
 		case CODEC_ID_ADPCM_G722:
-			mOutputAudioChannels = 1;
-			mOutputAudioSampleRate = 16000;
-			mEncoderStream->time_base = (AVRational){1, 16000};
+			{
+				mOutputAudioChannels = 1;
+				mOutputAudioSampleRate = 16000;
+				mEncoderStream->time_base = (AVRational){1, 16000};
+			}
 			break;
 		case CODEC_ID_AMR_NB:
-			mCodecContext->bit_rate = 7950; // force to 7.95kHz , limit is given by libopencore_amrnb
-			mOutputAudioChannels = 1;
-			mOutputAudioSampleRate = 8000; //force 8 kHz for AMR-NB
+			{
+				mCodecContext->bit_rate = 7950; // force to 7.95kHz , limit is given by libopencore_amrnb
+				mOutputAudioChannels = 1;
+				mOutputAudioSampleRate = 8000; //force 8 kHz for AMR-NB
+			}
 			break;
 		case CODEC_ID_GSM:
 		case CODEC_ID_PCM_ALAW:
 		case CODEC_ID_PCM_MULAW:
-			mOutputAudioChannels = 1;
-			mOutputAudioSampleRate = 8000;
-            mEncoderStream->time_base = (AVRational){1, 8000};
+			{
+				mOutputAudioChannels = 1;
+				mOutputAudioSampleRate = 8000;
+				mEncoderStream->time_base = (AVRational){1, 8000};
+			}
 			break;
     	case CODEC_ID_PCM_S16BE:
-			mOutputAudioChannels = 2;
-			mOutputAudioSampleRate = 44100;
-            mEncoderStream->time_base = (AVRational){1, 44100};
+    		{
+				mOutputAudioChannels = 2;
+				mOutputAudioSampleRate = 44100;
+				mEncoderStream->time_base = (AVRational){1, 44100};
+    		}
 			break;
         case CODEC_ID_MP3:
-		    mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16P;
+		    {
+		    	mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16P;
+		    }
 		    break;
 		default:
-	        mCodecContext->bit_rate = mStreamBitRate; // streaming rate
-			mOutputAudioChannels = pChannels;
-	        mOutputAudioSampleRate = pSampleRate;
+			{
+				mCodecContext->bit_rate = mStreamBitRate; // streaming rate
+				mOutputAudioChannels = pChannels;
+				mOutputAudioSampleRate = pSampleRate;
+			}
 			break;
-
     }
 	mCodecContext->channels = mOutputAudioChannels;
 	mCodecContext->channel_layout = av_get_default_channel_layout(mOutputAudioChannels);

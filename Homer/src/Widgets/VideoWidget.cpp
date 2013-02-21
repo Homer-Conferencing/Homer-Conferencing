@@ -72,6 +72,9 @@
 #ifdef LINUX
 #include <QDBusInterface>
 #endif
+#ifdef APPLE
+#include <CoreServices/CoreServices.h>
+#endif
 
 #include <stdlib.h>
 #include <vector>
@@ -310,9 +313,11 @@ void VideoWidget::SendActivityToSystem()
         sLastSendActivityToSystem = tTime;
     }
 
-    #if defined(APPLE) || defined(BSD)
+    #ifdef APPLE
         UpdateSystemActivity(UsrActivity);
     #endif
+
+	//TODO: FreeBSD?
 
     #ifdef WINDOWS
         if (SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED) == 0)

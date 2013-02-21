@@ -14,8 +14,7 @@ set(CPACK_PACKAGE_ICON ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/r
 set(CPACK_NSIS_PACKAGE_NAME "Homer ${HOMER_VERSION}")
 set(CPACK_NSIS_DISPLAY_NAME "Homer Conferencing ${HOMER_VERSION}")
 set(CPACK_NSIS_CONTACT "homer@homer-conferencing.com") 
-
-set(CPACK_NSIS_MODIFY_PATH "ON")
+set(CPACK_NSIS_URL_INFO_ABOUT "http://www.homer-conferencing.com")
 
 set(WIN32_ICON ${PACKAGE_TOP_SRC_DIR}/Homer/winres/Homer.ico)
 set(CPACK_NSIS_MUI_ICON ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/windows\\\\Homer-Install.ico) 
@@ -24,6 +23,8 @@ set(CPACK_NSIS_INSTALLED_ICON_NAME ${CMAKE_BINARY_DIR}/Homer/Homer.exe)
 
 set(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
 
-set(CPACK_NSIS_MENU_LINKS "http://homer-conferencing.com" "Homer-Conferencing web site")
+set(CPACK_NSIS_MENU_LINKS "http://homer-conferencing.com" "Homer Conferencing web site")
 set(CPACK_NSIS_URL_INFO_ABOUT "http://homer-conferencing.com")
 set(CPACK_NSIS_HELP_LINK "http://homer-conferencing.com")
+
+set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
