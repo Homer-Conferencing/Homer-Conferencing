@@ -18,7 +18,7 @@ For the demonstration of processes on the desktop it would be interesting to be 
 ## Minimum system requirements
 * 32/64 bit processor with 2 Ghz (4 cores with 3 Ghz are recommended for high qualitative video streaming), the OS X version can only be used on 64 bit prozessors
 * for Windows: Windows XP SP3 (Windows 7 recommended)
-* for Linux: Linux kernel 2.6 (Linuxkernel >= 3.1 recommended)
+* for Linux: Linux kernel 2.6 (Linux kernel >= 3.1 recommended)
 * for Mac Hardware: OS X Snow Leopard (OS X Lion recommended)
 
 
