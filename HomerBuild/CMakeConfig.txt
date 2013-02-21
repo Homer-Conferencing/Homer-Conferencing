@@ -52,7 +52,7 @@ MESSAGE("Detected processor type is ${CMAKE_SYSTEM_PROCESSOR}")
 IF (${CMAKE_SYSTEM} MATCHES "FreeBSD.*")
 	SET (BSD "true")
 	
-	# clear LINUX variable
+	# clear LINUX variable, otherwise the source gets confused because cmake detects FreeBSD also as LINUX environemnt
 	SET (LINUX)
 	MESSAGE("Detected system is FreeBSD")
 ELSE()
