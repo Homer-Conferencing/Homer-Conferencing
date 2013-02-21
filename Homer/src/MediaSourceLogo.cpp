@@ -139,7 +139,7 @@ bool MediaSourceLogo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // scale logo pixmap if neccessary
     if ((tLogo.width() > mTargetResX) || (tLogo.height() > mTargetResY))
     {
-    	LOG(LOG_VERBOSE, "Scaling from (%d*%d) to (%d*%d)", tLogo.width(), tLogo.height(), mTargetResX, mTargetResY);
+    	//LOG(LOG_VERBOSE, "Scaling from (%d*%d) to (%d*%d)", tLogo.width(), tLogo.height(), mTargetResX, mTargetResY);
     	tLogo = tLogo.scaled(mTargetResX, mTargetResY, Qt::KeepAspectRatio);
     }
 
