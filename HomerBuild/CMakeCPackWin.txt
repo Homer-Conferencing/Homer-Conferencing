@@ -16,8 +16,6 @@ set(CPACK_NSIS_DISPLAY_NAME "Homer Conferencing ${HOMER_VERSION}")
 set(CPACK_NSIS_CONTACT "homer@homer-conferencing.com") 
 set(CPACK_NSIS_URL_INFO_ABOUT "http://www.homer-conferencing.com")
 
-set(CPACK_NSIS_MODIFY_PATH "ON")
-
 set(WIN32_ICON ${PACKAGE_TOP_SRC_DIR}/Homer/winres/Homer.ico)
 set(CPACK_NSIS_MUI_ICON ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/windows\\\\Homer-Install.ico) 
 set(CPACK_NSIS_MUI_UNIICON ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}HomerBuild/resources/windows\\\\Homer-Uninstall.ico) 
