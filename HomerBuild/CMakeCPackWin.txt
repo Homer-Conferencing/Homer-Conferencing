@@ -26,3 +26,5 @@ set(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
 set(CPACK_NSIS_MENU_LINKS "http://homer-conferencing.com" "Homer Conferencing web site")
 set(CPACK_NSIS_URL_INFO_ABOUT "http://homer-conferencing.com")
 set(CPACK_NSIS_HELP_LINK "http://homer-conferencing.com")
+
+set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
