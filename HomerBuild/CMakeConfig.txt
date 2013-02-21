@@ -110,6 +110,7 @@ IF (DEFINED INSIDE_HOMER_BUILD)
 	)
 ENDIF()
 
+##############################################################
 # create Info.plist
 IF (DEFINED INSIDE_HOMER_BUILD)
 	INCLUDE (CheckIncludeFiles)
