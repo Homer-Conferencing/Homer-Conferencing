@@ -234,7 +234,7 @@ int64_t System::GetMachineMemoryPhysical()
 {
     int64_t tResult = 0;
 
-	#if defined(APPLE) || defined(BSD)
+	#if defined(APPLE)
 		int tMib[2];
 		uint64_t tPhysRamSize;
 		size_t tSize;
@@ -246,6 +246,7 @@ int64_t System::GetMachineMemoryPhysical()
 		else
 			tResult = (int64_t)tPhysRamSize;
 	#endif
+	//TODO: FreeBSD?
     #if defined(LINUX)
         long tPages = sysconf(_SC_PHYS_PAGES);
         long tPageSize = sysconf(_SC_PAGE_SIZE);
@@ -275,7 +276,8 @@ int64_t System::GetMachineMemorySwap()
         }
         tResult = tSysInfo.totalswap;
     #endif
-    #if defined(APPLE) || defined(BSD)
+	//TODO: FreeBSD?
+    #if defined(APPLE)
         xsw_usage tVmUsage;
         size_t tSize = sizeof(tVmUsage);
         if (sysctlbyname("vm.swapusage", &tVmUsage, &tSize, NULL, 0) != 0)
