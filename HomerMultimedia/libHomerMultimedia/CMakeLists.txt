@@ -207,6 +207,7 @@ IF (${BUILD} MATCHES "Default")
 		avcodec
 		avutil
 		avfilter
+		swresample
 		swscale
 		x264
 		${SDL_LIBRARY}		
@@ -269,6 +270,7 @@ SET (LIBS_BSD_STATIC
 	avformat
 	avcodec
 	avfilter
+	swresample
 	swscale
 	avutil
 	mp3lame
