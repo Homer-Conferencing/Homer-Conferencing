@@ -162,14 +162,14 @@ background-color: rgb(150, 150, 150);
             </property>
             <property name="iconSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>22</width>
+              <height>22</height>
              </size>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="mTbAdd">
+           <widget class="QToolButton" name="mTbAddFile">
             <property name="minimumSize">
              <size>
               <width>30</width>
@@ -183,7 +183,7 @@ background-color: rgb(150, 150, 150);
              </size>
             </property>
             <property name="toolTip">
-             <string>add entry/entries</string>
+             <string>add file(s)</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QToolButton{
@@ -208,8 +208,54 @@ background-color: rgb(150, 150, 150);
             </property>
             <property name="iconSize">
              <size>
-              <width>18</width>
-              <height>18</height>
+              <width>22</width>
+              <height>22</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="mTbAddUrl">
+            <property name="minimumSize">
+             <size>
+              <width>30</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>30</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>add url</string>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/Icons.qrc">
+              <normaloff>:/images/22_22/NetworkConnection.png</normaloff>:/images/22_22/NetworkConnection.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>22</width>
+              <height>22</height>
              </size>
             </property>
            </widget>
@@ -254,8 +300,8 @@ background-color: rgb(150, 150, 150);
             </property>
             <property name="iconSize">
              <size>
-              <width>18</width>
-              <height>18</height>
+              <width>22</width>
+              <height>22</height>
              </size>
             </property>
            </widget>

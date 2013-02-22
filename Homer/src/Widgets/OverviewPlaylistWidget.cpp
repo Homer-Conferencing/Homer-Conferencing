@@ -94,7 +94,8 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
         mAssignedAction->setChecked(false);
     }
     connect(toggleViewAction(), SIGNAL(toggled(bool)), mAssignedAction, SLOT(setChecked(bool)));
-    connect(mTbAdd, SIGNAL(clicked()), this, SLOT(AddEntryDialog()));
+    connect(mTbAddFile, SIGNAL(clicked()), this, SLOT(AddFileEntryDialog()));
+    connect(mTbAddUrl, SIGNAL(clicked()), this, SLOT(AddUrlEntryDialog()));
     connect(mTbDel, SIGNAL(clicked()), this, SLOT(DelEntryDialog()));
     connect(mTbSaveList, SIGNAL(clicked()), this, SLOT(SaveListDialog()));
     connect(mLwFiles, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(Play()));
@@ -377,7 +378,7 @@ void OverviewPlaylistWidget::StartPlaylist()
         LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
 
     int tFirstAddedPlaylistEntry = GetListSize();
-    if (AddEntryDialog())
+    if (AddFileEntryDialog())
     {
         Play(tFirstAddedPlaylistEntry);
 
@@ -399,33 +400,23 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
 
     if (!mLwFiles->selectedItems().isEmpty())
     {
-        tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Play selected"));
-        QIcon tIcon0;
-        tIcon0.addPixmap(QPixmap(":/images/22_22/AV_Play.png"), QIcon::Normal, QIcon::Off);
-        tAction->setIcon(tIcon0);
+        tAction = tMenu.addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::OverviewPlaylistWidget::tr("Play selected"));
         tAction->setShortcut(Qt::Key_Enter);
 
         tMenu.addSeparator();
     }
 
-    tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Add entry"));
-    QIcon tIcon1;
-    tIcon1.addPixmap(QPixmap(":/images/22_22/Plus.png"), QIcon::Normal, QIcon::Off);
-    tAction->setIcon(tIcon1);
+    tAction = tMenu.addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::OverviewPlaylistWidget::tr("Add file(s)"));
     tAction->setShortcut(Qt::Key_Insert);
+
+    tAction = tMenu.addAction(QPixmap(":/images/22_22/NetworkConnection.png"), Homer::Gui::OverviewPlaylistWidget::tr("Add url"));
 
     if (!mLwFiles->selectedItems().isEmpty())
     {
-        tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Rename selected"));
-        QIcon tIcon15;
-        tIcon15.addPixmap(QPixmap(":/images/22_22/Contact_Edit.png"), QIcon::Normal, QIcon::Off);
-        tAction->setIcon(tIcon15);
+        tAction = tMenu.addAction(QPixmap(":/images/22_22/Contact_Edit.png"), Homer::Gui::OverviewPlaylistWidget::tr("Rename selected"));
         tAction->setShortcut(Qt::Key_F2);
 
-        tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Delete selected"));
-        QIcon tIcon2;
-        tIcon2.addPixmap(QPixmap(":/images/22_22/Minus.png"), QIcon::Normal, QIcon::Off);
-        tAction->setIcon(tIcon2);
+        tAction = tMenu.addAction(QPixmap(":/images/22_22/Minus.png"), Homer::Gui::OverviewPlaylistWidget::tr("Delete selected"));
         tAction->setShortcut(Qt::Key_Delete);
     }
 
@@ -433,10 +424,7 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
 
     if (GetListSize() > 0)
     {
-        tAction = tMenu.addAction(Homer::Gui::OverviewPlaylistWidget::tr("Reset playlist"));
-        QIcon tIcon3;
-        tIcon3.addPixmap(QPixmap(":/images/22_22/Reload.png"), QIcon::Normal, QIcon::Off);
-        tAction->setIcon(tIcon3);
+        tAction = tMenu.addAction(QPixmap(":/images/22_22/Reload.png"), Homer::Gui::OverviewPlaylistWidget::tr("Reset playlist"));
 
         tMenu.addSeparator();
     }
@@ -453,9 +441,14 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
             ActionPlay();
             return;
         }
-        if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Add entry")) == 0)
+        if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Add file(s)")) == 0)
         {
-            AddEntryDialog();
+            AddFileEntryDialog();
+            return;
+        }
+        if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Add url")) == 0)
+        {
+            AddUrlEntryDialog();
             return;
         }
         if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Rename selected")) == 0)
@@ -493,9 +486,9 @@ void OverviewPlaylistWidget::DelEntryDialog()
         DeleteListEntry(tSelection[i].row());
 }
 
-bool OverviewPlaylistWidget::AddEntryDialog()
+bool OverviewPlaylistWidget::AddFileEntryDialog()
 {
-    LOG(LOG_VERBOSE, "User wants to add a new entry to playlist");
+    LOG(LOG_VERBOSE, "User wants to add a file entry to playlist");
 
     bool tListWasEmpty = (mLwFiles->count() == 0);
 
@@ -524,10 +517,39 @@ bool OverviewPlaylistWidget::AddEntryDialog()
     return true;
 }
 
+bool OverviewPlaylistWidget::AddUrlEntryDialog()
+{
+    LOG(LOG_VERBOSE, "User wants to add an url entry to playlist");
+
+    bool tListWasEmpty = (mLwFiles->count() == 0);
+
+    bool tAck = false;
+    QString tUrl = QInputDialog::getText(this, Homer::Gui::OverviewPlaylistWidget::tr("Adding an url to the playlist"), Homer::Gui::VideoWidget::tr("Adding url:") + "                                                                            ", QLineEdit::Normal, "", &tAck);
+
+    if (!tAck)
+        return false;
+
+    if (tUrl.isEmpty())
+        return false;
+
+    AddEntry(tUrl);
+
+    if((tListWasEmpty) && (mLwFiles->count() > 0))
+    {
+        mCurrentFileId = 0;
+        LOG(LOG_VERBOSE, "Setting to file %d in playlist", mCurrentFileId);
+        mLwFiles->setCurrentRow(mCurrentFileId, QItemSelectionModel::Clear | QItemSelectionModel::Select);
+        if (!isVisible())
+            SetVisible(true);
+    }
+
+    return true;
+}
+
 void OverviewPlaylistWidget::AddEntryDialogSc()
 {
     if (mLwFiles->hasFocus())
-        AddEntryDialog();
+        AddFileEntryDialog();
 }
 
 void OverviewPlaylistWidget::DelEntryDialogSc()
@@ -874,6 +896,12 @@ Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVid
 	tPlaylistEntry.Location = "";
 	tPlaylistEntry.Name = "";
 
+	if (pFilePlaylist.toLower().startsWith("http://"))
+	{
+	    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "M3U file is located on a web server");
+        return tResult;
+	}
+
 	#ifdef WINDOWS
     	QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('\\'));
 	#else
@@ -949,6 +977,12 @@ Playlist OverviewPlaylistWidget::ParseWMX(QString pFilePlaylist, bool pAcceptVid
 	tPlaylistEntry.Location = "";
 	tPlaylistEntry.Name = "";
 
+    if (pFilePlaylist.toLower().startsWith("http://"))
+    {
+        LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "WMX file is located on a web server");
+        return tResult;
+    }
+
 	#ifdef WINDOWS
 		QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('\\'));
 	#else
@@ -993,6 +1027,12 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
     int tPlaylistEntries = -1;
     int tLoadedPlaylistEntries = 0;
 	Playlist tResult;
+
+    if (pFilePlaylist.toLower().startsWith("http://"))
+    {
+        LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "PLS file is located on a web server");
+        return tResult;
+    }
 
 	#ifdef WINDOWS
 		QString tDir = pFilePlaylist.left(pFilePlaylist.lastIndexOf('\\'));

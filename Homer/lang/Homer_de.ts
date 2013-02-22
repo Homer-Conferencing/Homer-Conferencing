@@ -2133,83 +2133,94 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::OverviewPlaylistWidget</name>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="126"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="148"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="187"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="243"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="286"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="127"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="149"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="188"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="244"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="287"/>
         <source>All supported formats</source>
         <translation>Alle unterstützten Formate</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="156"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="157"/>
         <source>/Homer-Video.avi</source>
         <translation>/Homer-Video.avi</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="251"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="252"/>
         <source>/Homer-Audio.mp3</source>
         <translation>/Homer-Audio.mp3</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="402"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="451"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="403"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="439"/>
         <source>Play selected</source>
         <translation>Auswahl abspielen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="411"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="456"/>
-        <source>Add entry</source>
-        <translation>Eintrag hinzufügen</translation>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="409"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="444"/>
+        <source>Add file(s)</source>
+        <translation>Datei(en) hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="419"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="461"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="412"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="449"/>
+        <source>Add url</source>
+        <translation>Url hinzufügen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="416"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="454"/>
         <source>Rename selected</source>
         <translation>Auswahl umbenennen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="425"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="466"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="419"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="459"/>
         <source>Delete selected</source>
         <translation>Auswahl entfernen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="436"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="471"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="427"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="464"/>
         <source>Reset playlist</source>
         <translation>Playlist zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="444"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="476"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="432"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="469"/>
         <source>Endless loop</source>
         <translation>Endlosschleife</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="504"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="497"/>
         <source>Add file(s) to playlist</source>
         <translation>Datei(en) zur Playlist hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="546"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="527"/>
+        <source>Adding an url to the playlist</source>
+        <translation>Hinzufügener einer Url zur Playlist</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="568"/>
         <source>Save playlist</source>
         <translation>Speichern der Playlist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="548"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="549"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="570"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="571"/>
         <source>Playlist File</source>
         <translation>Playlist-Datei</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="578"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="600"/>
         <source>Could not store playlist file</source>
         <translation>Abspeichern der Playlist fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="578"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="600"/>
         <source>Couldn&apos;t write playlist in</source>
         <translation>Abspeichern der Playlist ist fehlgeschlagen in </translation>
     </message>
@@ -3036,6 +3047,11 @@ Bitte Konfiguration prüfen!</translation>
         <location filename="../src/Widgets/VideoWidget.cpp" line="897"/>
         <source>Recorded:</source>
         <translation>Aufgenommen:</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="527"/>
+        <source>Adding url:</source>
+        <translation>Hinzuzufügende Url:</translation>
     </message>
 </context>
 <context>
@@ -4172,12 +4188,17 @@ datei</translation>
         <translation>Speichern der Playlist</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="186"/>
-        <source>add entry/entries</source>
-        <translation>Eintrag/Einträge hinzufügen</translation>
+        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="232"/>
+        <source>add url</source>
+        <translation>Url hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="232"/>
+        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="186"/>
+        <source>add file(s)</source>
+        <translation>Datei(en) hinzufügen</translation>
+    </message>
+    <message>
+        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="278"/>
         <source>remove entry/entries</source>
         <translation>Eintrag/Einträge entfernen</translation>
     </message>
@@ -4548,80 +4569,80 @@ Soll sie überschrieben werden?</translation>
         <translation>Auswahl des Desktopausschnittes</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="125"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="150"/>
         <source>Move and resize the window until it covers the area you want to capture!</source>
         <translation>Ändern Sie Position und Größe des Fenster bis es den gewünschten Bereich überdeckt!</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="197"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="222"/>
         <source>Origin:</source>
         <translation>Ursprung:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="225"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="250"/>
         <source>X-offset:</source>
         <translation>X-Offset:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="248"/>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="304"/>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="370"/>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="426"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="273"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="329"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="395"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="451"/>
         <source>9999</source>
         <translation>9999</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="281"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="306"/>
         <source>Y-offset:</source>
         <translation>Y-Offset:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="319"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="344"/>
         <source>Dimension:</source>
         <translation>Dimension:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="347"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="372"/>
         <source>Width:</source>
         <translation>Breite:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="403"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="428"/>
         <source>Height:</source>
         <translation>Höhe:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="505"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="530"/>
         <source>click to reset settings to their default values</source>
         <translation>die Einstellungen zurücksetzen auf die Standardwerte</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="521"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="546"/>
         <source>Defaults</source>
         <translation>Defaults</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="556"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="581"/>
         <source>click to capture the entire desktop with automatic dimension adaption</source>
         <translation>Desktopaufnahme mit automatischer Anpassung der Auflösung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="575"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="600"/>
         <source>Auto Desktop</source>
         <translation>Auto Desktop</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="613"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="638"/>
         <source>click to capture the entire screen with automatic dimension adaption</source>
         <translation>Monitoraufnahme mit automatischer Anpassung der Auflösung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="632"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="656"/>
         <source>Auto Screen</source>
         <translation>Auto Monitor</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="678"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="702"/>
         <source> Track and visualize mouse </source>
         <translation>Maus nachverfolgen und visualisieren</translation>
     </message>

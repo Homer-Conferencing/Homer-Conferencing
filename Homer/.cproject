@@ -49,6 +49,7 @@
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtNetwork"/>
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtGui"/>
 									<listOptionValue builtIn="false" value="../../../Homer-Release/HomerIncludes/qt4/QtCore"/>
+									<listOptionValue builtIn="false" value="/usr/include/qt4/QtDBus"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1209009665" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="WIN32=1"/>

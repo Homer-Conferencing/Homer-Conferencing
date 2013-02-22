@@ -93,7 +93,8 @@ public slots:
     void SetVisible(bool pVisible);
 
 private slots:
-    bool AddEntryDialog();
+    bool AddFileEntryDialog();
+    bool AddUrlEntryDialog();
     void AddEntryDialogSc();
     void DelEntryDialog();
     void DelEntryDialogSc();
