@@ -1542,7 +1542,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 #ifdef MSM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Distributing VIDEO frame..");
                                     LOG(LOG_VERBOSE, "      ..key frame: %d", tYUVFrame->key_frame);
-                                    LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tYUVFrame).c_str());
+                                    LOG(LOG_VERBOSE, "      ..frame type: %s-frame", GetFrameType(tYUVFrame).c_str());
                                     LOG(LOG_VERBOSE, "      ..pts: %"PRId64"(scaler pts: %"PRId64")", tYUVFrame->pts, tInputFrameTimestamp);
                                     LOG(LOG_VERBOSE, "      ..pkt_pts: %"PRId64, tYUVFrame->pkt_pts);
                                     LOG(LOG_VERBOSE, "      ..pkt_dts: %"PRId64, tYUVFrame->pkt_dts);
@@ -1719,7 +1719,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
                                             LOG(LOG_VERBOSE, "Distributing AUDIO frame..");
                                             LOG(LOG_VERBOSE, "      ..key frame: %d", tAudioFrame->key_frame);
-                                            LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tAudioFrame).c_str());
+                                            LOG(LOG_VERBOSE, "      ..frame type: %s-frame", GetFrameType(tAudioFrame).c_str());
                                             LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tAudioFrame->pts);
                                             LOG(LOG_VERBOSE, "      ..pkt_pts: %"PRId64, tAudioFrame->pkt_pts);
                                             LOG(LOG_VERBOSE, "      ..pkt_dts: %"PRId64, tAudioFrame->pkt_dts);
