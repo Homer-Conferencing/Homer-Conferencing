@@ -222,6 +222,13 @@ void Configuration::SetParticipantWidgetsCloseImmediately(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetPreventScreensaverInFullscreenMode(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("PreventScreensaverInFullscreenMode", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetBroadcastAudioPlaybackMuted(bool pActive)
 {
     mQSettings->beginGroup("Broadcast");
@@ -1001,6 +1008,11 @@ bool Configuration::GetParticipantWidgetsSeparation()
 bool Configuration::GetParticipantWidgetsCloseImmediately()
 {
     return mQSettings->value("Global/ParticipantWidgetsCloseImmediately", true).toBool();
+}
+
+bool Configuration::GetPreventScreensaverInFullscreenMode()
+{
+    return mQSettings->value("Global/PreventScreensaverInFullscreenMode", true).toBool();
 }
 
 bool Configuration::GetBroadcastAudioPlaybackMuted()

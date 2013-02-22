@@ -399,6 +399,8 @@ void ConfigurationDialog::LoadConfiguration()
     if (!CONF.ConferencingEnabled())
         mNetwork->setEnabled(false);
 
+    mCbPreventScreensaverInFullscreenMode->setChecked(CONF.GetPreventScreensaverInFullscreenMode());
+
     //######################################################################
     //### NOTIFICATION configuration
     //######################################################################
@@ -684,6 +686,8 @@ void ConfigurationDialog::SaveConfiguration()
     {// English
         CONF.SetLanguage("en");
     }
+    CONF.SetPreventScreensaverInFullscreenMode(mCbPreventScreensaverInFullscreenMode->isChecked());
+
     //######################################################################
     //### NOTIFICATION configuration
     //######################################################################
@@ -1133,6 +1137,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbAutoUpdateCheck->setChecked(false);
                 mCbSeparatedParticipantWidgets->setChecked(false);
                 mCbCloseParticipantWidgetsImmediately->setChecked(true);
+                mCbPreventScreensaverInFullscreenMode->setChecked(true);
                 break;
             //### NOTIFICATIONS configuration
             case 4:

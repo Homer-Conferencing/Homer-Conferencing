@@ -1114,8 +1114,11 @@ void VideoWidget::ShowFrame(void* pBuffer)
     //#############################################################
     //### prevent system sleep mode
     //#############################################################
-    if (IsFullScreen())
-    	SendActivityToSystem();
+    if (CONF.GetPreventScreensaverInFullscreenMode())
+    {
+        if (IsFullScreen())
+            SendActivityToSystem();
+    }
 }
 
 void VideoWidget::ShowHourGlass()

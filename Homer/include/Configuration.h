@@ -100,6 +100,8 @@ public:
     QPoint GetMainWindowPosition();
     QSize GetMainWindowSize();
 
+    bool GetPreventScreensaverInFullscreenMode();
+
     bool GetBroadcastAudioPlaybackMuted();
 
     bool GetVisibilityContactsWidget();
@@ -266,6 +268,8 @@ public:
     void SetMainWindowSize(QSize pSize);
     void SetParticipantWidgetsSeparation(bool pSepWins);
     void SetParticipantWidgetsCloseImmediately(bool pActive);
+
+    void SetPreventScreensaverInFullscreenMode(bool pActive);
 
     void SetBroadcastAudioPlaybackMuted(bool pActive);
 
