@@ -69,7 +69,6 @@ void SegmentSelectionDialog::initializeGUI()
     LOG(LOG_VERBOSE, "Found current segment resolution of %d*%d, starting at %d*%d", mMediaSourceDesktop->mSourceResX, mMediaSourceDesktop->mSourceResY, mMediaSourceDesktop->mGrabOffsetX, mMediaSourceDesktop->mGrabOffsetY);
 
     setupUi(this);
-    setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
 
     connect(mTbDefaults, SIGNAL(clicked(bool)), this, SLOT(ResetToDefaults()));
     connect(mTbDesktopAuto, SIGNAL(clicked(bool)), this, SLOT(ResetToDesktopAuto(bool)));
@@ -105,7 +104,7 @@ int SegmentSelectionDialog::exec()
 
 void SegmentSelectionDialog::ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight, bool pForceUpdate)
 {
-    LOG(LOG_ERROR, "Configuring desktop capturing to offset (%d,%d) and dimension %d*%d", pOffsetX, pOffsetY, pWidth, pHeight);
+    //LOG(LOG_ERROR, "Configuring desktop capturing to offset (%d,%d) and dimension %d*%d", pOffsetX, pOffsetY, pWidth, pHeight);
 
     if ((pWidth >= 0) && (pHeight >= 0) && ((mWidth != pHeight) || (mHeight != pHeight) || (pForceUpdate)))
     {
@@ -228,7 +227,7 @@ void SegmentSelectionDialog::mousePressEvent(QMouseEvent *pEvent)
 
     if (pEvent->button() == Qt::LeftButton)
     {
-        mDragMousePosition = pEvent->globalPos();// - frameGeometry().topLeft();
+        mDragMousePosition = pEvent->globalPos();
         mDragWindowPosition = pos();
         pEvent->accept();
     }
@@ -248,26 +247,17 @@ void SegmentSelectionDialog::mouseMoveEvent(QMouseEvent *pEvent)
 
         ConfigureDesktopCapturing(tNewPos.x(), tNewPos.y(), -1, -1);
 
-//        move(tNewPos);
-//
-//        int tNewOffsetX = x();// + (frameGeometry().width() - width()) / 2;
-//        int tNewOffsetY = y();// + (frameGeometry().height() - height()) - (frameGeometry().width() - width()) / 2;
-//        mMediaSourceDesktop->mGrabOffsetX = tNewOffsetX;
-//        mMediaSourceDesktop->mGrabOffsetY = tNewOffsetY;
-//        mLbOffsetX->setText(QString("%1").arg(tNewOffsetX));
-//        mLbOffsetY->setText(QString("%1").arg(tNewOffsetY));
-
         pEvent->accept();
     }
 }
 
 void SegmentSelectionDialog::resizeEvent(QResizeEvent *pEvent)
 {
-    int tNewWidth = pEvent->size().width();// + (frameGeometry().width() - width());
+    int tNewWidth = pEvent->size().width();
     if (tNewWidth < DESKTOP_SEGMENT_MIN_WIDTH)
         tNewWidth = DESKTOP_SEGMENT_MIN_WIDTH;
 
-    int tNewHeight = pEvent->size().height();// + (frameGeometry().height() - height()) + (frameGeometry().width() - width()) / 2;
+    int tNewHeight = pEvent->size().height();
     if (tNewHeight < DESKTOP_SEGMENT_MIN_HEIGHT)
         tNewHeight = DESKTOP_SEGMENT_MIN_HEIGHT;
 
