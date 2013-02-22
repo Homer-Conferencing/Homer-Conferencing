@@ -71,9 +71,10 @@ void SegmentSelectionDialog::initializeGUI()
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
 
     connect(mTbDefaults, SIGNAL(clicked(bool)), this, SLOT(ResetToDefaults()));
-    connect(mTbDesktop, SIGNAL(clicked(bool)), this, SLOT(ResetToDesktop()));
     connect(mTbDesktopAuto, SIGNAL(clicked(bool)), this, SLOT(ResetToDesktopAuto(bool)));
+    connect(mTbScreenAuto, SIGNAL(clicked(bool)), this, SLOT(ResetToScreenAuto(bool)));
 
+    mTbScreenAuto->setChecked(mMediaSourceDesktop->GetAutoScreen());
     mTbDesktopAuto->setChecked(mMediaSourceDesktop->GetAutoDesktop());
     mCbMouse->setChecked(mMediaSourceDesktop->GetMouseVisualization());
 
@@ -88,6 +89,7 @@ int SegmentSelectionDialog::exec()
 
 	if (tResult == QDialog::Accepted)
 	{
+        mMediaSourceDesktop->SetAutoScreen(mTbScreenAuto->isChecked());
 		mMediaSourceDesktop->SetAutoDesktop(mTbDesktopAuto->isChecked());
 		mMediaSourceDesktop->SetMouseVisualization(mCbMouse->isChecked());
 
@@ -137,9 +139,9 @@ void SegmentSelectionDialog::ConfigureDesktopCapturing(int pOffsetX, int pOffset
     }
 }
 
-void SegmentSelectionDialog::ResetToDesktop()
+void SegmentSelectionDialog::ResetToScreen()
 {
-    LOG(LOG_VERBOSE, "Resetting to desktop size");
+    LOG(LOG_VERBOSE, "Resetting to screen size");
 
     int tResX = 0;
     int tResY = 0;
@@ -154,17 +156,38 @@ void SegmentSelectionDialog::ResetToDesktop()
 
     ConfigureDesktopCapturing(0, 0, tResX, tResY);
 }
+void SegmentSelectionDialog::ResetToDesktop()
+{
+    LOG(LOG_VERBOSE, "Resetting to desktop size");
+
+    int tResX = 0;
+    int tResY = 0;
+    QDesktopWidget *tDesktop = QApplication::desktop();
+    tResX = tDesktop->availableGeometry(tDesktop->primaryScreen()).width();
+    tResY = tDesktop->availableGeometry(tDesktop->primaryScreen()).height();
+
+    ConfigureDesktopCapturing(0, 0, tResX, tResY);
+}
+
+void SegmentSelectionDialog::ResetToScreenAuto(bool pActive)
+{
+    if (pActive)
+        ResetToScreen();
+    mTbDesktopAuto->setChecked(false);
+}
 
 void SegmentSelectionDialog::ResetToDesktopAuto(bool pActive)
 {
 	if (pActive)
 		ResetToDesktop();
+	mTbScreenAuto->setChecked(false);
 }
 
 void SegmentSelectionDialog::ResetToDefaults()
 {
     LOG(LOG_VERBOSE, "Resetting to defaults");
     mTbDesktopAuto->setChecked(false);
+    mTbScreenAuto->setChecked(false);
     ConfigureDesktopCapturing(0, 0, DESKTOP_SEGMENT_MIN_WIDTH, DESKTOP_SEGMENT_MIN_HEIGHT);
 }
 
@@ -200,7 +223,7 @@ void SegmentSelectionDialog::contextMenuEvent(QContextMenuEvent *event)
 
 void SegmentSelectionDialog::mousePressEvent(QMouseEvent *pEvent)
 {
-    LOG(LOG_WARN, "mousePressEvent");
+    //LOG(LOG_WARN, "mousePressEvent");
 
     if (pEvent->button() == Qt::LeftButton)
     {
@@ -212,7 +235,7 @@ void SegmentSelectionDialog::mousePressEvent(QMouseEvent *pEvent)
 
 void SegmentSelectionDialog::mouseMoveEvent(QMouseEvent *pEvent)
 {
-    LOG(LOG_WARN, "mouseMoveEvent");
+    //LOG(LOG_WARN, "mouseMoveEvent");
 
     if (pEvent->buttons() & Qt::LeftButton)
     {

@@ -61,7 +61,9 @@ private slots:
     void ClickedButton(QAbstractButton *pButton);
     void ResetToDefaults();
 	void ResetToDesktop();
+	void ResetToScreen();
 	void ResetToDesktopAuto(bool pActive);
+    void ResetToScreenAuto(bool pActive);
 
 private:
     virtual void contextMenuEvent(QContextMenuEvent *event);

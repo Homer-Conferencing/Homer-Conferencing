@@ -158,32 +158,37 @@
         <translation>Schwellwert:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="93"/>
+        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="62"/>
+        <source>(0 - 32768)</source>
+        <translation>(0 - 32768)</translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="100"/>
         <source> Current audio source </source>
         <translation>Aktuelle Audioquelle</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="118"/>
+        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="125"/>
         <source>Audio level: </source>
         <translation>Audiolevel:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="214"/>
+        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="221"/>
         <source>Silence range:</source>
         <translation>Stillebereich:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="269"/>
+        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="276"/>
         <source>Audio chunks will be only be skipped if audio relaying is active and at least one network sink is active!</source>
         <translation>Audioblöcke werden nur gefiltert, falls die Audioverteilung aktiviert ist und mindestens eine Netzwerksenke aktiv ist!</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="299"/>
+        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="306"/>
         <source>Skipped chunks: </source>
         <translation>Unterdrückte Blöcke:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="319"/>
+        <location filename="../forms/Dialogs/ConfigurationAudioSilenceDialog.ui" line="326"/>
         <source>0</source>
         <translation>0</translation>
     </message>
@@ -1639,100 +1644,100 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1237"/>
+        <location filename="../src/MainWindow.cpp" line="1240"/>
         <source>NAT detection failed</source>
         <translation>NAT Erkennung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1237"/>
+        <location filename="../src/MainWindow.cpp" line="1240"/>
         <source>Could not detect NAT address and type via STUN server. The failure reason is</source>
         <translation>Konnte die NAT-Adresse und -Typ nicht via STUN-Server erkennen. Die Fehlerursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1620"/>
-        <location filename="../src/MainWindow.cpp" line="1624"/>
+        <location filename="../src/MainWindow.cpp" line="1623"/>
+        <location filename="../src/MainWindow.cpp" line="1627"/>
         <source>Registration failed</source>
         <translation>Registrierung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1620"/>
-        <location filename="../src/MainWindow.cpp" line="1624"/>
+        <location filename="../src/MainWindow.cpp" line="1623"/>
+        <location filename="../src/MainWindow.cpp" line="1627"/>
         <source>Could not register</source>
         <translation>Registerung fehlgeschlagen für</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1620"/>
-        <location filename="../src/MainWindow.cpp" line="1624"/>
+        <location filename="../src/MainWindow.cpp" line="1623"/>
+        <location filename="../src/MainWindow.cpp" line="1627"/>
         <source>at the SIP server</source>
         <translation>am SIP-Server</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1620"/>
-        <location filename="../src/MainWindow.cpp" line="1640"/>
+        <location filename="../src/MainWindow.cpp" line="1623"/>
+        <location filename="../src/MainWindow.cpp" line="1643"/>
         <source>The reason is</source>
         <translation>Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1621"/>
-        <location filename="../src/MainWindow.cpp" line="1625"/>
-        <location filename="../src/MainWindow.cpp" line="1641"/>
+        <location filename="../src/MainWindow.cpp" line="1624"/>
+        <location filename="../src/MainWindow.cpp" line="1628"/>
+        <location filename="../src/MainWindow.cpp" line="1644"/>
         <source>SIP server runs software</source>
         <translation>Der SIP-Server nutzt die Software</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1624"/>
+        <location filename="../src/MainWindow.cpp" line="1627"/>
         <source>The login name or password is wrong. Check configuration!
 </source>
         <translation>Der Loginname oder das Passwort sind falsch. Bitte die Konfiguration prüfen!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1640"/>
+        <location filename="../src/MainWindow.cpp" line="1643"/>
         <source>Presence publication failed</source>
         <translation>Verfügbarkeitsstatus nicht aktualisiert</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1640"/>
+        <location filename="../src/MainWindow.cpp" line="1643"/>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2124"/>
-        <location filename="../src/MainWindow.cpp" line="2178"/>
+        <location filename="../src/MainWindow.cpp" line="2127"/>
+        <location filename="../src/MainWindow.cpp" line="2181"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2127"/>
-        <location filename="../src/MainWindow.cpp" line="2181"/>
+        <location filename="../src/MainWindow.cpp" line="2130"/>
+        <location filename="../src/MainWindow.cpp" line="2184"/>
         <source>Hide window</source>
         <translation>Fenster minimieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2137"/>
-        <location filename="../src/MainWindow.cpp" line="2191"/>
+        <location filename="../src/MainWindow.cpp" line="2140"/>
+        <location filename="../src/MainWindow.cpp" line="2194"/>
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2141"/>
-        <location filename="../src/MainWindow.cpp" line="2195"/>
+        <location filename="../src/MainWindow.cpp" line="2144"/>
+        <location filename="../src/MainWindow.cpp" line="2198"/>
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2147"/>
-        <location filename="../src/MainWindow.cpp" line="2201"/>
+        <location filename="../src/MainWindow.cpp" line="2150"/>
+        <location filename="../src/MainWindow.cpp" line="2204"/>
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2156"/>
-        <location filename="../src/MainWindow.cpp" line="2210"/>
+        <location filename="../src/MainWindow.cpp" line="2159"/>
+        <location filename="../src/MainWindow.cpp" line="2213"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2165"/>
+        <location filename="../src/MainWindow.cpp" line="2168"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -2459,8 +2464,8 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::SegmentSelectionDialog</name>
     <message>
-        <location filename="../src/Dialogs/SegmentSelectionDialog.cpp" line="185"/>
-        <location filename="../src/Dialogs/SegmentSelectionDialog.cpp" line="193"/>
+        <location filename="../src/Dialogs/SegmentSelectionDialog.cpp" line="208"/>
+        <location filename="../src/Dialogs/SegmentSelectionDialog.cpp" line="216"/>
         <source>Default settings</source>
         <translation>Standardeinstellungen</translation>
     </message>
@@ -2677,358 +2682,358 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::VideoWidget</name>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="512"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="531"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="566"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="585"/>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="514"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="526"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="568"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="580"/>
         <source>Show</source>
         <translation>Anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="319"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="541"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1374"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="373"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="595"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1426"/>
         <source>Save picture</source>
         <translation>Bild speichern</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="128"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="137"/>
         <source>Window</source>
         <translation>Fenster</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="328"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="546"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="382"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="600"/>
         <source>Stop recording</source>
         <translation>Aufnahme stoppen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="330"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="551"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="384"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="605"/>
         <source>Start recording</source>
         <translation>Aufnahme starten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="339"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="581"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="393"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="635"/>
         <source>Hide stream info</source>
         <translation>Verstecke Strominfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="341"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="576"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="395"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="630"/>
         <source>Show stream info</source>
         <translation>Zeige Strominfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="356"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="618"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="410"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="672"/>
         <source>Window mode</source>
         <translation>Fenstermodus</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="359"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="618"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="413"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="672"/>
         <source>Full screen</source>
         <translation>Vollbild</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="381"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="435"/>
         <source>Aspect ratio</source>
         <translation>Bildformat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="400"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="454"/>
         <source>Resolution</source>
         <translation>Auflösung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="349"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="403"/>
         <source>Playback</source>
         <translation>Wiedergabe</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="371"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="613"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="425"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="667"/>
         <source>Fast display</source>
         <translation>Schnelle Anzeige</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="374"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="613"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="428"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="667"/>
         <source>Smooth display</source>
         <translation>Geglättete Anzeige</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="438"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="561"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="492"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="615"/>
         <source>Unmirror horizontally</source>
         <translation>Horizontal entspiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="443"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="556"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="497"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="610"/>
         <source>Mirror horizontally</source>
         <translation>Horizontal spiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="450"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="571"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="504"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="625"/>
         <source>Unmirror vertically</source>
         <translation>Vertikal entspiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="465"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="519"/>
         <source>Relay stream</source>
         <translation>Strom verteilen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="466"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="598"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="520"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="652"/>
         <source>Add network sink</source>
         <translation>Netzwerksenke hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="467"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="521"/>
         <source>Registered sinks</source>
         <translation>Registrierte Senken</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="482"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="603"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="536"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="657"/>
         <source>Live marker</source>
         <translation>Live-Markierung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="496"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="592"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="550"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="646"/>
         <source>Continue stream</source>
         <translation>Strom fortsetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="498"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="586"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="552"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="640"/>
         <source>Drop stream</source>
         <translation>Strom verwerfen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="506"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="536"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="560"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="590"/>
         <source>Reset source</source>
         <translation>Quelle zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="685"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="739"/>
         <source>Target for video streaming</source>
         <translation>Ziel für Videoverteilung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="737"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="791"/>
         <source>% loss</source>
         <translation>% Verlust</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="750"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="804"/>
         <source>pre-buffer</source>
         <translation>Vorpuffer</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="762"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="810"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="816"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="864"/>
         <source>unknown</source>
         <translation>unbekannt</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="771"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="825"/>
         <source>Playback:</source>
         <translation>Wiedergabe:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="771"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="825"/>
         <source>[smoothed]</source>
         <translation>[geglättet]</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="773"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="775"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="827"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="829"/>
         <source>A/V drift:</source>
         <translation>A/V-Drift:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="799"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="853"/>
         <source>Time index:</source>
         <translation>Zeitindex:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="765"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="819"/>
         <source>frames delay</source>
         <translation>Frames Verzögerung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="811"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="865"/>
         <source>frames buffered</source>
         <translation>Frames gepuffert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="944"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="998"/>
         <source>System too busy</source>
         <translation>System zu beschäftigt</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="944"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="998"/>
         <source>Your system is too busy to do smooth transformation. Fast transformation will be used from now.</source>
         <translation>Das System ist zu beschäftigt, um eine Glättungstransformation durchzuführen. Schnelle Transformation wird ab jetzt verwendet.</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1199"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1251"/>
         <source>Recording active</source>
         <translation>Aufnahme aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1199"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1251"/>
         <source>The settings for video playback cannot be changed if the recording is active!</source>
         <translation>Die Einstellungen für Videowiedergabe können nicht verändert werden, wenn die Aufnahme aktiv ist!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1322"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1374"/>
         <source>Bilinear filtering activated</source>
         <translation>Bilineare Filterung aktiviert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1324"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1376"/>
         <source>Bilinear filtering deactivated</source>
         <translation>Bilineare Filterung deaktiviert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1398"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1450"/>
         <source>Save recorded video</source>
         <translation>Speichern des aufgezeichneten Videos</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1408"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1460"/>
         <source>Select recording quality</source>
         <translation>Auswahl der Aufzeichnungsqualität</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1408"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1460"/>
         <source>Record with quality:</source>
         <translation>Aufzeichnen mit Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1607"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1659"/>
         <source>Audio muted</source>
         <translation>Audio stumm geschaltet</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1609"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1661"/>
         <source>Audio output active</source>
         <translation>Audiowiedergabe aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1618"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1670"/>
         <source>Playing..</source>
         <translation>Abspielend..</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1624"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1676"/>
         <source>Pausing..</source>
         <translation>Pausierend..</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1667"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1677"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1719"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1729"/>
         <source>Volume:</source>
         <translation>Lautstärke:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1972"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1974"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2024"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2026"/>
         <source>Video source not available</source>
         <translation>Videoquelle nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1972"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2024"/>
         <source>The selected video source &quot;</source>
         <translation>Die ausgewählte Videoquelle &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1972"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2024"/>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot; ist nicht verfügbar. Bitte eine andere auswählen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1974"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2026"/>
         <source>The selected video source auto detection was not successful. Please, connect an additional video device to your hardware!</source>
         <translation>Die ausgewählte automatische Erkennung der Videoquelle war nicht erfolgreich. Bitte ein zusätzliches Gerät anschließen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="455"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="566"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="509"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="620"/>
         <source>Mirror vertically</source>
         <translation>Vertikal spiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="420"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="474"/>
         <source>Scaling</source>
         <translation>Skalierung</translation>
     </message>
     <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="522"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="713"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="767"/>
         <source>Source:</source>
         <translation>Quelle:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="736"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="790"/>
         <source>lost packets</source>
         <translation>verlorene Pakete</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="739"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="793"/>
         <source>buffered packets</source>
         <translation>gepufferte Pakete</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="747"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="801"/>
         <source>buffered</source>
         <translation>gepuffert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="762"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="816"/>
         <source>Source codec:</source>
         <translation>Quellcodec:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="810"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="864"/>
         <source>Streaming codec:</source>
         <translation>Verteilercodec:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="812"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="866"/>
         <source>buffered frames</source>
         <translation>gepufferte Frames</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="820"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="874"/>
         <source>Sender:</source>
         <translation>Sender:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="824"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="878"/>
         <source>synch. packets</source>
         <translation>synch. Pakete</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="827"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="881"/>
         <source>delay</source>
         <translation>Verzögerung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="843"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="897"/>
         <source>Recorded:</source>
         <translation>Aufgenommen:</translation>
     </message>
@@ -3036,7 +3041,7 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::VideoWorkerThread</name>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2054"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2106"/>
         <source>Waiting for data..</source>
         <translation>Warte auf Daten..</translation>
     </message>
@@ -4543,80 +4548,80 @@ Soll sie überschrieben werden?</translation>
         <translation>Auswahl des Desktopausschnittes</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="150"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="125"/>
         <source>Move and resize the window until it covers the area you want to capture!</source>
         <translation>Ändern Sie Position und Größe des Fenster bis es den gewünschten Bereich überdeckt!</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="222"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="197"/>
         <source>Origin:</source>
         <translation>Ursprung:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="250"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="225"/>
         <source>X-offset:</source>
         <translation>X-Offset:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="273"/>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="329"/>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="395"/>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="451"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="248"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="304"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="370"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="426"/>
         <source>9999</source>
         <translation>9999</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="306"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="281"/>
         <source>Y-offset:</source>
         <translation>Y-Offset:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="344"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="319"/>
         <source>Dimension:</source>
         <translation>Dimension:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="372"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="347"/>
         <source>Width:</source>
         <translation>Breite:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="428"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="403"/>
         <source>Height:</source>
         <translation>Höhe:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="530"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="505"/>
         <source>click to reset settings to their default values</source>
         <translation>die Einstellungen zurücksetzen auf die Standardwerte</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="546"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="521"/>
         <source>Defaults</source>
         <translation>Defaults</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="581"/>
-        <source>click to increase/shrink the capture segment to fit the desktop dimension and position</source>
-        <translation>die Einstellungen der Desktopaufnahme aud den gesamten Desktop ausdehnen/schrumpfen</translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="597"/>
-        <source>Desktop</source>
-        <translation>Desktop</translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="632"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="556"/>
         <source>click to capture the entire desktop with automatic dimension adaption</source>
-        <translation>die Einstellungen der Desktopaufnahme automatisch an die aktuellen Vollbildeinstellungen anpassen</translation>
+        <translation>Desktopaufnahme mit automatischer Anpassung der Auflösung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="651"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="575"/>
         <source>Auto Desktop</source>
         <translation>Auto Desktop</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="697"/>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="613"/>
+        <source>click to capture the entire screen with automatic dimension adaption</source>
+        <translation>Monitoraufnahme mit automatischer Anpassung der Auflösung</translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="632"/>
+        <source>Auto Screen</source>
+        <translation>Auto Monitor</translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/SegmentSelectionDialog.ui" line="678"/>
         <source> Track and visualize mouse </source>
         <translation>Maus nachverfolgen und visualisieren</translation>
     </message>

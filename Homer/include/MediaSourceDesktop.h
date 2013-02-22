@@ -44,6 +44,7 @@ using namespace Homer::Multimedia;
 #define MEDIA_SOURCE_DESKTOP                        "Desktop screen segment"
 
 #define MEDIA_SOURCE_DESKTOP_RESOLUTION_ID			"Desktop"
+#define MEDIA_SOURCE_SCREEN_RESOLUTION_ID           "Screen"
 
 // the following de/activates debugging of packets
 //#define MSD_DEBUG_PACKETS
@@ -92,6 +93,10 @@ public:
     void SetAutoDesktop(bool pActive);
     bool GetAutoDesktop();
 
+    /* automatic screen capturing with dimension adaption */
+    void SetAutoScreen(bool pActive);
+    bool GetAutoScreen();
+
     /* visualization of mouse */
     void SetMouseVisualization(bool pActive);
     bool GetMouseVisualization();
@@ -111,6 +116,7 @@ private:
 
     bool				mMouseVisualization;
     bool				mAutoDesktop;
+    bool                mAutoScreen;
     QPainter            *mTargetPainter;
     QWidget             *mWidget;
     int                 mGrabOffsetX, mGrabOffsetY;

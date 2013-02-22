@@ -69,6 +69,7 @@ MediaSourceDesktop::MediaSourceDesktop(string pDesiredDevice):
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
+    mAutoScreen = false;
     mAutoDesktop = false;
     mMouseVisualization = false;
     mWidget = NULL;
@@ -336,6 +337,20 @@ bool MediaSourceDesktop::GetAutoDesktop()
 	return mAutoDesktop;
 }
 
+void MediaSourceDesktop::SetAutoScreen(bool pActive)
+{
+    if (mAutoScreen != pActive)
+    {
+        LOG(LOG_VERBOSE, "Setting auto-screen to: %d", pActive);
+        mAutoScreen = pActive;
+    }
+}
+
+bool MediaSourceDesktop::GetAutoScreen()
+{
+    return mAutoScreen;
+}
+
 void MediaSourceDesktop::SetMouseVisualization(bool pActive)
 {
 	mMouseVisualization = pActive;
@@ -402,13 +417,18 @@ void MediaSourceDesktop::CreateScreenshot()
     //####################################################################
     //### AUTO DESKTOP
     //####################################################################
+    QDesktopWidget *tDesktop = QApplication::desktop();
     if (mAutoDesktop)
+    {
+        tCaptureResX = tDesktop->availableGeometry(tDesktop->primaryScreen()).width();
+        tCaptureResY = tDesktop->availableGeometry(tDesktop->primaryScreen()).height();
+    }
+    if (mAutoScreen)
     {
 		#ifdef APPLE
 			tCaptureResX = CGDisplayPixelsWide(CGMainDisplayID());
 			tCaptureResY = CGDisplayPixelsHigh(CGMainDisplayID());
 		#else
-			QDesktopWidget *tDesktop = QApplication::desktop();
 			tCaptureResX = tDesktop->screenGeometry(tDesktop->primaryScreen()).width();
 			tCaptureResY = tDesktop->screenGeometry(tDesktop->primaryScreen()).height();
 		#endif
@@ -643,6 +663,11 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
 
     QDesktopWidget *tDesktop = QApplication::desktop();
     tFormat.Name = MEDIA_SOURCE_DESKTOP_RESOLUTION_ID;
+    tFormat.ResX = tDesktop->availableGeometry(tDesktop->primaryScreen()).width();
+    tFormat.ResY = tDesktop->availableGeometry(tDesktop->primaryScreen()).height();
+    mSupportedVideoFormats.push_back(tFormat);
+
+    tFormat.Name = MEDIA_SOURCE_SCREEN_RESOLUTION_ID;
 	#if defined(APPLE)
     	tFormat.ResX = CGDisplayPixelsWide(CGMainDisplayID());
     	tFormat.ResY = CGDisplayPixelsHigh(CGMainDisplayID());
