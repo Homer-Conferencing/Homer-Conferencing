@@ -2100,8 +2100,8 @@ void ParticipantWidget::UpdateMovieControls()
     	//#################
         // update movie slider and position display
         //#################
-		float tCurPos = 0;
-		float tEndPos = 0;
+		float tCurPos = -1;
+		float tEndPos = -1;
 		if ((mVideoWidget->GetWorker()->PlayingFile()) && (!mVideoWidget->GetWorker()->IsSeeking()))
 		{
 		    //LOG(LOG_VERBOSE, "Valid video position");
