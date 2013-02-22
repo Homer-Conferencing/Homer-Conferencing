@@ -35,7 +35,7 @@
     <normaloff>:/images/LogoHomer3.png</normaloff>:/images/LogoHomer3.png</iconset>
   </property>
   <property name="windowOpacity">
-   <double>0.750000000000000</double>
+   <double>0.600000000000000</double>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -94,7 +94,7 @@
           <item>
            <widget class="QFrame" name="mFrameMove">
             <property name="frameShape">
-             <enum>QFrame::WinPanel</enum>
+             <enum>QFrame::NoFrame</enum>
             </property>
             <property name="frameShadow">
              <enum>QFrame::Sunken</enum>
@@ -564,57 +564,6 @@ background-color: rgb(150, 150, 150);
              </spacer>
             </item>
             <item>
-             <widget class="QToolButton" name="mTbDesktop">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>click to increase/shrink the capture segment to fit the desktop dimension and position</string>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QToolButton{
-background-color: rgb(239, 239, 239);
-border-style: outset;
-border-width: 2px;
-border-color:  rgb(200, 200, 200);
-border-radius: 6px;
-}
-QToolButton:pressed{
-background-color: rgb(150, 150, 150);
-} 
-</string>
-              </property>
-              <property name="text">
-               <string>Desktop</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_4">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Fixed</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>10</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
              <widget class="QToolButton" name="mTbDesktopAuto">
               <property name="minimumSize">
                <size>
@@ -649,6 +598,60 @@ background-color: rgb(200, 200, 200);
               </property>
               <property name="text">
                <string>Auto Desktop</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_4">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>10</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QToolButton" name="mTbScreenAuto">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>click to capture the entire screen with automatic dimension adaption</string>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QToolButton{
+background-color: rgb(239, 239, 239);
+border-style: outset;
+border-width: 2px;
+border-color:  rgb(200, 200, 200);
+border-radius: 6px;
+}
+QToolButton:pressed{
+background-color: rgb(150, 150, 150);
+} 
+</string>
+              </property>
+              <property name="text">
+               <string>Auto Screen</string>
               </property>
               <property name="checkable">
                <bool>true</bool>

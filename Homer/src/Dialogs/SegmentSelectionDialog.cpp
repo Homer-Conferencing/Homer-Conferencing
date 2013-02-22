@@ -32,6 +32,7 @@
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QDialog>
 #include <QMenu>
 #ifdef APPLE
 #include <ApplicationServices/ApplicationServices.h>
@@ -47,7 +48,7 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 SegmentSelectionDialog::SegmentSelectionDialog(QWidget* pParent, MediaSourceDesktop *pMediaSourceDesktop):
-    QDialog(pParent)
+    QDialog(pParent, Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint)
 {
     mMediaSourceDesktop = pMediaSourceDesktop;
 }
@@ -104,7 +105,7 @@ int SegmentSelectionDialog::exec()
 
 void SegmentSelectionDialog::ConfigureDesktopCapturing(int pOffsetX, int pOffsetY, int pWidth, int pHeight, bool pForceUpdate)
 {
-    //LOG(LOG_ERROR, "Configuring desktop capturing to offset (%d,%d) and dimension %d*%d", pOffsetX, pOffsetY, pWidth, pHeight);
+    LOG(LOG_ERROR, "Configuring desktop capturing to offset (%d,%d) and dimension %d*%d", pOffsetX, pOffsetY, pWidth, pHeight);
 
     if ((pWidth >= 0) && (pHeight >= 0) && ((mWidth != pHeight) || (mHeight != pHeight) || (pForceUpdate)))
     {
