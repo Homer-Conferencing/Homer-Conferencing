@@ -2206,7 +2206,7 @@ Bitte Konfiguration prüfen!</translation>
     <message>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="527"/>
         <source>Adding an url to the playlist</source>
-        <translation>Hinzufügener einer Url zur Playlist</translation>
+        <translation>Hinzufügen einer Url zur Playlist</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="568"/>
