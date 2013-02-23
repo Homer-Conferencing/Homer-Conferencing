@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: Wave output based on PortAudio
+ * Purpose: Wave output based on PulseAudio
  * Author:  Thomas Volkert
  * Since:   2013-02-09
  */
@@ -30,6 +30,7 @@
 #include <WaveOutPulseAudio.h>
 #include <MediaSourcePulseAudio.h>
 #include <Logger.h>
+#include <HBTime.h>
 
 using namespace std;
 using namespace Homer::Monitor;
@@ -312,10 +313,12 @@ void WaveOutPulseAudio::DoWriteChunk(char *pChunkBuffer, int pChunkSize)
 
     if (!mPlaybackStopped)
     {
+        //int64_t tTime = Time::GetTimeStamp();
 		if (pa_simple_write(mOutputStream, pChunkBuffer, pChunkSize, &tRes) < 0)
 		{
 			LOG(LOG_ERROR, "Couldn't write audio chunk of %d bytes to output stream because %s(%d)", pChunkSize, pa_strerror(tRes), tRes);
 		}
+		//LOG(LOG_VERBOSE, "PulseAudio-WRITE took %lld ms", (Time::GetTimeStamp() - tTime) / 1000);
     }
 }
 
