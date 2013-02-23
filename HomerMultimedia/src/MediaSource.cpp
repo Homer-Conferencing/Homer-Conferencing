@@ -2261,13 +2261,12 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 
                     int tResamplingOutputSamples = 0;
 
-                    if (mCodecContext != NULL)
-                    {
-                        if (pSourceFrame->nb_samples != mCodecContext->frame_size)
-                            LOG(LOG_ERROR, "Number of samples in source frame differs from the defined frame size in the codec context");
-                    }
-
-                    #ifdef MS_DEBUG_RECORDER_PACKETS
+					#ifdef MS_DEBUG_RECORDER_PACKETS
+						if (mCodecContext != NULL)
+						{
+							if (pSourceFrame->nb_samples != mCodecContext->frame_size)
+								LOG(LOG_WARN, "Number of samples in source frame (%d) differs from the defined frame size (%d) in the codec context", pSourceFrame->nb_samples, mCodecContext->frame_size);
+						}
                         LOG(LOG_VERBOSE, "Recorder audio input data planes...");
                         for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
                         {
@@ -3419,9 +3418,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     if (tCodec->capabilities & CODEC_CAP_DELAY)
     {
-        LOG_REMOTE(LOG_WARN, pSource, pLine, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
-        LOG_REMOTE(LOG_WARN, pSource, pLine, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
-        LOG_REMOTE(LOG_WARN, pSource, pLine, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+        LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "%s decoder output might be delayed for %s codec", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
     }
 
     //HINT: we allow the input bit stream to be truncated at packet boundaries instead of frame boundaries,
@@ -3443,7 +3440,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     if (mFormatContext->start_time > 0)
     {
     	mInputStartPts = GetInputFrameRate() * mFormatContext->start_time / AV_TIME_BASE;
-    	LOG_REMOTE(LOG_WARN, pSource, pLine, "Setting %s start time to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
+    	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
     }else
     {
         LOG_REMOTE(LOG_WARN, pSource, pLine, "Found start time of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
