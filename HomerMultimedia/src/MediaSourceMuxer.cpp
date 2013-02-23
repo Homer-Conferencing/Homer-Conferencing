@@ -746,7 +746,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     mCodecContext = mEncoderStream->codec;
     mCodecContext->codec_id = tFormat->audio_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
-    mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
     switch(mCodecContext->codec_id)
     {
 		case CODEC_ID_ADPCM_G722:
@@ -754,13 +753,16 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 				mOutputAudioChannels = 1;
 				mOutputAudioSampleRate = 16000;
 				mEncoderStream->time_base = (AVRational){1, 16000};
+	        	mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
 			}
 			break;
 		case CODEC_ID_AMR_NB:
 			{
-				mCodecContext->bit_rate = 7950; // force to 7.95kHz , limit is given by libopencore_amrnb
 				mOutputAudioChannels = 1;
+				mCodecContext->bit_rate = 7950; // force to 7.95kHz , limit is given by libopencore_amrnb
 				mOutputAudioSampleRate = 8000; //force 8 kHz for AMR-NB
+				mEncoderStream->time_base = (AVRational){1, 8000};
+	        	mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
 			}
 			break;
 		case CODEC_ID_GSM:
@@ -770,6 +772,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 				mOutputAudioChannels = 1;
 				mOutputAudioSampleRate = 8000;
 				mEncoderStream->time_base = (AVRational){1, 8000};
+	        	mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
 			}
 			break;
     	case CODEC_ID_PCM_S16BE:
@@ -777,19 +780,25 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 				mOutputAudioChannels = 2;
 				mOutputAudioSampleRate = 44100;
 				mEncoderStream->time_base = (AVRational){1, 44100};
+				mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
     		}
 			break;
         case CODEC_ID_MP3:
-		    {
-		    	mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16P;
-		    }
-		    break;
-		default:
 			{
-				mCodecContext->bit_rate = mStreamBitRate; // streaming rate
 				mOutputAudioChannels = pChannels;
 				mOutputAudioSampleRate = pSampleRate;
-			}
+				mEncoderStream->time_base = (AVRational){1, pSampleRate};
+				mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16P; // planar
+				mCodecContext->bit_rate = mStreamBitRate; // streaming rate
+    		}
+        	break;
+		default:
+			{
+				mOutputAudioChannels = 2;
+				mOutputAudioSampleRate = 44100;
+				mEncoderStream->time_base = (AVRational){1, 44100};
+				mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
+    		}
 			break;
     }
 	mCodecContext->channels = mOutputAudioChannels;
@@ -1511,27 +1520,23 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 		mEncoderStartTime = tInputFrameTimestamp;
                                 	}
                                 	tVideoEncoderFrameTimestamp = (tInputFrameTimestamp - mEncoderStartTime) / 1000; // grab time in ms
-									#ifdef MSM_DEBUG_PACKETS
-                                		LOG(LOG_VERBOSE, "Setting PTS to %ld (%ld - %ld) for frame %d", tYUVFrame->pts, tInputFrameTimestamp, mEncoderStartTime, mFrameNumber);
-									#endif
                                 }
 
                                 // check encoder frame timestamp
                                 if ((tLastVideoEncoderFrameTimestamp != 0) && (tVideoEncoderFrameTimestamp <= tLastVideoEncoderFrameTimestamp))
                                 {// timestamp is too low
-                                	LOG(LOG_WARN, "Encoder VIDEO frame timestamp is too low (%"PRId64" < %"PRId64")", tVideoEncoderFrameTimestamp, tLastVideoEncoderFrameTimestamp);
-
-                                	int64_t tTimestamp = tVideoEncoderFrameTimestamp;
+                                	LOG(LOG_WARN, "Encoder VIDEO frame timestamp is too low (%"PRId64" <= %"PRId64")", tVideoEncoderFrameTimestamp, tLastVideoEncoderFrameTimestamp);
 
                                 	// enforce a monotonously increasing time base
                                 	tVideoEncoderFrameTimestamp = tLastVideoEncoderFrameTimestamp + 1;
-
-                                	// store as last timestamp the original value
-                                	tLastVideoEncoderFrameTimestamp = tTimestamp;
-                                }else
-                                {// timestamp is okay
-                                	tLastVideoEncoderFrameTimestamp = tVideoEncoderFrameTimestamp;
                                 }
+
+								#ifdef MSM_DEBUG_PACKETS
+									LOG(LOG_VERBOSE, "Setting PTS to %lld(last: %lld) for frame %d", tVideoEncoderFrameTimestamp, tVideoEncoderFrameTimestamp, mFrameNumber);
+								#endif
+
+                                // store the last timestamp
+								tLastVideoEncoderFrameTimestamp = tVideoEncoderFrameTimestamp;
 
 								tYUVFrame->pts = tVideoEncoderFrameTimestamp;
                                 tYUVFrame->pkt_pts = tYUVFrame->pts;
