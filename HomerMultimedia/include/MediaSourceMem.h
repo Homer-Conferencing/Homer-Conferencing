@@ -188,6 +188,7 @@ protected:
     double              mLastBufferedOutputFrameIndex; // we use this for calibrating RT grabbing
     bool                mGrabberProvidesRTGrabbing;
     int64_t				mLastTimeWaitForRTGrabbing;
+    int64_t				mLastWriteFrameOutputBuffer;
     /* decoder thread */
     bool                mDecoderUsesPTSFromInputPackets;
     bool                mDecoderThreadNeeded; // also used to signal that the decoder thread has finished the init. process
