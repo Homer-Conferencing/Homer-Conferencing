@@ -173,6 +173,10 @@ SET (LIBS_APPLE_STATIC
 	avutil
 	postproc
 	mp3lame
+	opencore-amrnb
+	opencore-amrwb
+	theoraenc
+	theoradec
 	ogg
 	x264
 	vpx
@@ -233,7 +237,11 @@ ELSE ()
 		postproc
 		mp3lame
 		faac
+		opencore-amrnb
+		opencore-amrwb
 		jack
+		theoraenc
+		theoradec
 		ogg
 		x264
 		vpx
