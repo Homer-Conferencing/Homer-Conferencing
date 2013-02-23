@@ -319,11 +319,11 @@ QString MessageWidget::ReplaceSmilesAndUrls(QString pMessage)
 
         //#########################
         //### Filter SMILES
-        if ((tWord == ":)") || (tWord == ":-)"))
-        {// laughing smile
-            LOG(LOG_VERBOSE, "Found smile");
-            tOutputMessage.append("<img src=\"" URL_SMILE "\" width=\"22\" height=\"22\" title=\":-)\">");
-        }else
+//        if ((tWord == ":)") || (tWord == ":-)"))
+//        {// laughing smile
+//            LOG(LOG_VERBOSE, "Found smile");
+//            tOutputMessage.append("<img src=\"" URL_SMILE "\" width=\"22\" height=\"22\" title=\":-)\">");
+//        }else
 		//#########################
 		//### Filter HTTP URLS
         if ((tWord.startsWith("http://")) && (tWord.size() > 7))
