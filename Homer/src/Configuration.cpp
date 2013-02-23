@@ -1127,12 +1127,7 @@ int Configuration::GetConfigurationSelection()
 
 bool Configuration::GetSmoothVideoPresentation()
 {
-	bool tDefault = false;
-	#ifdef APPLE
-		// for APPLE environments, Qt uses accelerated functions for smooth picture scaling
-		tDefault = true;
-	#endif
-    return mQSettings->value("Global/SmoothVideoPresentation", tDefault).toBool();
+    return mQSettings->value("Global/SmoothVideoPresentation", false).toBool();
 }
 
 bool Configuration::GetVisibilityBroadcastAudio()
