@@ -1272,8 +1272,9 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
             // error reporting
             if (!mGrabbingStopped)
             {
-                if (HasInputStreamChanged())
+                if ((tRes == (int)AVUNERROR(ENODEV)) || (HasInputStreamChanged()))
                 {
+                    LOG(LOG_WARN, "%s-Decoder reached EOF because device isn't available anymore", GetMediaTypeStr().c_str());
                     mEOFReached = true;
                 }else if (tRes == (int)AVERROR_EOF)
                 {
@@ -1329,7 +1330,7 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
                     #endif
                     #ifdef MSMEM_DEBUG_PACKETS
                         if ((pPacket->dts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (pPacket->dts > 16 /* ignore the first frames */))
-                            LOG(LOG_VERBOSE, "%s-DTS values are non continuous in stream, read DTS: %"PRId64", last %"PRId64", alternative PTS: %"PRId64, GetMediaTypeStr().c_str(), pPacket->dts, mDecoderLastReadPts, pPacket->pts);
+                            LOG(LOG_VERBOSE, "%s-DTS values are non continuous in stream, read DTS: %"PRId64", last %.2lf, alternative PTS: %"PRId64, GetMediaTypeStr().c_str(), pPacket->dts, mDecoderLastReadPts, pPacket->pts);
                     #endif
                 }else
                 {// PTS value
@@ -1339,7 +1340,7 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
                     #endif
                     #ifdef MSMEM_DEBUG_PACKETS
                         if ((pPacket->pts < mDecoderLastReadPts) && (mDecoderLastReadPts != 0) && (pPacket->pts > 16 /* ignore the first frames */))
-                            LOG(LOG_VERBOSE, "%s-PTS values are non continuous in stream, %"PRId64" is lower than last %"PRId64", alternative DTS: %"PRId64", difference is: %"PRId64, GetMediaTypeStr().c_str(), pPacket->pts, mDecoderLastReadPts, pPacket->dts, mDecoderLastReadPts - pPacket->pts);
+                            LOG(LOG_VERBOSE, "%s-PTS values are non continuous in stream, %"PRId64" is lower than last %.2lf, alternative DTS: %"PRId64", difference is: %"PRId64, GetMediaTypeStr().c_str(), pPacket->pts, mDecoderLastReadPts, pPacket->dts, mDecoderLastReadPts - pPacket->pts);
                     #endif
                 }
 
@@ -1392,14 +1393,14 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
                     }else
                     {
                         #if defined(MSMEM_DEBUG_DECODER_STATE) || defined(MSMEM_DEBUG_PACKETS)
-                            LOG(LOG_WARN, "Read %s frame number %"PRId64" from input stream, last frame was %"PRId64, GetMediaTypeStr().c_str(), pFrameTimestamp, mDecoderLastReadPts);
+                            LOG(LOG_WARN, "Read %s frame number %"PRId64" from input stream, last frame was %.2lf", GetMediaTypeStr().c_str(), pFrameTimestamp, mDecoderLastReadPts);
                         #endif
                     }
                 }
                 // check if PTS value is continuous
                 if ((mDecoderLastReadPts > 0) && (pFrameTimestamp < mDecoderLastReadPts))
                 {// current packet is older than the last packet
-                    LOG(LOG_WARN, "Found interleaved %s packets in %s source, non continuous PTS: %"PRId64" => %.2lf", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), mDecoderLastReadPts, pFrameTimestamp);
+                    LOG(LOG_WARN, "Found interleaved %s packets in %s source, non continuous PTS: %.2lf => %.2lf", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), mDecoderLastReadPts, pFrameTimestamp);
                 }
                 mDecoderLastReadPts = pFrameTimestamp;
             }else
@@ -2126,7 +2127,11 @@ void* MediaSourceMem::Run(void* pArgs)
                 #ifdef MSMEM_DEBUG_DECODER_STATE
                     LOG(LOG_VERBOSE, "EOF for %s source reached, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
                 #endif
-                mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
+
+				// make sure that the grabber isn't infinitely blocked
+				WriteFrameOutputBuffer(NULL, 0, 0);
+
+				mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
                 mDecoderLastReadPts = 0;
                 mEOFReached = false;
                 #ifdef MSMEM_DEBUG_DECODER_STATE
@@ -2440,7 +2445,7 @@ bool MediaSourceMem::WaitForRTGrabbing()
             Thread::Suspend(tCurrentPlayOutTime);
         else
         {
-            LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %"PRId64" s for reaching pre-buffer threshold time, pre-buffer time: %.2f, PTS of last queued frame: %"PRId64", PTS of last grabbed frame: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tCurrentPlayOutTime / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, (float)mCurrentOutputFrameIndex);
+            LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %"PRId64" s for reaching pre-buffer threshold time, pre-buffer time: %.2f, PTS of last queued frame: %.2lf, PTS of last grabbed frame: %.2lf", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tCurrentPlayOutTime / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, mCurrentOutputFrameIndex);
             LOG(LOG_WARN, "WaitForRTGrabbing()-Triggering RT-Grabbing calibration");
             mDecoderRecalibrateRTGrabbingAfterSeeking = true;
         }
@@ -2465,7 +2470,7 @@ bool MediaSourceMem::WaitForRTGrabbing()
 			Thread::Suspend(tResultingTimeOffset);
 		}else
 		{
-			LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %"PRId64" s, pre-buffer time: %.2f, PTS of last queued frame: %"PRId64", PTS of last grabbed frame: %.2f", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, (float)mCurrentOutputFrameIndex);
+			LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %"PRId64" s, pre-buffer time: %.2f, PTS of last queued frame: %.2lf, PTS of last grabbed frame: %.2lf", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, mCurrentOutputFrameIndex);
             LOG(LOG_WARN, "WaitForRTGrabbing()-Triggering RT-Grabbing calibration");
 			mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 		}
@@ -2477,7 +2482,7 @@ bool MediaSourceMem::WaitForRTGrabbing()
 		{
 	    	if (tDelay > MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000)
 	    	{
-	    		LOG(LOG_WARN, "RTP-stream to late, %s %s grabbing is %f ms too late but pre-buffering is deactivated, , THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000));
+	    		LOG(LOG_WARN, "RTP-stream is too late, %s %s grabbing is %f ms too late but pre-buffering is deactivated, , THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000));
 	            LOG(LOG_WARN, "WaitForRTGrabbing()-Triggering RT-Grabbing calibration");
 	            mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 	    		return false;
@@ -2487,7 +2492,7 @@ bool MediaSourceMem::WaitForRTGrabbing()
 			// check if we are still in play-range
 			if (tDelay >= MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000)
 			{
-				LOG(LOG_WARN, "System too slow?, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000));
+				LOG(LOG_WARN, "System is too slow?, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000));
 	            LOG(LOG_WARN, "WaitForRTGrabbing()-Triggering RT-Grabbing calibration");
 	            mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 	    		return false;
@@ -2627,7 +2632,7 @@ double MediaSourceMem::CalculateFrameNumberFromRTP()
     }
 
     // shift the frame number by the amount of buffered frames
-    tResult -= mRtpBufferedFrames;
+    //tResult -= mRtpBufferedFrames;
 
     return tResult;
 }

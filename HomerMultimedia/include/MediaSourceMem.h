@@ -192,7 +192,7 @@ protected:
     /* decoder thread */
     bool                mDecoderUsesPTSFromInputPackets;
     bool                mDecoderThreadNeeded; // also used to signal that the decoder thread has finished the init. process
-    int64_t             mDecoderLastReadPts; // check for interleaved packets, non-monotonous PTS values
+    double              mDecoderLastReadPts; // check for interleaved packets, non-monotonous PTS values
     Condition           mDecoderNeedWorkCondition;
     Mutex               mDecoderNeedWorkConditionMutex;
     Mutex				mDecoderSeekMutex;
