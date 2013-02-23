@@ -233,11 +233,7 @@ ELSE ()
 		postproc
 		mp3lame
 		faac
-		opencore-amrnb
-		opencore-amrwb
 		jack
-		theoraenc
-		theoradec
 		ogg
 		x264
 		vpx
