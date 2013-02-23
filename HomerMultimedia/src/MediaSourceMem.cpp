@@ -79,6 +79,7 @@ MediaSourceMem::MediaSourceMem(string pName):
     mDecoderTargetOutputFrameIndex = 0;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     mDecoderSinglePictureGrabbed = false;
+    mFirstReceivedFrameTimestampFromRTP = -1;
     mDecoderFifo = NULL;
     mRtpActivated = false;
     mDecoderFragmentFifo = NULL;
@@ -292,7 +293,13 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
             LOGEX(MediaSourceMem, LOG_WARN, "Returning %s frame of size %d", tMediaSourceMemInstance->GetMediaTypeStr().c_str(), tBufferSize);
     #endif
 
-    return tBufferSize;
+	// ###############################################################
+	// ### if multiple frames are delivered to the decoder thread in one big piece, we need the time reference of the first frame for RT-grabbing and synchronous playback
+	// ###############################################################
+	if (tMediaSourceMemInstance->mFirstReceivedFrameTimestampFromRTP == -1)
+		tMediaSourceMemInstance->mFirstReceivedFrameTimestampFromRTP = (double)tMediaSourceMemInstance->GetCurrentPtsFromRTP();
+
+	return tBufferSize;
 }
 
 void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize, int64_t pFragmentNumber)
@@ -812,24 +819,25 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     	case CODEC_ID_ADPCM_G722:
     		tCodec->channels = 1;
     		tCodec->sample_rate = 16000;
-            mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000;
-            mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     	case CODEC_ID_GSM:
     	case CODEC_ID_PCM_ALAW:
 		case CODEC_ID_PCM_MULAW:
 			tCodec->channels = 1;
 			tCodec->sample_rate = 8000;
-			mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000;
-			mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     	case CODEC_ID_PCM_S16BE:
     		tCodec->channels = 2;
     		tCodec->sample_rate = 44100;
 			break;
+    	case CODEC_ID_MP3:
+			break;
 		default:
 			break;
     }
+
+    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+	mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 
     // finds and opens the correct decoder
     if (!OpenDecoder())
@@ -1240,7 +1248,16 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
 
         tReadLoop++;
 
-        // read next sample from source - blocking
+        // #########################################
+        // reset time reference and let the packet
+        // receiver determine a new one for the next
+        // frame
+        // #########################################
+        mFirstReceivedFrameTimestampFromRTP = -1;
+
+        // #########################################
+        // read next sample from source - BLOCKING
+        // #########################################
         tRes = av_read_frame(mFormatContext, pPacket);
         if (tRes < 0)
         {// failed to read frame
@@ -2346,7 +2363,7 @@ void MediaSourceMem::CalibrateRTGrabbing()
 	LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, mDecoderFramePreBufferTime);
 	if (tRelativeTime < 0)
 	{
-		LOG(LOG_ERROR, "Found invalid relative PTS value of: %.2f", (float)tRelativeTime);
+		LOG(LOG_ERROR, "Found invalid relative PTS value of: %.2lf", tRelativeTime);
 		tRelativeTime = 0;
 	}
 	mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mSourceTimeShiftForRTGrabbing + mDecoderFramePreBufferTime * AV_TIME_BASE;
@@ -2582,16 +2599,22 @@ double MediaSourceMem::CalculateFrameNumberFromRTP()
         case MEDIA_VIDEO:
                 {
                     double tTimeBetweenFrames = 1000 / tFrameRate;
-                    tResult = (double) GetCurrentPtsFromRTP() / tTimeBetweenFrames;
+                    tResult = mFirstReceivedFrameTimestampFromRTP / tTimeBetweenFrames;
 					#ifdef MSMEM_DEBUG_PACKET_TIMING
-						LOG(LOG_VERBOSE, "RTP has VIDEO PTS: %lu", GetCurrentPtsFromRTP());
+						LOG(LOG_VERBOSE, "RTP has VIDEO PTS: %.2lf", mFirstReceivedFrameTimestampFromRTP);
                     #endif
                 }
                 break;
         case MEDIA_AUDIO:
-                tResult = (double) GetCurrentPtsFromRTP() / mCodecContext->frame_size;
-				#ifdef MSMEM_DEBUG_PACKET_TIMING
-					LOG(LOG_VERBOSE, "RTP has AUDIO PTS: %lu", GetCurrentPtsFromRTP());
+        		if (mFirstReceivedFrameTimestampFromRTP == -1)
+        			mFirstReceivedFrameTimestampFromRTP = (double)GetCurrentPtsFromRTP();
+
+        		//LOG(LOG_VERBOSE, "%.2lf <==> %.2lf, %.2lf", mFirstReceivedFrameTimestampFromRTP, (double)GetCurrentPtsFromRTP(), mFirstReceivedFrameTimestampFromRTP - (double)GetCurrentPtsFromRTP());
+
+        		tResult = mFirstReceivedFrameTimestampFromRTP / mCodecContext->frame_size;
+
+                #ifdef MSMEM_DEBUG_PACKET_TIMING
+					LOG(LOG_VERBOSE, "RTP has AUDIO PTS: %.2lf", mFirstReceivedFrameTimestampFromRTP);
 				#endif
                 break;
         default:
@@ -2599,7 +2622,7 @@ double MediaSourceMem::CalculateFrameNumberFromRTP()
     }
 
     #ifdef MSMEM_DEBUG_PRE_BUFFERING
-        LOG(LOG_VERBOSE, "Calculated a frame number: %.2f (RTP timestamp: %"PRId64"), fps: %.2f", (float)tResult, GetCurrentPtsFromRTP(), tFrameRate);
+        LOG(LOG_VERBOSE, "Calculated a frame number: %.2f (RTP timestamp: %.2lf), fps: %.2f", (float)tResult, mFirstReceivedFrameTimestampFromRTP, tFrameRate);
     #endif
 
     return tResult;
