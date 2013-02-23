@@ -458,7 +458,7 @@ unsigned int RTP::GetH261PayloadSizeMax()
 void RTP::Init()
 {
     mLocalTimestampOffset = 0;
-    mRemoteSourceChangedLastPayload = 0;
+    mRemoteSourceChangedLastPayload = -1;
     mRemoteSourceChangedResetScore = 0;
     mRtcpLastReceivedPackets = 0;
     mReceivedPackets = 0;
@@ -1703,8 +1703,8 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 
                     //LOG(LOG_WARN, "Payload change from codec %d(%s) to %u(%s), reset score: %d", mStreamCodecID, avcodec_get_name(mStreamCodecID), tRtpHeader->PayloadType, PayloadIdToCodec(tRtpHeader->PayloadType).c_str(), mRemoteSourceChangedResetScore);
 
-                    // do we receive the same payload as last time?
-                    if ((mRemoteSourceChangedLastPayload != 0) && (mRemoteSourceChangedLastPayload == tRtpHeader->PayloadType))
+                    // do we receive the same payload like last time?
+                    if ((mRemoteSourceChangedLastPayload != -1) && (mRemoteSourceChangedLastPayload == tRtpHeader->PayloadType))
                     {// yes, same payload received -> check scoring
                         mRemoteSourceChangedResetScore++;
                         //LOG(LOG_WARN, "Reset score incread to: %d", mRemoteSourceChangedResetScore);
