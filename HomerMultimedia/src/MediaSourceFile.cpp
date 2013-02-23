@@ -410,7 +410,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
         // seek only if it is necessary
         if (pSeconds != GetSeekPos())
         {
-            mDecoderNeedWorkConditionMutex.lock();
+        	mDecoderSeekMutex.lock();
 
             if ((!mGrabberProvidesRTGrabbing) || ((tTimeDiff > MSF_SEEK_WAIT_THRESHOLD) || (tTimeDiff < -MSF_SEEK_WAIT_THRESHOLD)))
             {
@@ -465,7 +465,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                 mEOFReached = false;
             }
 
-            mDecoderNeedWorkConditionMutex.unlock();
+            mDecoderSeekMutex.unlock();
         }else
         {
             LOG(LOG_VERBOSE, "%s-seeking in file skipped because position is already the desired one", GetMediaTypeStr().c_str());

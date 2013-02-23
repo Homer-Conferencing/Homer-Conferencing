@@ -1585,9 +1585,9 @@ void* MediaSourceMem::Run(void* pArgs)
 
             if ((!tInputIsPicture) || (!mDecoderSinglePictureGrabbed))
             {// we try to read packet(s) from input stream -> either the desired picture or a single frame
-                mDecoderNeedWorkConditionMutex.lock();
+                mDecoderSeekMutex.lock();
                 ReadFrameFromInputStream(tPacket, tCurrentInputFrameTimestamp);
-                mDecoderNeedWorkConditionMutex.unlock();
+                mDecoderSeekMutex.unlock();
             }else
             {// no packet was read
                 //LOG(LOG_VERBOSE, "No packet was read");
@@ -2502,7 +2502,7 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
 {
     int64_t tResult = 0;
 
-    if (mCurrentOutputFrameIndex > 0)
+    if ((mDecoderFifo != NULL) && (mDecoderFifo->GetUsage()) && (mCurrentOutputFrameIndex > 0))
     {// we have some first passed A/V frames, the decoder does not need to re-calibrate the RT grabber
         /******************************************
          * The following lines do the following:

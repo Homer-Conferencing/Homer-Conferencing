@@ -195,6 +195,7 @@ protected:
     int64_t             mDecoderLastReadPts; // check for interleaved packets, non-monotonous PTS values
     Condition           mDecoderNeedWorkCondition;
     Mutex               mDecoderNeedWorkConditionMutex;
+    Mutex				mDecoderSeekMutex;
     MediaFifo           *mDecoderFragmentFifo;
     Mutex				mDecoderFragmentFifoDestructionMutex;
     MediaFifo           *mDecoderFifo; // for frames
