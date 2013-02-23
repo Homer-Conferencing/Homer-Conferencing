@@ -182,7 +182,6 @@ protected:
     int                 mWrappingHeaderSize;
     int                 mPacketStatAdditionalFragmentSize; // used to adapt packet statistic to additional fragment header, which is used for TCP transmission
     enum CodecID        mRtpSourceCodecIdHint;
-    int                 mRtpBufferedFrames; // used to conclude the correct frame number based on the RTP timestamp of the last received RTP packet
     /* grabber */
     double              mCurrentOutputFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     double              mLastBufferedOutputFrameIndex; // we use this for calibrating RT grabbing

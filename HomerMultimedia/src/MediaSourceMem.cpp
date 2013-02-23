@@ -77,7 +77,6 @@ MediaSourceMem::MediaSourceMem(string pName):
     mDecoderFrameBufferTimeMax = MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME;
     mDecoderFramePreBufferTime = MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER;
     mDecoderTargetOutputFrameIndex = 0;
-    mRtpBufferedFrames = 0;
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     mDecoderSinglePictureGrabbed = false;
     mDecoderFifo = NULL;
@@ -222,22 +221,22 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
                         switch(tFragmentRtcpType)
                         {
                         	case RTCP_SENDER_REPORT:
-												{
-							                    	unsigned int tPacketCountReportedBySender = 0;
-							                        unsigned int tOctetCountReportedBySender = 0;
-							                        if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender, tMediaSourceMemInstance->mRelativeLoss))
-							                        {
-							                            tMediaSourceMemInstance->mDecoderSynchPoints++;
-							                            #ifdef MSMEM_DEBUG_SENDER_REPORTS
-							                                LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
-							                            #endif
-							                        }else
-							                            LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
-												}
-												break;
+									{
+										unsigned int tPacketCountReportedBySender = 0;
+										unsigned int tOctetCountReportedBySender = 0;
+										if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender, tMediaSourceMemInstance->mRelativeLoss))
+										{
+											tMediaSourceMemInstance->mDecoderSynchPoints++;
+											#ifdef MSMEM_DEBUG_SENDER_REPORTS
+												LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
+											#endif
+										}else
+											LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
+									}
+									break;
                         	default:
-                        						LOGEX(MediaSourceMem, LOG_WARN, "Unsupported RTCP packet type: %d", (int)tFragmentRtcpType);
-                        						break;
+									LOGEX(MediaSourceMem, LOG_WARN, "Unsupported RTCP packet type: %d", (int)tFragmentRtcpType);
+									break;
                         }
                     }else
                     {// we have a received an unsupported RTCP packet/RTP payload or something went completely wrong
@@ -265,22 +264,6 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
                     LOGEX(MediaSourceMem, LOG_WARN, "Detected empty signaling fragment, ignoring it");
             }
         }while(!tLastFragment);
-
-        // store the amount of buffered frames which were extracted from RTP packets
-        if (tBufferSize > 0)
-        {
-            if (tMediaSourceMemInstance->GetCodecID() == CODEC_ID_MP3)
-            {
-                //TODO, HACK: estimate the number of mp3 packets in this frame
-                int tAdd = (rint(tBufferSize / 418));
-                tMediaSourceMemInstance->mRtpBufferedFrames += tAdd;
-                #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
-                    LOGEX(MediaSourceMem, LOG_VERBOSE, "Adding %d frames to RTP frame buffer counter", tAdd);
-                #endif
-            }else
-                tMediaSourceMemInstance->mRtpBufferedFrames++;
-        }
-
     }else
     {// rtp is inactive
         tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize, tFragmentNumber);
@@ -302,11 +285,11 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
 
     #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
         if (tMediaSourceMemInstance->GetMediaType() == MEDIA_AUDIO)
-            LOGEX(MediaSourceMem, LOG_WARN, "Returning %s frame of size %d, RTP buffered frames: %d", tMediaSourceMemInstance->GetMediaTypeStr().c_str(), tBufferSize, tMediaSourceMemInstance->mRtpBufferedFrames);
+            LOGEX(MediaSourceMem, LOG_WARN, "Returning %s frame of size %d", tMediaSourceMemInstance->GetMediaTypeStr().c_str(), tBufferSize);
     #endif
     #ifdef MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
         if (tMediaSourceMemInstance->GetMediaType() == MEDIA_VIDEO)
-            LOGEX(MediaSourceMem, LOG_WARN, "Returning %s frame of size %d, RTP buffered frames: %d", tMediaSourceMemInstance->GetMediaTypeStr().c_str(), tBufferSize, tMediaSourceMemInstance->mRtpBufferedFrames);
+            LOGEX(MediaSourceMem, LOG_WARN, "Returning %s frame of size %d", tMediaSourceMemInstance->GetMediaTypeStr().c_str(), tBufferSize);
     #endif
 
     return tBufferSize;
@@ -890,7 +873,6 @@ bool MediaSourceMem::CloseGrabDevice()
 
     ResetPacketStatistic();
 
-    mRtpBufferedFrames = 0;
     mCurrentOutputFrameIndex = -1;
     mLastBufferedOutputFrameIndex = 0;
     mLastTimeWaitForRTGrabbing = 0;
@@ -1310,13 +1292,9 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
         {// new frame was read
             if (pPacket->stream_index == mMediaStreamIndex)
             {
-                // decrease counter of buffered frames
-                if (mRtpBufferedFrames > 0)
-                    mRtpBufferedFrames--;
-
                 #ifdef MSMEM_DEBUG_PACKET_TIMING
                     if (!InputIsPicture())
-                        LOG(LOG_VERBOSE, "Read good frame %ld with %ld bytes from stream %d, RTP frame buffering: %d", pPacket->pts, pPacket->size, pPacket->stream_index, mRtpBufferedFrames);
+                        LOG(LOG_VERBOSE, "Read good frame %ld with %ld bytes from stream %d", pPacket->pts, pPacket->size, pPacket->stream_index);
                     else
                         LOG(LOG_VERBOSE, "Read good picture %ld with %ld bytes from stream %d", pPacket->pts, pPacket->size, pPacket->stream_index);
                 #endif
@@ -1552,7 +1530,6 @@ void* MediaSourceMem::Run(void* pArgs)
 
     // reset some state variables
     mDecoderLastReadPts = 0;
-    mRtpBufferedFrames = 0;
     mCurrentOutputFrameIndex = -1;
     mLastBufferedOutputFrameIndex = 0;
     mLastTimeWaitForRTGrabbing = 0;
@@ -2624,15 +2601,6 @@ double MediaSourceMem::CalculateFrameNumberFromRTP()
     #ifdef MSMEM_DEBUG_PRE_BUFFERING
         LOG(LOG_VERBOSE, "Calculated a frame number: %.2f (RTP timestamp: %"PRId64"), fps: %.2f", (float)tResult, GetCurrentPtsFromRTP(), tFrameRate);
     #endif
-
-    if ((mRtpBufferedFrames > 8) || (mRtpBufferedFrames < -8))
-    {
-        LOG(LOG_ERROR, "Found non plausible counter for frame buffering (RTP based %s stream): %d", GetMediaTypeStr().c_str(), mRtpBufferedFrames);
-        mRtpBufferedFrames = 0;
-    }
-
-    // shift the frame number by the amount of buffered frames
-    //tResult -= mRtpBufferedFrames;
 
     return tResult;
 }
