@@ -41,7 +41,7 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MEDIA_SOURCE_HOMER_LOGO		               "Homer-Conferencing logo"
+#define MEDIA_SOURCE_HOMER_LOGO		               "Homer Conferencing logo"
 
 // the following de/activates debugging of packets
 //#define MSD_DEBUG_PACKETS
