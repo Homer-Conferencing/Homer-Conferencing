@@ -2488,6 +2488,7 @@ void VideoWorkerThread::run()
         // has input stream changed?
         if (mMediaSource->HasInputStreamChanged())
         {
+        	LOG(LOG_WARN, "Detected source change");
         	mVideoWidget->InformAboutNewSource();
         	mResetMediaSourceAsap = true;
         }

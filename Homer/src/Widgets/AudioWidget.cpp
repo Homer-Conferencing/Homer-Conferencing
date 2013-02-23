@@ -1454,6 +1454,7 @@ void AudioWorkerThread::run()
         // has input stream changed?
         if (mMediaSource->HasInputStreamChanged())
         {
+        	LOG(LOG_WARN, "Detected source change");
         	mAudioWidget->InformAboutNewSource();
         	mResetMediaSourceAsap = true;
         }
