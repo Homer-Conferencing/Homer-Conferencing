@@ -842,7 +842,7 @@ void MainWindow::loadSettings()
     QString tAudioStreamCodec = CONF.GetAudioCodec();
     // set settings within meeting management
     if (tAudioStreamCodec == "MP3")
-        MEETING.SetAudioCodecsSupport(CODEC_MP3);
+        MEETING.SetAudioCodecsSupport(CODEC_G722ADPCM);//TODO: CODEC_MP3);
     if (tAudioStreamCodec == "G711 A-law")
         MEETING.SetAudioCodecsSupport(CODEC_G711ALAW);
     if (tAudioStreamCodec == "G711 µ-law")

@@ -541,11 +541,11 @@ void ConfigurationDialog::SaveConfiguration()
                 MEETING.SetAudioCodecsSupport(CODEC_G722ADPCM);
                 break;
         case 3:
-                MEETING.SetAudioCodecsSupport(CODEC_MP3);
-                break;
-        case 4:
                 MEETING.SetAudioCodecsSupport(CODEC_PCMS16);
                 break;
+//TODO        case 4:
+//                MEETING.SetAudioCodecsSupport(CODEC_MP3);
+//                break;
         default:
                 break;
     }
