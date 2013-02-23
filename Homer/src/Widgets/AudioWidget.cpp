@@ -650,7 +650,7 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
     //#############################################################
     //### set the level of the level bar widget
     //#############################################################
-	ShowAudioLevel(mAudioWorker->GetLastAudioLevel());
+	ShowAudioLevel();
 
     //#############################################################
     //### draw statistics
@@ -697,13 +697,13 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
     //printf("Sum: %d SampleSize: %d SampleAmount: %d Average: %d Min: %d Max: %d scaledMin: %d scaledMax: %d\n", tSum, pSampleSize, tSampleAmount, (int)tSum/pSampleSize, tMin, tMax, tScaledMin, tScaledMax);
 }
 
-void AudioWidget::ShowAudioLevel(int pLevel)
+void AudioWidget::ShowAudioLevel()
 {
     if (mAudioPaused)
         return;
 
-    mPbLevel1->setValue(100 - pLevel);
-    mPbLevel2->setValue(100 - pLevel);
+    mPbLevel1->setValue(100 - mAudioWorker->GetLastLeftAudioLevel());
+    mPbLevel2->setValue(100 - mAudioWorker->GetLastRightAudioLevel());
 }
 
 int AudioWidget::GetVolume()
@@ -994,9 +994,19 @@ int AudioWorkerThread::GetPlaybackQueueSize()
         return 0;
 }
 
+int AudioWorkerThread::GetLastLeftAudioLevel()
+{
+	return mLastLeftAudioLevel;
+}
+
+int AudioWorkerThread::GetLastRightAudioLevel()
+{
+	return mLastRightAudioLevel;
+}
+
 int AudioWorkerThread::GetLastAudioLevel()
 {
-	return mLastAudioLevel;
+	return (GetLastLeftAudioLevel() > GetLastRightAudioLevel() ? GetLastLeftAudioLevel() : GetLastRightAudioLevel());
 }
 
 void AudioWorkerThread::SetSkipSilenceThreshold(int pValue)
@@ -1301,8 +1311,9 @@ void AudioWorkerThread::HandlePlayFileSuccess()
 
 int AudioWorkerThread::GetCurrentFrame(void **pSample, int& pSampleSize, float *pFrameRate)
 {
-    short int tData = 0;
-    int tMax = 1, tMin = -1;
+    int16_t tData = 0;
+    int tLeftMax = 1, tLeftMin = -1;
+    int tRightMax = 1, tRightMin = -1;
     int tLevel = 0;
     int tResult = -1;
 
@@ -1321,56 +1332,72 @@ int AudioWorkerThread::GetCurrentFrame(void **pSample, int& pSampleSize, float *
         pSampleSize = mSamplesSize[mSampleCurrentIndex];
         tResult = mSampleNumber[mSampleCurrentIndex];
 
-        // sample size is given in bytes but we use 16 bit values, furthermore we are using stereo -> division by 4
+        // sample size is given in bytes but we use 16 bit values, furthermore we are asuming stereo -> division by 4
         int tSampleAmount = pSampleSize / 4;
-        //if (pSampleSize != 4096)
-            //printf("AudioWidget-SampleSize: %d Sps: %d SampleNumber: %d\n", pSampleSize, pSps, pSampleNumber);
 
         //#############################################################
         //### find minimum and maximum values
         //#############################################################
         for (int i = 0; i < tSampleAmount; i++)
         {
-            tData = *((int16_t*)*pSample + i * 2);
-            if (tData < tMin)
-                tMin = tData;
-            if (tData > tMax)
-                tMax = tData;
-            //if (i < 20)
-                //printf("%4hd ", tData);
+			tData = *((int16_t*)*pSample + i * 2);
+
+			if (i % 2)
+        	{// right channel
+				if (tData < tLeftMin)
+					tLeftMin = tData;
+				if (tData > tLeftMax)
+					tLeftMax = tData;
+        	}else
+        	{// left channel
+				if (tData < tRightMin)
+					tRightMin = tData;
+				if (tData > tRightMax)
+					tRightMax = tData;
+        	}
         }
-        //LOG(LOG_WARN, "Audio samples have a range of %d / %d", tMin, tMax);
 
         //#############################################################
         //### scale the values to 100 %
         //#############################################################
-        int tScaledMin = 100 * tMin / (-32768);
-        int tScaledMax = 100 * tMax / ( 32767);
+        int tLeftScaledMin = 100 * tLeftMin / (-32768);
+        int tLeftScaledMax = 100 * tLeftMax / ( 32767);
+        if (tLeftScaledMin < 0)
+            tLeftScaledMin = 0;
+        if (tLeftScaledMin > 100)
+            tLeftScaledMin = 100;
+        if (tLeftScaledMax < 0)
+            tLeftScaledMax = 0;
+        if (tLeftScaledMax > 100)
+            tLeftScaledMax = 100;
 
-        // check the range
-        if (tScaledMin < 0)
-            tScaledMin = 0;
-        if (tScaledMin > 100)
-            tScaledMin = 100;
-        if (tScaledMax < 0)
-            tScaledMax = 0;
-        if (tScaledMax > 100)
-            tScaledMax = 100;
+        int tRightScaledMin = 100 * tRightMin / (-32768);
+        int tRightScaledMax = 100 * tRightMax / ( 32767);
+        if (tRightScaledMin < 0)
+            tRightScaledMin = 0;
+        if (tRightScaledMin > 100)
+            tRightScaledMin = 100;
+        if (tRightScaledMax < 0)
+            tRightScaledMax = 0;
+        if (tRightScaledMax > 100)
+            tRightScaledMax = 100;
 
         //#############################################################
         //### set the level of the level bar widget
         //#############################################################
-        if (tScaledMin > tScaledMax)
-			mLastAudioLevel = tScaledMin;
+        if (tLeftScaledMin > tLeftScaledMax)
+			mLastLeftAudioLevel = tLeftScaledMin;
         else
-        	mLastAudioLevel = tScaledMax;
+        	mLastLeftAudioLevel = tLeftScaledMax;
+        if (tRightScaledMin > tRightScaledMax)
+			mLastRightAudioLevel = tRightScaledMin;
+        else
+        	mLastRightAudioLevel = tRightScaledMax;
         //LOG(LOG_VERBOSE, "New audio level: %d", mLastAudioLevel);
     }
 
     // unlock
     mDeliverMutex.unlock();
-
-    //printf("GUI-GetSample -> %d\n", mFrameCurrentIndex);
 
     return tResult;
 }

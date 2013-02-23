@@ -107,7 +107,7 @@ public slots:
 private:
     void initializeGUI();
     void ShowSample(void* pBuffer, int pSampleSize);
-    void ShowAudioLevel(int pLevel);
+    void ShowAudioLevel();
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void customEvent (QEvent* pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pEvent);
@@ -167,6 +167,8 @@ public:
     int64_t GetPlaybackGapsCounter();
     int GetPlaybackQueueUsage();
     int GetPlaybackQueueSize();
+    int GetLastLeftAudioLevel();
+    int GetLastRightAudioLevel();
     int GetLastAudioLevel();
 
     /* silence suppression */
@@ -212,7 +214,8 @@ private:
     int                 mResultingSps;
     bool                mAudioOutMuted;
     bool				mPlaybackAvailable;
-    int 				mLastAudioLevel;
+    int 				mLastLeftAudioLevel;
+    int 				mLastRightAudioLevel;
 
     /* for forwarded interface to media source */
     int                 mDesiredInputChannel;
