@@ -50,6 +50,8 @@ using namespace Homer::Monitor;
 // above which threshold value should we execute a hard file seeking? (below this threshold we do soft seeking by adjusting RT grabbing)
 #define MSF_SEEK_WAIT_THRESHOLD                            1.5 // seconds
 
+#define MSF_FRAME_INPUT_QUEUE_MAX_TIME_WEB_STREAMS         ((System::GetTargetMachineType() != "x86") ? 4.0 : 4.0)
+
 // how much time do we want to buffer at maximum?
 #define MSF_FRAME_INPUT_QUEUE_MAX_TIME                     ((System::GetTargetMachineType() != "x86") ? 3.0 : 0.5) // 0.5 seconds for 32 bit targets with limit of 4 GB ram, 3.0 seconds for 64 bit targets
 
@@ -58,12 +60,14 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define IS_WEB_LINK(x)										((x.substr(0, 7) == "http://") || (x.substr(0, 7) == "mmst://"))
+
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     MediaSourceMem("FILE: " + pSourceFile)
 {
 	mLastDecoderFilePosition = 0;
     mDecoderFrameBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME;
-    mDecoderFramePreBufferTime = mDecoderFrameBufferTimeMax; // for file based media sources we use the entire frame buffer
+	mDecoderFramePreBufferTime = mDecoderFrameBufferTimeMax; // for file based media sources we use the entire frame buffer
     mSourceType = SOURCE_FILE;
     mDesiredDevice = pSourceFile;
     mGrabberProvidesRTGrabbing = pGrabInRealTime;
@@ -155,6 +159,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
 bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
+	bool tIsNetworkStream = false;
 	int tResult = 0;
 
 	mMediaType = MEDIA_AUDIO;
@@ -172,9 +177,19 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     // ffmpeg uses mmst:// instead of mms://
     if (mDesiredDevice.compare(0, string("mms://").size(), "mms://") == 0)
     {
-    	LOG(LOG_WARN, "Replacing mms:// by mmst:// in %s", mDesiredDevice.c_str());
+    	LOG(LOG_VERBOSE, "Replacing mms:// by mmst:// in %s", mDesiredDevice.c_str());
 		string tNewDesiredDevice = "mmst://" + mDesiredDevice.substr(6, mDesiredDevice.size() - 6);
 		mDesiredDevice = tNewDesiredDevice;
+    }
+
+
+    // correct pre-buffering if the source is in real a network stream
+    if (IS_WEB_LINK(mDesiredDevice))
+    {
+    	LOG(LOG_VERBOSE, "Detected a network stream encapsulated in file source");
+    	mDecoderFrameBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME_WEB_STREAMS; // use more buffering for web streams
+    	mDecoderFramePreBufferTime = MSF_FRAME_INPUT_QUEUE_MAX_TIME_WEB_STREAMS;
+    	tIsNetworkStream = true;
     }
 
     if (!OpenInput(mDesiredDevice.c_str(), NULL, NULL))
@@ -283,6 +298,13 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 			LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
 		}
 	}
+
+	// avoid frame dropping during decoding (mDecoderExpectedMaxOutputPerInputFrame might be wrong otherwise), assume 64 kB as max. input per read cycle
+    if ((tIsNetworkStream) && (mCodecContext->codec_id == CODEC_ID_WMAV2))
+    {
+    	LOG(LOG_VERBOSE, "Detected WMAV2 codec in hidden network stream, will assume a default frame size of 64kB to prevent frame dropping");
+    	mCodecContext->frame_size = 64 * 1024;
+    }
 
     MarkOpenGrabDeviceSuccessful();
 
@@ -422,6 +444,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                 mDecoderNeedWorkCondition.Signal();
 
                 // trigger a RT playback calibration after seeking
+                LOG(LOG_WARN, "Seek()-Triggering RT-Grabbing calibration");
                 mDecoderRecalibrateRTGrabbingAfterSeeking = true;
             }else
             {
@@ -449,6 +472,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
             tResult = true;
 
             // trigger a RT playback calibration after seeking
+            LOG(LOG_WARN, "Seek()-Triggering RT-Grabbing calibration");
             mDecoderRecalibrateRTGrabbingAfterSeeking = true;
         }
     }else
@@ -606,9 +630,7 @@ void MediaSourceFile::CalibrateRTGrabbing()
     // adopt the stored pts value which represent the start of the media presentation in real-time useconds
     float  tRelativeFrameIndex = mCurrentOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts);
     double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetOutputFrameRate());
-    #ifdef MSMEM_DEBUG_CALIBRATION
-        LOG(LOG_WARN, "Calibrating %s RT playback, current frame: %.2f, source start: %.2f, RT ref. time: %.2f->%.2f(diff: %.2f)", GetMediaTypeStr().c_str(), (float)mCurrentOutputFrameIndex, (float)mInputStartPts, mSourceStartTimeForRTGrabbing, (float)av_gettime() - tRelativeTime, (float)av_gettime() - tRelativeTime -mSourceStartTimeForRTGrabbing);
-    #endif
+	LOG(LOG_WARN, "Calibrating %s RT playback, current frame: %.2lf, source start: %.2lf, RT ref. time: %.2f->%.2f(diff: %.2f)", GetMediaTypeStr().c_str(), mCurrentOutputFrameIndex, mInputStartPts, mSourceStartTimeForRTGrabbing, (float)av_gettime() - tRelativeTime, (float)av_gettime() - tRelativeTime -mSourceStartTimeForRTGrabbing);
     mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime; //HINT: no "+ mDecoderFramePreBufferTime * AV_TIME_BASE" here because we start playback immediately
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
