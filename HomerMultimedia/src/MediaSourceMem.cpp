@@ -1399,7 +1399,7 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
                 // check if PTS value is continuous
                 if ((mDecoderLastReadPts > 0) && (pFrameTimestamp < mDecoderLastReadPts))
                 {// current packet is older than the last packet
-                    LOG(LOG_WARN, "Found interleaved %s packets in %s source, non continuous PTS: %"PRId64" => %d", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), mDecoderLastReadPts, pFrameTimestamp);
+                    LOG(LOG_WARN, "Found interleaved %s packets in %s source, non continuous PTS: %"PRId64" => %.2lf", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), mDecoderLastReadPts, pFrameTimestamp);
                 }
                 mDecoderLastReadPts = pFrameTimestamp;
             }else
