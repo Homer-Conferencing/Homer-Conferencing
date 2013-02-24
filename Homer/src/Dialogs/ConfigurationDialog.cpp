@@ -531,6 +531,9 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetAudioActivation(mGrpAudio->isChecked());
     switch(mCbAudioCodec->currentIndex())
     {
+//		case 0:
+//				MEETING.SetAudioCodecsSupport(CODEC_AMR_NB);
+//				break;
         case 0:
                 MEETING.SetAudioCodecsSupport(CODEC_G711ALAW);
                 break;

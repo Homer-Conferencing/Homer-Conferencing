@@ -845,6 +845,8 @@ void MainWindow::loadSettings()
     // init audio codec for network streaming, but only support ONE codec and not multiple
     QString tAudioStreamCodec = CONF.GetAudioCodec();
     // set settings within meeting management
+    if (tAudioStreamCodec == "AMR")
+        MEETING.SetAudioCodecsSupport(CODEC_AMR_NB);
     if (tAudioStreamCodec == "MP3")
         MEETING.SetAudioCodecsSupport(CODEC_MP3);
     if (tAudioStreamCodec == "G711 A-law")
