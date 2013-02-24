@@ -1120,7 +1120,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbAudioSink->setCurrentIndex(0);
                 mCbAudioCodec->setCurrentIndex(2);//G.722
                 mCbAudioBitRate->setCurrentIndex(2); // 256 KBit/s
-                mCbAudioMaxPacketSize->setCurrentIndex(2);//1280
+                mCbAudioMaxPacketSize->setCurrentIndex(1);//576
                 break;
             //### NETWORK configuration
             case 2:
