@@ -77,7 +77,6 @@ public:
 private:
 
     void                *mLogoRawPicture;
-    QList<int64_t>		mFrameTimestamps;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

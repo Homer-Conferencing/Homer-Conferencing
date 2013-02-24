@@ -411,6 +411,7 @@ bool MediaSourcePulseAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     LOG(LOG_INFO,"    ..latency: %"PRIu64" seconds", (uint64_t)tLatency * 1000 * 1000);
     LOG(LOG_INFO,"    ..sample format: %d", PA_SAMPLE_S16LE);
 
+    mRTGrabbingFrameTimestamps.clear();
     mFrameNumber = 0;
     mMediaType = MEDIA_AUDIO;
     mMediaSourceOpened = true;
@@ -499,6 +500,9 @@ int MediaSourcePulseAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool p
     if (pChunkSize != MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
     	pChunkSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
 
+    #ifdef MSPUA_DEBUG_TIMING
+        int64_t tTime = Time::GetTimeStamp();
+    #endif
 	if (pa_simple_read(mInputStream, (void *)pChunkBuffer, (size_t)pChunkSize, &tRes) < 0)
 	{
 		LOG(LOG_ERROR, "Couldn't write audio chunk of %d bytes to output stream because %s(%d)", pChunkSize, pa_strerror(tRes), tRes);
@@ -517,6 +521,13 @@ int MediaSourcePulseAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool p
     AnnouncePacket(pChunkSize);
 
     mFrameNumber++;
+
+    // emulates the desired input frame rate
+    WaitForRTGrabbing();
+
+    #ifdef MSPUA_DEBUG_TIMING
+        LOG(LOG_VERBOSE, "PulseAudio-READ took %lld ms", (Time::GetTimeStamp() - tTime) / 1000);
+    #endif
 
     // acknowledge success
     MarkGrabChunkSuccessful(mFrameNumber);

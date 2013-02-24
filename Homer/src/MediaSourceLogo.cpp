@@ -48,8 +48,6 @@ using namespace Homer::Multimedia;
 using namespace Homer::Base;
 using namespace Homer::Monitor;
 
-#define MSL_TIMESTAMP_HISTORY_SIZE										60 // approx. 2 seconds
-
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceLogo::MediaSourceLogo(string pDesiredDevice):
@@ -187,7 +185,7 @@ bool MediaSourceLogo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mFrameNumber = 0;
     mMediaType = MEDIA_VIDEO;
     mMediaSourceOpened = true;
-    mFrameTimestamps.clear();
+    mRTGrabbingFrameTimestamps.clear();
 
     return true;
 }
@@ -299,42 +297,8 @@ int MediaSourceLogo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     // unlock grabbing
     mGrabMutex.unlock();
 
-    // ##################################################################
-    // ### RT grabbing to match set fps rate
-    // ### we use a timestamp history to provide a more stable fps rate
-    // ##################################################################
-    if (mFrameTimestamps.size() > 0)
-    {
-		// calculate the time which corresponds to the request FPS
-		int64_t tTimePerFrame = 1000000 / mInputFrameRate; // in us
-
-		// calculate the time difference for the current frame in relation to the first timestamp in the history
-		int64_t tTimeDiffForHistory = tTimePerFrame * mFrameTimestamps.size();
-
-		// calculate the desired play-out time for the current frame by using the first timestamp in the history as time reference
-		int64_t tDesiredPlayOutTime = mFrameTimestamps.front() + tTimeDiffForHistory;
-
-		// get the time since last successful grabbing
-		int64_t tWaitingTine = tDesiredPlayOutTime - Time::GetTimeStamp(); // in us
-
-		if (tWaitingTine > 0)
-		{// skip capturing when we are too fast
-	        #ifdef MSL_DEBUG_PACKETS
-				LOG(LOG_VERBOSE, "Logo capturing delayed by %"PRId64" ms for frame %d", tWaitingTine / 1000, mFrameNumber);
-	        #endif
-			Thread::Suspend(tWaitingTine);
-		}else
-		{// no waiting
-			//LOG(LOG_VERBOSE, "No waiting for frame %d (time=%"PRId64")", mFrameNumber, tWaitingTine);
-		}
-
-		// limit history of timestamps
-		while (mFrameTimestamps.size() > MSL_TIMESTAMP_HISTORY_SIZE)
-			mFrameTimestamps.pop_front();
-    }
-
-    // store current timestamp
-    mFrameTimestamps.push_back(Time::GetTimeStamp());
+    // emulates the desired input frame rate
+    WaitForRTGrabbing();
 
     return mFrameNumber;
 }

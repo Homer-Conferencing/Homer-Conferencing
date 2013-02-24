@@ -42,6 +42,7 @@ namespace Homer { namespace Multimedia {
 
 // de/activate debugging of grabbed packets
 //#define MSPUA_DEBUG_PACKETS
+//#define MSPUA_DEBUG_TIMING
 
 ///////////////////////////////////////////////////////////////////////////////
 
