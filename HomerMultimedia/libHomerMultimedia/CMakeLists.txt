@@ -126,17 +126,17 @@ ENDIF (LINUX)
 ##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
-	avutil-52
-	avcodec-54
-	avdevice-54
-	avfilter-3
-	avformat-54
-	libgcc_s_dw2-1
-	libstdc++-6
-	portaudio
-	postproc-52
-	swresample-0
-	swscale-2
+	avutil-52.dll
+	avcodec-54.dll
+	avdevice-54.dll
+	avfilter-3.dll
+	avformat-54.dll
+	libgcc_s_dw2-1.dll
+	libstdc++-6.dll
+	portaudio.dll
+	postproc-52.dll
+	swresample-0.dll
+	swscale-2.dll
 )
 SET (LIBS_WINDOWS
 	avutil-52

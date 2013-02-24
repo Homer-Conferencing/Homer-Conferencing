@@ -295,23 +295,23 @@ ENDIF()
 # USED LIBRARIES for win32 environment
 IF (NOT (${BUILD} MATCHES "Default"))
 	SET (LIBS_WINDOWS_INSTALL   
-		libgcc_s_dw2-1
-		libstdc++-6
-		mingwm10
-		QtCore4
-		QtGui4
-		QtNetwork4
-		QtWebKit4
-		QtXml4
-		QtXmlPatterns4
-		phonon4
-		plugins/imageformats/qgif4
-		plugins/imageformats/qico4
-		plugins/imageformats/qjpeg4
-		plugins/imageformats/qmng4
-		plugins/imageformats/qsvg4
-		plugins/imageformats/qtga4
-		plugins/imageformats/qtiff4
+		libgcc_s_dw2-1.dll
+		libstdc++-6.dll
+		mingwm10.dll
+		QtCore4.dll
+		QtGui4.dll
+		QtNetwork4.dll
+		QtWebKit4.dll
+		QtXml4.dll
+		QtXmlPatterns4.dll
+		phonon4.dll
+		plugins/imageformats/qgif4.dll
+		plugins/imageformats/qico4.dll
+		plugins/imageformats/qjpeg4.dll
+		plugins/imageformats/qmng4.dll
+		plugins/imageformats/qsvg4.dll
+		plugins/imageformats/qtga4.dll
+		plugins/imageformats/qtiff4.dll
 	)
 ENDIF()
 SET (LIBS_WINDOWS	
@@ -409,13 +409,13 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libgstpbutils-0.10.so.0.24.0     
 		libgstvideo-0.10.so          
 		libstdc++.so.6
-		plugins/imageformats/libqgif4
-		plugins/imageformats/libqico4
-		plugins/imageformats/libqjpeg4
-		plugins/imageformats/libqmng4
-		plugins/imageformats/libqsvg4
-		plugins/imageformats/libqtga4
-		plugins/imageformats/libqtiff4
+		plugins/imageformats/libqgif.so
+		plugins/imageformats/libqico.so
+		plugins/imageformats/libqjpeg.so
+		plugins/imageformats/libqmng.so
+		plugins/imageformats/libqsvg.so
+		plugins/imageformats/libqtga.so
+		plugins/imageformats/libqtiff.so
 	)
 	SET (LIBS_LINUX_STATIC
 		glib-2.0  # avoid link problems in QtWebKit
@@ -435,31 +435,31 @@ SET (LIBS_APPLE
 )
 IF (NOT(${BUILD} MATCHES "Default"))
 	SET (LIBS_APPLE_INSTALL
-		libQtCore
-		libQtGui
-		libQtNetwork
-		libQtXml
-		libQtXmlPatterns
-		libQtWebKit
-		libQtCore.4
-		libQtGui.4
-		libQtNetwork.4
-		libQtXml.4
-		libQtXmlPatterns.4
-		libQtWebKit.4
-		libQtCore.4.8.4
-		libQtGui.4.8.4
-		libQtNetwork.4.8.4
-		libQtXml.4.8.4
-		libQtXmlPatterns.4.8.4
-		libQtWebKit.4.9.3
-		plugins/imageformats/libqgif
-		plugins/imageformats/libqico
-		plugins/imageformats/libqjpeg
-		plugins/imageformats/libqmng
-		plugins/imageformats/libqsvg
-		plugins/imageformats/libqtga
-		plugins/imageformats/libqtiff
+		libQtCore.dylib
+		libQtGui.dylib
+		libQtNetwork.dylib
+		libQtXml.dylib
+		libQtXmlPatterns.dylib
+		libQtWebKit.dylib
+		libQtCore.4.dylib
+		libQtGui.4.dylib
+		libQtNetwork.4.dylib
+		libQtXml.4.dylib
+		libQtXmlPatterns.4.dylib
+		libQtWebKit.4.dylib
+		libQtCore.4.8.4.dylib
+		libQtGui.4.8.4.dylib
+		libQtNetwork.4.8.4.dylib
+		libQtXml.4.8.4.dylib
+		libQtXmlPatterns.4.8.4.dylib
+		libQtWebKit.4.9.3.dylib
+		plugins/imageformats/libqgif.dylib
+		plugins/imageformats/libqico.dylib
+		plugins/imageformats/libqjpeg.dylib
+		plugins/imageformats/libqmng.dylib
+		plugins/imageformats/libqsvg.dylib
+		plugins/imageformats/libqtga.dylib
+		plugins/imageformats/libqtiff.dylib
 	)
 	SET (LIBS_APPLE
 		${LIBS_APPLE}

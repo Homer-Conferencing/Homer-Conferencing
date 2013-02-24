@@ -115,17 +115,17 @@ endif (LINUX)
 
 ##############################################################
 # USED LIBRARIES for win32 environment
-SET (LIBS_WINDOWS_INSTALL
-    libgcc_s_dw2-1
-    libstdc++-6
-    ogg
-    ortaudio    
-    SDL
-    SDL_sound
-    SDL_mixer
-    smpeg
-    vorbis
-    vorbisfile
+SET (LIBS_WINDOWS_INSTALL.dll
+    libgcc_s_dw2-1.dll
+    libstdc++-6.dll
+    ogg.dll
+    ortaudio.dll    
+    SDL.dll
+    SDL_sound.dll
+    SDL_mixer.dll
+    smpeg.dll
+    vorbis.dll
+    vorbisfile.dll
 )
 SET (LIBS_WINDOWS
 	HomerBase

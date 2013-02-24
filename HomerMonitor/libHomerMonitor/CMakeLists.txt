@@ -46,8 +46,8 @@ SET (SOURCES
 ##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
-    libgcc_s_dw2-1
-    libstdc++-6
+    libgcc_s_dw2-1.dll
+    libstdc++-6.dll
 )
 SET (LIBS_WINDOWS
 	HomerBase

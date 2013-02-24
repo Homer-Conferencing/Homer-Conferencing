@@ -72,11 +72,11 @@ SET (SOURCES
 ##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
-    libgcc_s_dw2-1
-    libsofia_sip_ua
-    libstdc++-6
-    msvcr100
-    pthreadVC2
+    libgcc_s_dw2-1.dll
+    libsofia_sip_ua.dll
+    libstdc++-6.dll
+    msvcr100.dll
+    pthreadVC2.dll
 )
 SET (LIBS_WINDOWS
 	HomerBase
