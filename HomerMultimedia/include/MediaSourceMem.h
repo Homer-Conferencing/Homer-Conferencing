@@ -169,7 +169,7 @@ protected:
     /* RTP based frame numbering */
     virtual double CalculateFrameNumberFromRTP();
 
-    /* real-time playback */
+    /* real-time GRABBING */
     virtual void CalibrateRTGrabbing();
     virtual bool WaitForRTGrabbing();
 

@@ -84,7 +84,7 @@ protected:
     virtual void StartDecoder();
     virtual void StopDecoder();
 
-    /* real-time playback */
+    /* real-time GRABBING */
     virtual void CalibrateRTGrabbing();
 
 private:
