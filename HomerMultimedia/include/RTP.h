@@ -155,6 +155,7 @@ public:
     static void LogRtpHeader(RtpHeader *pRtpHeader);
     bool ReceivedCorrectPayload(unsigned int pType);
     bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum RtcpType &pRtcpType, enum CodecID pCodecId, bool pLoggingOnly);
+    bool ResetRrtpParser();
     bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool CloseRtpEncoder();
 

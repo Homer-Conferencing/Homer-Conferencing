@@ -485,6 +485,12 @@ void RTP::Init()
     mSyncNTPTime = 0;
 }
 
+bool RTP::ResetRrtpParser()
+{
+	Init();
+	return true;
+}
+
 bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
 {
     LOG(LOG_VERBOSE, "Using lib internal rtp packetizer for H261 codec");
