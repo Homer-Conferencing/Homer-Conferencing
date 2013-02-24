@@ -2400,6 +2400,13 @@ bool MediaSourceMem::WaitForRTGrabbing()
         return true;
 	}
 
+	if((!mRtpActivated /* no time reference based on RTP available? */) && (mDecoderFramePreBufferTime == 0.0 /* no pre-buffering? */))
+	{// no time base found
+
+		// don't wait wait and play this frame immediately
+		return true;
+	}
+
     // calculate the current (normalized) frame index of the grabber
     float tNormalizedFrameIndexFromGrabber = mCurrentOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts); // the normalized frame index
     // return immediately if RT-grabbing is not possible
@@ -2496,8 +2503,6 @@ bool MediaSourceMem::WaitForRTGrabbing()
 			if (tDelay >= MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000)
 			{
 				LOG(LOG_WARN, "System is too slow?, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000));
-	            LOG(LOG_WARN, "WaitForRTGrabbing()-Triggering RT-Grabbing calibration");
-	            mDecoderRecalibrateRTGrabbingAfterSeeking = true;
 	    		return false;
 			}
 		}
@@ -2616,7 +2621,12 @@ double MediaSourceMem::CalculateFrameNumberFromRTP()
                 break;
         case MEDIA_AUDIO:
         		if (mFirstReceivedFrameTimestampFromRTP == -1)
+        		{
+        		    #ifdef MSMEM_DEBUG_PRE_BUFFERING
+	        			LOG(LOG_WARN, "Timestamp from RTP of first received frame is still -1, repairing this..");
+    				#endif
         			mFirstReceivedFrameTimestampFromRTP = (double)GetCurrentPtsFromRTP();
+        		}
 
         		//LOG(LOG_VERBOSE, "%.2lf <==> %.2lf, %.2lf", mFirstReceivedFrameTimestampFromRTP, (double)GetCurrentPtsFromRTP(), mFirstReceivedFrameTimestampFromRTP - (double)GetCurrentPtsFromRTP());
 
