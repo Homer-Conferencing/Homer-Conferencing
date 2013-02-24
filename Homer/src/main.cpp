@@ -26,6 +26,7 @@
 */
 
 #include <HBTime.h>
+#include <HBThread.h>
 #include <HomerApplication.h>
 #include <Logger.h>
 #include <Configuration.h>
@@ -174,7 +175,7 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
             	{
             		LOGEX(MainWindow, LOG_WARN, "Suspending Homer Conferencing now...");
             		sStopTime = Time::GetTimeStamp();
-            		kill(getpid(), SIGSTOP);
+            		kill(Thread::GetPId(), SIGSTOP);
             	}
 				break;
             case SIGCONT:
