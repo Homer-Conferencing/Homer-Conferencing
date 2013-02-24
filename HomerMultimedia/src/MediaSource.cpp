@@ -3112,7 +3112,7 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
     mFormatContext->interrupt_callback.opaque = this;
 	if ((tRes = avformat_open_input(&mFormatContext, pInputName, pInputFormat, NULL)) < 0)
 	{
-    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open %s input because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
+    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open %s input \"%s\" because \"%s\"(%d)", GetMediaTypeStr().c_str(), pInputName, strerror(AVUNERROR(tRes)), tRes);
 
 		return false;
 	}
