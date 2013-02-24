@@ -189,6 +189,7 @@ protected:
     int64_t				mLastTimeWaitForRTGrabbing;
     int64_t				mLastWriteFrameOutputBuffer;
     /* decoder thread */
+    bool				mDecoderThreadAcountsPackets; //do we use custom I/O context? -> packet account is done there and should be done within decoder thread
     double 				mFirstReceivedFrameTimestampFromRTP; //if multiple frames are delivered from the packet reciever towards the A/V frame decoder
     bool                mDecoderUsesPTSFromInputPackets;
     bool                mDecoderThreadNeeded; // also used to signal that the decoder thread has finished the init. process

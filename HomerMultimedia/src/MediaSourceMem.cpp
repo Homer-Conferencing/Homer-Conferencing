@@ -80,6 +80,7 @@ MediaSourceMem::MediaSourceMem(string pName):
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     mDecoderSinglePictureGrabbed = false;
     mFirstReceivedFrameTimestampFromRTP = -1;
+    mDecoderThreadAcountsPackets = true;
     mDecoderFifo = NULL;
     mRtpActivated = false;
     mDecoderFragmentFifo = NULL;
@@ -724,6 +725,9 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 	// build corresponding "AVIOContext"
     CreateIOContext(mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, GetNextInputFrame, NULL, this, &tIoContext);
 
+    // packet account is done within GetNextInputFrame()
+    mDecoderThreadAcountsPackets = false;
+
     // open the input for the described format and via the provided I/O control
     mOpenInputStream = true;
     bool tRes = OpenInput("", tFormat, tIoContext);
@@ -790,6 +794,9 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
 	// build corresponding "AVIOContext"
     CreateIOContext(mStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, GetNextInputFrame, NULL, this, &tIoContext);
+
+    // packet account is done within GetNextInputFrame()
+    mDecoderThreadAcountsPackets = false;
 
     // open the input for the described format and via the provided I/O control
     mOpenInputStream = true;
@@ -1628,7 +1635,8 @@ void* MediaSourceMem::Run(void* pArgs)
                             if ((!tInputIsPicture) || (!mDecoderSinglePictureGrabbed))
                             {// we try to decode packet(s) from input stream -> either the desired picture or a single frame from the stream
                                 // log statistics
-                                AnnouncePacket(tPacket->size);
+                                if (mDecoderThreadAcountsPackets)
+                                	AnnouncePacket(tPacket->size);
                                 #ifdef MSMEM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Decoding video frame (input is picture: %d)..", tInputIsPicture);
                                 #endif
@@ -1958,7 +1966,8 @@ void* MediaSourceMem::Run(void* pArgs)
                             // ### DECODE FRAME
                             // ############################
                             // log statistics
-                            AnnouncePacket(tPacket->size);
+                            if (mDecoderThreadAcountsPackets)
+                            	AnnouncePacket(tPacket->size);
 
                             int tOutputAudioBytesPerSample = av_get_bytes_per_sample(mOutputAudioFormat);
                             int tInputAudioBytesPerSample = av_get_bytes_per_sample(mInputAudioFormat);
@@ -2246,7 +2255,7 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
 
     #ifdef MSMEM_DEBUG_FRAME_QUEUE
         LOG(LOG_VERBOSE, ">>> Writing %s frame of %d bytes and pts %"PRId64", FIFOs: %d", GetMediaTypeStr().c_str(), pBufferSize, pOutputFrameNumber, mDecoderFifo->GetUsage());
-    #endif
+	#endif
 
     if (pOutputFrameNumber != 0)
         mLastBufferedOutputFrameIndex = pOutputFrameNumber;
