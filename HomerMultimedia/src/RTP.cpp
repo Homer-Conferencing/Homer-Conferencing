@@ -962,6 +962,10 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     //       without this hack we wouldn't be able to provide correct processing because of buggy rfc for MPA payload definition
     tMp3Hack_EntireBufferSize = pDataSize;
 
+    // adapt clock rate for G.722
+	if (mStreamCodecID == CODEC_ID_ADPCM_G722)
+		pPacketPts /= 2; // transform from 16 kHz to 8kHz
+
     av_init_packet(&tPacket);
     #ifdef RTP_DEBUG_PACKET_ENCODER_PTS
         LOG(LOG_VERBOSE, "Sending packet with PTS: %"PRId64", outgoing RTP-PTS: %.2f", pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
@@ -1417,6 +1421,8 @@ uint64_t RTP::GetCurrentPtsFromRTP()
 
     // clock rate adaption
     tResult = mRemoteTimestamp / CalculateClockRateFactor();
+    if (mStreamCodecID == CODEC_ID_ADPCM_G722)
+    	tResult *= 2; // transform from 8 kHz to 16kHz
 
     return tResult;
 }
@@ -1429,6 +1435,8 @@ void RTP::GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, uint64
 
     // clock rate adaption
     pReferencePts = mRtcpLastRemoteTimestamp / CalculateClockRateFactor();
+    if (mStreamCodecID == CODEC_ID_ADPCM_G722)
+    	pReferencePts *= 2; // transform from 8 kHz to 16kHz
 
     mSynchDataMutex.unlock();
 }
@@ -2784,6 +2792,9 @@ void RTP::SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint32_t
 	#ifdef RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
     	LOG(LOG_VERBOSE, "New synchronization for %d codec: %u, clock: %.2f, RTP timestamp: %.2f, timestamp offset: %lu", mStreamCodecID, pReferencePts, CalculateClockRateFactor(), (float)pReferencePts * CalculateClockRateFactor(), mLocalTimestampOffset);
 	#endif
+
+	if (mStreamCodecID == CODEC_ID_ADPCM_G722)
+		pReferencePts /= 2; // transform from 16 kHz to 8kHz
 
 	mSyncDataMutex.lock();
     mSyncNTPTime = pReferenceNtpTime;
