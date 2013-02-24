@@ -330,7 +330,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 					mTbNext->hide();
 					mTbPlaylist->hide();
 
-                    mAVSynchActive = true;
+                    mAVSynchActive = CONF.GetAVSyncDuringConference();
                     mAVPreBuffering = true;
                     mAVPreBufferingAutoRestart = true;
 

@@ -635,6 +635,13 @@ void Configuration::SetLocalAudioSink(QString pASink)
     mQSettings->endGroup();
 }
 
+void Configuration::SetAVSyncDuringConference(bool pActive)
+{
+    mQSettings->beginGroup("Playback");
+    mQSettings->setValue("AVSyncDuringConference", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVideoAudioStartPort(int pPort)
 {
     mQSettings->beginGroup("Network");
@@ -1317,6 +1324,11 @@ QString Configuration::GetLocalAudioSource()
 QString Configuration::GetLocalAudioSink()
 {
     return mQSettings->value("Playback/LocalAudioDevice", QString("auto")).toString();
+}
+
+bool Configuration::GetAVSyncDuringConference()
+{
+    return mQSettings->value("Playback/AVSyncDuringConference", false).toBool();
 }
 
 int Configuration::GetSipStartPort()

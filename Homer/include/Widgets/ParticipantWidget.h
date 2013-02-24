@@ -265,9 +265,9 @@ private:
     int 					mAVAsyncCounterSinceLastSynchronization;
     int						mAVASyncCounter;
     MovieControlWidget      *mFullscreeMovieControlWidget;
-    bool                    mAVSynchActive;
-    bool                    mAVPreBuffering;
-    bool                    mAVPreBufferingAutoRestart;
+    bool                    mAVSynchActive; //controls A/V synch.
+    bool                    mAVPreBuffering; // only for GUI output
+    bool                    mAVPreBufferingAutoRestart; // only for GUI output
     /* Mosaic mode */
     bool					mMosaicMode;
     bool					mMosaicModeAVControlsWereVisible;

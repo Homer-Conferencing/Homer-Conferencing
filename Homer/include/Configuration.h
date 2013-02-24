@@ -185,6 +185,7 @@ public:
 
     /* playback settings */
     QString GetLocalAudioSink();
+    bool GetAVSyncDuringConference();
 
     /* network settings */
     int GetVideoAudioStartPort();
@@ -350,6 +351,7 @@ public:
 
     /* playback settings */
     void SetLocalAudioSink(QString pASink);
+    void SetAVSyncDuringConference(bool pActive);
 
     /* network settings */
     void SetVideoAudioStartPort(int pPort);
