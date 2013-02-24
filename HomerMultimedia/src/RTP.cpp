@@ -26,22 +26,22 @@
  */
 
 /*
-		 Result of functional validation (09.Jan. 2013):
-				 Sending                        Receiving
-		--------------------------------------------------------------------
-		 h261:   ok (HC)                        ok (HC)
-		 h263:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
-		h263+:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
-		 h264:   ok (Hc, Ekiga)                 ok (HC, Ekiga) [time compensation needed]
-		Mpeg1:   ok (HC)                        ok (HC)
-		Mpeg2:   ok (HC)                        ok (HC)
-		Mpeg4:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+			 Result of functional validation (24.Feb.2013):
+					 Sending                        Receiving
+			--------------------------------------------------------------------
+			 h261:   ok (HC)                        ok (HC)
+			 h263:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+			h263+:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+			 h264:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+			Mpeg1:   ok (HC)                        ok (HC)
+			Mpeg2:   ok (HC)                        ok (HC)
+			Mpeg4:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
 
-  pcma (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
-  pcmu (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
-adpcm(G722):     ok (Hc, Ekiga)                 ok (HC, Ekiga)
-		  mp3:   ok (HC)                        ok (HC) (sync. needs to be reworked)
-	  pcm16be:   ok (HC)                        ok (HC)
+	  pcma (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+	  pcmu (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+	adpcm(G722):     ok (Hc, Ekiga)                 ok (HC, Ekiga)
+			  mp3:   ok (HC)                        ok (HC) (A/V sync. needs to be reworked)
+  pcm16be (PCM16):   ok (HC)                        ok (HC)
 
 
      RTP parameters: http://www.iana.org/assignments/rtp-parameters
@@ -105,16 +105,6 @@ unsigned int RTP::mH261PayloadSizeMax = 0;
 
 // ########################## AMR-NB (RFC 3267) ###########################################
 union AMRNBHeader{ //TODO
-    struct{
-        unsigned int dummy0:24;
-        unsigned int Mi:3;                  /* Mode Index (MI) */
-        unsigned int Reserved:5;            /* Reserved bits */
-    } __attribute__((__packed__));
-    uint32_t Data[1];
-};
-
-// ########################## G.711 ###########################################
-union G711Header{
     struct{
         unsigned int dummy0:24;
         unsigned int Mi:3;                  /* Mode Index (MI) */
@@ -757,6 +747,7 @@ bool RTP::IsPayloadSupported(enum CodecID pId)
             case CODEC_ID_MPEG2VIDEO:
             case CODEC_ID_MPEG4:
             case CODEC_ID_MP3:
+            case CODEC_ID_AMR_NB:
             case CODEC_ID_PCM_ALAW:
             case CODEC_ID_PCM_MULAW:
             case CODEC_ID_PCM_S16BE:
@@ -804,17 +795,23 @@ int RTP::GetPayloadHeaderSizeMax(enum CodecID pCodec)
             case CODEC_ID_MPEG4:
                 tResult = 0;
                 break;
-            case CODEC_ID_MP3:
-                tResult = sizeof(MPAHeader);
-                break;
+            case CODEC_ID_AMR_NB:
+            	tResult = sizeof(AMRNBHeader);
+            	break;
             case CODEC_ID_PCM_ALAW:
                 tResult = 0;
                 break;
             case CODEC_ID_PCM_MULAW:
                 tResult = 0;
                 break;
+            case CODEC_ID_ADPCM_G722:
+            	tResult = 0;
+            	break;
             case CODEC_ID_PCM_S16BE:
                 tResult = 0;
+                break;
+            case CODEC_ID_MP3:
+                tResult = sizeof(MPAHeader);
                 break;
 //            case CODEC_ID_MPEG2TS:
 //            case CODEC_ID_VORBIS:
@@ -824,9 +821,6 @@ int RTP::GetPayloadHeaderSizeMax(enum CodecID pCodec)
             case CODEC_ID_VP8:
                 tResult = sizeof(VP8Header); // we neglect the extended header and the 3 other optional header bytes
                 break;
-            case CODEC_ID_ADPCM_G722:
-            	tResult = 0;
-            	break;
 //            case CODEC_ID_ADPCM_G726:
             default:
                 tResult = 0;
@@ -1564,6 +1558,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     switch(mStreamCodecID)
     {
             //supported audio codecs
+    		case CODEC_ID_AMR_NB:
             case CODEC_ID_PCM_MULAW:
             case CODEC_ID_PCM_ALAW:
             case CODEC_ID_PCM_S16BE:
@@ -1898,7 +1893,6 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     AMRNBHeader* tAMRNBHeader = (AMRNBHeader*)pData;
     MPAHeader* tMPAHeader = (MPAHeader*)pData;
     MPVHeader* tMPVHeader = (MPVHeader*)pData;
-    G711Header* tG711Header = (G711Header*)pData;
     H261Header* tH261Header = (H261Header*)pData;
     H263Header* tH263Header = (H263Header*)pData;
     H263PHeader* tH263PHeader = (H263PHeader*)pData;
@@ -1913,6 +1907,13 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     switch(mStreamCodecID)
     {
             // audio
+    		case CODEC_ID_AMR_NB:
+							#ifdef RTP_DEBUG_PACKET_DECODER
+								LOG(LOG_VERBOSE, "#################### AMR-NB header #######################");
+								LOG(LOG_VERBOSE, "No additional information");//TODO
+							#endif
+							mIntermediateFragment = false;//TODO
+							break;
             case CODEC_ID_PCM_ALAW:
                             #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "#################### PCMA header #######################");
