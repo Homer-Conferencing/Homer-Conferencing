@@ -313,12 +313,16 @@ void WaveOutPulseAudio::DoWriteChunk(char *pChunkBuffer, int pChunkSize)
 
     if (!mPlaybackStopped)
     {
-        //int64_t tTime = Time::GetTimeStamp();
+        #ifdef WOPUA_DEBUG_TIMING
+            int64_t tTime = Time::GetTimeStamp();
+        #endif
 		if (pa_simple_write(mOutputStream, pChunkBuffer, pChunkSize, &tRes) < 0)
 		{
 			LOG(LOG_ERROR, "Couldn't write audio chunk of %d bytes to output stream because %s(%d)", pChunkSize, pa_strerror(tRes), tRes);
 		}
-		//LOG(LOG_VERBOSE, "PulseAudio-WRITE took %lld ms", (Time::GetTimeStamp() - tTime) / 1000);
+        #ifdef WOPUA_DEBUG_TIMING
+		    LOG(LOG_VERBOSE, "PulseAudio-WRITE took %lld ms", (Time::GetTimeStamp() - tTime) / 1000);
+        #endif
     }
 }
 
