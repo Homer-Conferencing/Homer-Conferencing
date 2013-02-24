@@ -41,8 +41,11 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// how many timestamp should be used to emulate a desired input frame rate?
+#define MEDIA_SOURCE_RT_GRABBING_TIMESTAMP_HISTORY                             128
+
 // define the threshold for silence detection
-#define MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD					128
+#define MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD					               128
 
 //de/activate VDPAU support
 //#define MEDIA_SOURCE_VDPAU_SUPPORT
@@ -116,6 +119,7 @@ MediaSource::MediaSource(string pName):
     mOutputFrameRate = 29.97;
     mCurrentInputChannel = 0;
     mDesiredInputChannel = 0;
+    mRTGrabbingFrameTimestamps.clear();
     mMediaType = MEDIA_UNKNOWN;
     for (int i = 0; i < MEDIA_SOURCE_MAX_AUDIO_CHANNELS; i++)
 		mResampleFifo[i] = NULL;
@@ -1041,6 +1045,53 @@ void MediaSource::SetPreBufferingAutoRestartActivation(bool pActive)
 int MediaSource::GetDecoderOutputFrameDelay()
 {
     return mDecoderOutputFrameDelay;
+}
+
+void MediaSource::CalibrateRTGrabbing()
+{
+    LOG(LOG_WARN, "Called CalibrateRTGrabbing()");
+}
+
+bool MediaSource::WaitForRTGrabbing()
+{
+    // ##################################################################
+    // ### RT grabbing to match set fps rate
+    // ### we use a timestamp history to provide a more stable fps rate
+    // ##################################################################
+    if (mRTGrabbingFrameTimestamps.size() > 0)
+    {
+        // calculate the time which corresponds to the request FPS
+        int64_t tTimePerFrame = 1000000 / mInputFrameRate; // in us
+
+        // calculate the time difference for the current frame in relation to the first timestamp in the history
+        int64_t tTimeDiffForHistory = tTimePerFrame * mRTGrabbingFrameTimestamps.size();
+
+        // calculate the desired play-out time for the current frame by using the first timestamp in the history as time reference
+        int64_t tDesiredPlayOutTime = mRTGrabbingFrameTimestamps.front() + tTimeDiffForHistory;
+
+        // get the time since last successful grabbing
+        int64_t tWaitingTine = tDesiredPlayOutTime - Time::GetTimeStamp(); // in us
+
+        if (tWaitingTine > 0)
+        {// skip capturing when we are too fast
+            #ifdef MSL_DEBUG_PACKETS
+                LOG(LOG_VERBOSE, "Logo capturing delayed by %"PRId64" ms for frame %d", tWaitingTine / 1000, mFrameNumber);
+            #endif
+            Thread::Suspend(tWaitingTine);
+        }else
+        {// no waiting
+            //LOG(LOG_VERBOSE, "No waiting for frame %d (time=%"PRId64")", mFrameNumber, tWaitingTine);
+        }
+
+        // limit history of timestamps
+        while (mRTGrabbingFrameTimestamps.size() > MEDIA_SOURCE_RT_GRABBING_TIMESTAMP_HISTORY)
+            mRTGrabbingFrameTimestamps.pop_front();
+    }
+
+    // store current timestamp
+    mRTGrabbingFrameTimestamps.push_back(Time::GetTimeStamp());
+
+    return true;
 }
 
 void MediaSource::DoSetVideoGrabResolution(int pResX, int pResY)

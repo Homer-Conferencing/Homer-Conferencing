@@ -374,6 +374,10 @@ private:
     static int FindStreamInfoCallback(void *pMediaSource);
 
 protected:
+    /* real-time GRABBING */
+    virtual void CalibrateRTGrabbing();
+    virtual bool WaitForRTGrabbing(); // waits so that a desired input frame rate is simulated
+
     /* internal video resolution switch */
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
 
@@ -440,6 +444,8 @@ protected:
     double              mNumberOfFrames;
     enum CodecID        mSourceCodecId;
     bool                mEOFReached;
+    /* RT grabbing */
+    std::list<int64_t>  mRTGrabbingFrameTimestamps;
     /* audio */
     AVFifoBuffer        *mResampleFifo[MEDIA_SOURCE_MAX_AUDIO_CHANNELS];
     uint8_t             *mResampleBufferPlanes[MEDIA_SOURCE_MAX_AUDIO_CHANNELS];
