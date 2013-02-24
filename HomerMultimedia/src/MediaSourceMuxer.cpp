@@ -752,7 +752,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 			{
 				mOutputAudioChannels = 1;
 				mOutputAudioSampleRate = 16000;
-				mEncoderStream->time_base = (AVRational){1, 16000};
+				mEncoderStream->time_base = (AVRational){1, 8000};
 	        	mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
 			}
 			break;

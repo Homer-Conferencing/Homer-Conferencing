@@ -827,29 +827,39 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 			tCodec->channels = 1;
 			tCodec->bit_rate = 7950;
 			tCodec->sample_rate = 8000;
+		    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+			mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     	case CODEC_ID_ADPCM_G722:
     		tCodec->channels = 1;
     		tCodec->sample_rate = 16000;
+    	    mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000; // different time base as defined in RFC
+    		mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     	case CODEC_ID_GSM:
     	case CODEC_ID_PCM_ALAW:
 		case CODEC_ID_PCM_MULAW:
 			tCodec->channels = 1;
 			tCodec->sample_rate = 8000;
+		    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+			mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     	case CODEC_ID_PCM_S16BE:
     		tCodec->channels = 2;
     		tCodec->sample_rate = 44100;
+    	    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+    		mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     	case CODEC_ID_MP3:
-			break;
+    	    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+    		mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+    		break;
 		default:
+		    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+			mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 			break;
     }
 
-    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-	mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
 
     // finds and opens the correct decoder
     if (!OpenDecoder())
@@ -1000,20 +1010,23 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                         }
                     }else
                     {// source is memory/network
-                        if ((mDecoderFramePreBufferingAutoRestart) && (mDecoderFramePreBufferTime > 0))
-                        {// time to restart pre-buffering
-                            LOG(LOG_VERBOSE, "Buffer is empty, restarting pre-buffering now..");
-
-                            // pretend that we had a seeking step and have to recalibrate the RT grabbing
-                            LOG(LOG_WARN, "GrabChunk()-Triggering RT-Grabbing calibration");
-                            mDecoderRecalibrateRTGrabbingAfterSeeking = true;
-                        }
+                    	//
                     }
                 }else
                 {// we have to wait until the decoder thread has new data after we triggered a seeking process
                     // nothing to complain about
                 }
             }
+        }
+
+        // should we restart pre-buffering?
+        if ((mDecoderFramePreBufferingAutoRestart) && (mDecoderFramePreBufferTime > 0) && (mDecoderFrameBufferTime < MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER))
+        {// time to restart pre-buffering
+            LOG(LOG_VERBOSE, "Pre-bufferung has to be restarted now..");
+
+            // pretend that we had a seeking step and have to recalibrate the RT grabbing
+            LOG(LOG_WARN, "GrabChunk()-Triggering RT-Grabbing calibration");
+            mDecoderRecalibrateRTGrabbingAfterSeeking = true;
         }
 
         // read chunk data from FIFO
@@ -2488,6 +2501,7 @@ bool MediaSourceMem::WaitForRTGrabbing()
 			LOG(LOG_WARN, "Found in %s %s source an invalid delay time of %"PRId64" s, pre-buffer time: %.2f, PTS of last queued frame: %.2lf, PTS of last grabbed frame: %.2lf", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tResultingTimeOffset / 1000, mDecoderFramePreBufferTime, mDecoderLastReadPts, mCurrentOutputFrameIndex);
             LOG(LOG_WARN, "WaitForRTGrabbing()-Triggering RT-Grabbing calibration");
 			mDecoderRecalibrateRTGrabbingAfterSeeking = true;
+			return false;
 		}
 	}else
     {// waiting time invalid, frame is too late
@@ -2497,10 +2511,7 @@ bool MediaSourceMem::WaitForRTGrabbing()
 		{
 	    	if (tDelay > MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000)
 	    	{
-	    		LOG(LOG_WARN, "RTP-stream is too late, %s %s grabbing is %f ms too late but pre-buffering is deactivated, , THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000));
-	            LOG(LOG_WARN, "WaitForRTGrabbing()-Triggering RT-Grabbing calibration");
-	            mDecoderRecalibrateRTGrabbingAfterSeeking = true;
-	    		return false;
+	    		LOG(LOG_WARN, "RTP-stream is too late, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000));
 	    	}
 		}else
 		{
@@ -2508,7 +2519,6 @@ bool MediaSourceMem::WaitForRTGrabbing()
 			if (tDelay >= MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000)
 			{
 				LOG(LOG_WARN, "System is too slow?, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000));
-	    		return false;
 			}
 		}
     }
