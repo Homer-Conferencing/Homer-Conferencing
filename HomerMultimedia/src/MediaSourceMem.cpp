@@ -823,6 +823,11 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     AVCodecContext *tCodec = mFormatContext->streams[mMediaStreamIndex]->codec;
     switch(mSourceCodecId)
     {
+		case CODEC_ID_AMR_NB:
+			tCodec->channels = 1;
+			tCodec->bit_rate = 7950;
+			tCodec->sample_rate = 8000;
+			break;
     	case CODEC_ID_ADPCM_G722:
     		tCodec->channels = 1;
     		tCodec->sample_rate = 16000;
