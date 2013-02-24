@@ -791,6 +791,8 @@ void MainWindow::CreateScreenShot()
 {
     static int sShiftIndex = 0;
     static QString sShiftingString = "                ";
+    QString tMessage = "Program Start  " + mStartTime.toString("hh:mm") + "       Time  " + QTime::currentTime().toString("hh:mm");
+
     #ifdef DEBUG_VERSION
         sShiftIndex++;
         if (sShiftIndex == 32)
@@ -799,8 +801,10 @@ void MainWindow::CreateScreenShot()
             sShiftingString[sShiftIndex] = '#';
         else
             sShiftingString[31 - sShiftIndex] = '#';
+        tMessage += "       Video: " + QString(mOwnVideoMuxer->GetCodecName().c_str()) + "/" + QString(mOwnVideoMuxer->GetMuxingCodec().c_str()) + "       Audio: " + QString(mOwnAudioMuxer->GetCodecName().c_str()) + "/" + QString(mOwnAudioMuxer->GetMuxingCodec().c_str()) + "    " + sShiftingString;
     #endif
-    mStatusBar->showMessage("Program Start  " + mStartTime.toString("hh:mm") + "       Time  " + QTime::currentTime().toString("hh:mm") + "    " + sShiftingString);
+
+    mStatusBar->showMessage(tMessage);
     sShiftingString[sShiftIndex] = ' ';
     if(mMediaSourceDesktop != NULL)
         mMediaSourceDesktop->CreateScreenshot();
@@ -842,7 +846,7 @@ void MainWindow::loadSettings()
     QString tAudioStreamCodec = CONF.GetAudioCodec();
     // set settings within meeting management
     if (tAudioStreamCodec == "MP3")
-        MEETING.SetAudioCodecsSupport(CODEC_G722ADPCM);//TODO: CODEC_MP3);
+        MEETING.SetAudioCodecsSupport(CODEC_MP3);
     if (tAudioStreamCodec == "G711 A-law")
         MEETING.SetAudioCodecsSupport(CODEC_G711ALAW);
     if (tAudioStreamCodec == "G711 µ-law")

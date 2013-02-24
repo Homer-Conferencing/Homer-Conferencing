@@ -37,7 +37,7 @@
         <number>1</number>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="mVideo">
         <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -1459,7 +1459,7 @@ background-color: rgb(200, 200, 200);
                  <enum>Qt::LeftToRight</enum>
                 </property>
                 <property name="currentIndex">
-                 <number>2</number>
+                 <number>0</number>
                 </property>
                 <property name="maxVisibleItems">
                  <number>9</number>
@@ -1482,6 +1482,11 @@ background-color: rgb(200, 200, 200);
                 <item>
                  <property name="text">
                   <string>PCM16</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>MP3</string>
                  </property>
                 </item>
                </widget>
@@ -3104,8 +3109,8 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>430</width>
-              <height>542</height>
+              <width>431</width>
+              <height>666</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
