@@ -1705,12 +1705,12 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
 {
     MediaSinks::iterator tIt;
 
-    #ifdef MS_DEBUG_PACKETS
-        LOG(LOG_VERBOSE, "Relaying packets to media sinks");
-    #endif
-
     // lock
     mMediaSinksMutex.lock();
+
+    #ifdef MS_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Relaying packet for %s %s media source to %d media sinks", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), mMediaSinks.size());
+    #endif
 
     if (mMediaSinks.size() > 0)
     {
