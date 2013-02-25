@@ -50,7 +50,7 @@ using namespace Homer::Monitor;
 // above which threshold value should we execute a hard file seeking? (below this threshold we do soft seeking by adjusting RT grabbing)
 #define MSF_SEEK_WAIT_THRESHOLD                            1.5 // seconds
 
-#define MSF_FRAME_INPUT_QUEUE_MAX_TIME_WEB_STREAMS         ((System::GetTargetMachineType() != "x86") ? 4.0 : 4.0)
+#define MSF_FRAME_INPUT_QUEUE_MAX_TIME_WEB_STREAMS         ((System::GetTargetMachineType() != "x86") ? 3.0 : 3.0)
 
 // how much time do we want to buffer at maximum?
 #define MSF_FRAME_INPUT_QUEUE_MAX_TIME                     ((System::GetTargetMachineType() != "x86") ? 3.0 : 0.5) // 0.5 seconds for 32 bit targets with limit of 4 GB ram, 3.0 seconds for 64 bit targets
