@@ -135,10 +135,16 @@
        <property name="lineWidth">
         <number>1</number>
        </property>
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
        <property name="iconSize">
         <size>
-         <width>45</width>
-         <height>45</height>
+         <width>40</width>
+         <height>40</height>
         </size>
        </property>
        <property name="textElideMode">
@@ -156,12 +162,9 @@
        <property name="layoutMode">
         <enum>QListView::SinglePass</enum>
        </property>
-       <property name="spacing">
-        <number>0</number>
-       </property>
        <property name="gridSize">
         <size>
-         <width>100</width>
+         <width>110</width>
          <height>120</height>
         </size>
        </property>
@@ -173,6 +176,9 @@
        </property>
        <property name="wordWrap">
         <bool>true</bool>
+       </property>
+       <property name="selectionRectVisible">
+        <bool>false</bool>
        </property>
        <property name="currentRow">
         <number>2</number>
@@ -696,12 +702,6 @@
                         <height>24</height>
                        </size>
                       </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>24</height>
-                       </size>
-                      </property>
                       <property name="font">
                        <font>
                         <weight>50</weight>
@@ -808,13 +808,7 @@
                       <property name="minimumSize">
                        <size>
                         <width>200</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>30</height>
+                        <height>24</height>
                        </size>
                       </property>
                       <property name="font">
@@ -862,13 +856,7 @@
                       <property name="minimumSize">
                        <size>
                         <width>70</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>70</width>
-                        <height>30</height>
+                        <height>24</height>
                        </size>
                       </property>
                       <property name="font">
@@ -940,12 +928,6 @@
                       <property name="minimumSize">
                        <size>
                         <width>0</width>
-                        <height>24</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
                         <height>24</height>
                        </size>
                       </property>
@@ -1092,12 +1074,6 @@
                         <height>24</height>
                        </size>
                       </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>24</height>
-                       </size>
-                      </property>
                       <property name="font">
                        <font>
                         <weight>50</weight>
@@ -1228,12 +1204,6 @@
                         <height>24</height>
                        </size>
                       </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>24</height>
-                       </size>
-                      </property>
                       <property name="font">
                        <font>
                         <weight>50</weight>
@@ -1331,13 +1301,7 @@
                       <property name="minimumSize">
                        <size>
                         <width>200</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
-                        <height>30</height>
+                        <height>24</height>
                        </size>
                       </property>
                       <property name="font">
@@ -1385,13 +1349,7 @@
                       <property name="minimumSize">
                        <size>
                         <width>70</width>
-                        <height>30</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>70</width>
-                        <height>30</height>
+                        <height>24</height>
                        </size>
                       </property>
                       <property name="font">
@@ -1463,12 +1421,6 @@
                       <property name="minimumSize">
                        <size>
                         <width>0</width>
-                        <height>24</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
                         <height>24</height>
                        </size>
                       </property>
@@ -1612,12 +1564,6 @@
                       <property name="minimumSize">
                        <size>
                         <width>0</width>
-                        <height>24</height>
-                       </size>
-                      </property>
-                      <property name="maximumSize">
-                       <size>
-                        <width>16777215</width>
                         <height>24</height>
                        </size>
                       </property>
@@ -1849,6 +1795,12 @@
                     </item>
                     <item>
                      <widget class="QDoubleSpinBox" name="mDSpPreBufferingTime">
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>24</height>
+                       </size>
+                      </property>
                       <property name="font">
                        <font>
                         <weight>50</weight>

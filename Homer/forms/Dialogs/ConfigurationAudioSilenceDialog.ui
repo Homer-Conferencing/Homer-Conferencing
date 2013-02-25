@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>543</width>
-    <height>316</height>
+    <width>537</width>
+    <height>318</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,13 +42,13 @@
              <property name="minimumSize">
               <size>
                <width>120</width>
-               <height>0</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>120</width>
-               <height>16777215</height>
+               <height>30</height>
               </size>
              </property>
              <property name="text">
@@ -78,6 +78,12 @@
            </item>
            <item>
             <widget class="QSpinBox" name="mSbThreshold">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>24</height>
+              </size>
+             </property>
              <property name="maximum">
               <number>32768</number>
              </property>
@@ -112,13 +118,13 @@
                <property name="minimumSize">
                 <size>
                  <width>120</width>
-                 <height>22</height>
+                 <height>30</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
                  <width>120</width>
-                 <height>22</height>
+                 <height>30</height>
                 </size>
                </property>
                <property name="text">
@@ -208,13 +214,13 @@ QProgressBar::chunk {
                <property name="minimumSize">
                 <size>
                  <width>120</width>
-                 <height>22</height>
+                 <height>30</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
                  <width>120</width>
-                 <height>22</height>
+                 <height>30</height>
                 </size>
                </property>
                <property name="text">
@@ -293,13 +299,13 @@ QProgressBar::chunk {
              <property name="minimumSize">
               <size>
                <width>120</width>
-               <height>0</height>
+               <height>30</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
                <width>120</width>
-               <height>16777215</height>
+               <height>30</height>
               </size>
              </property>
              <property name="text">

@@ -37,7 +37,7 @@
         <number>1</number>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="mVideo">
         <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -107,9 +107,9 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoSource">
-                <property name="maximumSize">
+                <property name="minimumSize">
                  <size>
-                  <width>800</width>
+                  <width>0</width>
                   <height>24</height>
                  </size>
                 </property>
@@ -446,9 +446,9 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoResolution">
-                <property name="maximumSize">
+                <property name="minimumSize">
                  <size>
-                  <width>16777215</width>
+                  <width>0</width>
                   <height>24</height>
                  </size>
                 </property>
@@ -557,7 +557,7 @@
                 <property name="minimumSize">
                  <size>
                   <width>50</width>
-                  <height>0</height>
+                  <height>24</height>
                  </size>
                 </property>
                 <property name="font">
@@ -619,9 +619,9 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoCodec">
-                <property name="maximumSize">
+                <property name="minimumSize">
                  <size>
-                  <width>16777215</width>
+                  <width>0</width>
                   <height>24</height>
                  </size>
                 </property>
@@ -709,9 +709,9 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoQuality">
-                <property name="maximumSize">
+                <property name="minimumSize">
                  <size>
-                  <width>16777215</width>
+                  <width>0</width>
                   <height>24</height>
                  </size>
                 </property>
@@ -814,9 +814,9 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoBitRate">
-                <property name="maximumSize">
+                <property name="minimumSize">
                  <size>
-                  <width>16777215</width>
+                  <width>0</width>
                   <height>24</height>
                  </size>
                 </property>
@@ -899,9 +899,9 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoMaxPacketSize">
-                <property name="maximumSize">
+                <property name="minimumSize">
                  <size>
-                  <width>16777215</width>
+                  <width>0</width>
                   <height>24</height>
                  </size>
                 </property>
@@ -1817,7 +1817,7 @@ background-color: rgb(150, 150, 150);
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>30</height>
+                  <height>24</height>
                  </size>
                 </property>
                 <property name="font">
@@ -1890,13 +1890,7 @@ background-color: rgb(150, 150, 150);
                 <property name="minimumSize">
                  <size>
                   <width>70</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>70</width>
-                  <height>30</height>
+                  <height>24</height>
                  </size>
                 </property>
                 <property name="font">
@@ -2020,7 +2014,7 @@ background-color: rgb(150, 150, 150);
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>30</height>
+                  <height>24</height>
                  </size>
                 </property>
                 <property name="font">
@@ -2138,7 +2132,7 @@ background-color: rgb(150, 150, 150);
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>30</height>
+                  <height>24</height>
                  </size>
                 </property>
                 <property name="font">
@@ -2357,7 +2351,7 @@ background-color: rgb(150, 150, 150);
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>30</height>
+                  <height>24</height>
                  </size>
                 </property>
                 <property name="font">
@@ -2505,7 +2499,7 @@ background-color: rgb(150, 150, 150);
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>30</height>
+                  <height>24</height>
                  </size>
                 </property>
                 <property name="font">
@@ -2648,7 +2642,7 @@ background-color: rgb(150, 150, 150);
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>30</height>
+                  <height>24</height>
                  </size>
                 </property>
                 <property name="font">
@@ -2740,12 +2734,6 @@ background-color: rgb(150, 150, 150);
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
-                  <height>24</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
                   <height>24</height>
                  </size>
                 </property>
@@ -2990,6 +2978,12 @@ background-color: rgb(150, 150, 150);
               </item>
               <item>
                <widget class="QDoubleSpinBox" name="mDSpPreBufferingConferences">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>24</height>
+                 </size>
+                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -3231,7 +3225,7 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>416</width>
+              <width>674</width>
               <height>522</height>
              </rect>
             </property>
@@ -5894,14 +5888,17 @@ background-color: rgb(150, 150, 150);
        <property name="lineWidth">
         <number>1</number>
        </property>
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
        <property name="iconSize">
         <size>
          <width>100</width>
          <height>46</height>
         </size>
-       </property>
-       <property name="textElideMode">
-        <enum>Qt::ElideNone</enum>
        </property>
        <property name="movement">
         <enum>QListView::Static</enum>
@@ -5927,14 +5924,8 @@ background-color: rgb(150, 150, 150);
        <property name="uniformItemSizes">
         <bool>true</bool>
        </property>
-       <property name="batchSize">
-        <number>130</number>
-       </property>
        <property name="wordWrap">
         <bool>true</bool>
-       </property>
-       <property name="selectionRectVisible">
-        <bool>false</bool>
        </property>
        <property name="currentRow">
         <number>-1</number>
