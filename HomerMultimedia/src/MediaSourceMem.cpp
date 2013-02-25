@@ -1839,7 +1839,7 @@ void* MediaSourceMem::Run(void* pArgs)
                             // ############################
                             if (tDecoderResult >= 0)
                             {
-                                if (tFrameFinished == 1)
+                                if (tFrameFinished != 0)
                                 {
                                     #ifdef MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
                                         LOG(LOG_VERBOSE, "New video frame..");
@@ -1982,7 +1982,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     }
                                 }else
                                 {// tFrameFinished != 1
-                                    LOG(LOG_WARN, "Video frame was buffered, codec context flags: 0x%X", mCodecContext->flags);
+                                    LOG(LOG_WARN, "Video frame was buffered, FrameFinished: %d, codec context flags: 0x%X", tFrameFinished, mCodecContext->flags);
                                     if (tPacket->data != NULL)
                                         mDecoderOutputFrameDelay++;
                                 }
@@ -2012,7 +2012,7 @@ void* MediaSourceMem::Run(void* pArgs)
                             tDecoderResult = avcodec_decode_audio4(mCodecContext, tAudioFrame, &tFrameFinished, tPacket);
                             if (tDecoderResult >= 0)
                             {
-                                if (tFrameFinished == 1)
+                                if (tFrameFinished != 0)
                                 {
                                 	if ((!tAlreadyWarnedThatFrameSizeDiffers) && (tAudioFrame->nb_samples != mCodecContext->frame_size))
                                 	{
