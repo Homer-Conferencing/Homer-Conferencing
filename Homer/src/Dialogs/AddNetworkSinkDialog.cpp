@@ -86,6 +86,13 @@ void AddNetworkSinkDialog::initializeGUI()
     {
         mCbRtp->hide();
     }
+
+    // is the source something different than a muxer?
+    if (!mMediaSource->SupportsMuxing())
+    {// the input stream from the source has to relayed, without RTP an additional encapsulation
+        mCbRtp->setChecked(false);
+        mCbRtp->setEnabled(false);
+    }
 }
 
 void AddNetworkSinkDialog::ShrinkWidgetToMinimumSize()
@@ -229,12 +236,14 @@ void AddNetworkSinkDialog::SaveConfiguration()
     switch(mDataType)
     {
         case DATA_TYPE_VIDEO:
-            CONF.SetVideoRtp(mCbRtp->isChecked());
+            if (mMediaSource->SupportsMuxing())
+                CONF.SetVideoRtp(mCbRtp->isChecked());
             CONF.SetVideoTransport(Socket::String2TransportType(mCbTransport->currentText().toStdString()));
             CONF.SetVideoStreamingNAPIImpl(mCbNAPIImpl->currentText());
             break;
         case DATA_TYPE_AUDIO:
-            CONF.SetAudioRtp(mCbRtp->isChecked());
+            if (mMediaSource->SupportsMuxing())
+                CONF.SetAudioRtp(mCbRtp->isChecked());
             CONF.SetAudioTransport(Socket::String2TransportType(mCbTransport->currentText().toStdString()));
             CONF.SetAudioStreamingNAPIImpl(mCbNAPIImpl->currentText());
             break;
@@ -291,7 +300,8 @@ void AddNetworkSinkDialog::LoadConfiguration()
     {
         case DATA_TYPE_VIDEO:
             mGrpTarget->setTitle(" Send video to ");
-            mCbRtp->setChecked(CONF.GetVideoRtp());
+            if (mMediaSource->SupportsMuxing())
+                mCbRtp->setChecked(CONF.GetVideoRtp());
             tTransport = QString(Socket::TransportType2String(CONF.GetVideoTransportType()).c_str());
             tNAPIImpl = CONF.GetVideoStreamingNAPIImpl();
 
@@ -301,7 +311,8 @@ void AddNetworkSinkDialog::LoadConfiguration()
             break;
         case DATA_TYPE_AUDIO:
             mGrpTarget->setTitle(" Send audio to ");
-            mCbRtp->setChecked(CONF.GetAudioRtp());
+            if (mMediaSource->SupportsMuxing())
+                mCbRtp->setChecked(CONF.GetAudioRtp());
             tTransport = QString(Socket::TransportType2String(CONF.GetAudioTransportType()).c_str());
             tNAPIImpl = CONF.GetAudioStreamingNAPIImpl();
 
