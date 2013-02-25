@@ -73,8 +73,8 @@ public:
     virtual bool SupportsRecording();
 
     /* grabbing control */
-    virtual std::string GetCodecName();
-    virtual std::string GetCodecLongName();
+    virtual std::string GetSourceCodecStr();
+    virtual std::string GetSourceCodecDescription();
 
     static int GetPulseAudioDevices(PulseAudioDeviceDescriptor *pInputDevicesList, PulseAudioDeviceDescriptor *pOutputDevicesList);    friend class WaveOutPulseAudio;
     static bool PulseAudioAvailable();

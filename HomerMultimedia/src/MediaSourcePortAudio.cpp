@@ -534,12 +534,12 @@ void MediaSourcePortAudio::StopGrabbing()
     }
 }
 
-string MediaSourcePortAudio::GetCodecName()
+string MediaSourcePortAudio::GetSourceCodecStr()
 {
     return "Raw";
 }
 
-string MediaSourcePortAudio::GetCodecLongName()
+string MediaSourcePortAudio::GetSourceCodecDescription()
 {
     return "Raw";
 }

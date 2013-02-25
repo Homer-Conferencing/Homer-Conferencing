@@ -1205,12 +1205,12 @@ bool MediaSource::Reset(enum MediaType pMediaType)
     return tResult;
 }
 
-enum CodecID MediaSource::GetCodecID()
+enum CodecID MediaSource::GetSourceCodec()
 {
     return mSourceCodecId;
 }
 
-string MediaSource::GetCodecName()
+string MediaSource::GetSourceCodecStr()
 {
 	string tResult = "unknown";
 
@@ -1229,7 +1229,7 @@ string MediaSource::GetCodecName()
     return tResult;
 }
 
-string MediaSource::GetCodecLongName()
+string MediaSource::GetSourceCodecDescription()
 {
 	string tResult = "unknown";
 

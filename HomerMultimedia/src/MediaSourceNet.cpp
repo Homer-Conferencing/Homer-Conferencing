@@ -418,10 +418,10 @@ void* NetworkListener::Run(void* pArgs)
         switch(mMediaSourceNet->mMediaType)
         {
             case MEDIA_VIDEO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(NAPI," + mMediaSourceNet->GetFormatName(mMediaSourceNet->GetCodecID()) + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(NAPI," + mMediaSourceNet->GetFormatName(mMediaSourceNet->GetSourceCodec()) + ")");
                 break;
             case MEDIA_AUDIO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(NAPI," + mMediaSourceNet->GetFormatName(mMediaSourceNet->GetCodecID()) + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(NAPI," + mMediaSourceNet->GetFormatName(mMediaSourceNet->GetSourceCodec()) + ")");
                 break;
             default:
                 LOG(LOG_ERROR, "Unknown media type");
@@ -432,10 +432,10 @@ void* NetworkListener::Run(void* pArgs)
         switch(mMediaSourceNet->mMediaType)
         {
             case MEDIA_VIDEO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(NET," + mMediaSourceNet->GetFormatName(mMediaSourceNet->GetCodecID()) + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Video-InputListener(NET," + mMediaSourceNet->GetFormatName(mMediaSourceNet->GetSourceCodec()) + ")");
                 break;
             case MEDIA_AUDIO:
-                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(NET," + mMediaSourceNet->GetFormatName(mMediaSourceNet->GetCodecID()) + ")");
+                SVC_PROCESS_STATISTIC.AssignThreadName("Audio-InputListener(NET," + mMediaSourceNet->GetFormatName(mMediaSourceNet->GetSourceCodec()) + ")");
                 break;
             default:
                 LOG(LOG_ERROR, "Unknown media type");

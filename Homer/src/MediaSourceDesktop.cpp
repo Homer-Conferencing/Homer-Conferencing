@@ -166,12 +166,12 @@ void MediaSourceDesktop::StopGrabbing()
 	mWaitConditionScreenshotUpdated.wakeAll();
 }
 
-string MediaSourceDesktop::GetCodecName()
+string MediaSourceDesktop::GetSourceCodecStr()
 {
     return "Raw";
 }
 
-string MediaSourceDesktop::GetCodecLongName()
+string MediaSourceDesktop::GetSourceCodecDescription()
 {
     return "Raw";
 }

@@ -810,7 +810,7 @@ QStringList VideoWidget::GetVideoStatistic()
     //### Line 4: video codec and resolution
     int tInputBitRate = mVideoSource->GetInputBitRate();
     QString tLine_InputCodec = "";
-    QString tCodecName = QString(mVideoSource->GetCodecName().c_str());
+    QString tCodecName = QString(mVideoSource->GetSourceCodecStr().c_str());
     int tSourceResX = 0, tSourceResY = 0;
     mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
     tLine_InputCodec = Homer::Gui::VideoWidget::tr("Source codec:")+ " " + ((tCodecName != "") ? tCodecName : Homer::Gui::VideoWidget::tr("unknown"));

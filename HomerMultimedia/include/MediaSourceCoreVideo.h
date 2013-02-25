@@ -61,8 +61,8 @@ public:
     //virtual GrabResolutions GetSupportedVideoGrabResolutions();
 
     /* grabbing control */
-    virtual std::string GetCodecName();
-    virtual std::string GetCodecLongName();
+    virtual std::string GetSourceCodecStr();
+    virtual std::string GetSourceCodecDescription();
 
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);

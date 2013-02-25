@@ -801,7 +801,7 @@ void MainWindow::CreateScreenShot()
             sShiftingString[sShiftIndex] = '#';
         else
             sShiftingString[31 - sShiftIndex] = '#';
-        tMessage += "       Video: " + QString(mOwnVideoMuxer->GetCodecName().c_str()) + "/" + QString(mOwnVideoMuxer->GetMuxingCodec().c_str()) + "       Audio: " + QString(mOwnAudioMuxer->GetCodecName().c_str()) + "/" + QString(mOwnAudioMuxer->GetMuxingCodec().c_str()) + "    " + sShiftingString;
+        tMessage += "       Video: " + QString(mOwnVideoMuxer->GetSourceCodecStr().c_str()) + "/" + QString(mOwnVideoMuxer->GetMuxingCodec().c_str()) + "       Audio: " + QString(mOwnAudioMuxer->GetSourceCodecStr().c_str()) + "/" + QString(mOwnAudioMuxer->GetMuxingCodec().c_str()) + "    " + sShiftingString;
     #endif
 
     mStatusBar->showMessage(tMessage);

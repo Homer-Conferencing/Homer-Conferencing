@@ -60,8 +60,8 @@ public:
 
     /* grabbing control */
     virtual void StopGrabbing();
-    virtual std::string GetCodecName();
-    virtual std::string GetCodecLongName();
+    virtual std::string GetSourceCodecStr();
+    virtual std::string GetSourceCodecDescription();
 
     /* global mutexing for port audio */
     // put some additional locking around portaudio's PaInit()

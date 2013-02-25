@@ -63,8 +63,6 @@ namespace Homer { namespace Multimedia {
 //#define MSMEM_DEBUG_TIMING
 //#define MSMEM_DEBUG_DECODER_STATE
 //#define MSMEM_DEBUG_PRE_BUFFERING
-
-
 //#define MSMEM_DEBUG_AV_SYNC
 
 ///////////////////////////////////////////////////////////////////////////////

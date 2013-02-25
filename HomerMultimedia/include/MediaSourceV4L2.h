@@ -56,8 +56,8 @@ public:
     virtual bool HasVariableVideoOutputFrameRate();
 
     /* grabbing control */
-    virtual std::string GetCodecName();
-    virtual std::string GetCodecLongName();
+    virtual std::string GetSourceCodecStr();
+    virtual std::string GetSourceCodecDescription();
 
     /* device control */
     virtual void getVideoDevices(VideoDevices &pVList);

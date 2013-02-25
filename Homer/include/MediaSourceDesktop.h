@@ -68,8 +68,8 @@ public:
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
     virtual void StopGrabbing();
-    virtual std::string GetCodecName();
-    virtual std::string GetCodecLongName();
+    virtual std::string GetSourceCodecStr();
+    virtual std::string GetSourceCodecDescription();
     int SelectSegment(QWidget *pParent = NULL);
 
     /* recording */

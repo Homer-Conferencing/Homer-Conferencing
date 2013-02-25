@@ -269,9 +269,9 @@ public:
     /* grabbing control */
     virtual void StopGrabbing();
     virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
-    virtual enum CodecID GetCodecID();
-    virtual std::string GetCodecName();
-    virtual std::string GetCodecLongName();
+    virtual enum CodecID GetSourceCodec();
+    virtual std::string GetSourceCodecStr();
+    virtual std::string GetSourceCodecDescription();
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pRtpActivated = false, bool pDoReset = false);
     virtual int GetChunkDropCounter(); // how many chunks were dropped?
     virtual int GetFragmentBufferCounter(); // how many fragments are currently buffered?

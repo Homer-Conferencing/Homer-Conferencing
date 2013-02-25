@@ -1700,7 +1700,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         if ((tRes = avcodec_fill_audio_frame(tAudioFrame, mOutputAudioChannels, mOutputAudioFormat, (const uint8_t *)mResampleBuffer, tReadFifoSize, 1)) < 0)
                                             LOG(LOG_ERROR, "Could not fill the audio frame with the provided data from the audio resampling step because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
                                         #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
-                                            LOG(LOG_VERBOSE, "Distributing sample buffer with PTS: %"PRId64" (chunk: %"PRId64"", tCurPts, mOutputFrameNumber);
+                                            LOG(LOG_VERBOSE, "Distributing sample buffer with PTS: %"PRId64, tCurPts);
                                             LOG(LOG_VERBOSE, "Filling audio frame with buffer size: %d", tReadFifoSize);
                                         #endif
 
@@ -2160,26 +2160,26 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
     return tResult;
 }
 
-enum CodecID MediaSourceMuxer::GetCodecID()
+enum CodecID MediaSourceMuxer::GetSourceCodec()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetCodecID();
+        return mMediaSource->GetSourceCodec();
     else
         return CODEC_ID_NONE;
 }
 
-string MediaSourceMuxer::GetCodecName()
+string MediaSourceMuxer::GetSourceCodecStr()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetCodecName();
+        return mMediaSource->GetSourceCodecStr();
     else
         return "";
 }
 
-string MediaSourceMuxer::GetCodecLongName()
+string MediaSourceMuxer::GetSourceCodecDescription()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetCodecLongName();
+        return mMediaSource->GetSourceCodecDescription();
     else
         return "";
 }

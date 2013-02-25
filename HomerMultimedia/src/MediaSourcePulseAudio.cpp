@@ -540,12 +540,12 @@ bool MediaSourcePulseAudio::SupportsRecording()
     return true;
 }
 
-string MediaSourcePulseAudio::GetCodecName()
+string MediaSourcePulseAudio::GetSourceCodecStr()
 {
     return "Raw";
 }
 
-string MediaSourcePulseAudio::GetCodecLongName()
+string MediaSourcePulseAudio::GetSourceCodecDescription()
 {
     return "Raw";
 }

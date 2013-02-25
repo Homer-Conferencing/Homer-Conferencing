@@ -561,12 +561,12 @@ void MediaSourceMMSys::StopGrabbing()
 	}
 }
 
-string MediaSourceMMSys::GetCodecName()
+string MediaSourceMMSys::GetSourceCodecStr()
 {
     return "Raw";
 }
 
-string MediaSourceMMSys::GetCodecLongName()
+string MediaSourceMMSys::GetSourceCodecDescription()
 {
     return "Raw";
 }

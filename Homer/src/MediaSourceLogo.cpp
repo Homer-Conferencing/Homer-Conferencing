@@ -103,12 +103,12 @@ void MediaSourceLogo::getVideoDevices(VideoDevices &pVList)
     tFirstCall = false;
 }
 
-string MediaSourceLogo::GetCodecName()
+string MediaSourceLogo::GetSourceCodecStr()
 {
     return "Raw";
 }
 
-string MediaSourceLogo::GetCodecLongName()
+string MediaSourceLogo::GetSourceCodecDescription()
 {
     return "Raw";
 }

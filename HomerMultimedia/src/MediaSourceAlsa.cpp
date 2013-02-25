@@ -346,12 +346,12 @@ void MediaSourceAlsa::StopGrabbing()
 	}
 }
 
-string MediaSourceAlsa::GetCodecName()
+string MediaSourceAlsa::GetSourceCodecStr()
 {
     return "Raw";
 }
 
-string MediaSourceAlsa::GetCodecLongName()
+string MediaSourceAlsa::GetSourceCodecDescription()
 {
     return "Raw";
 }

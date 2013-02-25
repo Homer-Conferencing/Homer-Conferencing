@@ -477,12 +477,12 @@ bool MediaSourceVFW::SupportsRecording()
 	return true;
 }
 
-string MediaSourceVFW::GetCodecName()
+string MediaSourceVFW::GetSourceCodecStr()
 {
     return "Raw";
 }
 
-string MediaSourceVFW::GetCodecLongName()
+string MediaSourceVFW::GetSourceCodecDescription()
 {
     return "Raw";
 }

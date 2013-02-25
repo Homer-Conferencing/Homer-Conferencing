@@ -659,12 +659,12 @@ bool MediaSourceV4L2::SupportsDecoderFrameStatistics()
     return (mMediaType == MEDIA_VIDEO);
 }
 
-string MediaSourceV4L2::GetCodecName()
+string MediaSourceV4L2::GetSourceCodecStr()
 {
     return "Raw";
 }
 
-string MediaSourceV4L2::GetCodecLongName()
+string MediaSourceV4L2::GetSourceCodecDescription()
 {
     return "Raw";
 }

@@ -262,12 +262,12 @@ bool MediaSourceCoreVideo::SupportsRecording()
 	return true;
 }
 
-string MediaSourceCoreVideo::GetCodecName()
+string MediaSourceCoreVideo::GetSourceCodecStr()
 {
     return "Raw";
 }
 
-string MediaSourceCoreVideo::GetCodecLongName()
+string MediaSourceCoreVideo::GetSourceCodecDescription()
 {
     return "Raw";
 }

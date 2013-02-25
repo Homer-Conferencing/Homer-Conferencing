@@ -49,8 +49,6 @@ namespace Homer { namespace Multimedia {
 //#define MSM_DEBUG_PACKETS
 //#define MSM_DEBUG_PACKET_DISTRIBUTION
 //#define MSM_DEBUG_GRABBING
-
-// the following de/activates debugging of the time behavior of the transcoding
 //#define MSM_DEBUG_TIMING
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -137,9 +135,9 @@ public:
     /* grabbing control */
     virtual void StopGrabbing();
     virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
-    virtual enum CodecID GetCodecID();
-    virtual std::string GetCodecName();
-    virtual std::string GetCodecLongName();
+    virtual enum CodecID GetSourceCodec();
+    virtual std::string GetSourceCodecStr();
+    virtual std::string GetSourceCodecDescription();
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pRtpActivated = false, bool pDoReset = false);
     virtual int GetChunkDropCounter();
     virtual int GetChunkBufferCounter();

@@ -415,12 +415,12 @@ bool MediaSourceOss::SupportsRecording()
 	return true;
 }
 
-string MediaSourceOss::GetCodecName()
+string MediaSourceOss::GetSourceCodecStr()
 {
     return "Raw";
 }
 
-string MediaSourceOss::GetCodecLongName()
+string MediaSourceOss::GetSourceCodecDescription()
 {
     return "Raw";
 }
