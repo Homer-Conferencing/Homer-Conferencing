@@ -652,7 +652,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     char *tBuffer = NULL;
     CloseRtpPacketStream(&tBuffer);
 
-    int64_t tAVPacketPts = (float)mRtpEncoderStream->pts.val + mRtpEncoderStream->pts.num / mRtpEncoderStream->pts.den;
+    int64_t tAVPacketPts = (mRtpEncoderStream->pts.den != 0 ? ((float)mRtpEncoderStream->pts.val + mRtpEncoderStream->pts.num / mRtpEncoderStream->pts.den) : 0);
 
     LOG(LOG_INFO, "Opened...");
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);

@@ -92,9 +92,16 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
 {
     bool tResetNeeded = false;
 
+    #ifdef MSIM_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Sending %d bytes for media sink %s", pPacketSize, GetId().c_str());
+    #endif
+
     // return immediately if the sink is stopped
 	if (!mRunning)
+	{
+	    LOG(LOG_WARN, "Media sink isn't active yet");
 	    return;
+	}
 
 	// check for key frame if we wait for the first key frame
     if (mWaitUntillFirstKeyFrame)
@@ -114,11 +121,14 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
 
     if (mRtpActivated)
     {
+        #ifdef MSIM_DEBUG_TIMING
+            LOG(LOG_VERBOSE, "Current stream PTS.VAL=%d, PTS.NUM=%d, PTS.DEN=%d", pStream->pts.val, pStream->pts.num, pStream->pts.den);
+        #endif
         //###################################
         //### calculate the import PTS value
         //###################################
         // the PTS value is used within the RTP packetizer to calculate the resulting timestamp value for the RTP header
-        int64_t tAVPacketPts = (float)pStream->pts.val + pStream->pts.num / pStream->pts.den; // result = val + num / den
+        int64_t tAVPacketPts = (pStream->pts.den != 0 ? ((float)pStream->pts.val + pStream->pts.num / pStream->pts.den) : 0); // result = val + num / den
         if (tAVPacketPts < mLastPacketPts)
             LOG(LOG_ERROR, "Current packet pts (%d) from A/V encoder is lower than last one (%"PRId64")", tAVPacketPts, mLastPacketPts);
 
