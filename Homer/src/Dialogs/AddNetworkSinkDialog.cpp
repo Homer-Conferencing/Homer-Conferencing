@@ -53,6 +53,11 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+QString sLastBerkeleyDestinationHost = "";
+QString sLastAlternativeDestinationHost = "Destination";
+
+///////////////////////////////////////////////////////////////////////////////
+
 AddNetworkSinkDialog::AddNetworkSinkDialog(QWidget* pParent, QString pTitle, DataType pDataType, MediaSource *pMediaSource) :
     QDialog(pParent)
 {
@@ -254,17 +259,26 @@ void AddNetworkSinkDialog::SaveConfiguration()
         default:
             LOG(LOG_WARN, "Unknown data type");
     }
+    if (mCbNAPIImpl->currentText() == BERKEYLEY_SOCKETS)
+    {// Berkeley NAPI implementation
+    	sLastBerkeleyDestinationHost = mLeHost->text();
+    }else
+    {// something different than Berkeley API
+    	sLastAlternativeDestinationHost = mLeHost->text();
+    }
 }
 
 void AddNetworkSinkDialog::NAPISelectionChanged(QString pSelection)
 {
-    if (pSelection == BERKEYLEY_SOCKETS)
-    {
-        mLeHost->setText(QString(MEETING.GetHostAdr().c_str()));
-    }else
-    {
-        mLeHost->setText("Destination");
-    }
+	if (pSelection == BERKEYLEY_SOCKETS)
+	{
+		if (sLastBerkeleyDestinationHost == "")
+			sLastBerkeleyDestinationHost = QString(MEETING.GetHostAdr().c_str());
+		mLeHost->setText(sLastBerkeleyDestinationHost);
+	}else
+	{
+		mLeHost->setText(sLastAlternativeDestinationHost);
+	}
 }
 
 void AddNetworkSinkDialog::LoadConfiguration()
