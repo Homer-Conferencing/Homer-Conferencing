@@ -61,7 +61,7 @@ void MediaSinkNet::BasicInit(string pTargetHost, unsigned int pTargetPort)
     mNAPIDataSocket = NULL;
     mDataSocket = NULL;
     mBrokenPipe = false;
-    mMaxNetworkPacketSize = 1280;
+    mMaxNetworkPacketSize = -1;
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
 }
@@ -239,58 +239,64 @@ void MediaSinkNet::WriteFragment(char* pData, unsigned int pSize, int64_t pFragm
         MediaSinkMem::WriteFragment(pData, pSize, pFragmentNumber);
     }else
     {// RTP inactive
-        #ifdef MSIN_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Sending a fragment with max. network packet size: %d", mMaxNetworkPacketSize);
-        #endif
-        // HINT: we limit packet size to mMaxNetworkPacketSize if RTP is inactive
-        int tFragmentCount = 1;
-        tFragmentCount = (pSize + mMaxNetworkPacketSize -1) / mMaxNetworkPacketSize;
-        #ifdef MSIN_DEBUG_PACKETS
-            if (tFragmentCount > 1)
-                LOG(LOG_WARN, "RTP is inactive and current packet of %d bytes is larger than limit of %d bytes per network packet, will split data into %d packets", pSize, mMaxNetworkPacketSize, tFragmentCount);
-        #endif
+        if (mMaxNetworkPacketSize > 0)
+        {//we split the fragment into network packets according to the maximum packet size
+            #ifdef MSIN_DEBUG_PACKETS
+                LOG(LOG_VERBOSE, "Sending a fragment with max. network packet size: %d", mMaxNetworkPacketSize);
+            #endif
+            // HINT: we limit packet size to mMaxNetworkPacketSize if RTP is inactive
+            int tFragmentCount = 1;
+            tFragmentCount = (pSize + mMaxNetworkPacketSize -1) / mMaxNetworkPacketSize;
+            #ifdef MSIN_DEBUG_PACKETS
+                if (tFragmentCount > 1)
+                    LOG(LOG_WARN, "RTP is inactive and current packet of %d bytes is larger than limit of %d bytes per network packet, will split data into %d packets", pSize, mMaxNetworkPacketSize, tFragmentCount);
+            #endif
 
-        unsigned int tFragmentSize = pSize;
-        char *tFragmentData = pData;
-        while (tFragmentCount)
-        {
-            int64_t tTime = Time::GetTimeStamp();
-            tFragmentSize = (unsigned int)(((int)pSize > mMaxNetworkPacketSize)? mMaxNetworkPacketSize : pSize);
-
-            // for TCP add an additional fragment header in front of the codec data to be able to differentiate the fragments in a received TCP packet at receiver side
-            if(mStreamedTransport)
+            unsigned int tFragmentSize = pSize;
+            char *tFragmentData = pData;
+            while (tFragmentCount)
             {
-                if (MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE > TCP_FRAGMENT_HEADER_SIZE + tFragmentSize)
+                int64_t tTime = Time::GetTimeStamp();
+                tFragmentSize = (unsigned int)(((int)pSize > mMaxNetworkPacketSize)? mMaxNetworkPacketSize : pSize);
+
+                // for TCP add an additional fragment header in front of the codec data to be able to differentiate the fragments in a received TCP packet at receiver side
+                if(mStreamedTransport)
                 {
-                    TCPFragmentHeader *tHeader = (TCPFragmentHeader*)mStreamFragmentCopyBuffer;
-                    memcpy(mStreamFragmentCopyBuffer + TCP_FRAGMENT_HEADER_SIZE, tFragmentData, tFragmentSize);
-                    tHeader->FragmentSize = tFragmentSize;
-                    tFragmentSize += TCP_FRAGMENT_HEADER_SIZE;
-                    tFragmentData = mStreamFragmentCopyBuffer;
-                }else
+                    if (MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE > TCP_FRAGMENT_HEADER_SIZE + tFragmentSize)
+                    {
+                        TCPFragmentHeader *tHeader = (TCPFragmentHeader*)mStreamFragmentCopyBuffer;
+                        memcpy(mStreamFragmentCopyBuffer + TCP_FRAGMENT_HEADER_SIZE, tFragmentData, tFragmentSize);
+                        tHeader->FragmentSize = tFragmentSize;
+                        tFragmentSize += TCP_FRAGMENT_HEADER_SIZE;
+                        tFragmentData = mStreamFragmentCopyBuffer;
+                    }else
+                    {
+                        LOG(LOG_ERROR, "TCP copy buffer is too small for data");
+                    }
+                }
+
+                int64_t tTime3 = Time::GetTimeStamp();
+                #ifdef MSIN_DEBUG_TIMING
+                    int64_t tTime4 = Time::GetTimeStamp();
+                    LOG(LOG_VERBOSE, "       SendFragment::AnnouncePacket for a fragment of %u bytes took %"PRId64" us", tFragmentSize, tTime4 - tTime3);
+                #endif
+                MediaSinkMem::WriteFragment(tFragmentData, tFragmentSize, pFragmentNumber /* do not increase the fragment number here because we don't disntinguish between sub-fragments here*/);
+
+                tFragmentData = tFragmentData + tFragmentSize;
+                tFragmentCount--;
+                #ifdef MSIN_DEBUG_TIMING
+                    int64_t tTime2 = Time::GetTimeStamp();
+                    LOG(LOG_VERBOSE, "       SendFragment::Loop for a fragment of %u bytes took %"PRId64" us", tFragmentSize, tTime2 - tTime);
+                #endif
+                if ((tFragmentData > (pData + pSize)) && (tFragmentCount))
                 {
-                    LOG(LOG_ERROR, "TCP copy buffer is too small for data");
+                    LOG(LOG_ERROR, "Something went wrong, we have too many fragments and would read over the last byte of the fragment buffer");
+                    return;
                 }
             }
-
-            int64_t tTime3 = Time::GetTimeStamp();
-            #ifdef MSIN_DEBUG_TIMING
-                int64_t tTime4 = Time::GetTimeStamp();
-                LOG(LOG_VERBOSE, "       SendFragment::AnnouncePacket for a fragment of %u bytes took %"PRId64" us", tFragmentSize, tTime4 - tTime3);
-            #endif
-            MediaSinkMem::WriteFragment(tFragmentData, tFragmentSize, pFragmentNumber /* do not increase the fragment number here because we don't disntinguish between sub-fragments here*/);
-
-            tFragmentData = tFragmentData + tFragmentSize;
-            tFragmentCount--;
-            #ifdef MSIN_DEBUG_TIMING
-                int64_t tTime2 = Time::GetTimeStamp();
-                LOG(LOG_VERBOSE, "       SendFragment::Loop for a fragment of %u bytes took %"PRId64" us", tFragmentSize, tTime2 - tTime);
-            #endif
-            if ((tFragmentData > (pData + pSize)) && (tFragmentCount))
-            {
-                LOG(LOG_ERROR, "Something went wrong, we have too many fragments and would read over the last byte of the fragment buffer");
-                return;
-            }
+        }else
+        {// fragment has to be sent 1:1
+            MediaSinkMem::WriteFragment(pData, pSize, pFragmentNumber);
         }
     }
 }
@@ -401,7 +407,7 @@ void* MediaSinkNet::Run(void* pArgs)
                     if (tBufferedPackets > 2)
                         LOG(LOG_WARN, "%d/%d %s packets are already buffered for relaying to %s", tBufferedPackets, mSinkFifo->GetSize(), mCodec.c_str(), GetId().c_str());
                     else
-                        LOG(LOG_VERBOSE, "Sending packet %d with %d bytes, %d remaining packets in queue", (int)tFragmentNumber, pBufferSize, tBufferedPackets);
+                        LOG(LOG_VERBOSE, "Sending packet %d with %d bytes, %d remaining packets in queue", (int)tFragmentNumber, tBufferSize, tBufferedPackets);
                 #endif
 
             	SendPacket(tBuffer, tBufferSize);
@@ -460,7 +466,8 @@ void MediaSinkNet::SendPacket(char* pData, unsigned int pSize)
             int tPacketSize = pSize;
             bool tIsLastFragment = false;
             bool tIsSenderReport = false;
-            RtpParse(tFragmentData, tPacketSize, tIsLastFragment, tIsSenderReport, mIncomingAVStream->codec->codec_id, true);
+            enum RtcpType tRtcpType;
+            RtpParse(tFragmentData, tPacketSize, tIsLastFragment, tRtcpType, mIncomingAVStream->codec->codec_id, true);
         }
     #endif
 
