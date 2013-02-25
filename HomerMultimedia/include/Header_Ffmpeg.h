@@ -325,4 +325,22 @@ inline int av_opt_set(void *obj, const char *name, const char *val, int search_f
     return av_set_string3(obj, name, val, 0, NULL);
 }
 #endif
+
+inline int64_t HM_av_frame_get_best_effort_timestamp(const AVFrame *frame)
+{
+    #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 23, 100))
+        int64_t tResult = 0;
+        if (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE)
+        {// use DTS value from decoder
+            tResult = tSourceFrame->pkt_dts;
+        }else if (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE)
+        {// fall back to reordered PTS value
+            tResult = tSourceFrame->pkt_pts;
+        }
+        return tResult;
+    #else
+        return av_frame_get_best_effort_timestamp(frame);
+    #endif
+}
+
 #endif

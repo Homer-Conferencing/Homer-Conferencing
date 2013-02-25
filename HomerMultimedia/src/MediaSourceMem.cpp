@@ -1789,7 +1789,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // save PTS value to deliver it later to the frame grabbing thread
                                 if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) || (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE))
                                 {// use PTS/DTS
-                                	tDecodedFrameTimestamp = av_frame_get_best_effort_timestamp(tSourceFrame);
+                                	tDecodedFrameTimestamp = HM_av_frame_get_best_effort_timestamp(tSourceFrame);
                                     #ifdef MSMEM_DEBUG_TIMING
                                         LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet BE PTS %"PRId64, tDecodedFrameTimestamp);
                                     #endif
