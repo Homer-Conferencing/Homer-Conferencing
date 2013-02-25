@@ -37,7 +37,7 @@
         <number>1</number>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="mVideo">
         <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -107,12 +107,6 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoSource">
-                <property name="maximumSize">
-                 <size>
-                  <width>800</width>
-                  <height>24</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -446,12 +440,6 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoResolution">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>24</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -619,12 +607,6 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoCodec">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>24</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -709,12 +691,6 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoQuality">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>24</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -814,12 +790,6 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoBitRate">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>24</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -899,12 +869,6 @@
               </item>
               <item>
                <widget class="QComboBox" name="mCbVideoMaxPacketSize">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>24</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -2743,12 +2707,6 @@ background-color: rgb(150, 150, 150);
                   <height>24</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>24</height>
-                 </size>
-                </property>
                 <property name="font">
                  <font>
                   <weight>50</weight>
@@ -3231,8 +3189,8 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>416</width>
-              <height>522</height>
+              <width>654</width>
+              <height>666</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -5901,7 +5859,7 @@ background-color: rgb(150, 150, 150);
         </size>
        </property>
        <property name="textElideMode">
-        <enum>Qt::ElideNone</enum>
+        <enum>Qt::ElideMiddle</enum>
        </property>
        <property name="movement">
         <enum>QListView::Static</enum>
@@ -5927,14 +5885,8 @@ background-color: rgb(150, 150, 150);
        <property name="uniformItemSizes">
         <bool>true</bool>
        </property>
-       <property name="batchSize">
-        <number>130</number>
-       </property>
        <property name="wordWrap">
         <bool>true</bool>
-       </property>
-       <property name="selectionRectVisible">
-        <bool>false</bool>
        </property>
        <property name="currentRow">
         <number>-1</number>
