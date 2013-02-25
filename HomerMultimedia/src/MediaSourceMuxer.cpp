@@ -1508,9 +1508,11 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 // check encoder frame timestamp
                                 if ((tLastVideoEncoderFrameTimestamp != 0) && (tVideoEncoderFrameTimestamp <= tLastVideoEncoderFrameTimestamp))
                                 {// timestamp is too low
-                                	LOG(LOG_WARN, "Encoder VIDEO frame timestamp is too low (%"PRId64" <= %"PRId64")", tVideoEncoderFrameTimestamp, tLastVideoEncoderFrameTimestamp);
+									#ifdef MSM_DEBUG_TIMING
+                                		LOG(LOG_WARN, "Encoder VIDEO frame timestamp is too low (%"PRId64" <= %"PRId64")", tVideoEncoderFrameTimestamp, tLastVideoEncoderFrameTimestamp);
+									#endif
 
-                                	// enforce a monotonously increasing time base
+									// enforce a monotonously increasing time base
                                 	tVideoEncoderFrameTimestamp = tLastVideoEncoderFrameTimestamp + 1;
                                 }
 
