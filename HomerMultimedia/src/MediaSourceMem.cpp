@@ -1036,10 +1036,12 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         // should we restart pre-buffering?
         if ((mDecoderFramePreBufferingAutoRestart) && (mDecoderFramePreBufferTime > 0) && (mDecoderFrameBufferTime < MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER))
         {// time to restart pre-buffering
-            LOG(LOG_VERBOSE, "Pre-bufferung has to be restarted now..");
+            LOG(LOG_VERBOSE, "Pre-buffering will be restarted now..");
 
             // pretend that we had a seeking step and have to recalibrate the RT grabbing
-            LOG(LOG_WARN, "GrabChunk()-Triggering RT-Grabbing calibration");
+			#ifdef MSMEM_DEBUG_PRE_BUFFERING
+            	LOG(LOG_WARN, "GrabChunk()-Triggering RT-Grabbing calibration");
+			#endif
             mDecoderRecalibrateRTGrabbingAfterSeeking = true;
         }
 
@@ -1150,7 +1152,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 // RT grabbing - do we have to wait?
                 if (!WaitForRTGrabbing())
                 {
-                    LOG(LOG_WARN, "%s frame from %s source is too late, frame dropped", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
+                	LOG(LOG_WARN, "%s frame from %s source is too late, frame dropped", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
                     tShouldGrabNext = true;
                 }
             }
@@ -2401,7 +2403,9 @@ void MediaSourceMem::CalibrateRTGrabbing()
     // adopt the stored pts value which represent the start of the media presentation in real-time useconds
     float  tRelativeFrameIndex = mLastBufferedOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts);
     double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetOutputFrameRate());
-	LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, mDecoderFramePreBufferTime);
+	#ifdef MSMEM_DEBUG_WAITING_TIMING
+    	LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, mDecoderFramePreBufferTime);
+	#endif
 	if (tRelativeTime < 0)
 	{
 		LOG(LOG_ERROR, "Found invalid relative PTS value of: %.2lf", tRelativeTime);
@@ -2528,7 +2532,9 @@ bool MediaSourceMem::WaitForRTGrabbing()
 	    		// should we met the pre-buffer time?
 	    		if (mDecoderFramePreBufferTime > 0)
 	    		{// we have to be faster, signal to drop this frame
-	                LOG(LOG_WARN, "RTP-stream is too late, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000));
+					#ifdef MSMEM_DEBUG_WAITING_TIMING
+	    				LOG(LOG_WARN, "RTP-stream is too late, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000));
+					#endif
 				    return false;
 	    		}else
 	    		{// we are late, but there is not other choice
@@ -2540,7 +2546,9 @@ bool MediaSourceMem::WaitForRTGrabbing()
 			// check if we are still in play-range
 			if (tDelay >= MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000)
 			{
-				LOG(LOG_WARN, "System is too slow?, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000));
+				#ifdef MSMEM_DEBUG_WAITING_TIMING
+					LOG(LOG_WARN, "System is too slow?, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_FRAME_DROP_THRESHOLD * 1000));
+				#endif
 				return false;
 			}
 		}
