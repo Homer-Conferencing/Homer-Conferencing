@@ -60,7 +60,7 @@ public:
     virtual ~Mutex( );
 
     /* every function returns TRUE if successful */
-    bool lock(int pTimeout = 0/* 0 means infinite waiting time */);
+    bool lock(int pTimeout = 0 /* in ms, 0 means infinite waiting time */);
     bool unlock();
 
     /* for debbuging */
