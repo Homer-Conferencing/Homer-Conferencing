@@ -248,8 +248,12 @@ inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, cons
 
 		tResult = avcodec_encode_video(avctx, avpkt->data, avpkt->size, (const AVFrame *)frame);
 
-        if ((avctx) && (avctx->coded_frame) && (avctx->coded_frame->key_frame))
+        if (frame->key_frame)
             avpkt->flags |= AV_PKT_FLAG_KEY;
+
+        avpkt->pts = frame->pts;
+        avpkt->dts = frame->pts;
+        avpkt->size = tResult;
 
 		if (got_packet_ptr != NULL)
 			*got_packet_ptr = (tResult > 0);
