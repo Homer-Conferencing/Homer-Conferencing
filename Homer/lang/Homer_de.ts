@@ -3950,12 +3950,22 @@ datei</translation>
 übertragung</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1895"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1827"/>
+        <source>Pre-buffering time:</source>
+        <translation>Vorpufferungszeit:</translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1853"/>
+        <source> s</source>
+        <translation> s</translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1950"/>
         <source>Video playback enabled</source>
         <translation>Videowiedergabe aktiv</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1949"/>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="2004"/>
         <source>Audio playback enabled</source>
         <translation>Audiowiedergabe aktiv</translation>
     </message>
