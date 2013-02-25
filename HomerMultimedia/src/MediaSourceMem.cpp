@@ -701,6 +701,8 @@ void MediaSourceMem::SetFrameBufferPreBufferingTime(float pTime)
 {
 	if (pTime > MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME - 0.5)
 		pTime = MEDIA_SOURCE_MEM_FRAME_INPUT_QUEUE_MAX_TIME - 0.5;
+	if (pTime < 0)
+		pTime = 0;
 
 	MediaSource::SetFrameBufferPreBufferingTime(pTime);
 }
