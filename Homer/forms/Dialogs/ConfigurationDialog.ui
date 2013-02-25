@@ -2994,10 +2994,10 @@ background-color: rgb(150, 150, 150);
                  <string> s</string>
                 </property>
                 <property name="minimum">
-                 <double>0.010000000000000</double>
+                 <double>0.100000000000000</double>
                 </property>
                 <property name="maximum">
-                 <double>8.000000000000000</double>
+                 <double>3.000000000000000</double>
                 </property>
                 <property name="singleStep">
                  <double>0.010000000000000</double>
@@ -3225,7 +3225,7 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>654</width>
+              <width>431</width>
               <height>666</height>
              </rect>
             </property>
