@@ -166,6 +166,10 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
             tFragmentBufferSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE; // maximum size of one single fragment of a frame packet
             // receive a fragment
             tMediaSourceMemInstance->ReadFragment(tFragmentData, tFragmentBufferSize, tFragmentNumber);
+
+            // relay the received fragment to registered sinks
+            tMediaSourceMemInstance->RelayPacketToMediaSinks(tFragmentData, tFragmentBufferSize, true /* assume every frame as key frame, we simply relay hop-by-hop */);
+
             #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Got packet fragment of size %d at address %p", tFragmentBufferSize, tFragmentData);
             #endif
@@ -193,9 +197,6 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
                 // relay new data to registered sinks
                 if(tFragmenHasAVData)
                 {// fragment is okay
-                    // relay the received fragment to registered sinks
-                    tMediaSourceMemInstance->RelayPacketToMediaSinks(tFragmentData, tFragmentDataSize);
-
                     // store the received fragment locally
                     if (tBufferSize + tFragmentDataSize < pBufferSize)
                     {
@@ -555,7 +556,20 @@ void MediaSourceMem::StopGrabbing()
 
     WriteFragment(NULL, 0, 0);
 
-	WriteFrameOutputBuffer(NULL, 0, 0);
+    int tLoop = 0;
+    int64_t tTime = Time::GetTimeStamp();
+    do{
+        if (tLoop > 0)
+            LOG(LOG_VERBOSE, "Attempt %d to stop %s %s grabbing", tLoop, GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
+        tLoop++;
+
+        WriteFrameOutputBuffer(NULL, 0, 0);
+    }while(!mGrabMutex.lock(250));
+
+    // now, the grabber returned and the lock was correctly acquired -> unlock again
+    mGrabMutex.unlock();
+
+    LOG(LOG_VERBOSE, "Got %s %s decoder stopped after %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), (Time::GetTimeStamp() - tTime) / 1000);
 
     LOG(LOG_VERBOSE, "Memory based %s source successfully stopped", GetMediaTypeStr().c_str());
 }
@@ -1442,7 +1456,7 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
                 }
             }
         }
-    }while ((tShouldReadNext) && (!mEOFReached) && (mDecoderThreadNeeded) && (!mGrabbingStopped));
+    }while ((tShouldReadNext) && (!mEOFReached) && (mDecoderThreadNeeded));
 
     if (mGrabbingStopped)
     {
@@ -1587,7 +1601,7 @@ void* MediaSourceMem::Run(void* pArgs)
 
     LOG(LOG_WARN, "================ Entering main %s decoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
-    while ((mDecoderThreadNeeded) && (!mGrabbingStopped))
+    while (mDecoderThreadNeeded)
     {
         #ifdef MSMEM_DEBUG_DECODER_STATE
             LOG(LOG_VERBOSE, "%s-decoder loop", GetMediaTypeStr().c_str());
@@ -1619,7 +1633,7 @@ void* MediaSourceMem::Run(void* pArgs)
             // #########################################
             // start packet processing
             // #########################################
-            if ((((tPacket->data != NULL) && (tPacket->size > 0)) || (mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */)) && (!mGrabbingStopped))
+            if (((tPacket->data != NULL) && (tPacket->size > 0)) || (mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */))
             {
                 #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                     if ((tPacket->data != NULL) && (tPacket->size > 0))
@@ -2267,7 +2281,7 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
 
     if (mDecoderFifo == NULL)
     {
-        LOG(LOG_ERROR, "Invalid %s decoder FIFO", GetMediaTypeStr().c_str());
+        LOG(LOG_ERROR, "Invalid %s %s decoder FIFO", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
         return;
     }
 
@@ -2511,8 +2525,15 @@ bool MediaSourceMem::WaitForRTGrabbing()
 		{
 	    	if (tDelay > MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000)
 	    	{
-	    		LOG(LOG_WARN, "RTP-stream is too late, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000));
-				return false;
+	    		// should we met the pre-buffer time?
+	    		if (mDecoderFramePreBufferTime > 0)
+	    		{// we have to be faster, signal to drop this frame
+	                LOG(LOG_WARN, "RTP-stream is too late, %s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000));
+				    return false;
+	    		}else
+	    		{// we are late, but there is not other choice
+	    		    // play the delayed frame anyhow
+	    		}
 	    	}
 		}else
 		{
