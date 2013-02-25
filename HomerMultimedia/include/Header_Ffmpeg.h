@@ -330,12 +330,12 @@ inline int64_t HM_av_frame_get_best_effort_timestamp(const AVFrame *frame)
 {
     #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 23, 100))
         int64_t tResult = 0;
-        if (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE)
+        if (frame->pkt_dts != (int64_t)AV_NOPTS_VALUE)
         {// use DTS value from decoder
-            tResult = tSourceFrame->pkt_dts;
-        }else if (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE)
+            tResult = frame->pkt_dts;
+        }else if (frame->pkt_pts != (int64_t)AV_NOPTS_VALUE)
         {// fall back to reordered PTS value
-            tResult = tSourceFrame->pkt_pts;
+            tResult = frame->pkt_pts;
         }
         return tResult;
     #else

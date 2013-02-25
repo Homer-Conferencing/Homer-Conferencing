@@ -585,28 +585,43 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     }
 
     #ifdef MEDIA_SOURCE_MUX_MULTI_THREADED_VIDEO_ENCODING
-        // active multi-threading per default for the video encoding: leave two cpus for concurrent tasks (video grabbing/decoding, audio tasks)
-        av_dict_set(&tOptions, "threads", "auto", 0);
+        if (tCodec->capabilities & (CODEC_CAP_FRAME_THREADS | CODEC_CAP_SLICE_THREADS))
+        {// threading supported
+            // active multi-threading per default for the video encoding: leave two cpus for concurrent tasks (video grabbing/decoding, audio tasks)
+            av_dict_set(&tOptions, "threads", "auto", 0);
 
-        // trigger MT usage during video encoding
-        int tThreadCount = System::GetMachineCores() - 2;
-        if (tThreadCount > 1)
-            mCodecContext->thread_count = tThreadCount;
+            // trigger MT usage during video encoding
+            int tThreadCount = System::GetMachineCores() - 2;
+            if (tThreadCount > 1)
+                mCodecContext->thread_count = tThreadCount;
+        }else
+        {// threading not supported
+            LOG(LOG_WARN, "Multi-threading not supported for %s codec %s", GetMediaTypeStr().c_str(), tCodec->name);
+        }
     #endif
 
     // Open codec
     LOG(LOG_VERBOSE, "..opening video codec");
     if ((tResult = HM_avcodec_open(mCodecContext, tCodec, &tOptions)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
-        // free codec and stream 0
-        av_freep(&mEncoderStream->codec);
-        av_freep(&mEncoderStream);
+        LOG(LOG_WARN, "Couldn't open video codec %s because \"%s\". Will try to open the video open codec without options and with disabled MT..", tCodec->name, strerror(AVUNERROR(tResult)));
 
-        // Close the format context
-        av_free(mFormatContext);
+        // maybe the encoder doesn't support multi-threading?
+        mCodecContext->thread_count = 1;
+        AVDictionary *tNullOptions = NULL;
+        if ((tResult = HM_avcodec_open(mCodecContext, tCodec, &tNullOptions)) < 0)
+        {
+            LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
 
-        return false;
+            // free codec and stream 0
+            av_freep(&mEncoderStream->codec);
+            av_freep(&mEncoderStream);
+
+            // Close the format context
+            av_free(mFormatContext);
+
+            return false;
+        }
     }
 
     if (tCodec->capabilities & CODEC_CAP_DELAY)
@@ -825,7 +840,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     // Open codec
     if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open audio codec because \"%s\".", strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't open audio codec %s because \"%s\".", tCodec->name, strerror(AVUNERROR(tResult)));
         // free codec and stream 0
         av_freep(&mEncoderStream->codec);
         av_freep(&mEncoderStream);

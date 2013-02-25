@@ -1996,27 +1996,41 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     }
 
     #ifdef MEDIA_SOURCE_RECORDER_MULTI_THREADED_VIDEO_ENCODING
-        // active multi-threading per default for the video encoding: leave two cpus for concurrent tasks (video grabbing/decoding, audio tasks)
-        av_dict_set(&tOptions, "threads", "auto", 0);
+        if (tCodec->capabilities & (CODEC_CAP_FRAME_THREADS | CODEC_CAP_SLICE_THREADS))
+        {// threading supported
+            // active multi-threading per default for the video encoding: leave two cpus for concurrent tasks (video grabbing/decoding, audio tasks)
+            av_dict_set(&tOptions, "threads", "auto", 0);
 
-        // trigger MT usage during video encoding
-        int tThreadCount = System::GetMachineCores() - 2;
-        if (tThreadCount > 1)
-            mRecorderCodecContext->thread_count = tThreadCount;
+            // trigger MT usage during video encoding
+            int tThreadCount = System::GetMachineCores() - 2;
+            if (tThreadCount > 1)
+                mRecorderCodecContext->thread_count = tThreadCount;
+        }else
+        {// threading not supported
+            LOG(LOG_WARN, "Multi-threading not supported for %s codec %s", GetMediaTypeStr().c_str(), tCodec->name);
+        }
     #endif
 
     // open codec
     LOG(LOG_VERBOSE, "..opening %s codec", GetMediaTypeStr().c_str());
     if ((tResult = HM_avcodec_open(mRecorderCodecContext, tCodec, NULL)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't open %s codec because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
+        LOG(LOG_WARN, "Couldn't open %s codec because \"%s\". Will try to open the video open codec without options and with disabled MT..", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
 
-        HM_avformat_close_input(mRecorderFormatContext);
+        // maybe the encoder doesn't support multi-threading?
+        mRecorderCodecContext->thread_count = 1;
+        AVDictionary *tNullOptions = NULL;
+        if ((tResult = HM_avcodec_open(mRecorderCodecContext, tCodec, &tNullOptions)) < 0)
+        {
+            LOG(LOG_ERROR, "Couldn't open %s codec because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
 
-        // unlock grabbing
-        mGrabMutex.unlock();
+            HM_avformat_close_input(mRecorderFormatContext);
 
-        return false;
+            // unlock grabbing
+            mGrabMutex.unlock();
+
+            return false;
+        }
     }
 
     // open the output file, if needed
