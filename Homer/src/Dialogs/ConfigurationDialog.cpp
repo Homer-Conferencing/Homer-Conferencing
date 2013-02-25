@@ -367,6 +367,7 @@ void ConfigurationDialog::LoadConfiguration()
     mCbFeatureConferencing->setChecked(CONF.GetFeatureConferencing());
     mCbFeatureAutoLogging->setChecked(CONF.GetFeatureAutoLogging());
     mCbAVSyncForConferences->setChecked(CONF.GetAVSyncDuringConference());
+    mDSpPreBufferingConferences->setValue(CONF.GetPreBufferTimeDuringConference());
 
     /* GUI language */
     QString tCurLang = CONF.GetLanguage();
@@ -661,6 +662,7 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetFeatureConferencing(mCbFeatureConferencing->isChecked());
     CONF.SetFeatureAutoLogging(mCbFeatureAutoLogging->isChecked());
     CONF.SetAVSyncDuringConference(mCbAVSyncForConferences->isChecked());
+    CONF.SetPreBufferTimeDuringConference(mDSpPreBufferingConferences->value());
 
     /* GUI language */
     if (mCbLanguage->currentIndex() != 0)
@@ -1144,6 +1146,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbCloseParticipantWidgetsImmediately->setChecked(true);
                 mCbPreventScreensaverInFullscreenMode->setChecked(true);
                 mCbAVSyncForConferences->setChecked(false);
+                mDSpPreBufferingConferences->setValue(CONF_AV_DEFAULT_CONFERENCE_PRE_BUFFER);
                 break;
             //### NOTIFICATIONS configuration
             case 4:

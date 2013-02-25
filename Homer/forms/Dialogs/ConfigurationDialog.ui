@@ -2893,6 +2893,24 @@ background-color: rgb(150, 150, 150);
               </item>
              </layout>
             </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_4">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="title">
+            <string> Conferencing</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_26">
+            <property name="margin">
+             <number>3</number>
+            </property>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_46">
               <item>
@@ -2931,6 +2949,61 @@ background-color: rgb(150, 150, 150);
                <widget class="QCheckBox" name="mCbAVSyncForConferences">
                 <property name="text">
                  <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_47">
+              <item>
+               <widget class="QLabel" name="label_26">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Standard pre-buffer time during conferences:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_53">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="mDSpPreBufferingConferences">
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="suffix">
+                 <string> s</string>
+                </property>
+                <property name="minimum">
+                 <double>0.010000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>8.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.010000000000000</double>
+                </property>
+                <property name="value">
+                 <double>0.340000000000000</double>
                 </property>
                </widget>
               </item>

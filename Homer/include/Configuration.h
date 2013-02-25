@@ -64,7 +64,10 @@ namespace Homer { namespace Gui {
 
 #define USE_NATIVE_DIALOGS
 
-#define AUDIO_OUTPUT_SAMPLE_RATE        44100
+#define AUDIO_OUTPUT_SAMPLE_RATE        								 44100
+
+// size of the pre-buffer during a live conference
+#define CONF_AV_DEFAULT_CONFERENCE_PRE_BUFFER					          0.34 // seconds  - 1/24s time per frames * 8 frames =0.33333
 
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef USE_NATIVE_DIALOGS
@@ -186,6 +189,7 @@ public:
     /* playback settings */
     QString GetLocalAudioSink();
     bool GetAVSyncDuringConference();
+    double GetPreBufferTimeDuringConference();
 
     /* network settings */
     int GetVideoAudioStartPort();
@@ -352,6 +356,7 @@ public:
     /* playback settings */
     void SetLocalAudioSink(QString pASink);
     void SetAVSyncDuringConference(bool pActive);
+    void SetPreBufferTimeDuringConference(double pValue);
 
     /* network settings */
     void SetVideoAudioStartPort(int pPort);

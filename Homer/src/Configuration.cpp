@@ -642,6 +642,13 @@ void Configuration::SetAVSyncDuringConference(bool pActive)
     mQSettings->endGroup();
 }
 
+void Configuration::SetPreBufferTimeDuringConference(double pValue)
+{
+    mQSettings->beginGroup("Playback");
+    mQSettings->setValue("PreBufferTimeDuringConference", pValue);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetVideoAudioStartPort(int pPort)
 {
     mQSettings->beginGroup("Network");
@@ -1329,6 +1336,11 @@ QString Configuration::GetLocalAudioSink()
 bool Configuration::GetAVSyncDuringConference()
 {
     return mQSettings->value("Playback/AVSyncDuringConference", false).toBool();
+}
+
+double Configuration::GetPreBufferTimeDuringConference()
+{
+    return mQSettings->value("Playback/PreBufferTimeDuringConference", CONF_AV_DEFAULT_CONFERENCE_PRE_BUFFER).toDouble();
 }
 
 int Configuration::GetSipStartPort()
