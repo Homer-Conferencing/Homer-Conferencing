@@ -1823,6 +1823,12 @@
                         <height>30</height>
                        </size>
                       </property>
+                      <property name="font">
+                       <font>
+                        <weight>50</weight>
+                        <bold>false</bold>
+                       </font>
+                      </property>
                       <property name="text">
                        <string>Pre-buffering time:</string>
                       </property>

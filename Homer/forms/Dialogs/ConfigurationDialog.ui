@@ -2964,8 +2964,14 @@ background-color: rgb(150, 150, 150);
                   <height>30</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="text">
-                 <string>Standard pre-buffer time during conferences:</string>
+                 <string>Pre-buffering time for audio/video playback during conferences:</string>
                 </property>
                </widget>
               </item>
@@ -3225,8 +3231,8 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>431</width>
-              <height>666</height>
+              <width>416</width>
+              <height>522</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
