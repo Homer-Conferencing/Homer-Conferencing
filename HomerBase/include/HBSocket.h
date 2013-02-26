@@ -55,7 +55,9 @@
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
-#define SOCKET_IO_BUFFER_SIZE                   2 * 1024 * 1024
+
+#define SOCKET_IO_BUFFER_SIZE                   		((System::GetTargetMachineType() != "x86") ? 256 * 1024 * 1024 : 64 * 1024 * 1024) // use less memory for 32 bit targets
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // the following de/activates debugging of received packets
