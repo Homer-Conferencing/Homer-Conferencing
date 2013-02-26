@@ -846,7 +846,7 @@ int Socket::GetSendBufferSize()
     {
         int tCallRes = getsockopt(mSocketHandle, SOL_SOCKET, SO_SNDBUF, (char *)&tResult, &tResultSize);
         if (tCallRes < 0)
-            LOG(LOG_ERROR, "Failed to get send buffer size on socket %d", mSocketHandle);
+            LOG(LOG_ERROR, "Failed to get send buffer size on socket %d because %s(%d)", mSocketHandle, strerror(errno), errno);
         else
             LOG(LOG_VERBOSE, "Determined send buffer size with %d bytes on socket %d", tResult, mSocketHandle);
     }
@@ -864,7 +864,7 @@ bool Socket::SetSendBufferSize(int pSize)
 			LOG(LOG_WARN, "Setting send buffer size to %d bytes on socket %d", pSize, mSocketHandle);
 
 			if (setsockopt(mSocketHandle, SOL_SOCKET, SO_SNDBUF, (char*)&pSize, sizeof(pSize)) < 0)
-				LOG(LOG_ERROR, "Failed to get send buffer size on socket %d", mSocketHandle);
+				LOG(LOG_ERROR, "Failed to set send buffer size on socket %d because %s(%d)", mSocketHandle, strerror(errno), errno);
 			else
 				tResult = true;
 
@@ -892,7 +892,7 @@ int Socket::GetReceiveBufferSize()
     {
         int tCallRes = getsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (char *)&tResult, &tResultSize);
         if (tCallRes < 0)
-            LOG(LOG_ERROR, "Failed to get receive buffer size on socket %d", mSocketHandle);
+            LOG(LOG_ERROR, "Failed to get receive buffer size on socket %d because %s(%d)", mSocketHandle, strerror(errno), errno);
         else
             LOG(LOG_VERBOSE, "Determined receive buffer size with %d bytes on socket %d", tResult, mSocketHandle);
     }
@@ -910,7 +910,7 @@ bool Socket::SetReceiveBufferSize(int pSize)
 			LOG(LOG_WARN, "Setting receive buffer size to %d bytes on socket %d", pSize, mSocketHandle);
 
 			if (setsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (char*)&pSize, sizeof(pSize)) < 0)
-				LOG(LOG_ERROR, "Failed to get receive buffer size on socket %d", mSocketHandle);
+				LOG(LOG_ERROR, "Failed to set receive buffer size on socket %d because %s(%d)", mSocketHandle, strerror(errno), errno);
 			else
 				tResult = true;
 
