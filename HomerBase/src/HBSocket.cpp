@@ -51,6 +51,14 @@ using namespace std;
 // avoid returning addresses like "::ffff:0.0.0.0"
 //#define SOCKET_AVOID_IPv4_IN_IPv6
 
+// de/activate flexible socket buffering
+#define SOCKETS_FLEXIBLE_BUFFERING
+
+///////////////////////////////////////////////////////////////////////////////
+
+Mutex sWindowsSocketsLayerInitiatedMutex;
+bool sWindowsSocketsLayerInitiated = false;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef QOS_SETTINGS
@@ -848,20 +856,31 @@ int Socket::GetSendBufferSize()
 
 bool Socket::SetSendBufferSize(int pSize)
 {
-    bool tResult = false;
+	#ifdef SOCKETS_FLEXIBLE_BUFFERING
+		bool tResult = false;
 
-    if(mSocketHandle != -1)
-    {
-        LOG(LOG_WARN, "Setting send buffer size to %d bytes on socket %d", pSize, mSocketHandle);
+		if(mSocketHandle != -1)
+		{
+			LOG(LOG_WARN, "Setting send buffer size to %d bytes on socket %d", pSize, mSocketHandle);
 
-        if (setsockopt(mSocketHandle, SOL_SOCKET, SO_SNDBUF, (char*)&pSize, sizeof(pSize)) < 0)
-            LOG(LOG_ERROR, "Failed to get send buffer size on socket %d", mSocketHandle);
-        else
-            tResult = true;
-    }else
-        LOG(LOG_ERROR, "Socket is invalid");
+			if (setsockopt(mSocketHandle, SOL_SOCKET, SO_SNDBUF, (char*)&pSize, sizeof(pSize)) < 0)
+				LOG(LOG_ERROR, "Failed to get send buffer size on socket %d", mSocketHandle);
+			else
+				tResult = true;
 
-    return tResult;
+			int tGot = GetSendBufferSize();
+			if (pSize != tGot)
+			{
+				LOG(LOG_ERROR, "Socket %d reports a different send buffer size than expected", mSocketHandle);
+				tResult = false;
+			}
+		}else
+			LOG(LOG_ERROR, "Socket is invalid");
+
+		return tResult;
+	#else
+		return true;
+	#endif
 }
 
 int Socket::GetReceiveBufferSize()
@@ -883,20 +902,31 @@ int Socket::GetReceiveBufferSize()
 
 bool Socket::SetReceiveBufferSize(int pSize)
 {
-    bool tResult = false;
+	#ifdef SOCKETS_FLEXIBLE_BUFFERING
+		bool tResult = false;
 
-    if(mSocketHandle != -1)
-    {
-        LOG(LOG_WARN, "Setting receive buffer size to %d bytes on socket %d", pSize, mSocketHandle);
+		if(mSocketHandle != -1)
+		{
+			LOG(LOG_WARN, "Setting receive buffer size to %d bytes on socket %d", pSize, mSocketHandle);
 
-        if (setsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (char*)&pSize, sizeof(pSize)) < 0)
-            LOG(LOG_ERROR, "Failed to get receive buffer size on socket %d", mSocketHandle);
-        else
-            tResult = true;
-    }else
-        LOG(LOG_ERROR, "Socket is invalid");
+			if (setsockopt(mSocketHandle, SOL_SOCKET, SO_RCVBUF, (char*)&pSize, sizeof(pSize)) < 0)
+				LOG(LOG_ERROR, "Failed to get receive buffer size on socket %d", mSocketHandle);
+			else
+				tResult = true;
 
-    return tResult;
+			int tGot = GetReceiveBufferSize();
+			if (pSize != tGot)
+			{
+				LOG(LOG_ERROR, "Socket %d reports a different receive buffer size than expected", mSocketHandle);
+				tResult = false;
+			}
+		}else
+			LOG(LOG_ERROR, "Socket is invalid");
+
+		return tResult;
+	#else
+		return true;
+	#endif
 }
 
 bool Socket::IsQoSSupported()
@@ -922,10 +952,17 @@ bool Socket::IsIPv6Supported()
                 LOGEX(Socket, LOG_ERROR, "Detected Windows version is too old (older than Vista) and lacks IPv6/IPv4 dual stack support, disabling IPv6 support");
                 return false;
             }
-            WORD tVersion = 0x0202; // requesting version 2.2
-            WSADATA tWsa;
+			WORD tVersion = 0x0202; // requesting version 2.2
+			WSADATA tWsa;
 
-            WSAStartup(tVersion, &tWsa);
+            sWindowsSocketsLayerInitiatedMutex.lock();
+            if (!sWindowsSocketsLayerInitiated)
+            {
+				WSAStartup(tVersion, &tWsa);
+
+				sWindowsSocketsLayerInitiated = true;
+            }
+            sWindowsSocketsLayerInitiatedMutex.unlock();
         #endif
 
         int tHandle = 0;
@@ -1207,7 +1244,14 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
         WORD tVersion = 0x0202; // requesting version 2.2
         WSADATA tWsa;
 
-        WSAStartup(tVersion, &tWsa);
+        sWindowsSocketsLayerInitiatedMutex.lock();
+        if (!sWindowsSocketsLayerInitiated)
+        {
+			WSAStartup(tVersion, &tWsa);
+
+			sWindowsSocketsLayerInitiated = true;
+        }
+        sWindowsSocketsLayerInitiatedMutex.unlock();
     #endif
 
     LOG(LOG_VERBOSE, "Creating socket for IPv%d, transport type %s", (pIpVersion == SOCKET_IPv6) ? 6 : 4, TransportType2String(mSocketTransportType).c_str());
@@ -1261,17 +1305,17 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
                     LOG(LOG_ERROR, "Failed to set blocking-mode for socket %d", mSocketHandle);
                     tResult = false;
                 }
-//                #ifndef SIO_UDP_CONNRESET
-//                #define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR,12)
-//                #endif
-//                // Hint: http://support.microsoft.com/default.aspx?scid=kb;en-us;263823
-//                //      set behavior of socket by disabling SIO_UDP_CONNRESET
-//                //      without this the recvfrom() can fail, repeatedly, after a bad sendto() call
-//                if (WSAIoctl(mSocketHandle, SIO_UDP_CONNRESET, &tNewBehaviour, sizeof(tNewBehaviour), NULL, 0, &tBytesReturned, NULL, NULL) < 0)
-//                {
-//                    LOG(LOG_ERROR, "Failed to set SIO_UDP_CONNRESET on UDP socket %d", mSocketHandle);
-//                    tResult = false;
-//                }
+                #ifndef SIO_UDP_CONNRESET
+                #define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR,12)
+                #endif
+                // Hint: http://support.microsoft.com/default.aspx?scid=kb;en-us;263823
+                //      set behavior of socket by disabling SIO_UDP_CONNRESET
+                //      without this the recvfrom() can fail, repeatedly, after a bad sendto() call
+                if (WSAIoctl(mSocketHandle, SIO_UDP_CONNRESET, &tNewBehaviour, sizeof(tNewBehaviour), NULL, 0, &tBytesReturned, NULL, NULL) < 0)
+                {
+                    LOG(LOG_ERROR, "Failed to set SIO_UDP_CONNRESET on UDP socket %d", mSocketHandle);
+                    tResult = false;
+                }
             #endif
             break;
         case SOCKET_TCP:
