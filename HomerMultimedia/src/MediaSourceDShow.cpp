@@ -590,7 +590,7 @@ int MediaSourceDShow::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
                 LOG(LOG_VERBOSE, "      ..display pic number: %d", mSourceFrame->display_picture_number);
             #endif
 
-			if ((tFrameFinished) && (tBytesDecoded > 0))
+			if ((tFrameFinished != 0) && (tBytesDecoded > 0))
 			{
                 // ############################
                 // ### ANNOUNCE FRAME (statistics)
