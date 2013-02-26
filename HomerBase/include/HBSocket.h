@@ -56,7 +56,15 @@ namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define SOCKET_IO_BUFFER_SIZE                   		((System::GetTargetMachineType() != "x86") ? 256 * 1024 * 1024 : 64 * 1024 * 1024) // use less memory for 32 bit targets
+#ifdef APPLE
+#define SOCKET_IO_BUFFER_SIZE                   		((System::GetTargetMachineType() != "x86") ? 4 * 1024 * 1024 : 4 * 1024 * 1024) // use less memory for 32 bit targets
+#endif
+#ifdef WINDOWS
+#define SOCKET_IO_BUFFER_SIZE                   		((System::GetTargetMachineType() != "x86") ? 128 * 1024 * 1024 : 64 * 1024 * 1024) // use less memory for 32 bit targets
+#endif
+#ifdef LINUX
+#define SOCKET_IO_BUFFER_SIZE                   		((System::GetTargetMachineType() != "x86") ? 64 * 1024 * 1024 : 32 * 1024 * 1024) // use less memory for 32 bit targets
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
