@@ -1544,7 +1544,7 @@ bool ParticipantWidget::IsAVDriftOkay()
 
     float tTimeDiff = GetAVDrift();
 
-    if ((tTimeDiff < -AV_SYNC_MAX_DRIFT_FOR_OKAY) || (tTimeDiff > AV_SYNC_MAX_DRIFT_FOR_OKAY))
+    if ((tTimeDiff < -AV_SYNC_MAX_DRIFT_FOR_OKAY * 2) || (tTimeDiff > AV_SYNC_MAX_DRIFT_FOR_OKAY * 2))
         tResult = false;
 
     return tResult;
