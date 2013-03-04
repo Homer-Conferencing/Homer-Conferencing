@@ -382,11 +382,11 @@ bool MediaSourcePulseAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     tInputFormat.rate = pSampleRate;
     tInputFormat.channels = pChannels;
 
-    tBufferAttr.maxlength = 4096;
+    tBufferAttr.maxlength = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* 16 signed int */ * pChannels;
     tBufferAttr.tlength = -1;
     tBufferAttr.prebuf = -1;
     tBufferAttr.minreq = -1;
-    tBufferAttr.fragsize = 1024 * 2 * 2;
+    tBufferAttr.fragsize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* 16 signed int */ * pChannels;
 
 	// create a new recording stream
 	if (!(mInputStream = pa_simple_new(NULL, "Homer-Conferencing", PA_STREAM_RECORD, (mDesiredDevice != "" ? mDesiredDevice.c_str() : NULL) /* dev Name */, GetStreamName().c_str(), &tInputFormat, NULL, &tBufferAttr, &tRes)))
