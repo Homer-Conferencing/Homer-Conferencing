@@ -453,27 +453,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext->codec_id = tFormat->video_codec;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
 
-    // add some extra parameters depending on the selected codec
-    switch(tFormat->video_codec)
-    {
-        case CODEC_ID_MPEG2VIDEO:
-                        // force low delay
-                        if (tCodec->capabilities & CODEC_CAP_DELAY)
-                            mCodecContext->flags |= CODEC_FLAG_LOW_DELAY;
-                        break;
-        case CODEC_ID_H263P:
-                        // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
-                        av_dict_set(&tOptions, "structured_slices", "1", 0);
-                        // old codec codext flag CODEC_FLAG_H263P_UMV
-                        av_dict_set(&tOptions, "umv", "1", 0);
-                        // old codec codext flag CODEC_FLAG_H263P_AIV
-                        av_dict_set(&tOptions, "aiv", "1", 0);
-        case CODEC_ID_H263:
-        case CODEC_ID_MPEG4:
-                        mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
-                        break;
-    }
-
     // put sample parameters
     mCodecContext->bit_rate = mStreamBitRate;
 
@@ -599,6 +578,27 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
             LOG(LOG_WARN, "Multi-threading not supported for %s codec %s", GetMediaTypeStr().c_str(), tCodec->name);
         }
     #endif
+
+	// add some extra parameters depending on the selected codec
+	switch(tFormat->video_codec)
+	{
+		case CODEC_ID_MPEG2VIDEO:
+						// force low delay
+						if (tCodec->capabilities & CODEC_CAP_DELAY)
+							mCodecContext->flags |= CODEC_FLAG_LOW_DELAY;
+						break;
+		case CODEC_ID_H263P:
+						// old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
+						av_dict_set(&tOptions, "structured_slices", "1", 0);
+						// old codec codext flag CODEC_FLAG_H263P_UMV
+						av_dict_set(&tOptions, "umv", "1", 0);
+						// old codec codext flag CODEC_FLAG_H263P_AIV
+						av_dict_set(&tOptions, "aiv", "1", 0);
+		case CODEC_ID_H263:
+		case CODEC_ID_MPEG4:
+						mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
+						break;
+	}
 
     // Open codec
     LOG(LOG_VERBOSE, "..opening video codec");
