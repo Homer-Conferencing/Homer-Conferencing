@@ -355,6 +355,7 @@ bool MediaSourcePulseAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 	pa_sample_spec 	tInputFormat;
 	int				tRes;
     pa_usec_t 		tLatency;
+    pa_buffer_attr	tBufferAttr;
 
     mMediaType = MEDIA_AUDIO;
     mOutputAudioChannels = pChannels;
@@ -381,8 +382,14 @@ bool MediaSourcePulseAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     tInputFormat.rate = pSampleRate;
     tInputFormat.channels = pChannels;
 
+    tBufferAttr.maxlength = 4096;
+    tBufferAttr.tlength = -1;
+    tBufferAttr.prebuf = -1;
+    tBufferAttr.minreq = -1;
+    tBufferAttr.fragsize = 1024 * 2 * 2;
+
 	// create a new recording stream
-	if (!(mInputStream = pa_simple_new(NULL, "Homer-Conferencing", PA_STREAM_RECORD, (mDesiredDevice != "" ? mDesiredDevice.c_str() : NULL) /* dev Name */, GetStreamName().c_str(), &tInputFormat, NULL, NULL, &tRes)))
+	if (!(mInputStream = pa_simple_new(NULL, "Homer-Conferencing", PA_STREAM_RECORD, (mDesiredDevice != "" ? mDesiredDevice.c_str() : NULL) /* dev Name */, GetStreamName().c_str(), &tInputFormat, NULL, &tBufferAttr, &tRes)))
 	{
 	    LOG(LOG_ERROR, "Couldn't create PulseAudio stream because %s(%d)", pa_strerror(tRes), tRes);
 	    return false;
@@ -408,7 +415,7 @@ bool MediaSourcePulseAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     LOG(LOG_INFO,"    ..channels: %d", mOutputAudioChannels);
     LOG(LOG_INFO,"    ..desired device: %s", mDesiredDevice.c_str());
     LOG(LOG_INFO,"    ..selected device: %s", mCurrentDevice.c_str());
-    LOG(LOG_INFO,"    ..latency: %"PRIu64" seconds", (uint64_t)tLatency * 1000 * 1000);
+    LOG(LOG_INFO,"    ..latency: %"PRIu64" seconds", (uint64_t)tLatency / (1000 * 1000));
     LOG(LOG_INFO,"    ..sample format: %d", PA_SAMPLE_S16LE);
 
     mRTGrabbingFrameTimestamps.clear();
@@ -508,7 +515,13 @@ int MediaSourcePulseAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool p
 		LOG(LOG_ERROR, "Couldn't write audio chunk of %d bytes to output stream because %s(%d)", pChunkSize, pa_strerror(tRes), tRes);
 	}
 
-	//TODO: use pa_simple_get_latency() and determine the grabber latency -> but until now we do not support timestamps for A/V grabber
+	pa_usec_t tLatency;
+    if ((tLatency = pa_simple_get_latency(mInputStream, &tRes)) == (pa_usec_t) -1)
+    {
+        LOG(LOG_ERROR, "Couldn't determine the latency of the output stream because %s(%d)", pa_strerror(tRes), tRes);
+    }
+
+    //LOG(LOG_VERBOSE, "Grabber latency: %llu ms", tLatency / 1000);
 
     // re-encode the frame and write it to file
     if ((mRecording) && (pChunkSize > 0))
