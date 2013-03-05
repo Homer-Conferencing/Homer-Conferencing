@@ -385,15 +385,30 @@ void MainWindow::initializeFeatureDisablers(QStringList &pArguments)
         {
             tFeatureName = tFeatureName.remove("-Disable=");
             if(tFeatureName == "IPv6")
+            {
+                LOG(LOG_WARN, "Disabling IPv6 support..");
                 Socket::DisableIPv6Support();
+            }
             if(tFeatureName == "QoS")
+            {
+                LOG(LOG_WARN, "Disabling QoS support..");
                 Socket::DisableQoSSupport();
+            }
             if(tFeatureName == "AudioOutput")
+            {
+                LOG(LOG_WARN, "Disabling AUDIO OUTPUT support..");
                 CONF.DisableAudioOutput();
+            }
             if(tFeatureName == "AudioCapture")
+            {
+                LOG(LOG_WARN, "Disabling AUDIO CAPTURE support..");
                 CONF.DisableAudioCapture();
+            }
             if (tFeatureName == "Conferencing")
+            {
+                LOG(LOG_WARN, "Disabling CONFERENCING support..");
                 CONF.DisableConferencing();
+            }
         }
     }
 
