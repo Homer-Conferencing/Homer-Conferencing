@@ -454,6 +454,9 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
         LOG(LOG_VERBOSE, "Waiting for a new chunk of max. %d captured bytes", pChunkSize);
     #endif
 
+    #ifdef MSPA_DEBUG_TIMING
+        int64_t tTime = Time::GetTimeStamp();
+    #endif
     int64_t tReadChunkNumber;
     mCaptureFifo->ReadFifo((char*)pChunkBuffer, pChunkSize, tReadChunkNumber);
 
@@ -490,6 +493,13 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     AnnouncePacket(pChunkSize);
 
     mFrameNumber++;
+
+    // emulates the desired input frame rate
+    WaitForRTGrabbing();
+
+    #ifdef MSPA_DEBUG_TIMING
+        LOG(LOG_VERBOSE, "PortAudio-READ took %lld ms", (Time::GetTimeStamp() - tTime) / 1000);
+    #endif
 
     // acknowledge success
     MarkGrabChunkSuccessful(mFrameNumber);
