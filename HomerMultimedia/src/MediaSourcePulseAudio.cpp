@@ -382,11 +382,11 @@ bool MediaSourcePulseAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     tInputFormat.rate = pSampleRate;
     tInputFormat.channels = pChannels;
 
-    tBufferAttr.maxlength = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* 16 signed int */ * pChannels;
+    tBufferAttr.maxlength = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
     tBufferAttr.tlength = -1;
     tBufferAttr.prebuf = -1;
     tBufferAttr.minreq = -1;
-    tBufferAttr.fragsize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* 16 signed int */ * pChannels;
+    tBufferAttr.fragsize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
 
 	// create a new recording stream
 	if (!(mInputStream = pa_simple_new(NULL, "Homer-Conferencing", PA_STREAM_RECORD, (mDesiredDevice != "" ? mDesiredDevice.c_str() : NULL) /* dev Name */, GetStreamName().c_str(), &tInputFormat, NULL, &tBufferAttr, &tRes)))
@@ -504,7 +504,7 @@ int MediaSourcePulseAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool p
         return GRAB_RES_INVALID;
     }
 
-    if (pChunkSize != MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
+    if (pChunkSize > MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
     	pChunkSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
 
     #ifdef MSPUA_DEBUG_TIMING
