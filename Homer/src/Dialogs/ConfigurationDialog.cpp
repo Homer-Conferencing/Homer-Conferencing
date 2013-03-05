@@ -368,6 +368,7 @@ void ConfigurationDialog::LoadConfiguration()
     mCbFeatureAutoLogging->setChecked(CONF.GetFeatureAutoLogging());
     mCbAVSyncForConferences->setChecked(CONF.GetAVSyncDuringConference());
     mDSpPreBufferingConferences->setValue(CONF.GetPreBufferTimeDuringConference());
+    mCbMainWindowMinimized->setChecked(CONF.GetMainWindowMinimized());
 
     /* GUI language */
     QString tCurLang = CONF.GetLanguage();
@@ -663,6 +664,7 @@ void ConfigurationDialog::SaveConfiguration()
     CONF.SetFeatureAutoLogging(mCbFeatureAutoLogging->isChecked());
     CONF.SetAVSyncDuringConference(mCbAVSyncForConferences->isChecked());
     CONF.SetPreBufferTimeDuringConference(mDSpPreBufferingConferences->value());
+    CONF.SetMainWindowMinimized(mCbMainWindowMinimized->isChecked());
 
     /* GUI language */
     if (mCbLanguage->currentIndex() != 0)
@@ -1145,6 +1147,7 @@ void ConfigurationDialog::ClickedButton(QAbstractButton *pButton)
                 mCbSeparatedParticipantWidgets->setChecked(false);
                 mCbCloseParticipantWidgetsImmediately->setChecked(true);
                 mCbPreventScreensaverInFullscreenMode->setChecked(true);
+                mCbMainWindowMinimized->setChecked(false);
                 mCbAVSyncForConferences->setChecked(false);
                 mDSpPreBufferingConferences->setValue(CONF_AV_DEFAULT_CONFERENCE_PRE_BUFFER);
                 break;

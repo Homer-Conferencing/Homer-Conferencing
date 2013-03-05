@@ -208,6 +208,13 @@ void Configuration::SetMainWindowSize(QSize pSize)
     mQSettings->endGroup();
 }
 
+void Configuration::SetMainWindowMinimized(bool pActive)
+{
+    mQSettings->beginGroup("Global");
+    mQSettings->setValue("MainWindowMinimized", pActive);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetParticipantWidgetsSeparation(bool pActive)
 {
     mQSettings->beginGroup("Global");
@@ -1012,6 +1019,11 @@ QSize Configuration::GetMainWindowSize()
     int tHeight = mQSettings->value("Global/MainWindowHeight", 0).toInt();
 
     return QSize(tWidth, tHeight);
+}
+
+bool Configuration::GetMainWindowMinimized()
+{
+    return mQSettings->value("Global/MainWindowMinimized", false).toBool();
 }
 
 bool Configuration::GetParticipantWidgetsSeparation()

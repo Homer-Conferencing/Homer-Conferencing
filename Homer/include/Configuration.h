@@ -102,6 +102,7 @@ public:
 
     QPoint GetMainWindowPosition();
     QSize GetMainWindowSize();
+    bool GetMainWindowMinimized();
 
     bool GetPreventScreensaverInFullscreenMode();
 
@@ -271,6 +272,7 @@ public:
     void SetDataDirectory(QString pDataDirectory);
     void SetMainWindowPosition(QPoint pPos);
     void SetMainWindowSize(QSize pSize);
+    void SetMainWindowMinimized(bool pActive);
     void SetParticipantWidgetsSeparation(bool pSepWins);
     void SetParticipantWidgetsCloseImmediately(bool pActive);
 

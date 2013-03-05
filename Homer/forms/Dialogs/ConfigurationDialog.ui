@@ -2753,6 +2753,49 @@ background-color: rgb(150, 150, 150);
              </layout>
             </item>
             <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_48">
+              <item>
+               <widget class="QLabel" name="label_27">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Start minimized:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_54">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="mCbMainWindowMinimized">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
              <layout class="QHBoxLayout" name="horizontalLayout_35">
               <item>
                <widget class="QLabel" name="mLbSeparatedParticipantWidgets">
@@ -3225,7 +3268,7 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>416</width>
+              <width>674</width>
               <height>522</height>
              </rect>
             </property>

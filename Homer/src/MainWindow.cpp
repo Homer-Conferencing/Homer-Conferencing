@@ -223,6 +223,8 @@ void MainWindow::initializeGUI()
     setWindowTitle("Homer Conferencing "HOMER_VERSION);
     move(CONF.GetMainWindowPosition());
     resize(CONF.GetMainWindowSize());
+    if (CONF.GetMainWindowMinimized())
+    	showMinimized();
 }
 
 void MainWindow::initializeLanguage()
