@@ -124,13 +124,8 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     // init log sinks
     initializeDebugging(pArguments);
 
-    // verbose output of arguments
-    QString tArg;
-    int i = 0;
-    foreach(tArg, pArguments)
-    {
-        LOG(LOG_VERBOSE, "Argument[%d]: \"%s\"", i++, tArg.toStdString().c_str());
-    }
+    LogArguments(pArguments);
+
     //remove the self pointer
     pArguments.erase(pArguments.begin());
     // init program configuration
@@ -188,17 +183,29 @@ MainWindow::~MainWindow()
     exit(0);
 }
 
+void MainWindow::LogArguments(QStringList pArguments)
+{
+    // verbose output of arguments
+    QString tArg;
+    int i = 0;
+    foreach(tArg, pArguments)
+    {
+        LOG(LOG_VERBOSE, "Argument[%d]: \"%s\"", i++, tArg.toStdString().c_str());
+    }
+}
+
 void MainWindow::removeArguments(QStringList &pArguments, QString pFilter)
 {
     QString tArgument;
     QStringList::iterator tIt;
-    for (tIt = pArguments.begin(); tIt != pArguments.end(); tIt++)
+    for (tIt = pArguments.begin(); tIt != pArguments.end();)
     {
         tArgument = *tIt;
+        //LOGEX(MainWindow, LOG_VERBOSE, "Checking %s for filter %s", tArgument.toStdString().c_str(), pFilter.toStdString().c_str());
         if (tArgument.contains(pFilter))
             tIt = pArguments.erase(tIt);
-        if (tIt == pArguments.end())
-            break;
+        else
+            tIt++;
     }
 }
 
@@ -378,6 +385,11 @@ void MainWindow::initializeNetworkSimulator(QStringList &pArguments, bool pForce
 
 void MainWindow::inititalizeDisplayParameters(QStringList &pArguments)
 {
+    unsigned int tVideoPort = 5000;
+    unsigned int tAudioPort = 5002;
+    ParticipantWidget *tFirstPreview = NULL;
+    bool tFirstPreviewInFullScreen = false;
+
     QStringList tDisplayParams = pArguments.filter("-Show");
     if (tDisplayParams.size())
     {
@@ -389,6 +401,33 @@ void MainWindow::inititalizeDisplayParameters(QStringList &pArguments)
             {
                 LOG(LOG_WARN, "Displaying BROADCAST IN FULLSCREEN MODE..");
                 mLocalUserParticipantWidget->ToggleFullScreenMode(true);
+            }
+            if (tParam.contains("PreviewNetworkStreams"))
+            {
+                LOG(LOG_WARN, "Displaying PREVIEW of NETWORK STREAMS..");
+                ParticipantWidget *tParticipantWidget = ParticipantWidget::CreatePreviewNetworkStreams(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, tVideoPort, SOCKET_UDP, tAudioPort, SOCKET_UDP);
+                mParticipantWidgets.push_back(tParticipantWidget);
+
+                if (tFirstPreview == NULL)
+                    tFirstPreview = tParticipantWidget;
+
+                if (tFirstPreviewInFullScreen)
+                {
+                    LOG(LOG_WARN, "Displaying PREVIEW IN FULLSCREEN MODE..");
+                    tParticipantWidget->ToggleFullScreenMode(true);
+                }
+
+                tVideoPort += 4;
+                tAudioPort += 4;
+            }
+            if (tParam == "PreviewInFullScreen")
+            {
+                tFirstPreviewInFullScreen = true;
+                if (tFirstPreview != NULL)
+                {
+                    LOG(LOG_WARN, "Displaying PREVIEW IN FULLSCREEN MODE..");
+                    tFirstPreview->ToggleFullScreenMode(true);
+                }
             }
         }
     }
@@ -639,7 +678,7 @@ void MainWindow::initializeWidgetsAndMenus()
     #endif
 
     LOG(LOG_VERBOSE, "..local broadcast widget");
-    mLocalUserParticipantWidget = new ParticipantWidget(BROADCAST, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
+    mLocalUserParticipantWidget = ParticipantWidget::CreateBroadcast(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer);
     setCentralWidget(mLocalUserParticipantWidget);
 
     CreateSysTray();
@@ -1386,7 +1425,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         if (!tKnownParticipant)
                         {
                             // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                            tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()), tMEvent->Transport);
+                            tParticipantWidget = ParticipantWidget::CreateParticipant(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()), tMEvent->Transport);
 
                             if (tParticipantWidget != NULL)
                             {
@@ -1486,7 +1525,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     if (!tKnownParticipant)
                     {
                         // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                        tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()));
+                        tParticipantWidget = ParticipantWidget::CreateParticipant(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()), tCEvent->Transport);
 
                         if (tParticipantWidget != NULL)
                         {
@@ -1777,7 +1816,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 			{
 				QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
-				tParticipantWidget = new ParticipantWidget(PARTICIPANT, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
+				tParticipantWidget = ParticipantWidget::CreateParticipant(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
 
 				mParticipantWidgets.push_back(tParticipantWidget);
 
@@ -1938,7 +1977,7 @@ void MainWindow::actionOpenVideoAudioPreview()
 {
     ParticipantWidget *tParticipantWidget;
 
-    tParticipantWidget = new ParticipantWidget(PREVIEW, this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, NULL);
+    tParticipantWidget = ParticipantWidget::CreatePreview(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls);
 
     mParticipantWidgets.push_back(tParticipantWidget);
 }

@@ -407,6 +407,8 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("   -ListInputFormats                   list all supported input formats of the used libavformat\n");
         printf("   -ListOutputFormats                  list all supported output formats of the used libavformat\n");
         printf("   -ShowBroadcastInFullScreen          show the broadcast view in fullscreen mode\n");
+        printf("   -ShowPreviewInFullScreen            show the preview view in fullscreen mode\n");
+        printf("   -ShowPreviewNetworkStreams          show a preview of network streams\n");
         printf("\n");
 	    exit(0);
 	}

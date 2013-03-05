@@ -93,11 +93,9 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport):
+ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow):
     QDockWidget(pMainWindow), AudioPlayback()
 {
-    LOG(LOG_VERBOSE, "Creating new participant widget for %s..", pParticipant.toStdString().c_str());
-
     hide();
     mPlayPauseButtonIsPaused = -1;
     mMosaicMode = false;
@@ -126,8 +124,8 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mSessionTransport = CONF.GetSipListenerTransport();
     mTimeOfLastAVSynch = Time::GetTimeStamp();
     mCallBox = NULL;
-    mVideoSourceMuxer = pVideoSourceMuxer;
-    mAudioSourceMuxer = pAudioSourceMuxer;
+    mVideoSourceMuxer = NULL;
+    mAudioSourceMuxer = NULL;
     mSessionType = pSessionType;
     mSessionName = "";
     mSessionTransport = SOCKET_TRANSPORT_AUTO;
@@ -139,7 +137,6 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     //### create the remaining necessary widgets, menu and layouts
     //####################################################################
     LOG(LOG_VERBOSE, "..init participant widget");
-    Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pParticipant, pTransport);
 }
 
 ParticipantWidget::~ParticipantWidget()
@@ -205,8 +202,64 @@ ParticipantWidget::~ParticipantWidget()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport)
+ParticipantWidget* ParticipantWidget::CreateBroadcast(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer)
 {
+    ParticipantWidget *tResult = new ParticipantWidget(BROADCAST, pMainWindow);
+    tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pVideoSourceMuxer, pAudioSourceMuxer);
+
+    return tResult;
+}
+
+ParticipantWidget* ParticipantWidget::CreateParticipant(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport)
+{
+    ParticipantWidget *tResult = new ParticipantWidget(BROADCAST, pMainWindow);
+    tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pVideoSourceMuxer, pAudioSourceMuxer, pParticipant, pTransport);
+
+    return tResult;
+}
+
+ParticipantWidget* ParticipantWidget::CreatePreview(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu)
+{
+    ParticipantWidget *tResult = new ParticipantWidget(PREVIEW, pMainWindow);
+    tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu);
+
+    return tResult;
+}
+
+ParticipantWidget* ParticipantWidget::CreatePreviewNetworkStreams(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, unsigned int pVideoListenerPort, enum TransportType pVideoTransportType, unsigned int pAudioListenerPort, enum TransportType pAudioTransportType)
+{
+    ParticipantWidget *tResult = new ParticipantWidget(PREVIEW, pMainWindow);
+    tResult->mVideoSource = new MediaSourceNet(pVideoListenerPort, pVideoTransportType);
+    tResult->mVideoSource->SetPreBufferingActivation(true);
+    tResult->mVideoSource->SetPreBufferingAutoRestartActivation(true);
+    // leave some seconds for high system load situations so that this part of the input queue can be used for compensating it
+    tResult->mVideoSource->SetFrameBufferPreBufferingTime(3.0);
+    tResult->mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString(), CONF.GetVideoRtp(), false);
+
+    tResult->mAudioSource = new MediaSourceNet(pAudioListenerPort, pAudioTransportType);
+    tResult->mAudioSource->SetPreBufferingActivation(true);
+    tResult->mAudioSource->SetPreBufferingAutoRestartActivation(true);
+    // leave some seconds for high system load situations so that this part of the input queue can be used for compensating it
+    tResult->mAudioSource->SetFrameBufferPreBufferingTime(3.0);
+    tResult->mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString(), CONF.GetAudioRtp(), false);
+
+    tResult->mAVSynchActive = true;
+    tResult->mAVPreBuffering = true;
+    tResult->mAVPreBufferingAutoRestart = true;
+
+    tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu);
+
+    return tResult;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport)
+{
+    LOG(LOG_VERBOSE, "Initiating new participant widget for %s..", pParticipant.toStdString().c_str());
+    mVideoSourceMuxer = pVideoSourceMuxer;
+    mAudioSourceMuxer = pAudioSourceMuxer;
+
     setupUi(this);
 
     QFont font;

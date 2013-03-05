@@ -146,6 +146,7 @@ private:
     void initializeScreenCapturing();
     void initializeNetworkSimulator(QStringList &pArguments, bool pForce = false);
     void inititalizeDisplayParameters(QStringList &pArguments);
+    void LogArguments(QStringList pArguments);
     void ProcessRemainingArguments(QStringList &pArguments);
     void connectSignalsSlots();
 

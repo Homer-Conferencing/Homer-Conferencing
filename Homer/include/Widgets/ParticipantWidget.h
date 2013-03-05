@@ -114,7 +114,11 @@ class ParticipantWidget:
     Q_OBJECT;
 
 public:
-    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "unknown", enum TransportType pTransport = SOCKET_UDP);
+    /* factory functions */
+    static ParticipantWidget* CreateBroadcast(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer);
+    static ParticipantWidget* CreateParticipant(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport);
+    static ParticipantWidget* CreatePreview(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu);
+    static ParticipantWidget* CreatePreviewNetworkStreams(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, unsigned int pVideoListenerPort, enum TransportType pVideoTransportType, unsigned int pAudioListenerPort, enum TransportType pAudioTransportType);
 
     virtual ~ParticipantWidget();
 
@@ -177,7 +181,10 @@ private slots:
     void ToggleAVControlsVisibility();
 
 private:
-	friend class VideoWidget;
+    // private constructor, factory functions should be used to create a new participant widget
+    ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow);
+
+    friend class VideoWidget;
 
 	/* media sink helper */
 	void ResetMediaSinks();
@@ -187,7 +194,7 @@ private:
     void StopFullscreenMode();
 
 	void ResizeAVView(int pSize);
-	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport);
+	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu = NULL, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "", enum TransportType pTransport = SOCKET_UDP);
     void FindSipInterface(QString pSessionName);
     void UpdateMovieControls();
     void UpdateAVStatistics();
