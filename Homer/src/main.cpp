@@ -401,11 +401,14 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
         printf("   -Disable=Conferencing               disable conference functions (disables ports for SIP/STUN management and file transfers)\n");
         printf("   -Disable=IPv6                       disable IPv6 support\n");
         printf("   -Disable=QoS                        disable QoS support\n");
-        printf("   -Enable=NetSim                      enables network simulator\n");
+        printf("   -Enable=NetSim                      enable network simulator\n");
         printf("   -ListVideoCodecs                    list all supported video codecs of the used libavcodec\n");
         printf("   -ListAudioCodecs                    list all supported audio codecs of the used libavcodec\n");
         printf("   -ListInputFormats                   list all supported input formats of the used libavformat\n");
         printf("   -ListOutputFormats                  list all supported output formats of the used libavformat\n");
+        printf("   -ShowBroadcastInFullScreen          show the broadcast view in fullscreen mode\n");
+        printf("   -ShowPreviewInFullScreen            show the preview view in fullscreen mode\n");
+        printf("   -ShowPreviewNetworkStreams          show a preview of network streams\n");
         printf("\n");
 	    exit(0);
 	}

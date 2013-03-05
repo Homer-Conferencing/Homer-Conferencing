@@ -99,6 +99,7 @@ protected:
 
     /* file based playback - thread naming */
     bool                mHaveToAssignThreadName;
+    bool                mThreadNameAssigned;
     /* device state */
     bool                mWaveOutOpened;
     bool                mPlaybackStopped;
