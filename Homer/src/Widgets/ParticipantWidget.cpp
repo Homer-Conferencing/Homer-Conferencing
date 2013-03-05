@@ -93,11 +93,9 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport):
+ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow):
     QDockWidget(pMainWindow), AudioPlayback()
 {
-    LOG(LOG_VERBOSE, "Creating new participant widget for %s..", pParticipant.toStdString().c_str());
-
     hide();
     mPlayPauseButtonIsPaused = -1;
     mMosaicMode = false;
@@ -120,12 +118,14 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mRemoteAudioPort = 0;
     mParticipantVideoSink = NULL;
     mParticipantAudioSink = NULL;
+    mVideoSource = NULL;
+    mAudioSource = NULL;
     mFullscreeMovieControlWidget = NULL;
     mSessionTransport = CONF.GetSipListenerTransport();
     mTimeOfLastAVSynch = Time::GetTimeStamp();
     mCallBox = NULL;
-    mVideoSourceMuxer = pVideoSourceMuxer;
-    mAudioSourceMuxer = pAudioSourceMuxer;
+    mVideoSourceMuxer = NULL;
+    mAudioSourceMuxer = NULL;
     mSessionType = pSessionType;
     mSessionName = "";
     mSessionTransport = SOCKET_TRANSPORT_AUTO;
@@ -137,7 +137,6 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     //### create the remaining necessary widgets, menu and layouts
     //####################################################################
     LOG(LOG_VERBOSE, "..init participant widget");
-    Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pParticipant, pTransport);
 }
 
 ParticipantWidget::~ParticipantWidget()
@@ -203,8 +202,64 @@ ParticipantWidget::~ParticipantWidget()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, QString pParticipant, enum TransportType pTransport)
+ParticipantWidget* ParticipantWidget::CreateBroadcast(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer)
 {
+    ParticipantWidget *tResult = new ParticipantWidget(BROADCAST, pMainWindow);
+    tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pVideoSourceMuxer, pAudioSourceMuxer);
+
+    return tResult;
+}
+
+ParticipantWidget* ParticipantWidget::CreateParticipant(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport)
+{
+    ParticipantWidget *tResult = new ParticipantWidget(BROADCAST, pMainWindow);
+    tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pVideoSourceMuxer, pAudioSourceMuxer, pParticipant, pTransport);
+
+    return tResult;
+}
+
+ParticipantWidget* ParticipantWidget::CreatePreview(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu)
+{
+    ParticipantWidget *tResult = new ParticipantWidget(PREVIEW, pMainWindow);
+    tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu);
+
+    return tResult;
+}
+
+ParticipantWidget* ParticipantWidget::CreatePreviewNetworkStreams(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, unsigned int pVideoListenerPort, enum TransportType pVideoTransportType, unsigned int pAudioListenerPort, enum TransportType pAudioTransportType)
+{
+    ParticipantWidget *tResult = new ParticipantWidget(PREVIEW, pMainWindow);
+    tResult->mVideoSource = new MediaSourceNet(pVideoListenerPort, pVideoTransportType);
+    tResult->mVideoSource->SetPreBufferingActivation(true);
+    tResult->mVideoSource->SetPreBufferingAutoRestartActivation(true);
+    // leave some seconds for high system load situations so that this part of the input queue can be used for compensating it
+    tResult->mVideoSource->SetFrameBufferPreBufferingTime(3.0);
+    tResult->mVideoSource->SetInputStreamPreferences(CONF.GetVideoCodec().toStdString(), CONF.GetVideoRtp(), false);
+
+    tResult->mAudioSource = new MediaSourceNet(pAudioListenerPort, pAudioTransportType);
+    tResult->mAudioSource->SetPreBufferingActivation(true);
+    tResult->mAudioSource->SetPreBufferingAutoRestartActivation(true);
+    // leave some seconds for high system load situations so that this part of the input queue can be used for compensating it
+    tResult->mAudioSource->SetFrameBufferPreBufferingTime(3.0);
+    tResult->mAudioSource->SetInputStreamPreferences(CONF.GetAudioCodec().toStdString(), CONF.GetAudioRtp(), false);
+
+    tResult->mAVSynchActive = true;
+    tResult->mAVPreBuffering = true;
+    tResult->mAVPreBufferingAutoRestart = true;
+
+    tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu);
+
+    return tResult;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport)
+{
+    LOG(LOG_VERBOSE, "Initiating new participant widget for %s..", pParticipant.toStdString().c_str());
+    mVideoSourceMuxer = pVideoSourceMuxer;
+    mAudioSourceMuxer = pAudioSourceMuxer;
+
     setupUi(this);
 
     QFont font;
@@ -249,9 +304,6 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
         mMainWindow->addDockWidget(Qt::RightDockWidgetArea, this, Qt::Horizontal);
     }
 
-    mVideoSource = NULL;
-    mAudioSource = NULL;
-    OpenVideoAudioPreviewDialog *tOpenVideoAudioPreviewDialog = NULL;
     switch(mSessionType)
     {
         case BROADCAST:
@@ -339,53 +391,61 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
                     if ((pVideoMenu != NULL) || (pAudioMenu != NULL))
                     {
                     	bool tFoundPreviewSource = false;
-                        tOpenVideoAudioPreviewDialog = new OpenVideoAudioPreviewDialog(this);
-                        if (tOpenVideoAudioPreviewDialog->exec() == QDialog::Accepted)
+
+                    	// should we ask the user for audio/video sources?
+                    	if ((mVideoSource == NULL) && (mAudioSource == NULL))
+                    	{
+                            OpenVideoAudioPreviewDialog tOpenVideoAudioPreviewDialog(this);
+                            if (tOpenVideoAudioPreviewDialog.exec() == QDialog::Accepted)
+                            {
+                                bool tFilePreview = tOpenVideoAudioPreviewDialog.FileSourceSelected();
+
+                                // create A/V source
+                                mVideoSource = tOpenVideoAudioPreviewDialog.GetMediaSourceVideo();
+                                mAudioSource = tOpenVideoAudioPreviewDialog.GetMediaSourceAudio();
+
+                                mAVSynchActive = tOpenVideoAudioPreviewDialog.AVSynchronization();
+                                mAVPreBuffering = tOpenVideoAudioPreviewDialog.AVPreBuffering();
+                                mAVPreBufferingAutoRestart = tOpenVideoAudioPreviewDialog.AVPreBufferingAutoRestart();
+
+                                if (!tFilePreview)
+                                    mMovieControlsFrame->hide();
+                            }
+                    	}
+
+                        QString tVDesc = "", tADesc = "";
+
+                        // derive A/V media source description
+                        if (mVideoSource != NULL)
+                            tVDesc = QString(mVideoSource->GetCurrentDeviceName().c_str());
+                        if (mAudioSource != NULL)
+                            tADesc = QString(mAudioSource->GetCurrentDeviceName().c_str());
+
+                        // update session name
+                        if(tVDesc != tADesc)
+                            mSessionName = "PREVIEW " + tVDesc + " / " + tADesc;
+                        else
+                            mSessionName = "PREVIEW " + tVDesc;
+
+                        // create VIDEO widget
+                        if (mVideoSource != NULL)
                         {
-                        	bool tFilePreview = tOpenVideoAudioPreviewDialog->FileSourceSelected();
-
-                            QString tVDesc, tADesc;
-
-                            // create A/V source
-                            mVideoSource = tOpenVideoAudioPreviewDialog->GetMediaSourceVideo();
-                            mAudioSource = tOpenVideoAudioPreviewDialog->GetMediaSourceAudio();
-
-                            // derive A/V media source description
-                            if (mVideoSource != NULL)
-                            	tVDesc = QString(mVideoSource->GetCurrentDeviceName().c_str());
-                            if (mAudioSource != NULL)
-                            	tADesc = QString(mAudioSource->GetCurrentDeviceName().c_str());
-
-                            // update session name
-                            if(tVDesc != tADesc)
-                                mSessionName = "PREVIEW " + tVDesc + " / " + tADesc;
-                            else
-                                mSessionName = "PREVIEW " + tVDesc;
-
-                            // create VIDEO widget
-                            if (mVideoSource != NULL)
-                            {
-                                mVideoWidgetFrame->show();
-                                mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName, true);
-                                tFoundPreviewSource = true;
-                            }
-
-                            // create AUDIO widget
-                            if (mAudioSource != NULL)
-                            {
-                                mAudioWidget->Init(this, mAudioSource, pAudioMenu, mSessionName, true, false);
-                                tFoundPreviewSource = true;
-                            }
-
-                            if (!tFilePreview)
-                                mMovieControlsFrame->hide();
+                            mVideoWidgetFrame->show();
+                            mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName, true);
+                            tFoundPreviewSource = true;
                         }
+
+                        // create AUDIO widget
+                        if (mAudioSource != NULL)
+                        {
+                            mAudioWidget->Init(this, mAudioSource, pAudioMenu, mSessionName, true, false);
+                            tFoundPreviewSource = true;
+                        }
+
                         if(!tFoundPreviewSource)
                         {
                             // delete this participant widget again if no preview could be opened
                             QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new DeleteSessionEvent(this)));
-
-                            delete tOpenVideoAudioPreviewDialog;
 
                             return;
                         }
@@ -399,12 +459,6 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 					mTbPrevious->hide();
 					mTbNext->hide();
 					mTbPlaylist->hide();
-
-                    mAVSynchActive = tOpenVideoAudioPreviewDialog->AVSynchronization();
-                    mAVPreBuffering = tOpenVideoAudioPreviewDialog->AVPreBuffering();
-                    mAVPreBufferingAutoRestart = tOpenVideoAudioPreviewDialog->AVPreBufferingAutoRestart();
-
-                    delete tOpenVideoAudioPreviewDialog;
 
 					break;
         default:
@@ -1904,6 +1958,14 @@ void ParticipantWidget::ToggleMosaicMode(bool pActive)
 		}
 	}
 	mVideoWidget->ToggleMosaicMode(pActive);
+}
+
+void ParticipantWidget::ToggleFullScreenMode(bool pActive)
+{
+    if (pActive)
+        GetVideoWorker()->SetFullScreenDisplay();
+    else
+        mVideoWidget->ToggleFullScreenMode(pActive);
 }
 
 void ParticipantWidget::ActionSeekMovieFile(int pPos)

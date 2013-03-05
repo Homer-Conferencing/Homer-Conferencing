@@ -41,6 +41,7 @@ WaveOut::WaveOut(string pName):
     SetOutgoingStream();
     mPlaybackStopped = true;
     mWaveOutOpened = false;
+    mThreadNameAssigned = false;
     mDesiredDevice = "";
     mCurrentDevice = "";
     mAudioChannels = 2;
@@ -128,7 +129,11 @@ bool WaveOut::Play()
 {
 	LOG(LOG_VERBOSE, "Mark stream as started");
     mPlaybackStopped = false;
-    mHaveToAssignThreadName = true;
+    if (!mThreadNameAssigned)
+    {
+        mHaveToAssignThreadName = true;
+        mThreadNameAssigned = true;
+    }
 
     return true;
 }

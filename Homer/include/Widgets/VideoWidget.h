@@ -100,6 +100,7 @@ public:
     void InformAboutNewSource();
     void InformAboutNewSourceResolution();
     void InformAboutSeekingComplete();
+    void InformAboutNewFullScreenDisplay();
 
     VideoWorkerThread* GetWorker();
 
@@ -107,8 +108,11 @@ public:
 
     void InitializeMenuVideoSettings(QMenu *pMenu);
 
-    /* Mosaic mode */
+    /* mosaic mode */
     void ToggleMosaicMode(bool pActive);
+
+    /* fullscreen mode */
+    void ToggleFullScreenMode(bool pActive);
 
 public slots:
     void ToggleVisibility();
@@ -125,7 +129,6 @@ private:
     void SetScaling(float pVideoScaleFactor);
     bool IsCurrentScaleFactor(float pScaleFactor);
     void SetResolutionFormat(VideoFormat pFormat);
-    void ToggleFullScreenMode();
     void ToggleSmoothPresentationMode();
     void SavePicture();
     void StartRecorder();
@@ -221,6 +224,9 @@ public:
 
     virtual void run();
 
+    /* fullscreen display */
+    void SetFullScreenDisplay();
+
     /* forwarded interface to media source */
     void SetGrabResolution(int pX, int pY);
     void GetGrabResolution(int &pX, int &pY);
@@ -245,6 +251,7 @@ private:
     virtual void DoPlayNewFile();
     virtual void DoSeek();
     virtual void DoSyncClock();
+    virtual void DoSetFullScreenDisplay();
     virtual void HandlePlayFileError();
     virtual void HandlePlayFileSuccess();
 
@@ -270,6 +277,8 @@ private:
     bool                mWaitForFirstFrameAfterSeeking;
     /* vide resolution detection for source */
     QTime               mTimeLastDetectedVideoResolutionChange;
+
+    bool                mSetFullScreenDisplayAsap;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
