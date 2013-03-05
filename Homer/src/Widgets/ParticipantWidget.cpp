@@ -120,6 +120,8 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mRemoteAudioPort = 0;
     mParticipantVideoSink = NULL;
     mParticipantAudioSink = NULL;
+    mVideoSource = NULL;
+    mAudioSource = NULL;
     mFullscreeMovieControlWidget = NULL;
     mSessionTransport = CONF.GetSipListenerTransport();
     mTimeOfLastAVSynch = Time::GetTimeStamp();
@@ -249,9 +251,6 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
         mMainWindow->addDockWidget(Qt::RightDockWidgetArea, this, Qt::Horizontal);
     }
 
-    mVideoSource = NULL;
-    mAudioSource = NULL;
-    OpenVideoAudioPreviewDialog *tOpenVideoAudioPreviewDialog = NULL;
     switch(mSessionType)
     {
         case BROADCAST:
@@ -339,53 +338,61 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
                     if ((pVideoMenu != NULL) || (pAudioMenu != NULL))
                     {
                     	bool tFoundPreviewSource = false;
-                        tOpenVideoAudioPreviewDialog = new OpenVideoAudioPreviewDialog(this);
-                        if (tOpenVideoAudioPreviewDialog->exec() == QDialog::Accepted)
+
+                    	// should we ask the user for audio/video sources?
+                    	if ((mVideoSource == NULL) && (mAudioSource == NULL))
+                    	{
+                            OpenVideoAudioPreviewDialog tOpenVideoAudioPreviewDialog(this);
+                            if (tOpenVideoAudioPreviewDialog.exec() == QDialog::Accepted)
+                            {
+                                bool tFilePreview = tOpenVideoAudioPreviewDialog.FileSourceSelected();
+
+                                // create A/V source
+                                mVideoSource = tOpenVideoAudioPreviewDialog.GetMediaSourceVideo();
+                                mAudioSource = tOpenVideoAudioPreviewDialog.GetMediaSourceAudio();
+
+                                mAVSynchActive = tOpenVideoAudioPreviewDialog.AVSynchronization();
+                                mAVPreBuffering = tOpenVideoAudioPreviewDialog.AVPreBuffering();
+                                mAVPreBufferingAutoRestart = tOpenVideoAudioPreviewDialog.AVPreBufferingAutoRestart();
+
+                                if (!tFilePreview)
+                                    mMovieControlsFrame->hide();
+                            }
+                    	}
+
+                        QString tVDesc = "", tADesc = "";
+
+                        // derive A/V media source description
+                        if (mVideoSource != NULL)
+                            tVDesc = QString(mVideoSource->GetCurrentDeviceName().c_str());
+                        if (mAudioSource != NULL)
+                            tADesc = QString(mAudioSource->GetCurrentDeviceName().c_str());
+
+                        // update session name
+                        if(tVDesc != tADesc)
+                            mSessionName = "PREVIEW " + tVDesc + " / " + tADesc;
+                        else
+                            mSessionName = "PREVIEW " + tVDesc;
+
+                        // create VIDEO widget
+                        if (mVideoSource != NULL)
                         {
-                        	bool tFilePreview = tOpenVideoAudioPreviewDialog->FileSourceSelected();
-
-                            QString tVDesc, tADesc;
-
-                            // create A/V source
-                            mVideoSource = tOpenVideoAudioPreviewDialog->GetMediaSourceVideo();
-                            mAudioSource = tOpenVideoAudioPreviewDialog->GetMediaSourceAudio();
-
-                            // derive A/V media source description
-                            if (mVideoSource != NULL)
-                            	tVDesc = QString(mVideoSource->GetCurrentDeviceName().c_str());
-                            if (mAudioSource != NULL)
-                            	tADesc = QString(mAudioSource->GetCurrentDeviceName().c_str());
-
-                            // update session name
-                            if(tVDesc != tADesc)
-                                mSessionName = "PREVIEW " + tVDesc + " / " + tADesc;
-                            else
-                                mSessionName = "PREVIEW " + tVDesc;
-
-                            // create VIDEO widget
-                            if (mVideoSource != NULL)
-                            {
-                                mVideoWidgetFrame->show();
-                                mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName, true);
-                                tFoundPreviewSource = true;
-                            }
-
-                            // create AUDIO widget
-                            if (mAudioSource != NULL)
-                            {
-                                mAudioWidget->Init(this, mAudioSource, pAudioMenu, mSessionName, true, false);
-                                tFoundPreviewSource = true;
-                            }
-
-                            if (!tFilePreview)
-                                mMovieControlsFrame->hide();
+                            mVideoWidgetFrame->show();
+                            mVideoWidget->Init(mMainWindow, this, mVideoSource, pVideoMenu, mSessionName, true);
+                            tFoundPreviewSource = true;
                         }
+
+                        // create AUDIO widget
+                        if (mAudioSource != NULL)
+                        {
+                            mAudioWidget->Init(this, mAudioSource, pAudioMenu, mSessionName, true, false);
+                            tFoundPreviewSource = true;
+                        }
+
                         if(!tFoundPreviewSource)
                         {
                             // delete this participant widget again if no preview could be opened
                             QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new DeleteSessionEvent(this)));
-
-                            delete tOpenVideoAudioPreviewDialog;
 
                             return;
                         }
@@ -399,12 +406,6 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 					mTbPrevious->hide();
 					mTbNext->hide();
 					mTbPlaylist->hide();
-
-                    mAVSynchActive = tOpenVideoAudioPreviewDialog->AVSynchronization();
-                    mAVPreBuffering = tOpenVideoAudioPreviewDialog->AVPreBuffering();
-                    mAVPreBufferingAutoRestart = tOpenVideoAudioPreviewDialog->AVPreBufferingAutoRestart();
-
-                    delete tOpenVideoAudioPreviewDialog;
 
 					break;
         default:
