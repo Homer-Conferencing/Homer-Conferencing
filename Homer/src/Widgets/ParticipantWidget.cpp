@@ -1906,6 +1906,14 @@ void ParticipantWidget::ToggleMosaicMode(bool pActive)
 	mVideoWidget->ToggleMosaicMode(pActive);
 }
 
+void ParticipantWidget::ToggleFullScreenMode(bool pActive)
+{
+    if (pActive)
+        GetVideoWorker()->SetFullScreenDisplay();
+    else
+        mVideoWidget->ToggleFullScreenMode(pActive);
+}
+
 void ParticipantWidget::ActionSeekMovieFile(int pPos)
 {
 	LOG(LOG_VERBOSE, "User moved playback slider to position %d", pPos);

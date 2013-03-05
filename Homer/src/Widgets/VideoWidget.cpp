@@ -144,6 +144,7 @@ AspectRatioEntry SupportedAspectRatios[VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS] = {
 #define VIDEO_EVENT_NEW_SOURCE                  (QEvent::User + 1003)
 #define VIDEO_EVENT_NEW_SOURCE_RESOLUTION       (QEvent::User + 1004)
 #define VIDEO_EVENT_NEW_SEEKING                 (QEvent::User + 1005)
+#define VIDEO_EVENT_NEW_FULLSCREEN_DISPLAY      (QEvent::User + 1006)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -671,7 +672,7 @@ void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
         }
         if ((pAction->text().compare(Homer::Gui::VideoWidget::tr("Full screen")) == 0) || (pAction->text().compare(Homer::Gui::VideoWidget::tr("Window mode")) == 0))
         {
-            ToggleFullScreenMode();
+            ToggleFullScreenMode(!IsFullScreen());
             return;
         }
 
@@ -1170,6 +1171,11 @@ void VideoWidget::InformAboutSeekingComplete()
     QApplication::postEvent(this, new VideoEvent(VIDEO_EVENT_NEW_SEEKING, ""));
 }
 
+void VideoWidget::InformAboutNewFullScreenDisplay()
+{
+    QApplication::postEvent(this, new VideoEvent(VIDEO_EVENT_NEW_FULLSCREEN_DISPLAY, ""));
+}
+
 void VideoWidget::InformAboutNewFrame()
 {
 	mTimeLastWidgetUpdate = QTime::currentTime();
@@ -1340,14 +1346,14 @@ void VideoWidget::ShowFullScreen(int &pPosX, int &pPosY)
 	// trigger fullscreen mode (anyhow)
 	showFullScreen();
 
-	delete tDesktop;
+    delete tDesktop;
 }
 
-void VideoWidget::ToggleFullScreenMode()
+void VideoWidget::ToggleFullScreenMode(bool pActive)
 {
     setUpdatesEnabled(false);
     LOG(LOG_VERBOSE, "Found window state: %d", (int)windowState());
-    if (IsFullScreen())
+    if (!pActive)
     {// show the window normal
         setWindowFlags(windowFlags() ^ Qt::Window);
         showNormal();
@@ -1617,7 +1623,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     }
     if ((pEvent->key() == Qt::Key_Escape) && (pEvent->modifiers() == 0) && (IsFullScreen()))
 	{
-        ToggleFullScreenMode();
+        ToggleFullScreenMode(!IsFullScreen());
         pEvent->accept();
         return;
 	}
@@ -1634,7 +1640,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     }
     if ((pEvent->key() == Qt::Key_F)  && (pEvent->modifiers() == 0))
     {
-        ToggleFullScreenMode();
+        ToggleFullScreenMode(!IsFullScreen());
         pEvent->accept();
         return;
     }
@@ -1753,7 +1759,7 @@ void VideoWidget::keyReleaseEvent(QKeyEvent *pEvent)
 
 void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 {
-    ToggleFullScreenMode();
+    ToggleFullScreenMode(!IsFullScreen());
     pEvent->accept();
 }
 
@@ -2046,6 +2052,9 @@ void VideoWidget::customEvent(QEvent *pEvent)
         case VIDEO_EVENT_NEW_SEEKING:
             mParticipantWidget->InformAboutVideoSeekingComplete();
             break;
+        case VIDEO_EVENT_NEW_FULLSCREEN_DISPLAY:
+            ToggleFullScreenMode(true);
+            break;
         default:
             break;
     }
@@ -2079,6 +2088,7 @@ VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, V
     mFrameCurrentIndex = FRAME_BUFFER_SIZE - 1;
     mFrameGrabIndex = 0;
     mDropFrames = false;
+    mSetFullScreenDisplayAsap = false;
     mCurrentFrameRefTaken = false;
     InitFrameBuffers();
 }
@@ -2132,6 +2142,11 @@ void VideoWorkerThread::SetFrameDropping(bool pDrop)
 void VideoWorkerThread::GetGrabResolution(int &pX, int &pY)
 {
     mMediaSource->GetVideoGrabResolution(pX, pY);
+}
+
+void VideoWorkerThread::SetFullScreenDisplay()
+{
+    mSetFullScreenDisplayAsap = true;
 }
 
 void VideoWorkerThread::SetGrabResolution(int pX, int pY)
@@ -2358,6 +2373,15 @@ void VideoWorkerThread::DoSetCurrentDevice()
     mDeliverMutex.unlock();
 }
 
+void VideoWorkerThread::DoSetFullScreenDisplay()
+{
+    if (mLastFrameNumber > 0)
+    {// switch after the first frame was received
+        mSetFullScreenDisplayAsap = false;
+        mVideoWidget->InformAboutNewFullScreenDisplay();
+    }
+}
+
 void VideoWorkerThread::HandlePlayFileError()
 {
     StopFile();
@@ -2530,6 +2554,9 @@ void VideoWorkerThread::run()
         // stop video recording
         if (mStopRecorderAsap)
             DoStopRecorder();
+
+        if (mSetFullScreenDisplayAsap)
+            DoSetFullScreenDisplay();
 
         mGrabbingStateMutex.lock();
 

@@ -148,8 +148,11 @@ public:
 
     void SeekMovieFileRelative(float pSeconds);
 
-    /* Mosaic mode */
+    /* mosaic mode */
     void ToggleMosaicMode(bool pActive);
+
+    /* fullscreen mode */
+    void ToggleFullScreenMode(bool pActive);
 
 private slots:
     void ActionPlayPauseMovieFile(QString pFileName = "");

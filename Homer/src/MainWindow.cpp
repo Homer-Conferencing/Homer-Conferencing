@@ -172,6 +172,8 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     initializeScreenCapturing();
     // init network simulator
     initializeNetworkSimulator(pArguments);
+    // init display parameters
+    inititalizeDisplayParameters(pArguments);
     // delayed call to register at Stun and Sip server
     QTimer::singleShot(2000, this, SLOT(RegisterAtStunSipServer()));
     ProcessRemainingArguments(pArguments);
@@ -372,6 +374,26 @@ void MainWindow::initializeNetworkSimulator(QStringList &pArguments, bool pForce
     #else
         LOG(LOG_WARN, "Network simulator not included in this version");
     #endif
+}
+
+void MainWindow::inititalizeDisplayParameters(QStringList &pArguments)
+{
+    QStringList tDisplayParams = pArguments.filter("-Show");
+    if (tDisplayParams.size())
+    {
+        QString tParam;
+        foreach(tParam, tDisplayParams)
+        {
+            tParam = tParam.remove("-Show");
+            if (tParam == "BroadcastInFullScreen")
+            {
+                LOG(LOG_WARN, "Displaying BROADCAST IN FULLSCREEN MODE..");
+                mLocalUserParticipantWidget->ToggleFullScreenMode(true);
+            }
+        }
+    }
+
+    removeArguments(pArguments, "-Show");
 }
 
 void MainWindow::initializeFeatureDisablers(QStringList &pArguments)
