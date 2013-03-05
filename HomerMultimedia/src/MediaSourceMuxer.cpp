@@ -214,7 +214,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         int tResY = pResY;
 
         // limit resolution settings according to the features of video codecs
-    	ApplyVideoResolutionToEncoderCodec(tResX, tResX, tStreamCodecId);
+    	ValidateVideoResolutionForEncoderCodec(tResX, tResY, tStreamCodecId);
 
         if ((tResX != pResX) || (tResY != pResY))
         {
@@ -285,8 +285,9 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
     return tResult;
 }
 
-void MediaSourceMuxer::ApplyVideoResolutionToEncoderCodec(int &pResX, int &pResY, enum CodecID pCodec)
+void MediaSourceMuxer::ValidateVideoResolutionForEncoderCodec(int &pResX, int &pResY, enum CodecID pCodec)
 {
+	LOG(LOG_VERBOSE, "Checking the video resolution %d * %d for compatibility with codec %s", pResX, pResY, GetGuiNameFromCodecID(pCodec).c_str());
     switch(pCodec)
     {
         case CODEC_ID_H261: // supports QCIF, CIF
@@ -299,7 +300,6 @@ void MediaSourceMuxer::ApplyVideoResolutionToEncoderCodec(int &pResX, int &pResY
                 	pResX = 176;
                 	pResY = 144;
                 }
-                LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.261 automatically selected", pResX, pResY);
                 break;
         case CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
                 if(pResX > 704)
@@ -323,7 +323,6 @@ void MediaSourceMuxer::ApplyVideoResolutionToEncoderCodec(int &pResX, int &pResY
                 	pResX = 128;
                 	pResY = 96;
                 }
-                LOG(LOG_VERBOSE, "Resolution %d*%d for codec H.263 automatically selected", pResX, pResY);
                 break;
         case CODEC_ID_H263P:
                 if ((pResX > 2048) || (pResY > 1152))
@@ -331,9 +330,30 @@ void MediaSourceMuxer::ApplyVideoResolutionToEncoderCodec(int &pResX, int &pResY
                     pResX = 2048;
                     pResY = 1152;
                 }else
-                {// everythin is fine, use the source resolution
+                {// use the original resolution
                 }
+
+                // for H.263+ both width and height must be multiples of 4
+                pResX += 3;
+                pResX /= 4;
+                pResX *= 4;
+
+                pResY += 3;
+                pResY /= 4;
+                pResY *= 4;
+
                 break;
+        case CODEC_ID_H264:
+
+        		// for H.2634 both width and height must be multiples of 2
+				pResX += 1;
+				pResX /= 2;
+				pResX *= 2;
+
+				pResY += 1;
+				pResY /= 2;
+				pResY *= 2;
+				break;
         case CODEC_ID_THEORA:
         		pResX = 352;
         		pResY = 288;
@@ -480,38 +500,15 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // resolution
     if (((mRequestedStreamingResX == -1) || (mRequestedStreamingResY == -1)) && (mMediaSource != NULL))
     {
-    	mCurrentStreamingResX = mSourceResX;
-    	mCurrentStreamingResY = mSourceResY;
-    	ApplyVideoResolutionToEncoderCodec(mCurrentStreamingResX, mCurrentStreamingResY, mStreamCodecId);
-    }else
-    {
-		mCurrentStreamingResX = mRequestedStreamingResX;
-		mCurrentStreamingResY = mRequestedStreamingResY;
+    	mRequestedStreamingResX = mSourceResX;
+    	mRequestedStreamingResY = mSourceResY;
     }
 
-    // for H.263+ both width and height must be multiples of 4
-    if (mStreamCodecId == CODEC_ID_H263P)
-    {
-    	mCurrentStreamingResX += 3;
-    	mCurrentStreamingResX /= 4;
-    	mCurrentStreamingResX *= 4;
+	mCurrentStreamingResX = mRequestedStreamingResX;
+	mCurrentStreamingResY = mRequestedStreamingResY;
+    ValidateVideoResolutionForEncoderCodec(mCurrentStreamingResX, mCurrentStreamingResY, mStreamCodecId);
 
-    	mCurrentStreamingResY += 3;
-    	mCurrentStreamingResY /= 4;
-    	mCurrentStreamingResY *= 4;
-    }
-
-    // for H.2634 both width and height must be multiples of 2
-    if (mStreamCodecId == CODEC_ID_H264)
-    {
-        mCurrentStreamingResX += 1;
-        mCurrentStreamingResX /= 2;
-        mCurrentStreamingResX *= 2;
-
-        mCurrentStreamingResY += 1;
-        mCurrentStreamingResY /= 2;
-        mCurrentStreamingResY *= 2;
-    }
+    LOG(LOG_VERBOSE, "Using in %s muxer a resolution %d * %d (requested: %d * %d) and %3.2f fps", GetMediaTypeStr().c_str(), mCurrentStreamingResX, mCurrentStreamingResY, mRequestedStreamingResX, mRequestedStreamingResY, pFps);
 
     mCodecContext->width = mCurrentStreamingResX;
     mCodecContext->height = mCurrentStreamingResY;

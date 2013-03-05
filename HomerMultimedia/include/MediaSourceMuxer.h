@@ -197,7 +197,7 @@ public:
 
 private:
     /* video resolution limitation depending on video codec capabilities */
-    void ApplyVideoResolutionToEncoderCodec(int &pResX, int &pResY, enum CodecID pCodec);
+    void ValidateVideoResolutionForEncoderCodec(int &pResX, int &pResY, enum CodecID pCodec);
 
     bool OpenVideoMuxer(int pResX = 352, int pResY = 288, float pFps = 29.97);
     bool OpenAudioMuxer(int pSampleRate = 44100, int pChannels = 2);
