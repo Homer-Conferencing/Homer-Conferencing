@@ -95,7 +95,7 @@ void ProcessStatisticService::UpdateThreadDatabase()
 
     tThreadIds = Thread::GetTIds();
 
-    // return immediately for APPLE environment because HomerBase lacks support for thread statistics in APPLE environment
+    // return immediately for BSD environments because HomerBase lacks support for thread statistics in BSD environments
 	#if defined(BSD) && !defined(APPLE)
         return;//TODO
     #endif
