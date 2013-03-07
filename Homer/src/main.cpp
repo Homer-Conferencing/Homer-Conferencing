@@ -378,41 +378,6 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 
 	string tFirstArg = (pArgc > 1) ? pArgv[1] : "";
 
-	if ((tFirstArg == "-help") || (tFirstArg == "-?") || (tFirstArg == "-h") || (tFirstArg == "--help"))
-	{
-	    printf("Homer Conferencing, version "RELEASE_VERSION_STRING"\n");
-	    printf("\n");
-        printf("Usage:\n");
-        printf("   Homer [Options]\n");
-        printf("\n");
-        printf("Options:\n");
-        printf("   -help                               show this help text and exit\n");
-        printf("   -version                            show version information and exit\n");
-        printf("\n");
-        printf("Options for failure recovery:\n");
-        printf("   -SetDefaults                        start the program with default settings\n");
-        printf("   -DebugLevel=<level>                 defines the level of debug outputs, possible values are: \"Error, Info, Verbose, World\"\n");
-        printf("   -DebugOutputFile=<file>             write verbose debug data to the given file\n");
-        printf("   -DebugOutputNetwork=<host>:<port>   send verbose debug data to the given target host and port, UDP is used for message transport\n");
-        printf("\n");
-        printf("Options for feature selection:\n");
-        printf("   -Disable=AudioCapture               disable audio capture from devices\n");
-        printf("   -Disable=AudioOutput                disable audio playback support\n");
-        printf("   -Disable=Conferencing               disable conference functions (disables ports for SIP/STUN management and file transfers)\n");
-        printf("   -Disable=IPv6                       disable IPv6 support\n");
-        printf("   -Disable=QoS                        disable QoS support\n");
-        printf("   -Enable=NetSim                      enable network simulator\n");
-        printf("   -ListVideoCodecs                    list all supported video codecs of the used libavcodec\n");
-        printf("   -ListAudioCodecs                    list all supported audio codecs of the used libavcodec\n");
-        printf("   -ListInputFormats                   list all supported input formats of the used libavformat\n");
-        printf("   -ListOutputFormats                  list all supported output formats of the used libavformat\n");
-        printf("   -ShowBroadcastInFullScreen          show the broadcast view in fullscreen mode\n");
-        printf("   -ShowPreviewInFullScreen            show the preview view in fullscreen mode\n");
-        printf("   -ShowPreviewNetworkStreams          show a preview of network streams\n");
-        printf("\n");
-	    exit(0);
-	}
-
 	if ((tFirstArg == "-version") || (tFirstArg == "--version"))
 	{
         printf("Homer Conferencing, version "RELEASE_VERSION_STRING"\n");
@@ -424,6 +389,40 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 	    printf("Copyright (C) 2008-2013 Thomas Volkert <thomas@homer-conferencing.com>\n");
         printf("For updates visit http://www.homer-conferencing.com\n");
     #endif
+
+	if ((tFirstArg == "-help") || (tFirstArg == "-?") || (tFirstArg == "-h") || (tFirstArg == "--help"))
+	{
+		printf("\n");
+		printf("Usage:\n");
+		printf("   Homer [Options]\n");
+		printf("\n");
+		printf("Options:\n");
+		printf("   -help                               show this help text and exit\n");
+		printf("   -version                            show version information and exit\n");
+		printf("\n");
+		printf("Options for failure recovery:\n");
+		printf("   -SetDefaults                        start the program with default settings\n");
+		printf("   -DebugLevel=<level>                 defines the level of debug outputs, possible values are: \"Error, Info, Verbose, World\"\n");
+		printf("   -DebugOutputFile=<file>             write verbose debug data to the given file\n");
+		printf("   -DebugOutputNetwork=<host>:<port>   send verbose debug data to the given target host and port, UDP is used for message transport\n");
+		printf("\n");
+		printf("Options for feature selection:\n");
+		printf("   -Disable=AudioCapture               disable audio capture from devices\n");
+		printf("   -Disable=AudioOutput                disable audio playback support\n");
+		printf("   -Disable=Conferencing               disable conference functions (disables ports for SIP/STUN management and file transfers)\n");
+		printf("   -Disable=IPv6                       disable IPv6 support\n");
+		printf("   -Disable=QoS                        disable QoS support\n");
+		printf("   -Enable=NetSim                      enable network simulator\n");
+		printf("   -ListVideoCodecs                    list all supported video codecs of the used libavcodec\n");
+		printf("   -ListAudioCodecs                    list all supported audio codecs of the used libavcodec\n");
+		printf("   -ListInputFormats                   list all supported input formats of the used libavformat\n");
+		printf("   -ListOutputFormats                  list all supported output formats of the used libavformat\n");
+		printf("   -ShowBroadcastInFullScreen          show the broadcast view in fullscreen mode\n");
+		printf("   -ShowPreviewInFullScreen            show the preview view in fullscreen mode\n");
+		printf("   -ShowPreviewNetworkStreams          show a preview of network streams\n");
+		printf("\n");
+		exit(0);
+	}
 
 	SetHandlers();
 
