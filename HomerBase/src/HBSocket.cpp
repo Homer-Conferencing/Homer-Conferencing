@@ -1282,18 +1282,14 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
     switch(mSocketTransportType)
     {
         case SOCKET_UDP_LITE:
-            #if defined(LINUX) || defined(APPLE) || defined(BSD)
-                if (IsTransportSupported(SOCKET_UDP_LITE))
-                {
-                    if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
-                        LOG(LOG_ERROR, "Could not create UDP-Lite socket");
-                    else
-                        tResult = true;
-                    break;
-                }
-            #else
-                LOG(LOG_ERROR, "UDP-Lite is not supported by Windows API, a common UDP socket will be used instead");
-            #endif
+			if (IsTransportSupported(SOCKET_UDP_LITE))
+			{
+				if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
+					LOG(LOG_ERROR, "Could not create UDP-Lite socket");
+				else
+					tResult = true;
+				break;
+			}
         case SOCKET_UDP:
             if ((mSocketHandle = (int)socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDP)) < 0)
                 LOG(LOG_ERROR, "Could not create UDP socket");
