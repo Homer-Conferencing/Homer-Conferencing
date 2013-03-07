@@ -351,6 +351,67 @@ int main(int pArgc, char* pArgv[])
 {
 #endif
 #if defined(WINDOWS)
+static const WORD CONSOLE_HISTORY = 1000; // lines
+void RedirectIOToConsole()
+{
+	int tConHandle;
+	HANDLE tStdOutHandle;
+	CONSOLE_SCREEN_BUFFER_INFO tConScreenBufferInfo;
+	FILE *fp;
+
+	AllocConsole();
+
+	// get the console settings
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &tConScreenBufferInfo);
+
+	// adapt the console history
+	tConScreenBufferInfo.dwSize.Y = CONSOLE_HISTORY;
+
+	// set adapted console settings
+	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), tConScreenBufferInfo.dwSize);
+
+
+	//#####################
+	// redirect STDOUT to the console
+	//#####################
+	tStdOutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	tConHandle = _open_osfhandle((long)tStdOutHandle, _O_TEXT);
+	fp = _fdopen(tConHandle, "w");
+
+	// overwrite STD-OUT
+	*stdout = *fp;
+
+	setvbuf(stdout, NULL, _IONBF, 0);
+
+
+	//#####################
+	// redirect STDIN to the console
+	//#####################
+	tStdOutHandle = GetStdHandle(STD_INPUT_HANDLE);
+	tConHandle = _open_osfhandle((long)tStdOutHandle, _O_TEXT);
+	fp = _fdopen(tConHandle, "r");
+
+	// overwrite STD-IN
+	*stdin = *fp;
+
+	setvbuf(stdin, NULL, _IONBF, 0);
+
+	//#####################
+	// redirect STDERR to the console
+	//#####################
+	tStdOutHandle = GetStdHandle(STD_ERROR_HANDLE);
+	tConHandle = _open_osfhandle((long)tStdOutHandle, _O_TEXT);
+	fp = _fdopen(tConHandle, "w");
+
+	// overwrite STD-ERR
+	*stderr = *fp;
+
+	setvbuf(stderr, NULL, _IONBF, 0);
+
+	// let "cout, wcout, cin, wcin, wcerr, cerr, wclog, clog" point to the console
+	ios::sync_with_stdio();
+}
+
 int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine, int pShowCmd)
 {
 	int pArgc = 0;
@@ -374,6 +435,8 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 			pArgv[j][i] = 0;
 		}
 	}
+
+	RedirectIOToConsole();
 #endif
 
 	string tFirstArg = (pArgc > 1) ? pArgv[1] : "";
