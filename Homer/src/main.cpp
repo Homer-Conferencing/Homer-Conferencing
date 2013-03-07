@@ -347,10 +347,120 @@ static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(LINUX) || defined(APPLE) || defined(BSD)
+
 int main(int pArgc, char* pArgv[])
 {
+
 #endif
+
+
+///////////////////////////////////////////////////////////////////////////////
 #if defined(WINDOWS)
+
+static const WORD CONSOLE_HISTORY = 1000; // lines
+static bool sIOIsRedirected = false; // make sure we redirect the I/O only once
+
+void RedirectIOToConsole()
+{
+	if (sIOIsRedirected)
+		return;
+
+	int tConHandle;
+	HANDLE tStdOutHandle;
+	CONSOLE_SCREEN_BUFFER_INFO tConScreenBufferInfo;
+	FILE *fp;
+
+	AllocConsole();
+
+	// get the console settings
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &tConScreenBufferInfo);
+
+	// adapt the console history
+	tConScreenBufferInfo.dwSize.Y = CONSOLE_HISTORY;
+
+	// set adapted console settings
+	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), tConScreenBufferInfo.dwSize);
+
+
+	//#####################
+	// redirect STDOUT to the console
+	//#####################
+	tStdOutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	tConHandle = _open_osfhandle((long)tStdOutHandle, _O_TEXT);
+	fp = _fdopen(tConHandle, "w");
+
+	// overwrite STD-OUT
+	*stdout = *fp;
+
+	setvbuf(stdout, NULL, _IONBF, 0);
+
+
+	//#####################
+	// redirect STDIN to the console
+	//#####################
+	tStdOutHandle = GetStdHandle(STD_INPUT_HANDLE);
+	tConHandle = _open_osfhandle((long)tStdOutHandle, _O_TEXT);
+	fp = _fdopen(tConHandle, "r");
+
+	// overwrite STD-IN
+	*stdin = *fp;
+
+	setvbuf(stdin, NULL, _IONBF, 0);
+
+	//#####################
+	// redirect STDERR to the console
+	//#####################
+	tStdOutHandle = GetStdHandle(STD_ERROR_HANDLE);
+	tConHandle = _open_osfhandle((long)tStdOutHandle, _O_TEXT);
+	fp = _fdopen(tConHandle, "w");
+
+	// overwrite STD-ERR
+	*stderr = *fp;
+
+	setvbuf(stderr, NULL, _IONBF, 0);
+
+	// let "cout, wcout, cin, wcin, wcerr, cerr, wclog, clog" point to the console
+	ios::sync_with_stdio();
+
+	sIOIsRedirected = true;
+}
+
+bool StartedFromWindowsConsole()
+{
+    HANDLE tParentProcHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, Thread::GetPPId());
+    if (tParentProcHandle)
+    {
+        TCHAR tPath[MAX_PATH];
+        if (GetModuleFileNameExA(tParentProcHandle, 0, tPath, MAX_PATH))
+        {// got full path to the executable
+        	size_t tPathLen = strlen(tPath);
+        	const char *tExecutableName = strrchr(tPath, '\\');
+        	tExecutableName++;
+        	if (strcmp(tExecutableName, "cmd.exe") == 0)
+        		return true;
+        }else
+        {// error
+        	// this can be caused when we are 32 bit and the cmd.exe is a 64 bit executable (which normally is)
+        	LOGEX(HomerApplication, LOG_ERROR, "Unable to get module file name because %s(%d, %u)", strerror(errno), errno, (unsigned int)GetLastError());
+        }
+        CloseHandle(tParentProcHandle);
+    }else
+    	LOGEX(HomerApplication, LOG_ERROR, "Unable to open parent process %d", Thread::GetPPId());
+
+	char * tTerm = getenv("TERM");
+	if (tTerm != NULL)
+	{
+		if (strcmp(tTerm, "") != 0)
+		{// Cygwin/MinGW command line
+			printf("Cygwin/MinGW console detected\n");
+			return false;
+		}
+	}
+
+	// GUI
+	return false;
+}
+
 int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine, int pShowCmd)
 {
 	int pArgc = 0;
@@ -374,7 +484,13 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 			pArgv[j][i] = 0;
 		}
 	}
+
+	if (StartedFromWindowsConsole())
+		RedirectIOToConsole();
+
 #endif
+
+///////////////////////////////////////////////////////////////////////////////
 
 	string tFirstArg = (pArgc > 1) ? pArgv[1] : "";
 
@@ -392,6 +508,11 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 
 	if ((tFirstArg == "-help") || (tFirstArg == "-?") || (tFirstArg == "-h") || (tFirstArg == "--help"))
 	{
+
+		#ifdef WINDOWS
+			RedirectIOToConsole();
+		#endif
+
 		printf("\n");
 		printf("Usage:\n");
 		printf("   Homer [Options]\n");
@@ -421,6 +542,14 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 		printf("   -ShowPreviewInFullScreen            show the preview view in fullscreen mode\n");
 		printf("   -ShowPreviewNetworkStreams          show a preview of network streams\n");
 		printf("\n");
+		#ifdef RELEASE_VERSION
+			#ifdef WINDOWS
+				while(true)
+				{
+
+				}
+			#endif
+		#endif
 		exit(0);
 	}
 

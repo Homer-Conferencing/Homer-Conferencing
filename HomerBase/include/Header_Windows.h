@@ -53,6 +53,10 @@
 #include <windows.h>
 #include <ws2tcpip.h>
 #include <io.h>
+#include <wincon.h>
+#include <fcntl.h>
+#include <iostream>
+#include <fstream>
 #include <BaseTsd.h>
 #include <sys/timeb.h>
 #include <stdio.h>
