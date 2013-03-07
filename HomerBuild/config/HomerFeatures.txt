@@ -21,7 +21,7 @@ set(HOMER_APP_WITH_VERSIONING OFF)
 ###########################################
 IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../HomerNetworkSimulator/HomerNetworkSimulator" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../../HomerNetworkSimulator/HomerNetworkSimulator")
 	MESSAGE("---------- NetworkSimulator found and integrated into build process -----------")
-	SET(HOMER_NETWORK_SIMULATOR ON)
+	SET(HOMER_NETWORK_SIMULATOR OFF)
 ELSE()
 	SET(HOMER_NETWORK_SIMULATOR OFF)
 ENDIF()
