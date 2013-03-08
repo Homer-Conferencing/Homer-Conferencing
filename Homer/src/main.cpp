@@ -194,9 +194,9 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
                 break;
         }
         if (pSignalInfo->si_errno != 0)
-            LOGEX(MainWindow, LOG_ERROR, "This signal occurred because \"%s\"(%d)", strerror(pSignalInfo->si_errno), pSignalInfo->si_errno);
+            LOGEX(MainWindow, LOG_VERBOSE, "This signal occurred because \"%s\"(%d)", strerror(pSignalInfo->si_errno), pSignalInfo->si_errno);
         if (pSignalInfo->si_code != 0)
-            LOGEX(MainWindow, LOG_ERROR, "Signal code is %d", pSignalInfo->si_code);
+            LOGEX(MainWindow, LOG_VERBOSE, "Signal code is %d", pSignalInfo->si_code);
     }
 }
 
