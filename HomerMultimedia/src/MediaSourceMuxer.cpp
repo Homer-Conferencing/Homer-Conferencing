@@ -134,7 +134,7 @@ int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBuf
 	    }
     #endif
 
-    tMuxer->RelayPacketToMediaSinks(tBuffer, (unsigned int)pBufferSize, tMuxer->mEncoderHasKeyFrame);
+    tMuxer->RelayPacketToMediaSinks(tBuffer, (unsigned int)pBufferSize, tMuxer->mEncoderPacketTimestamp, tMuxer->mEncoderHasKeyFrame);
 
     return pBufferSize;
 }
@@ -795,7 +795,13 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 			mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
 			break;
     }
-	mEncoderStream->time_base = (AVRational){1, mOutputAudioSampleRate};
+
+    // only for MP3 codec we use the 90kHz clock rate like it is used for video streaming
+    if (mCodecContext->codec_id != CODEC_ID_MP3)
+	    mEncoderStream->time_base = (AVRational){1, mOutputAudioSampleRate};
+    else
+        mEncoderStream->time_base = (AVRational){1, 90000};
+
 	mCodecContext->channels = mOutputAudioChannels;
 	mCodecContext->channel_layout = av_get_default_channel_layout(mOutputAudioChannels);
     mCodecContext->sample_rate = mOutputAudioSampleRate;
@@ -1266,16 +1272,12 @@ int64_t MediaSourceMuxer::CalculateEncoderPts(int pFrameNumber)
 {
     int64_t tResult = 0;
 
-    switch(mMediaType)
+    if ((mMediaType == MEDIA_VIDEO) || (mStreamCodecId == CODEC_ID_MP3 /* for MP3 codec a 90 kHz clock rate is used, similar to video codecs */))
     {
-        case MEDIA_VIDEO:
-                    tResult = pFrameNumber * 1000 / GetOutputFrameRate(); // frame number * time between frames
-                    break;
-        case MEDIA_AUDIO:
-                    tResult = pFrameNumber * mCodecContext->frame_size; // = how many samples are already passed?
-                    break;
-        default:
-                    break;
+        tResult = pFrameNumber * 1000 / GetOutputFrameRate(); // frame number * time between frames
+    }else
+    {
+        tResult = pFrameNumber * mCodecContext->frame_size; // = how many samples are already passed?
     }
 
     return tResult;
@@ -1373,7 +1375,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     int64_t				tLastInputFrameTimestamp = -1;
     int64_t             tInputFrameTimestamp = 0;
     int64_t				tOutputFrameTimestamp = 0;
-    int64_t				tVideoEncoderFrameTimestamp = 0;
+    int64_t				tEncoderOutputFrameTimestamp = 0;
     int64_t				tLastVideoEncoderFrameTimestamp = 0;
 
     LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Encoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
@@ -1493,7 +1495,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                             {
                                 int64_t tTime3 = Time::GetTimeStamp();
                                 // ####################################################################
-                                // ### PREPARE YUV FRAME from SCALER
+                                // ### CREATE YUV FRAME based on SCALER output
                                 // ###################################################################
                                 // Assign appropriate parts of buffer to image planes in tRGBFrame
                                 avpicture_fill((AVPicture *)tYUVFrame, (uint8_t *)tBuffer, mCodecContext->pix_fmt, mCurrentStreamingResX, mCurrentStreamingResY);
@@ -1503,41 +1505,39 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                     LOG(LOG_VERBOSE, "     preparing data structures took %"PRId64" us", tTime5 - tTime3);
                                 #endif
 
-                                tYUVFrame->pict_type = AV_PICTURE_TYPE_NONE;
-                                if (!mMediaSource->HasVariableVideoOutputFrameRate())
-                                {// base source delivers a stable output frame rate
-									tVideoEncoderFrameTimestamp = (int64_t)rint(CalculateEncoderPts(mFrameNumber));
-                                }else
+                                tEncoderOutputFrameTimestamp = (int64_t)rint(CalculateEncoderPts(mFrameNumber));
+                                if (mMediaSource->HasVariableVideoOutputFrameRate())
                                 {// base source delivers a variable output frame rate (we cannot rely on equidistant times between two grabbed frames
                                 	if (mEncoderStartTime == 0)
                                 	{
                                 		LOG(LOG_WARN, "Encoder start time is still invalid, setting a default value");
                                 		mEncoderStartTime = tInputFrameTimestamp;
                                 	}
-                                	tVideoEncoderFrameTimestamp = (tInputFrameTimestamp - mEncoderStartTime) / 1000; // grab time in ms
+                                	tEncoderOutputFrameTimestamp = (tInputFrameTimestamp - mEncoderStartTime) / 1000; // grab time in ms
                                 }
 
                                 // check encoder frame timestamp
-                                if ((tLastVideoEncoderFrameTimestamp != 0) && (tVideoEncoderFrameTimestamp <= tLastVideoEncoderFrameTimestamp))
+                                if ((tLastVideoEncoderFrameTimestamp != 0) && (tEncoderOutputFrameTimestamp <= tLastVideoEncoderFrameTimestamp))
                                 {// timestamp is too low
 									#ifdef MSM_DEBUG_TIMING
-                                		LOG(LOG_WARN, "Encoder VIDEO frame timestamp is too low (%"PRId64" <= %"PRId64")", tVideoEncoderFrameTimestamp, tLastVideoEncoderFrameTimestamp);
+                                		LOG(LOG_WARN, "Encoder VIDEO frame timestamp is too low (%"PRId64" <= %"PRId64")", tEncoderOutputFrameTimestamp, tLastVideoEncoderFrameTimestamp);
 									#endif
 
 									// enforce a monotonously increasing time base
-                                	tVideoEncoderFrameTimestamp = tLastVideoEncoderFrameTimestamp + 1;
+                                	tEncoderOutputFrameTimestamp = tLastVideoEncoderFrameTimestamp + 1;
                                 }
 
 								#ifdef MSM_DEBUG_PACKETS
-									LOG(LOG_VERBOSE, "Setting PTS to %lld(last: %lld) for frame %d", tVideoEncoderFrameTimestamp, tVideoEncoderFrameTimestamp, mFrameNumber);
+									LOG(LOG_VERBOSE, "Setting PTS to %lld(last: %lld) for frame %d", tEncoderOutputFrameTimestamp, tEncoderOutputFrameTimestamp, mFrameNumber);
 								#endif
 
                                 // store the last timestamp
-								tLastVideoEncoderFrameTimestamp = tVideoEncoderFrameTimestamp;
+								tLastVideoEncoderFrameTimestamp = tEncoderOutputFrameTimestamp;
 
-								tYUVFrame->pts = tVideoEncoderFrameTimestamp;
+								tYUVFrame->pts = tEncoderOutputFrameTimestamp;
                                 tYUVFrame->pkt_pts = tYUVFrame->pts;
                                 tYUVFrame->pkt_dts = tYUVFrame->pts;
+                                tYUVFrame->pict_type = AV_PICTURE_TYPE_NONE;
                                 tYUVFrame->coded_picture_number = mFrameNumber;
                                 tYUVFrame->coded_picture_number = mFrameNumber;
 
@@ -1560,12 +1560,15 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 // ####################################################################
                                 // ### update synch. for all media sinks
                                 // ####################################################################
+                                #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
+                                    LOG(LOG_WARN, "Synch. packet with timestamp: %lld", tYUVFrame->pts);
+                                #endif
 								RelaySyncTimestampToMediaSinks(tOutputFrameTimestamp, tYUVFrame->pts);
 
                                 // ####################################################################
                                 // ### generate new output frame
                                 // ####################################################################
-                                EncodeAndWritePacket(mFormatContext, mCodecContext, tYUVFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames);
+                                EncodeAndWritePacket(mFormatContext, mCodecContext, tYUVFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames, mEncoderPacketTimestamp);
 
                                 #ifdef MSM_DEBUG_PACKETS
                                 	LOG(LOG_VERBOSE, "Encoder buffered frames: %d, flags: 0x%x", mEncoderBufferedFrames, mCodecContext->codec->capabilities);
@@ -1701,15 +1704,21 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         // create final frame for audio encoder
                                         // ###################################################################
                                         avcodec_get_frame_defaults(tAudioFrame);
-                                        // nb_samples
-                                        tAudioFrame->nb_samples = tOutputSamplesPerChannel;
+
+                                        tEncoderOutputFrameTimestamp = (int64_t)rint(CalculateEncoderPts(mFrameNumber));
+
                                         // pts
-                                        int64_t tCurPts = av_rescale_q(mFrameNumber * mCodecContext->frame_size, (AVRational){1, mOutputAudioSampleRate}, mCodecContext->time_base);
+                                        int64_t tCurPts = av_rescale_q(tEncoderOutputFrameTimestamp, (AVRational){1, mOutputAudioSampleRate}, mCodecContext->time_base);
+                                        // for MP3 codec the relative play-out is used like it is done for video streaming
+                                        if (mStreamCodecId == CODEC_ID_MP3)
+                                            tCurPts = tEncoderOutputFrameTimestamp;
+
                                         tAudioFrame->pts = tCurPts;
                                         tAudioFrame->pkt_pts = tAudioFrame->pts;
                                         tAudioFrame->pkt_dts = tAudioFrame->pts;
+                                        tAudioFrame->nb_samples = tOutputSamplesPerChannel;
 
-                                         //data
+                                        //data
                                         int tRes = 0;
                                         if ((tRes = avcodec_fill_audio_frame(tAudioFrame, mOutputAudioChannels, mOutputAudioFormat, (const uint8_t *)mResampleBuffer, tReadFifoSize, 1)) < 0)
                                             LOG(LOG_ERROR, "Could not fill the audio frame with the provided data from the audio resampling step because of \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
@@ -1738,6 +1747,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
 										// ####################################################################
 										// ### update synch. for all media sinks
 										// ####################################################################
+                                        #ifdef MSM_DEBUG_PACKET_DISTRIBUTION
+                                            LOG(LOG_WARN, "Synch. packet with timestamp: %lld", tAudioFrame->pts);
+                                        #endif
                                         RelaySyncTimestampToMediaSinks(tOutputFrameTimestamp, tAudioFrame->pts);
 
                                         // ####################################################################
@@ -1752,7 +1764,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         // ####################################################################
                                         // ### generate new output frame
                                         // ####################################################################
-										EncodeAndWritePacket(mFormatContext, mCodecContext, tAudioFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames);
+										EncodeAndWritePacket(mFormatContext, mCodecContext, tAudioFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames, mEncoderPacketTimestamp);
 
                                         // increase the frame counter (used for PTS generation)
                                         mFrameNumber++;

@@ -193,7 +193,7 @@ MediaSinkNet::~MediaSinkNet()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame)
+void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream, bool pIsKeyFrame)
 {
     int tNewMaxNetworkPacketSize = -1;
 
@@ -215,7 +215,7 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
     }
 
     // call ProcessPacket from mem based media sink
-    MediaSinkMem::ProcessPacket(pPacketData, pPacketSize, pStream, pIsKeyFrame);
+    MediaSinkMem::ProcessPacket(pPacketData, pPacketSize, pPacketTimestamp, pStream, pIsKeyFrame);
 }
 
 string MediaSinkNet::CreateId(string pHost, string pPort, enum TransportType pSocketTransportType, bool pRtpActivated)

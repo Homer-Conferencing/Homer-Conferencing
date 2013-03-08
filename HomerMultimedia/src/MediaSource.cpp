@@ -524,7 +524,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  ****************************************************/
 enum CodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
 {
-    enum CodecID tResult = (GetMediaType() == MEDIA_AUDIO) ? CODEC_ID_MP3 : CODEC_ID_H261;
+    enum CodecID tResult = (GetMediaType() == MEDIA_AUDIO) ? CODEC_ID_ADPCM_G722 : CODEC_ID_H263P;
 
     /* video */
     if (pName == "H.261")
@@ -641,8 +641,12 @@ string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
     			break;
 
         default:
-        	//LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
-        	break;
+                {
+                    const char *tName = avcodec_get_name(pCodecId);
+                    tResult = string(tName);
+                    //LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
+                }
+                break;
     }
 
     //LOGEX(MediaSource, LOG_VERBOSE, "Translated %s to format %s", pName.c_str(), tResult.c_str());
@@ -1701,7 +1705,7 @@ int MediaSource::GetEncoderBufferedFrames()
 	return 0;
 }
 
-void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, bool pIsKeyFrame)
+void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame)
 {
     MediaSinks::iterator tIt;
 
@@ -1716,7 +1720,7 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
     {
         for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
         {
-            (*tIt)->ProcessPacket(pPacketData, pPacketSize, mFormatContext->streams[0], pIsKeyFrame);
+            (*tIt)->ProcessPacket(pPacketData, pPacketSize, pPacketTimestamp, mFormatContext->streams[0], pIsKeyFrame);
         }
     }
 
@@ -2246,6 +2250,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
     int                 tFrameFinished = 0;
     bool                tKeyFrame;
     int                 tBufferedFrames;
+    int64_t             tCurPacketTimestamp;
 
     if (!mRecording)
     {
@@ -2306,7 +2311,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                     LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
                 #endif
 
-                if (EncodeAndWritePacket(mRecorderFormatContext, mRecorderCodecContext, mRecorderFinalFrame, tKeyFrame, tBufferedFrames))
+                if (EncodeAndWritePacket(mRecorderFormatContext, mRecorderCodecContext, mRecorderFinalFrame, tKeyFrame, tBufferedFrames, tCurPacketTimestamp))
                 {
                     // increase the frame counter (used for PTS generation)
                     mRecorderFrameNumber++;
@@ -2443,7 +2448,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                             LOG(LOG_VERBOSE, "Filling audio frame with buffer size: %d", tReadFifoSize);
                         #endif
 
-                        if (EncodeAndWritePacket(mRecorderFormatContext, mRecorderCodecContext, mRecorderFinalFrame, tKeyFrame, tBufferedFrames))
+                        if (EncodeAndWritePacket(mRecorderFormatContext, mRecorderCodecContext, mRecorderFinalFrame, tKeyFrame, tBufferedFrames, tCurPacketTimestamp))
                         {
                             // increase the frame counter (used for PTS generation)
                             mRecorderFrameNumber++;
@@ -3696,7 +3701,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
     return true;
 }
 
-bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int &pBufferedFrames)
+bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int &pBufferedFrames, int64_t &pPacketTimestamp)
 {
     AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
     int                 tEncoderResult;
@@ -3724,6 +3729,9 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
         default:
                 break;
     }
+
+    // save timestamp of the current packet and return it to the caller
+    pPacketTimestamp = tPacket->pts;
 
     // #########################################
     // write encoded frame

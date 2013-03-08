@@ -88,7 +88,7 @@ MediaSinkMem::~MediaSinkMem()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream, bool pIsKeyFrame)
+void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream, bool pIsKeyFrame)
 {
     bool tResetNeeded = false;
 
@@ -128,17 +128,21 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         //### calculate the import PTS value
         //###################################
         // the PTS value is used within the RTP packetizer to calculate the resulting timestamp value for the RTP header
-        int64_t tAVPacketPts = (pStream->pts.den != 0 ? ((float)pStream->pts.val + pStream->pts.num / pStream->pts.den) : 0); // result = val + num / den
-        if (tAVPacketPts < mLastPacketPts)
-            LOG(LOG_ERROR, "Current packet pts (%d) from A/V encoder is lower than last one (%"PRId64")", tAVPacketPts, mLastPacketPts);
+        int64_t tStreamPts = (pStream->pts.den != 0 ? ((float)pStream->pts.val + pStream->pts.num / pStream->pts.den) : 0); // result = val + num / den
+        #ifdef MSIM_DEBUG_TIMING
+            LOG(LOG_VERBOSE, "Stream PTS: %lld, packet PTS: %lld", tStreamPts, pPacketTimestamp);
+        #endif
+
+        if (pPacketTimestamp < mLastPacketPts)
+            LOG(LOG_ERROR, "Current packet pts (%lld) from A/V encoder is lower than last one (%"PRId64")", pPacketTimestamp, mLastPacketPts);
 
         // do we have monotonously increasing PTS values
-        if (mIncomingAVStreamLastPts > tAVPacketPts)
+        if (mIncomingAVStreamLastPts > pPacketTimestamp)
         {
         	LOG(LOG_WARN, "Incoming AV stream PTS values are not monotonous, resetting the streamer now..");
         	tResetNeeded = true;
         }
-    	mIncomingAVStreamLastPts = tAVPacketPts;
+    	mIncomingAVStreamLastPts = pPacketTimestamp;
 
         //####################################################################
         // check if RTP encoder is valid for the current stream
@@ -212,10 +216,10 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         }
 
         // normalize the PTS values for the RTP packetizer of ffmpeg, otherwise we have synchronization problems at receiver side because of PTS offsets
-        int64_t tRtpPacketPts = tAVPacketPts - mIncomingAVStreamStartPts;
+        int64_t tRtpPacketPts = pPacketTimestamp - mIncomingAVStreamStartPts;
 
         #ifdef MSIM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Processing packet with A/V PTS: %"PRId64" and normalized PTS: %"PRId64", offset: %"PRId64, tAVPacketPts, tRtpPacketPts, mIncomingAVStreamStartPts);
+            LOG(LOG_VERBOSE, "Processing packet with A/V PTS: %"PRId64" and normalized PTS: %"PRId64", offset: %"PRId64, pPacketTimestamp, tRtpPacketPts, mIncomingAVStreamStartPts);
         #endif
 
 
@@ -285,7 +289,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
 void MediaSinkMem::UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
 {
     if ((mRtpActivated) && (mRtpStreamOpened))
-        SetSynchronizationReferenceForRTP((uint64_t)pReferenceNtpTimestamp, (uint32_t)(pReferenceFrameTimestamp- mIncomingAVStreamStartPts));
+        SetSynchronizationReferenceForRTP((uint64_t)pReferenceNtpTimestamp, (uint64_t)(pReferenceFrameTimestamp- mIncomingAVStreamStartPts));
 }
 
 int MediaSinkMem::GetFragmentBufferCounter()

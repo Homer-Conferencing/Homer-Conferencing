@@ -176,7 +176,7 @@ struct FrameDescriptor
 #define OpenFormatConverter()								FfmpegOpenFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
 #define CloseFormatConverter()                              FfmpegCloseFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
 #define CloseAll()											FfmpegCloseAll(GetObjectNameStr(this).c_str(), __LINE__)
-#define EncodeAndWritePacket(FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames) FfmpegEncodeAndWritePacket(GetObjectNameStr(this).c_str(), __LINE__, FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames)
+#define EncodeAndWritePacket(FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames, Timestamp) FfmpegEncodeAndWritePacket(GetObjectNameStr(this).c_str(), __LINE__, FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames, Timestamp)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -382,7 +382,7 @@ protected:
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
 
     /* internal interface for packet relaying */
-    virtual void RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, bool pIsKeyFrame = false);
+    virtual void RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame = false);
     virtual void RelaySyncTimestampToMediaSinks(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp);
 
     /* internal interface for stream recordring */
@@ -424,7 +424,7 @@ protected:
     bool FfmpegCloseAll(string pSource /* caller source */, int pLine /* caller line */);
 
     /* encoder helpers */
-    bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int &pBufferedFrames);
+    bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int &pBufferedFrames, int64_t &pPacketTimestamp);
 
     bool                mMediaSourceOpened;
     bool                mGrabbingStopped;

@@ -283,7 +283,7 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
         }
 
         // relay the received fragment to registered sinks
-        tMediaSourceMemInstance->RelayPacketToMediaSinks(tBuffer, (unsigned int)tBufferSize);
+        tMediaSourceMemInstance->RelayPacketToMediaSinks(tBuffer, (unsigned int)tBufferSize, -1);
     }
 
     #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
@@ -2084,7 +2084,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                         // write new samples into fifo buffer
                                         av_fifo_generic_write(mResampleFifo[0], tDecodedAudioSamples, tCurrentChunkSize, NULL);
 
-                                        tCurrentOutputFrameTimestamp = CalculateOutputFrameNumber(tCurrentInputFrameTimestamp) - (double)tAudioFifoBufferedSamples / MEDIA_SOURCE_SAMPLES_PER_BUFFER;
+                                        tCurrentOutputFrameTimestamp = CalculateOutputFrameNumber(tCurrentInputFrameTimestamp) - (double)tAudioFifoBufferedSamples / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* frame shift */;
                                         
                                         // save PTS value to deliver it later to the frame grabbing thread
                                         #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
@@ -2542,6 +2542,11 @@ bool MediaSourceMem::WaitForRTGrabbing()
 	    		{// we are late, but there is not other choice
 	    		    // play the delayed frame anyhow
 	    		}
+	    	}else
+	    	{
+                //#ifdef MSMEM_DEBUG_WAITING_TIMING
+	    	        LOG(LOG_WARN, "%s %s grabbing is %f ms too late, THRESHOLD: %lld ms", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tDelay, (int64_t)(MEDIA_SOURCE_MEM_DEFAULT_E2E_DELAY_JITER * 1000));
+                //#endif
 	    	}
 		}else
 		{
@@ -2597,7 +2602,7 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
                 return 0;
             }
 
-            tReferencePts = (uint64_t)(1000 * CalculateOutputFrameNumber(tReferencePts) / (GetMediaType() == MEDIA_AUDIO ? (float)mOutputAudioSampleRate / 1000 /* audio PTS is the play-out time in samples */: 1  /* video PTS is the play-out time in ms */)); // in ms
+            tReferencePts = (uint64_t)(1000 * CalculateOutputFrameNumber(tReferencePts) / (((GetMediaType() == MEDIA_AUDIO) && (mSourceCodecId != CODEC_ID_MP3)) ? (float)mOutputAudioSampleRate / 1000 /* audio PTS is the play-out time in samples */: 1  /* video PTS is the play-out time in ms */)); // in ms
 
             // calculate the current (normalized) frame index of the grabber
             float tNormalizedFrameIndexFromGrabber = mCurrentOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts); // the normalized frame index
@@ -2654,38 +2659,36 @@ double MediaSourceMem::CalculateFrameNumberFromRTP()
     if (tFrameRate < 1.0)
         return 0;
 
+    if (mFirstReceivedFrameTimestampFromRTP == -1)
+    {
+        #ifdef MSMEM_DEBUG_PRE_BUFFERING
+            LOG(LOG_WARN, "Timestamp from RTP of first received frame is still -1, repairing this..");
+        #endif
+        mFirstReceivedFrameTimestampFromRTP = (double)GetCurrentPtsFromRTP();
+    }
+
     // the following sequence delivers the frame number independent from packet loss because
     // it calculates the frame number based on the current timestamp from the RTP header
-    switch(mMediaType)
+    if ((mMediaType == MEDIA_VIDEO) || (mSourceCodecId == CODEC_ID_MP3 /* for MP3 codec a 90 kHz clock rate is used, similar to video codecs */))
     {
-        case MEDIA_VIDEO:
-                {
-                    double tTimeBetweenFrames = 1000 / tFrameRate;
-                    tResult = mFirstReceivedFrameTimestampFromRTP / tTimeBetweenFrames;
-					#ifdef MSMEM_DEBUG_PACKET_TIMING
-						LOG(LOG_VERBOSE, "RTP has VIDEO PTS: %.2lf", mFirstReceivedFrameTimestampFromRTP);
-                    #endif
-                }
-                break;
-        case MEDIA_AUDIO:
-        		if (mFirstReceivedFrameTimestampFromRTP == -1)
-        		{
-        		    #ifdef MSMEM_DEBUG_PRE_BUFFERING
-	        			LOG(LOG_WARN, "Timestamp from RTP of first received frame is still -1, repairing this..");
-    				#endif
-        			mFirstReceivedFrameTimestampFromRTP = (double)GetCurrentPtsFromRTP();
-        		}
+        double tTimeBetweenFrames = 1000 / tFrameRate;
+        tResult = mFirstReceivedFrameTimestampFromRTP / tTimeBetweenFrames;
+        #ifdef MSMEM_DEBUG_PACKET_TIMING
+            LOG(LOG_VERBOSE, "RTP has VIDEO PTS: %.2lf", mFirstReceivedFrameTimestampFromRTP);
+        #endif
+    }else if (mMediaType == MEDIA_AUDIO)
+    {
 
-        		//LOG(LOG_VERBOSE, "%.2lf <==> %.2lf, %.2lf", mFirstReceivedFrameTimestampFromRTP, (double)GetCurrentPtsFromRTP(), mFirstReceivedFrameTimestampFromRTP - (double)GetCurrentPtsFromRTP());
+        //LOG(LOG_VERBOSE, "%.2lf <==> %.2lf, %.2lf", mFirstReceivedFrameTimestampFromRTP, (double)GetCurrentPtsFromRTP(), mFirstReceivedFrameTimestampFromRTP - (double)GetCurrentPtsFromRTP());
 
-        		tResult = mFirstReceivedFrameTimestampFromRTP / mCodecContext->frame_size;
+        tResult = mFirstReceivedFrameTimestampFromRTP / mCodecContext->frame_size;
 
-                #ifdef MSMEM_DEBUG_PACKET_TIMING
-					LOG(LOG_VERBOSE, "RTP has AUDIO PTS: %.2lf", mFirstReceivedFrameTimestampFromRTP);
-				#endif
-                break;
-        default:
-                break;
+        #ifdef MSMEM_DEBUG_PACKET_TIMING
+            LOG(LOG_VERBOSE, "RTP has AUDIO PTS: %.2lf", mFirstReceivedFrameTimestampFromRTP);
+        #endif
+    }else
+    {
+        LOG(LOG_ERROR, "Reached invalid state");
     }
 
     #ifdef MSMEM_DEBUG_PRE_BUFFERING

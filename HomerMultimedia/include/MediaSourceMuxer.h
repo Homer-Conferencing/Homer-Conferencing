@@ -235,6 +235,7 @@ private:
     MediaFifo           *mEncoderFifo;
     Mutex				mEncoderFifoState;
     bool				mEncoderHasKeyFrame;
+    int64_t             mEncoderPacketTimestamp; // timestamp of the currently processed packet
     Mutex               mEncoderFifoAvailableMutex;
     AVStream            *mEncoderStream;
     int					mEncoderBufferedFrames; // in frames

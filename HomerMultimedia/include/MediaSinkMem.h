@@ -54,7 +54,7 @@ public:
 
     virtual ~MediaSinkMem();
 
-    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, AVStream *pStream = NULL, bool pIsKeyFrame = false);
+    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream = NULL, bool pIsKeyFrame = false);
     virtual void UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp);
 
     virtual int GetFragmentBufferCounter();
