@@ -100,12 +100,16 @@ void GetSignalDescription(int pSignal, string &pSignalName, string &pSignalDescr
             pSignalDescription = "termination signal";
             break;
         case 18:
-            pSignalName = "SIGTSTP";
-            pSignalDescription = "stop signal from tty";
-            break;
-        case 19:
             pSignalName = "SIGCONT";
             pSignalDescription = "continue signal from tty";
+            break;
+        case 19:
+            pSignalName = "SIGSTOP";
+            pSignalDescription = "stop signal from tty";
+            break;
+        case 20:
+            pSignalName = "SIGTSTP";
+            pSignalDescription = "stop signal from user (keyboard)";
             break;
         case 16:
         case 30:
@@ -130,7 +134,7 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
     string tSignalName;
     string tSignalDescription;
     GetSignalDescription(pSignal, tSignalName, tSignalDescription);
-    LOGEX(MainWindow, LOG_WARN, "Signal \"%s\"(%s) detected.", tSignalName.c_str(), tSignalDescription.c_str());
+    LOGEX(MainWindow, LOG_WARN, "Signal \"%s\"(%d: %s) detected.", tSignalName.c_str(), pSignal, tSignalDescription.c_str());
     if (pSignalInfo != NULL)
     {
         switch(pSignal)
