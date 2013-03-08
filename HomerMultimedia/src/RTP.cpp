@@ -1072,7 +1072,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                 }
 
                 #ifdef RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
-                    LOG(LOG_VERBOSE, "Sending RTP packet with timestamp: %u, offset: %lu, RTP-PTS: %ld", tRtpHeader->Timestamp, mLocalTimestampOffset, tPacket.pts);
+                    LOG(LOG_VERBOSE, "Sending RTP packet with timestamp: %u, offset: %lu, codec timestamp: %ld", tRtpHeader->Timestamp, mLocalTimestampOffset, tPacket.pts);
                 #endif
 
                 //#################################################################################
@@ -1083,6 +1083,10 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                     if (mRtcpLastSenderReport != NULL)
                     {
                         RtcpPatchLiveSenderReport(mRtcpLastSenderReport, tRtpHeader->Timestamp);
+                        #ifdef RTCP_DEBUG_PACKETS_ENCODER
+                            LOG(LOG_WARN, "RTCP SR timestamps patched");
+                            LogRtcpHeader((RtcpHeader*)mRtcpLastSenderReport);
+                        #endif
                         mRtcpLastSenderReport = NULL;
                     }
                 }
@@ -1179,6 +1183,9 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                 //#################################################################################
                 if (tRtcpHeader->General.Type == RTCP_SENDER_REPORT)
                 {// patch the values to the same time value as used in the A/V stream
+                    #ifdef RTP_DEBUG_PACKET_ENCODER
+                        LOG(LOG_VERBOSE, "Found RTCP SR");
+                    #endif
                     tRtcpHeader->Feedback.Ssrc = mLocalSourceIdentifier;
                     mRtcpLastSenderReport = (char*)tRtcpHeader;
                 }
@@ -1201,7 +1208,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
             //### log RTCP packets if desired
             //#################################################################################
             #ifdef RTCP_DEBUG_PACKETS_ENCODER
-                if (tRtcpPacket)
+                if ((tRtcpPacket) && (mRtcpLastSenderReport == NULL /* we do not patch the ffmpeg RTCP SR packets */))
                 {
                     RtcpHeader *tRtcpHeader = (RtcpHeader*)tRtpHeader;
                     LogRtcpHeader(tRtcpHeader);
@@ -1465,12 +1472,12 @@ float RTP::CalculateClockRateFactor()
         case CODEC_ID_PCM_MULAW:
         case CODEC_ID_PCM_ALAW:
         case CODEC_ID_PCM_S16BE:
-        case CODEC_ID_MP3:
         case CODEC_ID_ADPCM_G722:
 //            case CODEC_ID_ADPCM_G726:
         case CODEC_ID_THEORA:
             tResult = 1;
             break;
+        case CODEC_ID_MP3:
         case CODEC_ID_H261:
         case CODEC_ID_H263:
         case CODEC_ID_H263P:
@@ -1593,7 +1600,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 //            case CODEC_ID_VORBIS:
                     break;
             default:
-                    LOG(LOG_ERROR, "Codec %d is unsupported by internal RTP parser", mStreamCodecID);
+                    LOG(LOG_ERROR, "Codec %s(%d) is unsupported by internal RTP parser", avcodec_get_name(mStreamCodecID), mStreamCodecID);
                     pDataSize = 0;
                     pIsLastFragment = true;
                     return false;
@@ -1671,7 +1678,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
             tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
         #ifdef RTCP_DEBUG_PACKETS_DECODER
-            LogRtcpHeader(tRtcpHeader);
+            LogRtcpHeader(tRtcpHeader, mRemoteStartTimestamp);
         #endif
 
         // inform that is not a fragment which includes data for an audio/video decoder, this RTCP packet belongs to the RTP abstraction level
@@ -1983,12 +1990,15 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             // HACK: auto detect hack which marks the last fragment for us
                             //       we do this by storing the size of the original audio packet within the MBZ value
                             if (tMPAHeader->Mbz > 0)
-                            {
+                            {// HACK
                                 // if fragment ends at packet size or behind (to make sure we are not running into inconsistency) we should mark as complete packet
                                 if ((int)tMPAHeader->Offset + ((int)pDataSize - (pData - tRtpPacketStart)) >= (int)tMPAHeader->Mbz -1 /* a difference of 1 is sometimes caused by the MP3 encoder */)
                                     mIntermediateFragment = false;
                                 else
                                     mIntermediateFragment = true;
+                            }else
+                            {// fall back
+                                mIntermediateFragment = false;
                             }
 
                             // convert from host to network byte order
@@ -2663,7 +2673,7 @@ string GetRtcpPayloadTypeStr(int pType)
     return tResult;
 }
 
-void RTP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
+void RTP::LogRtcpHeader(RtcpHeader *pRtcpHeader, uint64_t pTimestampOffset)
 {
     // convert from network to host byte order, HACK: exceed array boundaries
     for (int i = 0; i < 3; i++)
@@ -2690,7 +2700,7 @@ void RTP::LogRtcpHeader(RtcpHeader *pRtcpHeader)
     {
         LOGEX(RTP, LOG_VERBOSE, "Timestamp(high) : %10u", pRtcpHeader->Feedback.TimestampHigh);
         LOGEX(RTP, LOG_VERBOSE, "Timestamp(low)  : %10u", pRtcpHeader->Feedback.TimestampLow);
-        LOGEX(RTP, LOG_VERBOSE, "RTP Timestamp (abs.) : %10u", pRtcpHeader->Feedback.RtpTimestamp);
+        LOGEX(RTP, LOG_VERBOSE, "RTP Timestamp (abs.) : %10u, codec timestamp (90 kHz): %10llu", pRtcpHeader->Feedback.RtpTimestamp, ((uint64_t)pRtcpHeader->Feedback.RtpTimestamp - pTimestampOffset)/ 90);
         LOGEX(RTP, LOG_VERBOSE, "Packets         : %10u", pRtcpHeader->Feedback.Packets);
         LOGEX(RTP, LOG_VERBOSE, "Octets          : %10u", pRtcpHeader->Feedback.Octets);
 
@@ -2781,7 +2791,7 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
     return tResult;
 }
 
-void RTP::SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint32_t pReferencePts)
+void RTP::SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint64_t pReferencePts)
 {
     if (!mRtpEncoderOpened)
         return;
@@ -2789,17 +2799,17 @@ void RTP::SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint32_t
     if (pReferencePts < 1)
         return;
 
-	#ifdef RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
-    	LOG(LOG_VERBOSE, "New synchronization for %d codec: %u, clock: %.2f, RTP timestamp: %.2f, timestamp offset: %lu", mStreamCodecID, pReferencePts, CalculateClockRateFactor(), (float)pReferencePts * CalculateClockRateFactor(), mLocalTimestampOffset);
-	#endif
-
-	if (mStreamCodecID == CODEC_ID_ADPCM_G722)
-		pReferencePts /= 2; // transform from 16 kHz to 8kHz
+    if (mStreamCodecID == CODEC_ID_ADPCM_G722)
+        pReferencePts /= 2; // transform from 16 kHz to 8kHz
 
 	mSyncDataMutex.lock();
     mSyncNTPTime = pReferenceNtpTime;
-    mSyncPTS = mLocalTimestampOffset + (uint64_t)(pReferencePts * CalculateClockRateFactor()); // clock rate adaption according to rfc (mpeg uses 90 kHz)
+    mSyncPTS = mLocalTimestampOffset + pReferencePts * CalculateClockRateFactor(); // clock rate adaption according to rfc (mpeg uses 90 kHz)
     mSyncDataMutex.unlock();
+
+    #ifdef RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
+        LOG(LOG_VERBOSE, "New synchronization for codec %s: codec timesamp: %llu, RTP timestamp (normalized): %.2f, RTP timestamp (abs): %llu", avcodec_get_name(mStreamCodecID), pReferencePts, (float)pReferencePts * CalculateClockRateFactor(), mSyncPTS);
+    #endif
 }
 
 void RTP::RtcpPatchLiveSenderReport(char *pHeader, uint32_t pTimestamp)
@@ -2813,10 +2823,16 @@ void RTP::RtcpPatchLiveSenderReport(char *pHeader, uint32_t pTimestamp)
         tNtpTime = mSyncNTPTime;
         tPts = mSyncPTS;
         mSyncDataMutex.unlock();
+        #ifdef RTCP_DEBUG_PACKETS_ENCODER
+            LOG(LOG_VERBOSE, "Patching RTCP SR with explicit RTP timestamp: %llu, NTP time: %llu", mSyncPTS, mSyncNTPTime);
+        #endif
     }else
     {// use the NTP time of the processed A/V packets
         tNtpTime = GetNtpTime();
         tPts = pTimestamp;
+        #ifdef RTCP_DEBUG_PACKETS_ENCODER
+            LOG(LOG_VERBOSE, "Patching RTCP SR with last RTP timestamp: %llu, NTP time: %llu", mSyncPTS, mSyncNTPTime);
+        #endif
     }
 
     RtcpHeader* tRtcpHeader = (RtcpHeader*)pHeader;

@@ -165,13 +165,13 @@ public:
     unsigned int GetRTPPayloadType();
 
     /* RTCP packetizing/parsing */
-    static void LogRtcpHeader(RtcpHeader *pRtcpHeader);
+    static void LogRtcpHeader(RtcpHeader *pRtcpHeader, uint64_t pTimestampOffset = 0);
     bool RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay /* in micro seconds */, unsigned int &pPackets, unsigned int &pOctets, float &pRelativeLoss);
 
 protected:
     uint64_t GetCurrentPtsFromRTP(); // returns the timestamp of the last received RTP packet
     void GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, uint64_t &pReferencePts);
-    void SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint32_t pReferencePts);
+    void SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint64_t pReferencePts);
     unsigned int GetSourceIdentifierFromRTP(); // returns the RTP source identifier
     bool HasSourceChangedFromRTP(); // return if RTP source identifier has changed and resets the flag
 
