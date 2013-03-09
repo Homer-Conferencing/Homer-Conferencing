@@ -132,7 +132,8 @@ enum MediaType
 enum AudioDeviceType{
     GeneralAudioDevice = 0,
     AudioFile,
-    Microphone
+    Microphone,
+    TvAudio
 };
 
 struct AudioDeviceDescriptor
