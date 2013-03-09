@@ -2976,58 +2976,61 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     //### give some verbose output
     //######################################################
     LOG_REMOTE(LOG_INFO, pSource, pLine, "%s source opened...", GetMediaTypeStr().c_str());
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec name: %s", mCodecContext->codec->name);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec long name: %s", mCodecContext->codec->long_name);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec flags: 0x%x", mCodecContext->flags);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.num, mCodecContext->time_base.den); // inverse
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream ID: %d", mMediaStreamIndex);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start real-time: %"PRId64"", mFormatContext->start_time_realtime);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start time: %"PRId64"", FilterNeg(mFormatContext->streams[mMediaStreamIndex]->start_time));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.num, mFormatContext->streams[mMediaStreamIndex]->time_base.den); // inverse
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den); // inverse
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..bit rate: %d bit/s", mCodecContext->bit_rate);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding delay: %d", mCodecContext->delay);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding profile: %d", mCodecContext->profile);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding level: %d", mCodecContext->level);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec caps: 0x%x", mCodecContext->codec->capabilities);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT count: %d", mCodecContext->thread_count);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT method: %d", mCodecContext->thread_type);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..input start PTS: %"PRId64" frames", FilterNeg(mInputStartPts));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %"PRId64" frames", FilterNeg(mFormatContext->start_time));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %"PRId64" frames", FilterNeg(mFormatContext->start_time_realtime));
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %"PRId64" seconds (exact value: %"PRId64")", FilterNeg(mFormatContext->duration) / AV_TIME_BASE, mFormatContext->duration);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..input frame rate: %.2f fps", GetInputFrameRate());
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..output frame rate: %.2f fps", GetOutputFrameRate());
-    int64_t tStreamDuration = FilterNeg(mFormatContext->streams[mMediaStreamIndex]->duration);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %"PRId64" frames (%.0f seconds), nr. of frames: %"PRId64"", tStreamDuration, (float)tStreamDuration / GetInputFrameRate());
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %"PRId64"", mFormatContext->streams[mMediaStreamIndex]->nb_frames);
-    LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..max. delay: %d", mFormatContext->max_delay);
-    switch(mMediaType)
+    if ((mCodecContext != NULL) && (mFormatContext != NULL))
     {
-        case MEDIA_VIDEO:
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..source resolution: %d * %d", mCodecContext->width, mCodecContext->height);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..target resolution: %d * %d", mTargetResX, mTargetResY);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..i-frame distance: %d", mCodecContext->gop_size);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..mpeg quant: %d", mCodecContext->mpeg_quant);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..pixel format: %d", (int)mCodecContext->pix_fmt);
-            break;
-        case MEDIA_AUDIO:
-            av_get_channel_layout_string(tChannelLayoutStr, 512, mCodecContext->channels, mCodecContext->channel_layout);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample rate: %d", mCodecContext->sample_rate);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..channels: %d [layout: %s]", mCodecContext->channels, tChannelLayoutStr);
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample format: %s", av_get_sample_fmt_name(mCodecContext->sample_fmt));
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..audio preload: %d", mFormatContext->audio_preload);
-            break;
-        default:
-            LOG(LOG_ERROR, "Media type unknown");
-            break;
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec name: %s", mCodecContext->codec->name);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec long name: %s", mCodecContext->codec->long_name);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec flags: 0x%x", mCodecContext->flags);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.num, mCodecContext->time_base.den); // inverse
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream ID: %d", mMediaStreamIndex);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start real-time: %"PRId64"", mFormatContext->start_time_realtime);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start time: %"PRId64"", FilterNeg(mFormatContext->streams[mMediaStreamIndex]->start_time));
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.num, mFormatContext->streams[mMediaStreamIndex]->time_base.den); // inverse
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den); // inverse
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..bit rate: %d bit/s", mCodecContext->bit_rate);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding delay: %d", mCodecContext->delay);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding profile: %d", mCodecContext->profile);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding level: %d", mCodecContext->level);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec caps: 0x%x", mCodecContext->codec->capabilities);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT count: %d", mCodecContext->thread_count);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT method: %d", mCodecContext->thread_type);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..input start PTS: %"PRId64" frames", FilterNeg(mInputStartPts));
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %"PRId64" frames", FilterNeg(mFormatContext->start_time));
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS (RT): %"PRId64" frames", FilterNeg(mFormatContext->start_time_realtime));
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %"PRId64" seconds (exact value: %"PRId64")", FilterNeg(mFormatContext->duration) / AV_TIME_BASE, mFormatContext->duration);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..input frame rate: %.2f fps", GetInputFrameRate());
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..output frame rate: %.2f fps", GetOutputFrameRate());
+        int64_t tStreamDuration = FilterNeg(mFormatContext->streams[mMediaStreamIndex]->duration);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %"PRId64" frames (%.0f seconds), nr. of frames: %"PRId64"", tStreamDuration, (float)tStreamDuration / GetInputFrameRate());
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %"PRId64"", mFormatContext->streams[mMediaStreamIndex]->nb_frames);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..max. delay: %d", mFormatContext->max_delay);
+        switch(mMediaType)
+        {
+            case MEDIA_VIDEO:
+                LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..source resolution: %d * %d", mCodecContext->width, mCodecContext->height);
+                LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..target resolution: %d * %d", mTargetResX, mTargetResY);
+                LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..i-frame distance: %d", mCodecContext->gop_size);
+                LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..mpeg quant: %d", mCodecContext->mpeg_quant);
+                LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..pixel format: %d", (int)mCodecContext->pix_fmt);
+                break;
+            case MEDIA_AUDIO:
+                av_get_channel_layout_string(tChannelLayoutStr, 512, mCodecContext->channels, mCodecContext->channel_layout);
+                LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample rate: %d", mCodecContext->sample_rate);
+                LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..channels: %d [layout: %s]", mCodecContext->channels, tChannelLayoutStr);
+                LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample format: %s", av_get_sample_fmt_name(mCodecContext->sample_fmt));
+                LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..audio preload: %d", mFormatContext->audio_preload);
+                break;
+            default:
+                LOG(LOG_ERROR, "Media type unknown");
+                break;
+        }
     }
 
     //######################################################
