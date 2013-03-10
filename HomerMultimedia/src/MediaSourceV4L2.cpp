@@ -92,7 +92,7 @@ void MediaSourceV4L2::getVideoDevices(VideoDevices &pVList)
     {
         tDeviceFile = "/dev/video";
         tDeviceFile += char(tDeviceId + 48);
-        if (((tFile = fopen(tDeviceFile.c_str(), "r")) != NULL) && (fclose(tFile) != EOF))
+        if ((tFd = open(tDeviceFile.c_str(), O_RDONLY)) >= 0)
         {
             tDevice.Name = "V4L2 device ";
             tDevice.Name += char(tDeviceId + 48);
@@ -104,82 +104,79 @@ void MediaSourceV4L2::getVideoDevices(VideoDevices &pVList)
                 if (tDevice.Name.size())
                     LOG(LOG_VERBOSE, "Found video device: %s (device file: %s)", tDevice.Name.c_str(), tDeviceFile.c_str());
 
-            if ((tFd = open(tDeviceFile.c_str(), O_RDONLY)) >= 0)
+            if (ioctl(tFd, VIDIOC_QUERYCAP, &tV4L2Caps) < 0)
+                LOG(LOG_ERROR, "Can't get device capabilities for \"%s\" because of \"%s\"", tDeviceFile.c_str(), strerror(errno));
+            else
             {
-                if (ioctl(tFd, VIDIOC_QUERYCAP, &tV4L2Caps) < 0)
-                    LOG(LOG_ERROR, "Can't get device capabilities for \"%s\" because of \"%s\"", tDeviceFile.c_str(), strerror(errno));
+                tDevice.Name = toString(tV4L2Caps.card);
+                tDevice.Desc += " \"" + toString(tV4L2Caps.card) + "\"";
+                if (tFirstCall)
+                {
+                    LOG(LOG_VERBOSE, "..driver name: %s", tV4L2Caps.driver);
+                    LOG(LOG_VERBOSE, "..card name: %s", tV4L2Caps.card);
+                    LOG(LOG_VERBOSE, "..connected at: %s", tV4L2Caps.bus_info);
+                    LOG(LOG_VERBOSE, "..driver version: %u.%u.%u", (tV4L2Caps.version >> 16) & 0xFF, (tV4L2Caps.version >> 8) & 0xFF, tV4L2Caps.version & 0xFF);
+                    if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_CAPTURE)
+                        LOG(LOG_VERBOSE, "supporting video capture interface");
+                    if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_OUTPUT)
+                        LOG(LOG_VERBOSE, "supporting video output interface");
+                    if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_OVERLAY)
+                        LOG(LOG_VERBOSE, "supporting video overlay interface");
+                    if (tV4L2Caps.capabilities & V4L2_CAP_TUNER)
+                        LOG(LOG_VERBOSE, "..onboard tuner");
+                    if (tV4L2Caps.capabilities & V4L2_CAP_AUDIO)
+                        LOG(LOG_VERBOSE, "..onboard audio");
+                    if (tV4L2Caps.capabilities & V4L2_CAP_RDS_CAPTURE)
+                        LOG(LOG_VERBOSE, "..onboard RDS");
+                    if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_OUTPUT_OVERLAY)
+                        LOG(LOG_VERBOSE, "..supporting OnScreenDisplay (OSD)");
+                }
+            }
+
+            int tIndex = 0;
+            for(;;)
+            {
+                memset(&tV4L2Input, 0, sizeof(tV4L2Input));
+                tV4L2Input.index = tIndex;
+                if (ioctl(tFd, VIDIOC_ENUMINPUT, &tV4L2Input) < 0)
+                    break;
                 else
                 {
-                    tDevice.Name = toString(tV4L2Caps.card);
-                    tDevice.Desc += " \"" + toString(tV4L2Caps.card) + "\"";
+                    switch(tV4L2Input.type)
+                    {
+                        case V4L2_INPUT_TYPE_TUNER:
+                                if(tDevice.Type != Camera)
+                                    tDevice.Type = Tv;
+                                break;
+                        case V4L2_INPUT_TYPE_CAMERA:
+                                if (tDevice.Type != Tv)
+                                    tDevice.Type = Camera;
+                                break;
+                    }
+
                     if (tFirstCall)
                     {
-                        LOG(LOG_VERBOSE, "..driver name: %s", tV4L2Caps.driver);
-                        LOG(LOG_VERBOSE, "..card name: %s", tV4L2Caps.card);
-                        LOG(LOG_VERBOSE, "..connected at: %s", tV4L2Caps.bus_info);
-                        LOG(LOG_VERBOSE, "..driver version: %u.%u.%u", (tV4L2Caps.version >> 16) & 0xFF, (tV4L2Caps.version >> 8) & 0xFF, tV4L2Caps.version & 0xFF);
-                        if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_CAPTURE)
-                            LOG(LOG_VERBOSE, "supporting video capture interface");
-                        if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_OUTPUT)
-                            LOG(LOG_VERBOSE, "supporting video output interface");
-                        if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_OVERLAY)
-                            LOG(LOG_VERBOSE, "supporting video overlay interface");
-                        if (tV4L2Caps.capabilities & V4L2_CAP_TUNER)
-                            LOG(LOG_VERBOSE, "..onboard tuner");
-                        if (tV4L2Caps.capabilities & V4L2_CAP_AUDIO)
-                            LOG(LOG_VERBOSE, "..onboard audio");
-                        if (tV4L2Caps.capabilities & V4L2_CAP_RDS_CAPTURE)
-                            LOG(LOG_VERBOSE, "..onboard RDS");
-                        if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_OUTPUT_OVERLAY)
-                            LOG(LOG_VERBOSE, "..supporting OnScreenDisplay (OSD)");
-                    }
-                }
-
-                int tIndex = 0;
-                for(;;)
-                {
-                    memset(&tV4L2Input, 0, sizeof(tV4L2Input));
-                    tV4L2Input.index = tIndex;
-                    if (ioctl(tFd, VIDIOC_ENUMINPUT, &tV4L2Input) < 0)
-                        break;
-                    else
-                    {
+                        LOG(LOG_VERBOSE, "..input index: %u", tV4L2Input.index);
+                        LOG(LOG_VERBOSE, "..input name: %u", tV4L2Input.name);
                         switch(tV4L2Input.type)
                         {
                             case V4L2_INPUT_TYPE_TUNER:
-                                    if(tDevice.Type != Camera)
-                                        tDevice.Type = Tv;
+                                    LOG(LOG_VERBOSE, "..input type: tuner");
                                     break;
                             case V4L2_INPUT_TYPE_CAMERA:
-                                    if (tDevice.Type != Tv)
-                                        tDevice.Type = Camera;
+                                    LOG(LOG_VERBOSE, "..input type: camera");
                                     break;
                         }
-
-                        if (tFirstCall)
-                        {
-                            LOG(LOG_VERBOSE, "..input index: %u", tV4L2Input.index);
-                            LOG(LOG_VERBOSE, "..input name: %u", tV4L2Input.name);
-                            switch(tV4L2Input.type)
-                            {
-                                case V4L2_INPUT_TYPE_TUNER:
-                                        LOG(LOG_VERBOSE, "..input type: tuner");
-                                        break;
-                                case V4L2_INPUT_TYPE_CAMERA:
-                                        LOG(LOG_VERBOSE, "..input type: camera");
-                                        break;
-                            }
-                            // audioset
-                            // tuner
-                            // std
-                            LOG(LOG_VERBOSE, "..input status: 0x%x", tV4L2Input.status);
-                        }
+                        // audioset
+                        // tuner
+                        // std
+                        LOG(LOG_VERBOSE, "..input status: 0x%x", tV4L2Input.status);
                     }
-                    tIndex++;
                 }
-
-                close(tFd);
+                tIndex++;
             }
+
+            close(tFd);
 
             pVList.push_back(tDevice);
         }
@@ -284,12 +281,12 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     // alocate new format context
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
 
+    //########################################
+    //### probing given device file
+    //########################################
     bool tFound = false;
     if (mDesiredDevice != "")
     {
-        //########################################
-        //### probing given device file
-        //########################################
         tResult = 0;
         if (((tFile = fopen(mDesiredDevice.c_str(), "r")) == NULL) || (fclose(tFile) != 0) || ((tResult = avformat_open_input(&mFormatContext, mDesiredDevice.c_str(), tFormat, &tOptions)) != 0))
         {
@@ -299,17 +296,16 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
                 LOG(LOG_ERROR, "Couldn't find device \"%s\".", mDesiredDevice.c_str());
             return false;
         }
-        //######################################################
-        //### retrieve stream information and find right stream
-        //######################################################
+        // retrieve stream information and find right stream
         if (DetectAllStreams())
             tFound = true;
     }
+
+    //########################################
+    //### auto probing possible device files
+    //########################################
     if(!tFound)
     {
-        //########################################
-        //### auto probing possible device files
-        //########################################
         LOG(LOG_VERBOSE, "Auto-probing for VFL2 capture device");
         string tDesiredDevice;
         for (int i = 0; i < 10; i++)
@@ -318,9 +314,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
             tResult = 0;
             if (((tFile = fopen(tDesiredDevice.c_str(), "r")) != NULL) && (fclose(tFile) == 0) && ((tResult = avformat_open_input(&mFormatContext, tDesiredDevice.c_str(), tFormat, &tOptions)) == 0))
             {
-                //######################################################
-                //### retrieve stream information and find right stream
-                //######################################################
+                // retrieve stream information and find right stream
                 if (DetectAllStreams())
                 {
                     tFound = true;
@@ -353,8 +347,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!SelectStream())
         return false;
 
-    mFormatContext->streams[mMediaStreamIndex]->time_base.num = 100;
-    mFormatContext->streams[mMediaStreamIndex]->time_base.den = (int)pFps * 100;
+    mFormatContext->streams[mMediaStreamIndex]->time_base = (AVRational){100, (int)(pFps * 100)};
 
     if (!OpenDecoder())
         return false;
