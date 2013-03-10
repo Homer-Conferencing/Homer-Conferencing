@@ -552,7 +552,15 @@ bool MediaSourceMem::HasInputStreamChanged()
 
 void MediaSourceMem::StopGrabbing()
 {
+    LOG(LOG_VERBOSE, "Stopping grabber");
+
 	MediaSource::StopGrabbing();
+
+	if (!mMediaSourceOpened)
+	{
+	    LOG(LOG_VERBOSE, "Stopping grabber aborted - source wasn't started yet");
+	    return;
+	}
 
     WriteFragment(NULL, 0, 0);
 
