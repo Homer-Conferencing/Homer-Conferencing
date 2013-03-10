@@ -191,20 +191,7 @@ bool MediaSourceGrabberThread::PlayFile(QString pName)
     	pName = mCurrentFile;
     }
 
-    // remove "file:///" and "file://" from the beginning if existing
-    #ifdef WINDOWS
-        if (pName.startsWith("file:///"))
-            pName = pName.right(pName.size() - 8);
-
-        if (pName.startsWith("file://"))
-            pName = pName.right(pName.size() - 7);
-    #else
-        if (pName.startsWith("file:///"))
-            pName = pName.right(pName.size() - 7);
-
-        if (pName.startsWith("file://"))
-            pName = pName.right(pName.size() - 6);
-    #endif
+    PLAYLISTWIDGET.CheckAndRemoveFilePrefix(pName);
 
     pName = QString(pName.toLocal8Bit());
 

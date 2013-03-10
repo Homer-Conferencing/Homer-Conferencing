@@ -758,22 +758,27 @@ int OverviewPlaylistWidget::GetListSize()
     return tResult;
 }
 
+void OverviewPlaylistWidget::CheckAndRemoveFilePrefix(QString &pEntry)
+{
+    // remove "file:///" and "file://" from the beginning if existing
+    #ifdef WINDOWS
+        if (pEntry.toLower().startsWith("file:///"))
+            pEntry = pEntry.right(pEntry.size() - 8);
+
+        if (pEntry.toLower().startsWith("file://"))
+            pEntry = pEntry.right(pEntry.size() - 7);
+    #else
+        if (pEntry.toLower().startsWith("file:///"))
+            pEntry = pEntry.right(pEntry.size() - 7);
+
+        if (pEntry.toLower().startsWith("file://"))
+            pEntry = pEntry.right(pEntry.size() - 6);
+    #endif
+
+}
 void OverviewPlaylistWidget::AddEntry(QString pLocation, bool pStartPlayback)
 {
-	// remove "file:///" and "file://" from the beginning if existing
-    #ifdef WINDOWS
-        if (pLocation.toLower().startsWith("file:///"))
-        	pLocation = pLocation.right(pLocation.size() - 8);
-
-        if (pLocation.toLower().startsWith("file://"))
-        	pLocation = pLocation.right(pLocation.size() - 5);
-    #else
-        if (pLocation.toLower().startsWith("file:///"))
-        	pLocation = pLocation.right(pLocation.size() - 7);
-
-        if (pLocation.toLower().startsWith("file://"))
-        	pLocation = pLocation.right(pLocation.size() - 6);
-    #endif
+    CheckAndRemoveFilePrefix(pLocation);
 
 	Playlist tPlaylist = Parse(pLocation);
 	LOG(LOG_VERBOSE, "Parsed %d new playlist entries", tPlaylist.size());
@@ -806,7 +811,9 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 	if (pLocation == "")
 		return tResult;
 
-	sParseRecursionCount ++;
+    CheckAndRemoveFilePrefix(pLocation);
+
+    sParseRecursionCount ++;
 	if (sParseRecursionCount < MAX_PARSER_RECURSIONS)
 	{
 		bool tIsWebUrl = (IS_SUPPORTED_WEB_LINK(pLocation));

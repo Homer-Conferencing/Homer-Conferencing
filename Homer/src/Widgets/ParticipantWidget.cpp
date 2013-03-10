@@ -825,10 +825,18 @@ void ParticipantWidget::dragEnterEvent(QDragEnterEvent *pEvent)
             case BROADCAST:
                         if (tList.size() > 0)
                         {
-                            QString tFileName = tList.begin()->toString();
-                            if ((OverviewPlaylistWidget::IsVideoFile(tFileName)) || (OverviewPlaylistWidget::IsAudioFile(tFileName)))
+                            foreach(tUrl, tList)
                             {
-                                pEvent->acceptProposedAction();
+                                QString tFileName = tUrl.toString();
+                                if (!tFileName.isEmpty())
+                                {
+                                    Playlist tPlaylist = PLAYLISTWIDGET.Parse(tFileName);
+                                    if (tPlaylist.size() > 0)
+                                    {
+                                        pEvent->acceptProposedAction();
+                                        break;
+                                    }
+                                }
                             }
                         }
                         break;

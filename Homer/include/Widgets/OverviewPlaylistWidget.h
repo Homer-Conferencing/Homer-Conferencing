@@ -89,6 +89,10 @@ public:
     void PlayNext();
     void PlayPrevious();
 
+    /* parse playlist entries */
+    static Playlist Parse(QString pLocation, QString pName = "", bool pAcceptVideo = true, bool pAcceptAudio = true);
+    static void CheckAndRemoveFilePrefix(QString &pEntry);
+
 public slots:
     void SetVisible(bool pVisible);
 
@@ -118,8 +122,7 @@ private:
 
     int GetListSize();
 
-    /* parse playlist entries */
-    static Playlist Parse(QString pLocation, QString pName = "", bool pAcceptVideo = true, bool pAcceptAudio = true);
+    /* parse playlist entries - helpers */
     static Playlist ParseM3U(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
     static Playlist ParsePLS(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
     static Playlist ParseWMX(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
