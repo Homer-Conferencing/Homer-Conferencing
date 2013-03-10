@@ -78,7 +78,7 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
     mAudioWorker = pAudioWorker;
     mCurrentFileAudioPlaying = false;
     mCurrentFileVideoPlaying = false;
-    mCurrentFileId = -1;
+    mCurrentRowInGui = -1;
     mTimerId = -1;
     mIsPlayed = false;
     mEndlessLoop = false;
@@ -483,7 +483,7 @@ void OverviewPlaylistWidget::DelEntryDialog()
     QModelIndexList tSelection = mLwFiles->selectionModel()->selectedRows();
 
     for (int i = tSelection.size() -1; i >= 0; i--)
-        DeleteListEntry(tSelection[i].row());
+        DeletePlaylistEntry(GetPlaylistIndexFromGuiRow(tSelection[i].row()));
 }
 
 bool OverviewPlaylistWidget::AddFileEntryDialog()
@@ -507,9 +507,9 @@ bool OverviewPlaylistWidget::AddFileEntryDialog()
 
     if((tListWasEmpty) && (mLwFiles->count() > 0))
     {
-        mCurrentFileId = 0;
-        LOG(LOG_VERBOSE, "Setting to file %d in playlist", mCurrentFileId);
-        mLwFiles->setCurrentRow(mCurrentFileId, QItemSelectionModel::Clear | QItemSelectionModel::Select);
+        mCurrentRowInGui = 0;
+        LOG(LOG_VERBOSE, "Setting to file %d in playlist", mCurrentRowInGui);
+        mLwFiles->setCurrentRow(mCurrentRowInGui, QItemSelectionModel::Clear | QItemSelectionModel::Select);
         if (!isVisible())
         	SetVisible(true);
     }
@@ -536,9 +536,9 @@ bool OverviewPlaylistWidget::AddUrlEntryDialog()
 
     if((tListWasEmpty) && (mLwFiles->count() > 0))
     {
-        mCurrentFileId = 0;
-        LOG(LOG_VERBOSE, "Setting to file %d in playlist", mCurrentFileId);
-        mLwFiles->setCurrentRow(mCurrentFileId, QItemSelectionModel::Clear | QItemSelectionModel::Select);
+        mCurrentRowInGui = 0;
+        LOG(LOG_VERBOSE, "Setting to file %d in playlist", mCurrentRowInGui);
+        mLwFiles->setCurrentRow(mCurrentRowInGui, QItemSelectionModel::Clear | QItemSelectionModel::Select);
         if (!isVisible())
             SetVisible(true);
     }
@@ -582,6 +582,9 @@ void OverviewPlaylistWidget::SaveM3U(QString pFileName)
     QString tPlaylistData;
     PlaylistEntry tEntry;
 
+    // make sure the playlist is correctly ordered
+    UpdateView();
+
     mPlaylistMutex.lock();
     tPlaylistData += "#EXTM3U\n";
     foreach(tEntry, mPlaylist)
@@ -605,14 +608,21 @@ void OverviewPlaylistWidget::SaveM3U(QString pFileName)
     tPlaylistFile.close();
 }
 
+int OverviewPlaylistWidget::GetPlaylistIndexFromGuiRow(int pRow)
+{
+    return mLwFiles->item(pRow)->data(Qt::UserRole).toInt();
+}
+
 void OverviewPlaylistWidget::Play(int pIndex)
 {
     LOG(LOG_VERBOSE, "Got trigger to play entry %d", pIndex);
 
+    int tRow = pIndex;
     if (pIndex == -1)
 	{
 	    if (mLwFiles->selectionModel()->currentIndex().isValid())
-	        pIndex = mLwFiles->selectionModel()->currentIndex().row();
+	        tRow = mLwFiles->selectionModel()->currentIndex().row();
+	    pIndex = GetPlaylistIndexFromGuiRow(tRow);
 	}
 
     if ((pIndex == -1) && (GetListSize() > 0))
@@ -627,15 +637,15 @@ void OverviewPlaylistWidget::Play(int pIndex)
 	}
 
 	mIsPlayed = true;
-	mCurrentFile = GetListEntry(pIndex);
+	mCurrentFile = GetPlaylistEntry(pIndex);
 
 	mCurrentFileVideoPlaying = mVideoWorker->PlayFile(mCurrentFile);
 	mCurrentFileAudioPlaying = mAudioWorker->PlayFile(mCurrentFile);
 
-    mCurrentFileId = pIndex;
-    LOG(LOG_VERBOSE, "Setting current row to %d in playlist", mCurrentFileId);
+    mCurrentRowInGui = tRow;
+    LOG(LOG_VERBOSE, "Setting current row to %d in playlist", mCurrentRowInGui);
     mLwFiles->selectionModel()->clearSelection();
-    mLwFiles->setCurrentRow(mCurrentFileId);
+    mLwFiles->setCurrentRow(mCurrentRowInGui);
 }
 
 void OverviewPlaylistWidget::PlayNext()
@@ -649,9 +659,9 @@ void OverviewPlaylistWidget::PlayNext()
         return;
 
     // derive file id of next file which should be played
-	if (mCurrentFileId < GetListSize() -1)
+	if (mCurrentRowInGui < GetListSize() -1)
     {
-		tNewFileId = mCurrentFileId + 1;
+		tNewFileId = mCurrentRowInGui + 1;
     }else
     {
     	if (mEndlessLoop)
@@ -675,8 +685,8 @@ void OverviewPlaylistWidget::PlayPrevious()
 	if (!mIsPlayed)
 		return;
 
-    if (mCurrentFileId > 0)
-        Play(mCurrentFileId - 1);
+    if (mCurrentRowInGui > 0)
+        Play(mCurrentRowInGui - 1);
 }
 
 void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
@@ -711,8 +721,31 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
     	LOG(LOG_VERBOSE, "Got wrong timer ID: %d, waiting for %d", pEvent->timerId(), mTimerId);
 }
 
+void OverviewPlaylistWidget::dragLeaveEvent(QDragLeaveEvent *pEvent)
+{
+    LOG(LOG_VERBOSE, "DragLeave");
+    QWidget::dragLeaveEvent(pEvent);
+}
+
+void OverviewPlaylistWidget::dragMoveEvent(QDragMoveEvent *pEvent)
+{
+    LOG(LOG_VERBOSE, "DragMove");
+    if (pEvent->mimeData()->hasUrls())
+    {
+        pEvent->acceptProposedAction();
+        QList<QUrl> tList = pEvent->mimeData()->urls();
+        QUrl tUrl;
+        int i = 0;
+
+        foreach(tUrl, tList)
+            LOG(LOG_VERBOSE, "New moving drag+drop url (%d) \"%s\"", ++i, tUrl.toString().toStdString().c_str());
+        return;
+    }
+}
+
 void OverviewPlaylistWidget::dragEnterEvent(QDragEnterEvent *pEvent)
 {
+    LOG(LOG_VERBOSE, "DragEnter");
     if (pEvent->mimeData()->hasUrls())
     {
         pEvent->acceptProposedAction();
@@ -730,6 +763,7 @@ void OverviewPlaylistWidget::dropEvent(QDropEvent *pEvent)
 {
     bool tListWasEmpty = (GetListSize() == 0);
 
+    LOG(LOG_VERBOSE, "Drop");
     if (pEvent->mimeData()->hasUrls())
     {
         LOG(LOG_VERBOSE, "Got some dropped urls");
@@ -744,7 +778,7 @@ void OverviewPlaylistWidget::dropEvent(QDropEvent *pEvent)
     }
 
     if ((tListWasEmpty) && (GetListSize() > 0) && (mIsPlayed))
-        Play(mCurrentFileId);
+        Play(mCurrentRowInGui);
 }
 
 int OverviewPlaylistWidget::GetListSize()
@@ -1151,49 +1185,35 @@ Playlist OverviewPlaylistWidget::ParseDIR(QString pDirLocation, bool pAcceptVide
     return tResult;
 }
 
-QString OverviewPlaylistWidget::GetListEntry(int pIndex)
+QString OverviewPlaylistWidget::GetPlaylistEntry(int pIndex)
 {
     QString tResult = "";
 
     mPlaylistMutex.lock();
-    PlaylistEntry tEntry;
-    int tIndex = 0;
-    foreach(tEntry, mPlaylist)
-    {
-        if (tIndex == pIndex)
-        {
-            tResult = tEntry.Location;
-            break;
-        }
-        tIndex++;
-    }
+
+    if (pIndex < mPlaylist.size())
+        tResult = mPlaylist[pIndex].Location;
+
     mPlaylistMutex.unlock();
 
     return tResult;
 }
 
-QString OverviewPlaylistWidget::GetListEntryName(int pIndex)
+QString OverviewPlaylistWidget::GetPlaylistEntryName(int pIndex)
 {
     QString tResult = "";
 
     mPlaylistMutex.lock();
-    PlaylistEntry tEntry;
-    int tIndex = 0;
-    foreach(tEntry, mPlaylist)
-    {
-        if (tIndex == pIndex)
-        {
-            tResult = tEntry.Name;
-            break;
-        }
-        tIndex++;
-    }
+
+    if (pIndex < mPlaylist.size())
+        tResult = mPlaylist[pIndex].Name;
+
     mPlaylistMutex.unlock();
 
     return tResult;
 }
 
-void OverviewPlaylistWidget::DeleteListEntry(int pIndex)
+void OverviewPlaylistWidget::DeletePlaylistEntry(int pIndex)
 {
     int tIndex = 0;
     Playlist::iterator tIt;
@@ -1218,7 +1238,7 @@ void OverviewPlaylistWidget::DeleteListEntry(int pIndex)
     UpdateView();
 }
 
-void OverviewPlaylistWidget::RenameListEntry(int pIndex, QString pName)
+void OverviewPlaylistWidget::RenamePlaylistEntry(int pIndex, QString pName)
 {
     int tIndex = 0;
     Playlist::iterator tIt;
@@ -1271,8 +1291,9 @@ void OverviewPlaylistWidget::RenameDialog()
     if (mLwFiles->selectionModel()->currentIndex().isValid())
     {
         int tSelectedRow = mLwFiles->selectionModel()->currentIndex().row();
-        QString tCurrentEntry = GetListEntry(tSelectedRow);
-        QString tCurrentName = GetListEntryName(tSelectedRow);
+        int tPlaylistIndex = GetPlaylistIndexFromGuiRow(tSelectedRow);
+        QString tCurrentEntry = GetPlaylistEntry(tPlaylistIndex);
+        QString tCurrentName = GetPlaylistEntryName(tPlaylistIndex);
         QString tFillSpace = "";
         for (int i = 0; i < tCurrentEntry.length(); i++)
             tFillSpace += "  ";
@@ -1281,7 +1302,7 @@ void OverviewPlaylistWidget::RenameDialog()
         QString tNewName = QInputDialog::getText(this, "Enter name for \"" + tCurrentEntry + "\"", "New name:           " + tFillSpace, QLineEdit::Normal, tCurrentName, &tOkay);
         if ((tOkay) && (!tNewName.isEmpty()))
         {
-            RenameListEntry(tSelectedRow, tNewName);
+            RenamePlaylistEntry(tPlaylistIndex, tNewName);
         }
     }
 }
@@ -1289,7 +1310,7 @@ void OverviewPlaylistWidget::RenameDialog()
 void OverviewPlaylistWidget::ActionPlay()
 {
 	LOG(LOG_VERBOSE, "Triggered play");
-	Play(mCurrentFileId);
+	Play(mCurrentRowInGui);
 }
 
 void OverviewPlaylistWidget::ActionPause()
@@ -1315,16 +1336,19 @@ void OverviewPlaylistWidget::ActionStop()
 void OverviewPlaylistWidget::FillRow(int pRow, const PlaylistEntry &pEntry)
 {
     if (mLwFiles->item(pRow) != NULL)
+    {
         mLwFiles->item(pRow)->setText(pEntry.Name);
-    else
+        mLwFiles->item(pRow)->setData(Qt::UserRole, pRow);
+    }else
     {
         QListWidgetItem *tItem = new QListWidgetItem(pEntry.Icon, pEntry.Name);
         tItem->setTextAlignment(Qt::AlignLeft|Qt::AlignVCenter);
+        tItem->setData(Qt::UserRole, pRow);
         mLwFiles->insertItem(pRow, tItem);
     }
 }
 
-void OverviewPlaylistWidget::UpdateView()
+void OverviewPlaylistWidget::UpdateView(int pDeletectPlaylistIndex)
 {
     Playlist::iterator tIt;
     int tRow = 0;
@@ -1332,15 +1356,50 @@ void OverviewPlaylistWidget::UpdateView()
 
     //LOG(LOG_VERBOSE, "Updating view");
 
-    LOG(LOG_VERBOSE, "Found row selection: %d", mCurrentFileId);
+    LOG(LOG_VERBOSE, "Found row selection: %d, deleted PL index: %d", mCurrentRowInGui, pDeletectPlaylistIndex);
 
+    // re-order the playlist according to the ordering in the GUI
+    mPlaylistMutex.lock();
+    if (mLwFiles->count() > 0)
+    {
+        Playlist tNewPlaylist;
+        int i;
+        for (i = 0; i < mLwFiles->count(); i++)
+        {
+            int tPlayistIndex = GetPlaylistIndexFromGuiRow(i);
+            if (i != pDeletectPlaylistIndex)
+            {
+                if ((tPlayistIndex >= 0) && (tPlayistIndex < mPlaylist.size()))
+                    tNewPlaylist.push_back(mPlaylist[tPlayistIndex]);
+            }
+        }
+
+        // are there additional new playlist entries?
+        if (pDeletectPlaylistIndex == -1)
+        {
+            for (; i < mPlaylist.size(); i++)
+            {
+                if (i != pDeletectPlaylistIndex)
+                {
+                    if ((i >= 0) && (i < mPlaylist.size()))
+                        tNewPlaylist.push_back(mPlaylist[i]);
+                }
+            }
+        }
+        mPlaylist = tNewPlaylist;
+    }
+
+    // overwrite the playlist with the new ordered one
+    mPlaylistMutex.unlock();
+
+    // reset the GUI
     if (GetListSize() != mLwFiles->count())
     {
         mLwFiles->clear();
     }
 
+    // update the GUI
     mPlaylistMutex.lock();
-
     if (mPlaylist.size() > 0)
     {
         PlaylistEntry tEntry;
@@ -1349,11 +1408,10 @@ void OverviewPlaylistWidget::UpdateView()
             FillRow(tRow++, tEntry);
         }
     }
-
     mPlaylistMutex.unlock();
 
-    if (mCurrentFileId != -1)
-        mLwFiles->setCurrentRow (mCurrentFileId);
+    if (mCurrentRowInGui != -1)
+        mLwFiles->setCurrentRow (mCurrentRowInGui);
 }
 
 void OverviewPlaylistWidget::customEvent(QEvent* pEvent)

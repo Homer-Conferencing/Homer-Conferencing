@@ -36,6 +36,7 @@
 #include <QTimerEvent>
 #include <QShortcut>
 #include <QDragEnterEvent>
+#include <QDragMoveEvent>
 #include <QDragLeaveEvent>
 #include <QMutex>
 #include <QIcon>
@@ -113,12 +114,14 @@ private:
     virtual void closeEvent(QCloseEvent* pEvent);
     virtual void contextMenuEvent(QContextMenuEvent *pContextMenuEvent);
     void timerEvent(QTimerEvent *pEvent);
+    void dragLeaveEvent(QDragLeaveEvent *pEvent);
+    void dragMoveEvent(QDragMoveEvent *pEvent);
     void dragEnterEvent(QDragEnterEvent *pEvent);
     void dropEvent(QDropEvent *pEvent);
 
     void initializeGUI();
     void FillRow(int pRow, const PlaylistEntry &pEntry);
-    void UpdateView();
+    void UpdateView(int pDeletectPlaylistIndex = -1);
 
     int GetListSize();
 
@@ -131,17 +134,18 @@ private:
     /* save playlist entries */
     void SaveM3U(QString pFileName);
 
-    QString GetListEntry(int pIndex);
-    QString GetListEntryName(int pIndex);
-    void DeleteListEntry(int pIndex);
-    void RenameListEntry(int pIndex, QString pName);
+    QString GetPlaylistEntry(int pIndex);
+    QString GetPlaylistEntryName(int pIndex);
+    void DeletePlaylistEntry(int pIndex);
+    void RenamePlaylistEntry(int pIndex, QString pName);
     void ResetList();
+    int GetPlaylistIndexFromGuiRow(int pRow);
 
     void RenameDialog();
 
     bool 				mEndlessLoop;
     bool				mIsPlayed;
-    int 				mCurrentFileId;
+    int 				mCurrentRowInGui;
     QPoint              mWinPos;
     QAction             *mAssignedAction;
     QShortcut           *mShortcutDel, *mShortcutIns;
