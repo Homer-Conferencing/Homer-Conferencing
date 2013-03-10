@@ -505,6 +505,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  *        MPEG2							CODEC_ID_MPEG2VIDEO
  *        H.263+						CODEC_ID_H263P+
  *        H.264							CODEC_ID_H264
+ *        MPEG2TS                       CODEC_ID_MPEG2TS
  *        MPEG4							CODEC_ID_MPEG4
  *        THEORA						CODEC_ID_THEORA
  *        VP8							CODEC_ID_VP8
@@ -539,6 +540,8 @@ enum CodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
         tResult = CODEC_ID_H263P;
     if (pName == "H.264")
         tResult = CODEC_ID_H264;
+    if (pName == "MPEG2TS")
+        tResult = CODEC_ID_MPEG2TS;
     if (pName == "MPEG4")
         tResult = CODEC_ID_MPEG4;
     if (pName == "MJPEG")
@@ -598,6 +601,9 @@ string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
         case CODEC_ID_H264:
     			tResult = "H.264";
     			break;
+        case CODEC_ID_MPEG2TS:
+                tResult = "MPEG2TS";
+                break;
         case CODEC_ID_MPEG4:
     			tResult = "MPEG4";
     			break;
@@ -663,6 +669,7 @@ string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
  *        CODEC_ID_MPEG2VIDEO			mpeg2video
  *        CODEC_ID_H263P+				h263 // same like H263
  *        CODEC_ID_H264					h264
+ *        CODEC_ID_MPEG2TS              mpegts
  *        CODEC_ID_MPEG4				m4v
  *        CODEC_ID_MJPEG				mjpeg
  *        CODEC_ID_THEORA				ogg
@@ -706,6 +713,9 @@ string MediaSource::GetFormatName(enum CodecID pCodecId)
         case CODEC_ID_H264:
     			tResult = "h264";
     			break;
+        case CODEC_ID_MPEG2TS:
+                tResult = "mpegts";
+                break;
         case CODEC_ID_MPEG4:
     			tResult = "m4v";
     			break;
@@ -1179,15 +1189,18 @@ bool MediaSource::Reset(enum MediaType pMediaType)
     // HINT: closing the grab device resets the media type!
     int tMediaType = (pMediaType == MEDIA_UNKNOWN) ? mMediaType : pMediaType;
 
+    LOG(LOG_VERBOSE, "Reset()-stopping grabber");
     StopGrabbing();
 
     // lock grabbing
     mGrabMutex.lock();
 
+    LOG(LOG_VERBOSE, "Reset()-closing grabber");
     CloseGrabDevice();
 
     // restart media source, assuming that the last start of the media source was successful
     // otherwise a manual call to Open(Video/Audio)GrabDevice besides this reset function is need
+    LOG(LOG_VERBOSE, "Reset()-starting %s grabber", GetMediaTypeStr().c_str());
     switch(tMediaType)
     {
         case MEDIA_VIDEO:
@@ -2464,6 +2477,32 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
     }
 }
 
+void MediaSource::RecordRGBPicture(char *pSourcePicture, int pSourcePictureSize)
+{
+    int     tRes;
+    AVFrame *tVideoFrame = AllocFrame();
+    if (tVideoFrame == NULL)
+    {
+        LOG(LOG_ERROR, "Out of memory");
+        return;
+    }
+
+    //####################################################################
+    // create final frame for audio encoder
+    // ###################################################################
+    #ifdef MS_DEBUG_RECORDER_PACKETS
+        LOG(LOG_VERBOSE, "Recording RGB picture buffer of %d bytes", pSourcePictureSize);
+    #endif
+    tVideoFrame->pict_type = AV_PICTURE_TYPE_NONE;
+    // Assign appropriate parts of buffer to image planes in tRGBFrame
+    if ((tRes = avpicture_fill((AVPicture *)tVideoFrame, (uint8_t *)pSourcePicture, mRecorderCodecContext->pix_fmt, mRecorderCodecContext->width, mRecorderCodecContext->height)) < 0)
+        LOG(LOG_ERROR, "Could not fill the video frame with the provided data because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+    else
+        RecordFrame(tVideoFrame);
+
+    av_free(tVideoFrame);
+}
+
 void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
 {
     int     tRes;
@@ -3091,7 +3130,7 @@ bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, CodecID pCodecI
 {
 	AVInputFormat *tResult = NULL;
 
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to find %s input format for codec %d..", GetMediaTypeStr().c_str(), pCodecId);
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to find %s input format for codec %s(0x%x)..", GetMediaTypeStr().c_str(), avcodec_get_name(pCodecId), pCodecId);
 
 	if (pFormat == NULL)
 	{
@@ -3106,6 +3145,7 @@ bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, CodecID pCodecI
     if ((tCodecName == "mpeg1video") || (tCodecName == "mpeg2video"))
         tCodecName = "mpegvideo";
 
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Searching for input format of codec: %s", tCodecName.c_str());
 	if ((tResult = av_find_input_format(tCodecName.c_str())) == NULL)
     {
         if (!mGrabbingStopped)
@@ -3114,7 +3154,7 @@ bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, CodecID pCodecI
         return NULL;
     }
 
-	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Successfully found %s input format with flags: %d", GetMediaTypeStr().c_str(), tResult->flags);
+	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Successfully found %s input format %s(%s) with flags: 0x%x", GetMediaTypeStr().c_str(), tResult->name, tResult->long_name, tResult->flags);
 
     *pFormat = tResult;
 
@@ -3295,6 +3335,7 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
     //######################################################
     //### check all detected streams for a matching one
     //######################################################
+	LOG(LOG_VERBOSE, "Found %d input streams", mFormatContext->nb_streams);
 	for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
 	{
 	    //######################################################
@@ -3305,6 +3346,10 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
 	        av_dump_format(mFormatContext, i, tTargetMediaDescription.c_str(), false);
 	        mMediaStreamIndex = i;
 	        break;
+	    }else
+	    {
+	        LOG(LOG_VERBOSE, "Ignoring stream of type: %s(%d)", mFormatContext->streams[i]->codec->codec_name, mFormatContext->streams[i]->codec->codec_type);
+            av_dump_format(mFormatContext, i, "IGNORED STREAM", false);
 	    }
 	}
 

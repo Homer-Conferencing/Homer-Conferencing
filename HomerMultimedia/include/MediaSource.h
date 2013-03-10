@@ -388,6 +388,7 @@ protected:
 
     /* internal interface for stream recordring */
     void RecordFrame(AVFrame *pSourceFrame);
+    void RecordRGBPicture(char *pSourcePicture, int pSourcePictureSize);
     void RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize);
 
     bool IsKeyFrame(AVFrame *pFrame);
