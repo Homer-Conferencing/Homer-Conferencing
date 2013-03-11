@@ -1647,12 +1647,18 @@ void* MediaSourceMem::Run(void* pArgs)
             // #########################################
             if (((tPacket->data != NULL) && (tPacket->size > 0)) || (mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */))
             {
+                if ((tPacket->duration != mFrameDuration) && (tPacket->duration> 0))
+                {
+                    LOG(LOG_WARN, "Detected new packet duration, changing the frame timestamp factor from %d to %d", mFrameDuration, tPacket->duration);
+                    mFrameDuration = tPacket->duration;
+                }
+
                 #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                     if ((tPacket->data != NULL) && (tPacket->size > 0))
                     {
                         LOG(LOG_VERBOSE, "New %s packet..", GetMediaTypeStr().c_str());
                         LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64" normalized pts: %lld", tPacket->pts, tPacket->pts - mFormatContext->streams[mMediaStreamIndex]->start_time);
+                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64", normalized pts: %lld", tPacket->pts, tPacket->pts - mFormatContext->streams[mMediaStreamIndex]->start_time);
                         LOG(LOG_VERBOSE, "      ..stream: %"PRId64, tPacket->stream_index);
                         LOG(LOG_VERBOSE, "      ..dts: %"PRId64, tPacket->dts);
                         LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
@@ -1744,7 +1750,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // ### check codec ID
                                 // ############################
                                 // do we have a video codec change at sender side?
-                                if ((mSourceCodecId != 0) && (mSourceCodecId != mCodecContext->codec_id))
+                                if ((mSourceCodecId != 0) && (mSourceCodecId != CODEC_ID_MPEG2TS /* in this case the MPEG2TS is only the transport and carries inside another codec */) && (mSourceCodecId != mCodecContext->codec_id))
                                 {
                                 	if ((mCodecContext->codec_id == 5 /* h263 */) && (mSourceCodecId == 20 /* h263+ */))
                                 	{// changed from h263+ to h263
@@ -1972,7 +1978,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                             #ifdef MSMEM_DEBUG_PACKETS
                                                 LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO with frame nr.%.2lf", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurrentOutputFrameTimestamp);
                                             #endif
-                                            WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, rint(tCurrentOutputFrameTimestamp));
+                                            WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, (int64_t)rint(tCurrentOutputFrameTimestamp));
 
                                             // prepare frame number for next loop
                                             tCurrentOutputFrameTimestamp += 1;
@@ -2125,7 +2131,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                                 #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
                                                     LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with frame nr. %.2lf, remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurrentOutputFrameTimestamp, av_fifo_size(mResampleFifo[0]));
                                                 #endif
-                                                WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, rint(tCurrentOutputFrameTimestamp));
+                                                WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, (int64_t)rint(tCurrentOutputFrameTimestamp));
 
                                                 // prepare frame number for next loop
                                                 tCurrentOutputFrameTimestamp += 1;
@@ -2411,7 +2417,7 @@ void MediaSourceMem::UpdateBufferTime()
 void MediaSourceMem::CalibrateRTGrabbing()
 {
     // adopt the stored pts value which represent the start of the media presentation in real-time useconds
-    float  tRelativeFrameIndex = mLastBufferedOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts);
+    float  tRelativeFrameIndex = (mLastBufferedOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts)) / mFrameDuration;
     double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetOutputFrameRate());
 	#ifdef MSMEM_DEBUG_WAITING_TIMING
     	LOG(LOG_WARN, "Calibrating %s RT playback, old PTS start: %.2f, pre-buffer time: %.2f", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, mDecoderFramePreBufferTime);
@@ -2454,7 +2460,7 @@ bool MediaSourceMem::WaitForRTGrabbing()
 	}
 
     // calculate the current (normalized) frame index of the grabber
-    float tNormalizedFrameIndexFromGrabber = mCurrentOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts); // the normalized frame index
+    float tNormalizedFrameIndexFromGrabber = (mCurrentOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts)) / mFrameDuration; // the normalized frame index
     // return immediately if RT-grabbing is not possible
     if (tNormalizedFrameIndexFromGrabber < 0)
     {

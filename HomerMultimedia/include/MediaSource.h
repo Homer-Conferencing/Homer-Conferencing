@@ -433,6 +433,7 @@ protected:
     bool                mRecording;
     std::string         mRecordingSaveFileName;
     int                 mFrameNumber;
+    int                 mFrameDuration; // the factor by which the frame timestamps are multipled, 1 for usual sources, 3600 for MPEG2TS
     int                 mChunkDropCounter;
     Mutex               mGrabMutex;
     enum MediaType      mMediaType;
@@ -513,7 +514,6 @@ protected:
     AVCodecContext      *mRecorderCodecContext;
     SwsContext          *mRecorderVideoScalerContext;
     int64_t             mRecorderFrameNumber;
-    int64_t             mRecorderStartPts; // for synchronized playback we calculate the position within a media stream and write the value into PTS entry of an encoded packet
     AVFrame             *mRecorderFinalFrame;
     int64_t             mRecorderStart;
     /* device handling */

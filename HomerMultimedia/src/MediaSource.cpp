@@ -61,6 +61,7 @@ bool MediaSource::mFfmpegInitiated = false;
 MediaSource::MediaSource(string pName):
     PacketStatistic(pName)
 {
+    mFrameDuration = 1;
     mSourceTimeShiftForRTGrabbing = 0;
     mRelativeLoss = 0;
     mDecoderSynchPoints = 0;
@@ -2030,7 +2031,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
 
     // open codec
     LOG(LOG_VERBOSE, "..opening %s codec", GetMediaTypeStr().c_str());
-    if ((tResult = HM_avcodec_open(mRecorderCodecContext, tCodec, NULL)) < 0)
+    if ((tResult = HM_avcodec_open(mRecorderCodecContext, tCodec, &tOptions)) < 0)
     {
         LOG(LOG_WARN, "Couldn't open %s codec because \"%s\". Will try to open the video open codec without options and with disabled MT..", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
 
@@ -2094,7 +2095,8 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     }
 
     // allocate streams private data buffer and write the streams header, if any
-    avformat_write_header(mRecorderFormatContext, NULL);
+    AVDictionary        *tOptions2 = NULL;
+    avformat_write_header(mRecorderFormatContext, &tOptions2);
 
     LOG(LOG_INFO, "%s recorder opened...", GetMediaTypeStr().c_str());
 
@@ -2142,7 +2144,6 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     // unlock grabbing
     mGrabMutex.unlock();
 
-    mRecorderStartPts = -1;
     mRecorderFrameNumber = 0;
     mRecordingSaveFileName = pSaveFileName;
     mRecording = true;
@@ -2231,8 +2232,6 @@ void MediaSource::StopRecording()
 
         LOG(LOG_INFO, "...%s recorder stopped", GetMediaTypeStr().c_str());
     }
-
-    mRecorderStartPts = -1;
 }
 
 bool MediaSource::SupportsRecording()
@@ -3220,7 +3219,7 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
     mFormatContext->pb = pIOContext;
 
     // open input: automatic content detection is done inside ffmpeg
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..calling avformat_open_input() for %s source", GetMediaTypeStr().c_str());
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..calling avformat_open_input() for %s source and input format %s", GetMediaTypeStr().c_str(), (pInputFormat != NULL) ? pInputFormat->name : "unknown");
     mFormatContext->interrupt_callback.callback = FindStreamInfoCallback;
     mFormatContext->interrupt_callback.opaque = this;
 	if ((tRes = avformat_open_input(&mFormatContext, pInputName, pInputFormat, NULL)) < 0)
@@ -3231,7 +3230,8 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
 	}
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s device (name) to %s", GetMediaTypeStr().c_str(), pInputName);
-    mCurrentDevice = pInputName;
+    if ((pInputName != NULL) && (strlen(pInputName) > 0))
+        mCurrentDevice = pInputName;
     mCurrentDeviceName = pInputName;
 
     if (mGrabbingStopped)
@@ -3266,6 +3266,9 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
                 case CODEC_ID_H264:
                     // we shouldn't limit the analyzing time because the analyzer needs the entire time period to deliver a reliable result
                     break;
+                case CODEC_ID_MPEG2TS:
+                    // we may limit the analyzing time to the half
+                    mFormatContext->max_analyze_duration = AV_TIME_BASE / 8;
                 default:
                     // we may limit the analyzing time to the half
                     mFormatContext->max_analyze_duration = AV_TIME_BASE / 2;
@@ -3557,12 +3560,19 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     // set PTS offset
     if (mFormatContext->start_time > 0)
     {
-    	mInputStartPts = GetInputFrameRate() * mFormatContext->start_time / AV_TIME_BASE;
-    	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
+    	mInputStartPts = mFormatContext->start_time;
+    	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the format context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
     }else
     {
-        LOG_REMOTE(LOG_WARN, pSource, pLine, "Found start time of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
-    	mInputStartPts = 0;
+        if (mFormatContext->streams[mMediaStreamIndex]->start_time > 0)
+        {
+            mInputStartPts = mFormatContext->streams[mMediaStreamIndex]->start_time;
+            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the stream context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
+        }else
+        {
+            LOG_REMOTE(LOG_WARN, pSource, pLine, "Found start time of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
+            mInputStartPts = 0;
+        }
     }
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..successfully opened %s decoder", GetMediaTypeStr().c_str());
