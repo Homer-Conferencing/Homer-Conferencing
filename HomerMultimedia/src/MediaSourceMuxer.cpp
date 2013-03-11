@@ -1290,11 +1290,13 @@ void MediaSourceMuxer::StartEncoder()
     // start transcoder main loop
     StartThread();
 
-    while(!mEncoderThreadNeeded)
+    while(!IsRunning())
     {
         LOG(LOG_VERBOSE, "Waiting for the start of %s transcoding thread", GetMediaTypeStr().c_str());
         Thread::Suspend(25 * 1000);
     }
+
+    LOG(LOG_VERBOSE, "..%s transcoder started", GetMediaTypeStr().c_str());
 }
 
 void MediaSourceMuxer::StopEncoder()
@@ -1303,26 +1305,23 @@ void MediaSourceMuxer::StopEncoder()
 
     LOG(LOG_VERBOSE, "Stopping %s transcoder", GetMediaTypeStr().c_str());
 
-    if (mEncoderFifo != NULL)
+    while(IsRunning())
     {
         // tell transcoder thread it isn't needed anymore
         mEncoderThreadNeeded = false;
 
         // wait for termination of transcoder thread
-        do
-        {
-            if(tSignalingRound > 0)
-                LOG(LOG_WARN, "Signaling attempt %d to stop transcoder", tSignalingRound);
-            tSignalingRound++;
+        if(tSignalingRound > 0)
+            LOG(LOG_WARN, "Signaling attempt %d to stop transcoder", tSignalingRound);
+        tSignalingRound++;
 
-            // write fake data to awake transcoder thread as long as it still runs
-            mEncoderFifoState.lock();
-            if (mEncoderFifo != NULL)
-            	mEncoderFifo->WriteFifo(NULL, 0, 0);
-            mEncoderFifoState.unlock();
+        // write fake data to awake transcoder thread as long as it still runs
+        mEncoderFifoState.lock();
+        if (mEncoderFifo != NULL)
+            mEncoderFifo->WriteFifo(NULL, 0, 0);
+        mEncoderFifoState.unlock();
 
-            Thread::Suspend(25 * 1000);
-        }while(IsRunning());
+        Thread::Suspend(25 * 1000);
     }
 
     LOG(LOG_VERBOSE, "%s encoder stopped", GetMediaTypeStr().c_str());
@@ -1377,6 +1376,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     int64_t				tOutputFrameTimestamp = 0;
     int64_t				tEncoderOutputFrameTimestamp = 0;
     int64_t				tLastVideoEncoderFrameTimestamp = 0;
+    AVDictionary        *tOptions = NULL;
 
     LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Encoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
@@ -1443,7 +1443,10 @@ void* MediaSourceMuxer::Run(void* pArgs)
         LOG(LOG_WARN, "%s codec adapted encoder bit rate from %d to %d", GetMediaTypeStr().c_str(), mStreamBitRate, mCodecContext->bit_rate);
 
     // allocate streams private data buffer and write the streams header, if any
-    if ((tResult = avformat_write_header(mFormatContext, NULL)) < 0)
+    if (mFormatContext == NULL)
+        LOG(LOG_ERROR, "Invalid %s format context", GetMediaTypeStr().c_str());
+
+    if ((tResult = avformat_write_header(mFormatContext, &tOptions)) < 0)
         LOG(LOG_ERROR, "Couldn't write %s codec header because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
 
     // set marker to "active"
