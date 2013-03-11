@@ -646,7 +646,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     OpenRtpPacketStream();
 
     // allocate streams private data buffer and write the streams header, if any
-    avformat_write_header(mRtpFormatContext, NULL);
+    avformat_write_header(mRtpFormatContext, &tOptions);
 
     // close memory stream
     char *tBuffer = NULL;
