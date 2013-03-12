@@ -845,45 +845,48 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     // ffmpeg might have difficulties detecting the correct input format, enforce correct audio parameters
     AVCodecContext *tCodec = mFormatContext->streams[mMediaStreamIndex]->codec;
-    switch(mSourceCodecId)
+    if (mRtpActivated)
     {
-		case CODEC_ID_AMR_NB:
-			tCodec->channels = 1;
-			tCodec->bit_rate = 7950;
-			tCodec->sample_rate = 8000;
-		    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-			mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
-			break;
-    	case CODEC_ID_ADPCM_G722:
-    		tCodec->channels = 1;
-    		tCodec->sample_rate = 16000;
-    	    mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000; // different time base as defined in RFC
-    		mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
-			break;
-    	case CODEC_ID_GSM:
-    	case CODEC_ID_PCM_ALAW:
-		case CODEC_ID_PCM_MULAW:
-			tCodec->channels = 1;
-			tCodec->sample_rate = 8000;
-		    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-			mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
-			break;
-    	case CODEC_ID_PCM_S16BE:
-    		tCodec->channels = 2;
-    		tCodec->sample_rate = 44100;
-    	    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-    		mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
-			break;
-    	case CODEC_ID_MP3:
-    	    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-    		mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
-    		break;
-		default:
-		    mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-			mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
-			break;
+        LOG(LOG_VERBOSE, "Setting time base for %s %s RTP stream with codec %s", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), avcodec_get_name(mSourceCodecId));
+        switch(mSourceCodecId)
+        {
+            case CODEC_ID_AMR_NB:
+                tCodec->channels = 1;
+                tCodec->bit_rate = 7950;
+                tCodec->sample_rate = 8000;
+                mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                break;
+            case CODEC_ID_ADPCM_G722:
+                tCodec->channels = 1;
+                tCodec->sample_rate = 16000;
+                mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000; // different time base as defined in RFC
+                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                break;
+            case CODEC_ID_GSM:
+            case CODEC_ID_PCM_ALAW:
+            case CODEC_ID_PCM_MULAW:
+                tCodec->channels = 1;
+                tCodec->sample_rate = 8000;
+                mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                break;
+            case CODEC_ID_PCM_S16BE:
+                tCodec->channels = 2;
+                tCodec->sample_rate = 44100;
+                mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                break;
+            case CODEC_ID_MP3:
+                mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                break;
+            default:
+                mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
+                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                break;
+        }
     }
-
 
     // finds and opens the correct decoder
     if (!OpenDecoder())
@@ -1647,10 +1650,13 @@ void* MediaSourceMem::Run(void* pArgs)
             // #########################################
             if (((tPacket->data != NULL) && (tPacket->size > 0)) || (mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */))
             {
-                if ((tPacket->duration != mFrameDuration) && (tPacket->duration> 0))
+                if (mFormatContext->iformat->flags & AVFMT_TS_DISCONT)
                 {
-                    LOG(LOG_WARN, "Detected new packet duration, changing the frame timestamp factor from %d to %d", mFrameDuration, tPacket->duration);
-                    mFrameDuration = tPacket->duration;
+                    if ((tPacket->duration != mFrameDuration) && (tPacket->duration> 0))
+                    {
+                        LOG(LOG_WARN, "Detected new packet duration, changing the frame timestamp factor from %d to %d", mFrameDuration, tPacket->duration);
+                        mFrameDuration = tPacket->duration;
+                    }
                 }
 
                 #ifdef MSMEM_DEBUG_PACKET_RECEIVER
@@ -1663,7 +1669,8 @@ void* MediaSourceMem::Run(void* pArgs)
                         LOG(LOG_VERBOSE, "      ..dts: %"PRId64, tPacket->dts);
                         LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
                         LOG(LOG_VERBOSE, "      ..pos: %"PRId64, tPacket->pos);
-                        LOG(LOG_VERBOSE, "      ..frame number: %"PRId64, (int64_t)tPacket->pts / (tPacket->duration > 0 ? tPacket->duration : 1) /* works only for cfr, otherwise duration is variable */);
+                        LOG(LOG_VERBOSE, "      ..frame number: %"PRId64, (tPacket->pts - mFormatContext->streams[mMediaStreamIndex]->start_time) / (tPacket->duration > 0 ? tPacket->duration : 1) /* works only for cfr, otherwise duration is variable */);
+                        LOG(LOG_VERBOSE, "      ..current input frame timestamp: %lf", tCurrentInputFrameTimestamp);
                         if (tPacket->flags == AV_PKT_FLAG_KEY)
                             LOG(LOG_VERBOSE, "      ..flags: key frame");
                         else
