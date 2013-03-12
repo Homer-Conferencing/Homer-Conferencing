@@ -1650,7 +1650,7 @@ void* MediaSourceMem::Run(void* pArgs)
             // #########################################
             if (((tPacket->data != NULL) && (tPacket->size > 0)) || (mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */))
             {
-                if (mFormatContext->iformat->flags & AVFMT_TS_DISCONT)
+                if (mMediaType == MEDIA_VIDEO)
                 {
                     if ((tPacket->duration != mFrameDuration) && (tPacket->duration> 0))
                     {
