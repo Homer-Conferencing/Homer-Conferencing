@@ -760,7 +760,7 @@ string MediaSource::GetFormatName(enum CodecID pCodecId)
     			break;
 
         default:
-        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported %s codec %d", GetMediaTypeStr().c_str(), pCodecId);
+        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported %s codec %s(%d)", GetMediaTypeStr().c_str(), avcodec_get_name(pCodecId), pCodecId);
         	break;
     }
 
@@ -3228,10 +3228,13 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
 
 		return false;
 	}
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s input successfully opened ", GetMediaTypeStr().c_str());
 
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s device (name) to %s", GetMediaTypeStr().c_str(), pInputName);
     if ((pInputName != NULL) && (strlen(pInputName) > 0))
+    {
+        LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s device (name) to %s", GetMediaTypeStr().c_str(), pInputName);
         mCurrentDevice = pInputName;
+    }
     mCurrentDeviceName = pInputName;
 
     if (mGrabbingStopped)
@@ -3254,26 +3257,29 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     // limit frame analyzing time for ffmpeg internal codec auto detection for non file based media sources
     if (GetSourceType() != SOURCE_FILE)
     {
-        if (mMediaType == MEDIA_AUDIO)
-        {// we limit the analyzing time to a quarter
-            mFormatContext->max_analyze_duration = AV_TIME_BASE / 4;
-        }else{
-        	switch(mSourceCodecId)
-        	{
-                case CODEC_ID_MPEG1VIDEO:
-                case CODEC_ID_MPEG2VIDEO:
-                case CODEC_ID_MPEG4:
-                case CODEC_ID_H264:
-                    // we shouldn't limit the analyzing time because the analyzer needs the entire time period to deliver a reliable result
-                    break;
-                case CODEC_ID_MPEG2TS:
-                    // we may limit the analyzing time to the half
-                    mFormatContext->max_analyze_duration = AV_TIME_BASE / 8;
-                default:
-                    // we may limit the analyzing time to the half
-                    mFormatContext->max_analyze_duration = AV_TIME_BASE / 2;
-                    break;
-        	}
+        if (mSourceCodecId == CODEC_ID_MPEG2TS)
+        {
+            mFormatContext->max_analyze_duration = mFormatContext->max_analyze_duration / 2048;
+        }else
+        {
+            if (mMediaType == MEDIA_AUDIO)
+            {// we limit the analyzing time to a quarter
+                mFormatContext->max_analyze_duration = AV_TIME_BASE / 4;
+            }else{
+                switch(mSourceCodecId)
+                {
+                    case CODEC_ID_MPEG1VIDEO:
+                    case CODEC_ID_MPEG2VIDEO:
+                    case CODEC_ID_MPEG4:
+                    case CODEC_ID_H264:
+                        // we shouldn't limit the analyzing time because the analyzer needs the entire time period to deliver a reliable result
+                        break;
+                    default:
+                        // we may limit the analyzing time to the half
+                        mFormatContext->max_analyze_duration = AV_TIME_BASE / 2;
+                        break;
+                }
+            }
         }
     }
 
@@ -3285,14 +3291,14 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     }
 
     // discard all corrupted frames
-    mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
+    //mFormatContext->flags |= AVFMT_FLAG_DISCARD_CORRUPT;
 
     //LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Current format context flags: %d, packet buffer: %p, raw packet buffer: %p, nb streams: %d", mFormatContext->flags, mFormatContext->packet_buffer, mFormatContext->raw_packet_buffer, mFormatContext->nb_streams);
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..calling avformat_find_stream_info() for %s source", GetMediaTypeStr().c_str());
     if ((tRes = avformat_find_stream_info(mFormatContext, NULL)) < 0)
     {
         if (!mGrabbingStopped)
-        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s stream information because \"%s\"(%d)", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)), tRes);
+        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s stream information for format %s because \"%s\"(%d)", GetMediaTypeStr().c_str(), mFormatContext->iformat->name, strerror(AVUNERROR(tRes)), tRes);
         else
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped during avformat_find_stream_info()");
 
@@ -3502,7 +3508,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
         return false;
     }
 
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..successfully found %s decoder", GetMediaTypeStr().c_str());
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s decoder successfully found", GetMediaTypeStr().c_str());
 
     //H.264: force thread count to 1 since the h264 decoder will not extract SPS and PPS to extradata during multi-threaded decoding
     if (mCodecContext->codec_id == CODEC_ID_H264)
@@ -3575,7 +3581,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
         }
     }
 
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..successfully opened %s decoder", GetMediaTypeStr().c_str());
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s decoder successfully opened", GetMediaTypeStr().c_str());
 
     return true;
 }
@@ -3661,7 +3667,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
 
 	}
 
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..successfully opened %s format converter", GetMediaTypeStr().c_str());
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s format converter successfully opened", GetMediaTypeStr().c_str());
 
 	return true;
 }
