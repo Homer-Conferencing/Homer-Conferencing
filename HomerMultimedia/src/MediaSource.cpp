@@ -3259,7 +3259,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     {
         if (mSourceCodecId == CODEC_ID_MPEG2TS)
         {
-            mFormatContext->max_analyze_duration = mFormatContext->max_analyze_duration / 2048;
+            mFormatContext->max_analyze_duration = mFormatContext->max_analyze_duration / 8;
         }else
         {
             if (mMediaType == MEDIA_AUDIO)
@@ -3562,6 +3562,9 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
         LOG_REMOTE(LOG_WARN, pSource, pLine, "Found duration of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
     	mNumberOfFrames = 0;
     }
+
+    if (mFormatContext->streams[mMediaStreamIndex]->start_time < 0)
+        mFormatContext->streams[mMediaStreamIndex]->start_time = 0;
 
     // set PTS offset
     if (mFormatContext->start_time > 0)
