@@ -1509,7 +1509,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 #endif
 
                                 tEncoderOutputFrameTimestamp = (int64_t)rint(CalculateEncoderPts(mFrameNumber));
-                                if (mMediaSource->HasVariableVideoOutputFrameRate())
+                                if (mMediaSource->HasVariableOutputFrameRate())
                                 {// base source delivers a variable output frame rate (we cannot rely on equidistant times between two grabbed frames
                                 	if (mEncoderStartTime == 0)
                                 	{
@@ -2127,10 +2127,10 @@ void MediaSourceMuxer::SetVideoFlipping(bool pHFlip, bool pVFlip)
     mVideoVFlip = pVFlip;
 }
 
-bool MediaSourceMuxer::HasVariableVideoOutputFrameRate()
+bool MediaSourceMuxer::HasVariableOutputFrameRate()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->HasVariableVideoOutputFrameRate();
+        return mMediaSource->HasVariableOutputFrameRate();
     else
         return false;
 }

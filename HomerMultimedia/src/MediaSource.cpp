@@ -519,6 +519,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  *        G711 µ-law					CODEC_ID_PCM_ALAW
  *        G722 adpcm					CODEC_ID_ADPCM_G722
  *        PCM16							CODEC_ID_PCM_S16BE
+ *        MP2                           CODEC_ID_MP2
  *        MP3							CODEC_ID_MP3
  *        AAC							CODEC_ID_AAC
  *        AMR							CODEC_ID_AMR_NB
@@ -563,6 +564,8 @@ enum CodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
         tResult = CODEC_ID_ADPCM_G722;
     if ((pName == "PCM16") || (pName == "PCM_S16_LE" /*historic*/))
         tResult = CODEC_ID_PCM_S16BE;
+    if (pName == "MP2")
+        tResult = CODEC_ID_MP2;
     if ((pName == "MP3") || (pName == "MP3 (MPA)" /*historic*/))
         tResult = CODEC_ID_MP3;
     if (pName == "AAC")
@@ -634,6 +637,9 @@ string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
         case CODEC_ID_PCM_S16BE:
     			tResult = "PCM16";
     			break;
+        case CODEC_ID_MP2:
+                tResult = "MP2";
+                break;
         case CODEC_ID_MP3:
     			tResult = "MP3";
     			break;
@@ -684,6 +690,7 @@ string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
  *        CODEC_ID_PCM_ALAW				alaw
  *        CODEC_ID_ADPCM_G722			g722
  *        CODEC_ID_PCM_S16BE			s16be
+ *        CODEC_ID_MP2                  mp3
  *        CODEC_ID_MP3					mp3
  *        CODEC_ID_AAC					aac
  *        CODEC_ID_AMR_NB				amr
@@ -746,6 +753,9 @@ string MediaSource::GetFormatName(enum CodecID pCodecId)
         case CODEC_ID_PCM_S16BE:
     			tResult = "s16be";
     			break;
+        case CODEC_ID_MP2:
+                tResult = "mp3";
+                break;
         case CODEC_ID_MP3:
     			tResult = "mp3";
     			break;
@@ -840,7 +850,7 @@ int MediaSource::GetInputBitRate()
 	return mInputBitRate;
 }
 
-bool MediaSource::HasVariableVideoOutputFrameRate()
+bool MediaSource::HasVariableOutputFrameRate()
 {
 	return false;
 }
