@@ -80,6 +80,7 @@ namespace Homer { namespace Gui {
 // max. allowed drift between audio and video playback
 #define AV_SYNC_MAX_DRIFT_UNTIL_RESYNC                             0.08 // seconds
 // max. allowed drift between audio and video playback
+#define AV_SYNC_MAX_OVER_BUFFERING_DRIFT_UNTIL_RESYNC              0.5 // seconds
 #define AV_SYNC_MAX_UNDER_BUFFERING_DRIFT_UNTIL_RESYNC             0.5 // seconds
 // max. allowed drift until we deliver an error by IsAVDriftOkay()
 #define AV_SYNC_MAX_DRIFT_FOR_OKAY                                 (AV_SYNC_MAX_DRIFT_UNTIL_RESYNC * 2) // seconds
@@ -1476,7 +1477,7 @@ void ParticipantWidget::AVSync()
                 tBufferTime = mVideoSource->GetFrameBufferTime();
                 tPreBufferTime = mVideoSource->GetFrameBufferPreBufferingTime() + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC;
 				#ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
-					if ((tBufferTime > 0) && (tBufferTime > tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC))
+					if ((tBufferTime > 0) && (tBufferTime > tPreBufferTime + AV_SYNC_MAX_OVER_BUFFERING_DRIFT_UNTIL_RESYNC))
 					{
 	                    LOG(LOG_WARN, "Detected over-buffering for video stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC);
 	                    tSourceNeedsResync = true;
@@ -1505,7 +1506,7 @@ void ParticipantWidget::AVSync()
 				tBufferTime = mAudioSource->GetFrameBufferTime();
 				tPreBufferTime = mAudioSource->GetFrameBufferPreBufferingTime();
 				#ifdef PARTICIPANT_WIDGET_AV_SYNC_AVOID_OVER_BUFFERING
-					if ((tBufferTime > 0) && (tBufferTime > tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC))
+					if ((tBufferTime > 0) && (tBufferTime > tPreBufferTime + AV_SYNC_MAX_OVER_BUFFERING_DRIFT_UNTIL_RESYNC))
 					{
 						LOG(LOG_WARN, "Detected over-buffering for audio stream, buffer time: %.2f, limit is: %.2f", tBufferTime, tPreBufferTime + AV_SYNC_MAX_DRIFT_UNTIL_RESYNC);
 						tSourceNeedsResync = true;
