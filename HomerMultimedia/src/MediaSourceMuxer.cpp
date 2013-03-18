@@ -2152,6 +2152,14 @@ void MediaSourceMuxer::StopGrabbing()
     LOG(LOG_VERBOSE, "Stopping of %s-muxer completed", GetMediaTypeStr().c_str());
 }
 
+bool MediaSourceMuxer::IsGrabbingStopped()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->IsGrabbingStopped();
+    else
+        return true;
+}
+
 bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
 {
     bool tResult = false;

@@ -269,6 +269,7 @@ public:
 
     /* grabbing control */
     virtual void StopGrabbing();
+    virtual bool IsGrabbingStopped();
     virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
     virtual enum CodecID GetSourceCodec();
     virtual std::string GetSourceCodecStr();

@@ -1193,6 +1193,11 @@ void MediaSource::StopGrabbing()
     mGrabbingStopped = true;
 }
 
+bool MediaSource::IsGrabbingStopped()
+{
+    return mGrabbingStopped;
+}
+
 bool MediaSource::Reset(enum MediaType pMediaType)
 {
 	bool tResult = false;
