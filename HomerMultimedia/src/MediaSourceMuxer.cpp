@@ -1456,7 +1456,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
     mEncoderStartTime = 0;
 
     // trigger an avcodec_flush_buffers()
-    ResetEncoderBuffers();
+    TimeShift(0);
 
     LOG(LOG_WARN, "================ Entering main %s encoding loop for %s media source", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 

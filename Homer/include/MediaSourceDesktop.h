@@ -80,7 +80,7 @@ public:
 
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pResX = 352, int pResY = 288);
-    virtual bool HasVariableVideoOutputFrameRate();
+    virtual bool HasVariableOutputFrameRate();
 
     /* create screenshot and updates internal buffer */
     void CreateScreenshot();

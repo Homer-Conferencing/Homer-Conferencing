@@ -3238,7 +3238,8 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
 
 		return false;
 	}
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s input successfully opened ", GetMediaTypeStr().c_str());
+    if (pInputFormat != NULL)
+        LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s input format %s successfully opened ", GetMediaTypeStr().c_str(), pInputFormat->name);
 
     if ((pInputName != NULL) && (strlen(pInputName) > 0))
     {

@@ -230,7 +230,7 @@ bool MediaSourceLogo::CloseGrabDevice()
     return tResult;
 }
 
-bool MediaSourceLogo::HasVariableVideoOutputFrameRate()
+bool MediaSourceLogo::HasVariableOutputFrameRate()
 {
 	return true;
 }

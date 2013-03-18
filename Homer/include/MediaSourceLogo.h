@@ -63,7 +63,7 @@ public:
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
     virtual std::string GetSourceCodecStr();
     virtual std::string GetSourceCodecDescription();
-    virtual bool HasVariableVideoOutputFrameRate();
+    virtual bool HasVariableOutputFrameRate();
 
     /* device control */
     virtual void getVideoDevices(VideoDevices &pVList);

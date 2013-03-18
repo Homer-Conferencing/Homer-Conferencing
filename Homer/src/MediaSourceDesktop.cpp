@@ -270,7 +270,7 @@ bool MediaSourceDesktop::CloseGrabDevice()
     return tResult;
 }
 
-bool MediaSourceDesktop::HasVariableVideoOutputFrameRate()
+bool MediaSourceDesktop::HasVariableOutputFrameRate()
 {
 	return true;
 }
