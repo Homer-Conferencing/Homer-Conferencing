@@ -405,7 +405,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
     //LOG(LOG_VERBOSE, "Rel: %"PRId64" Abs: %"PRId64"", tRelativeTimestamp, tAbsoluteTimestamp);
 
-    if ((tFrameIndex >= 0) && (tFrameIndex < tNumberOfFrames))
+    if (tFrameIndex >= 0)
     {
         // seek only if it is necessary
         if (pSeconds != GetSeekPos())
