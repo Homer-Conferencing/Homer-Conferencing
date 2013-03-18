@@ -109,6 +109,7 @@ void NetworkListener::Init(Socket *pDataSocket, unsigned int pLocalPort, bool pR
     mPeerHost = "";
     mPeerPort = 0;
     mReceiveErrors = 0;
+    mListenerNeeded = false;
     mListenerPort = pLocalPort;
     mRtpActivated = pRtpActivated;
 
@@ -288,14 +289,14 @@ void NetworkListener::StopListener()
 	}
 
 	// wait for termination of decoder thread
-	do
+	while(IsRunning())
 	{
 		if(tSignalingRound > 0)
 			LOG(LOG_WARN, "Signaling attempt %d to stop %s network listener", tSignalingRound, mMediaSourceNet->GetMediaTypeStr().c_str());
 		tSignalingRound++;
 
 		Suspend(25 * 1000);
-	}while(IsRunning());
+	}
     
     LOG(LOG_VERBOSE, "%s network listener stopped", mMediaSourceNet->GetMediaTypeStr().c_str());
 }
