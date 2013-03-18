@@ -316,7 +316,6 @@ int ContactsManager::ContactCount()
     tResult = mContacts.size();
     mContactsMutex.unlock();
     return tResult;
-
 }
 
 ContactDescriptor* ContactsManager::CreateContactDescriptor(QString pUser, QString pHost, QString pPort)
