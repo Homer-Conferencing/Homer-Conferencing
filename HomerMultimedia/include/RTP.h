@@ -135,9 +135,9 @@ public:
     static unsigned int CodecToPayloadId(std::string pName);
     static std::string PayloadIdToCodec(int pId);
     static std::string PayloadType(int pId);
-    static bool IsPayloadSupported(enum CodecID pId);
-    static int GetPayloadHeaderSizeMax(enum CodecID pCodec);// calculate the maximum header size of the RTP payload (not the RTP header!)
-    static int GetHeaderSizeMax(enum CodecID pCodec);
+    static bool IsPayloadSupported(enum AVCodecID pId);
+    static int GetPayloadHeaderSizeMax(enum AVCodecID pCodec);// calculate the maximum header size of the RTP payload (not the RTP header!)
+    static int GetHeaderSizeMax(enum AVCodecID pCodec);
     static void SetH261PayloadSizeMax(unsigned int pMaxSize);
     static unsigned int GetH261PayloadSizeMax();
 
@@ -154,7 +154,7 @@ public:
 
     static void LogRtpHeader(RtpHeader *pRtpHeader);
     bool ReceivedCorrectPayload(unsigned int pType);
-    bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum RtcpType &pRtcpType, enum CodecID pCodecId, bool pLoggingOnly);
+    bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum RtcpType &pRtcpType, enum AVCodecID pCodecId, bool pLoggingOnly);
     bool ResetRrtpParser();
     bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
     bool CloseRtpEncoder();
@@ -206,7 +206,7 @@ private:
     uint64_t	        mLostPackets;
     float               mRelativeLostPackets;
     unsigned int        mLocalSourceIdentifier;
-    enum CodecID        mStreamCodecID;
+    enum AVCodecID      mStreamCodecID;
     uint64_t			mRemoteSequenceNumber; // without overflows
     unsigned short int	mLastSequenceNumberFromRTPHeader; // for overflow check
     uint64_t			mRemoteSequenceNumberOverflowShift; // offset for shifting the value range

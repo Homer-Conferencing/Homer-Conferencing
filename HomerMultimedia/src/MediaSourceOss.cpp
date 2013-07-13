@@ -150,7 +150,7 @@ bool MediaSourceOss::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     tFormatParams.channels = mOutputAudioChannels;
     tFormatParams.initial_pause = 0;
     tFormatParams.prealloced_context = 0;
-    //deprecated: tFormatParams.audio_codec_id = CODEC_ID_PCM_S16LE;
+    //deprecated: tFormatParams.audio_codec_id = AV_CODEC_ID_PCM_S16LE;
     tFormat = av_find_input_format("oss");
     if (tFormat == NULL)
     {
