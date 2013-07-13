@@ -595,7 +595,7 @@ void MediaSourceNet::Init()
     mSourceType = SOURCE_NETWORK;
     mOpenInputStream = false;
 
-    mSourceCodecId = CODEC_ID_NONE;
+    mSourceCodecId = AV_CODEC_ID_NONE;
 }
 
 MediaSourceNet::MediaSourceNet(Socket *pDataSocket):
