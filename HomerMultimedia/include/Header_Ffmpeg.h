@@ -62,6 +62,10 @@ extern "C" {
 #if (LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 61, 100))
 #include <libswresample/swresample.h>
 #endif
+#if (LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(54, 5, 2))
+#include <libavutil/time.h>
+#endif
+
 }
 
 #ifndef AV_NUM_DATA_POINTERS
@@ -160,6 +164,42 @@ inline void HM_swr_free(struct ReSampleContext **s)
     #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
     #define AVMEDIA_TYPE_AUDIO CODEC_TYPE_AUDIO
     #define AVMEDIA_TYPE_UNKNOWN CODEC_TYPE_UNKNOWN
+#endif
+
+#if (LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 25, 0))
+    #define AVCODEC_MAX_AUDIO_FRAME_SIZE   192000
+#endif
+ 
+#if (LIBAVCODEC_VERSION_INT <= AV_VERSION_INT(54, 51, 100))
+    #define AVCodecID CodecID
+    #define AV_CODEC_ID_AAC CODEC_ID_AAC
+    #define AV_CODEC_ID_AC3 CODEC_ID_AC3
+    #define AV_CODEC_ID_ADPCM CODEC_ID_ADPCM
+    #define AV_CODEC_ID_ADPCM_G722 CODEC_ID_ADPCM_G722
+    #define AV_CODEC_ID_AMR CODEC_ID_AMR
+    #define AV_CODEC_ID_AMR_NB CODEC_ID_AMR_NB
+    #define AV_CODEC_ID_GSM CODEC_ID_GSM
+    #define AV_CODEC_ID_H261 CODEC_ID_H261
+    #define AV_CODEC_ID_H263 CODEC_ID_H263
+    #define AV_CODEC_ID_H263P CODEC_ID_H263P
+    #define AV_CODEC_ID_H264 CODEC_ID_H264
+    #define AV_CODEC_ID_MJPEG CODEC_ID_MJPEG
+    #define AV_CODEC_ID_MP3 CODEC_ID_MP3
+    #define AV_CODEC_ID_MPEG1VIDEO CODEC_ID_MPEG1VIDEO
+    #define AV_CODEC_ID_MPEG2TS CODEC_ID_MPEG2TS
+    #define AV_CODEC_ID_MPEG2VIDEO CODEC_ID_MPEG2VIDEO
+    #define AV_CODEC_ID_MPEG4 CODEC_ID_MPEG4
+    #define AV_CODEC_ID_NONE CODEC_ID_NONE
+    #define AV_CODEC_ID_PCM CODEC_ID_PCM
+    #define AV_CODEC_ID_PCM_ALAW CODEC_ID_PCM_ALAW
+    #define AV_CODEC_ID_PCM_MULAW CODEC_ID_PCM_MULAW
+    #define AV_CODEC_ID_PCM_S16BE CODEC_ID_PCM_S16BE
+    #define AV_CODEC_ID_PCM_S16LE CODEC_ID_PCM_S16LE
+    #define AV_CODEC_ID_THEORA CODEC_ID_THEORA
+    #define AV_CODEC_ID_VORBIS CODEC_ID_VORBIS
+    #define AV_CODEC_ID_VP8 CODEC_ID_VP8
+    #define AV_CODEC_ID_WMAV2 CODEC_ID_WMAV2
+    #define AV_CODEC_ID_WMV3 CODEC_ID_WMV3
 #endif
 
 inline int HM_av_samples_fill_arrays(uint8_t **audio_data, int *linesize, uint8_t *buf, int nb_channels, int nb_samples, enum AVSampleFormat sample_fmt, int align)

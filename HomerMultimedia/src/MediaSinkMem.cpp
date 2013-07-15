@@ -55,7 +55,7 @@ MediaSinkMem::MediaSinkMem(string pMediaId, enum MediaSinkType pType, bool pRtpA
     mLastPacketPts = 0;
     mMediaId = pMediaId;
 	mIncomingAVStream = NULL;
-	mIncomingAVStreamCodecID = CODEC_ID_NONE;
+	mIncomingAVStreamCodecID = AV_CODEC_ID_NONE;
 	mTargetHost = "";
 	mTargetPort = 0;
     mRtpStreamOpened = false;
