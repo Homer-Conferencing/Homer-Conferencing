@@ -667,6 +667,7 @@ void MainWindow::initializeWidgetsAndMenus()
         mActionIdentity->setVisible(false);
         mActionToolBarOnlineStatus->setVisible(false);
         mMenuParticipantMessageWidgets->setVisible(false);
+        mMenuConferencing->setVisible(false);
         mToolBarOnlineStatus->setVisible(false);
         removeToolBar(mToolBarOnlineStatus);
     }
@@ -2109,10 +2110,12 @@ void MainWindow::actionActivateMosaicMode(bool pActive)
 		mMosaicModeToolBarMediaSourcesWasVisible = mToolBarMediaSources->isVisible();
 		mToolBarMediaSources->hide();
 		mToolBarOnlineStatus->hide();
-		mOverviewContactsWidget->hide();
+		if(mOverviewContactsWidget != NULL)
+		    mOverviewContactsWidget->hide();
 		mOverviewDataStreamsWidget->hide();
 		mOverviewErrorsWidget->hide();
-		mOverviewFileTransfersWidget->hide();
+		if(mOverviewFileTransfersWidget != NULL)
+		    mOverviewFileTransfersWidget->hide();
 		mOverviewNetworkStreamsWidget->hide();
 		mOverviewPlaylistWidget->hide();
 		mOverviewThreadsWidget->hide();
@@ -2139,10 +2142,12 @@ void MainWindow::actionActivateMosaicMode(bool pActive)
 	    mMenuBar->setVisible(CONF.GetVisibilityMenuBar());
 	    mToolBarMediaSources->setVisible(mMosaicModeToolBarMediaSourcesWasVisible);
 	    mToolBarOnlineStatus->setVisible(mMosaicModeToolBarOnlineStatusWasVisible);
-	    mOverviewContactsWidget->setVisible(CONF.GetVisibilityContactsWidget());
+	    if(mOverviewContactsWidget != NULL)
+	        mOverviewContactsWidget->setVisible(CONF.GetVisibilityContactsWidget());
 	    mOverviewDataStreamsWidget->setVisible(CONF.GetVisibilityDataStreamsWidget());
 	    mOverviewErrorsWidget->setVisible(CONF.GetVisibilityErrorsWidget());
-	    mOverviewFileTransfersWidget->setVisible(CONF.GetVisibilityFileTransfersWidget());
+        if(mOverviewFileTransfersWidget != NULL)
+            mOverviewFileTransfersWidget->setVisible(CONF.GetVisibilityFileTransfersWidget());
 	    mOverviewNetworkStreamsWidget->setVisible(CONF.GetVisibilityNetworkStreamsWidget());
 	    mOverviewPlaylistWidget->setVisible(CONF.GetVisibilityPlaylistWidgetMovie());
 	    mOverviewThreadsWidget->setVisible(CONF.GetVisibilityThreadsWidget());
