@@ -506,7 +506,6 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 
     #ifdef RELEASE_VERSION
 	    printf("Homer Conferencing, version "RELEASE_VERSION_STRING"\n");
-	    printf("Copyright (C) 2008-2013 Thomas Volkert <thomas@homer-conferencing.com>\n");
         printf("For updates visit http://www.homer-conferencing.com\n");
     #endif
 
