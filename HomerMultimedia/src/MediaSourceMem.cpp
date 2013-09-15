@@ -103,8 +103,8 @@ MediaSourceMem::MediaSourceMem(string pName):
     mOpenInputStream = false;
     RTPRegisterPacketStatistic(this);
 
-    mRtpSourceCodecIdHint = CODEC_ID_NONE;
-    mSourceCodecId = CODEC_ID_NONE;
+    mRtpSourceCodecIdHint = AV_CODEC_ID_NONE;
+    mSourceCodecId = AV_CODEC_ID_NONE;
 
     mDecoderFragmentFifo = new MediaFifo(MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT, MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE, "MediaSourceMem");
 	LOG(LOG_VERBOSE, "Listen for video/audio frames with queue of %d bytes", MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT * MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
@@ -475,7 +475,7 @@ bool MediaSourceMem::SupportsRelaying()
 bool MediaSourceMem::HasInputStreamChanged()
 {
     bool tResult = HasSourceChangedFromRTP();
-    enum CodecID tNewCodecId = CODEC_ID_NONE;
+    enum AVCodecID tNewCodecId = AV_CODEC_ID_NONE;
 
     // try to detect the right source codec based on RTP data
     if ((tResult) && (mRtpActivated))
@@ -484,65 +484,65 @@ bool MediaSourceMem::HasInputStreamChanged()
         {
             //video
             case 31:
-                    tNewCodecId = CODEC_ID_H261;
+                    tNewCodecId = AV_CODEC_ID_H261;
                     break;
             case 32:
-                    tNewCodecId = CODEC_ID_MPEG2VIDEO;
+                    tNewCodecId = AV_CODEC_ID_MPEG2VIDEO;
                     break;
             case 34:
             case 118:
-                    tNewCodecId = CODEC_ID_H263;
+                    tNewCodecId = AV_CODEC_ID_H263;
                     break;
             case 119:
-                    tNewCodecId = CODEC_ID_H263P;
+                    tNewCodecId = AV_CODEC_ID_H263P;
                     break;
             case 120:
-                    tNewCodecId = CODEC_ID_H264;
+                    tNewCodecId = AV_CODEC_ID_H264;
                     break;
             case 121:
-                    tNewCodecId = CODEC_ID_MPEG4;
+                    tNewCodecId = AV_CODEC_ID_MPEG4;
                     break;
             case 122:
-                    tNewCodecId = CODEC_ID_THEORA;
+                    tNewCodecId = AV_CODEC_ID_THEORA;
                     break;
             case 123:
-                    tNewCodecId = CODEC_ID_VP8;
+                    tNewCodecId = AV_CODEC_ID_VP8;
                     break;
 
             //audio
             case 0:
-                    tNewCodecId = CODEC_ID_PCM_MULAW;
+                    tNewCodecId = AV_CODEC_ID_PCM_MULAW;
                     break;
             case 3:
-                    tNewCodecId = CODEC_ID_GSM;
+                    tNewCodecId = AV_CODEC_ID_GSM;
                     break;
             case 8:
-                    tNewCodecId = CODEC_ID_PCM_ALAW;
+                    tNewCodecId = AV_CODEC_ID_PCM_ALAW;
                     break;
             case 9:
-                    tNewCodecId = CODEC_ID_ADPCM_G722;
+                    tNewCodecId = AV_CODEC_ID_ADPCM_G722;
                     break;
             case 10:
-                    tNewCodecId = CODEC_ID_PCM_S16BE;
+                    tNewCodecId = AV_CODEC_ID_PCM_S16BE;
                     break;
             case 11:
-                    tNewCodecId = CODEC_ID_PCM_S16BE;
+                    tNewCodecId = AV_CODEC_ID_PCM_S16BE;
                     break;
             case 14:
-                    tNewCodecId = CODEC_ID_MP3;
+                    tNewCodecId = AV_CODEC_ID_MP3;
                     break;
             case 100:
-                    tNewCodecId = CODEC_ID_AAC;
+                    tNewCodecId = AV_CODEC_ID_AAC;
                     break;
             case 101:
-                    tNewCodecId = CODEC_ID_AMR_NB;
+                    tNewCodecId = AV_CODEC_ID_AMR_NB;
                     break;
             default:
                     break;
         }
-        if ((tNewCodecId != CODEC_ID_NONE) && (tNewCodecId != mSourceCodecId))
+        if ((tNewCodecId != AV_CODEC_ID_NONE) && (tNewCodecId != mSourceCodecId))
         {
-            LOG(LOG_VERBOSE, "Suggesting codec change from %d(%s) to %d(%s)", mSourceCodecId, avcodec_get_name(mSourceCodecId), tNewCodecId, avcodec_get_name(tNewCodecId));
+            LOG(LOG_VERBOSE, "Suggesting codec change from %d(%s) to %d(%s)", mSourceCodecId, HM_avcodec_get_name(mSourceCodecId), tNewCodecId, HM_avcodec_get_name(tNewCodecId));
             mRtpSourceCodecIdHint = tNewCodecId;
         }
     }
@@ -665,7 +665,7 @@ void MediaSourceMem::DoSetVideoGrabResolution(int pResX, int pResY)
 bool MediaSourceMem::SetInputStreamPreferences(std::string pStreamCodec, bool pRtpActivated, bool pDoReset)
 {
     bool tResult = false;
-    enum CodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
+    enum AVCodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
 
     if ((mSourceCodecId != tStreamCodecId) || (mRtpActivated != pRtpActivated))
     {
@@ -735,12 +735,12 @@ bool MediaSourceMem::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     // check if we have a suggestion from RTP parser
-    if (mRtpSourceCodecIdHint != CODEC_ID_NONE)
+    if (mRtpSourceCodecIdHint != AV_CODEC_ID_NONE)
         mSourceCodecId = mRtpSourceCodecIdHint;
 
     // there is no differentiation between H.263+ and H.263 when decoding an incoming video stream
-    if (mSourceCodecId == CODEC_ID_H263P)
-        mSourceCodecId = CODEC_ID_H263;
+    if (mSourceCodecId == AV_CODEC_ID_H263P)
+        mSourceCodecId = AV_CODEC_ID_H263;
 
     // get a format description
     if (!DescribeInput(mSourceCodecId, &tFormat))
@@ -809,7 +809,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     // check if we have a suggestion from RTP parser
-    if (mRtpSourceCodecIdHint != CODEC_ID_NONE)
+    if (mRtpSourceCodecIdHint != AV_CODEC_ID_NONE)
         mSourceCodecId = mRtpSourceCodecIdHint;
 
     // get a format description
@@ -847,37 +847,37 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     AVCodecContext *tCodec = mFormatContext->streams[mMediaStreamIndex]->codec;
     if (mRtpActivated)
     {
-        LOG(LOG_VERBOSE, "Setting time base for %s %s RTP stream with codec %s", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), avcodec_get_name(mSourceCodecId));
+        LOG(LOG_VERBOSE, "Setting time base for %s %s RTP stream with codec %s", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), HM_avcodec_get_name(mSourceCodecId));
         switch(mSourceCodecId)
         {
-            case CODEC_ID_AMR_NB:
+            case AV_CODEC_ID_AMR_NB:
                 tCodec->channels = 1;
                 tCodec->bit_rate = 7950;
                 tCodec->sample_rate = 8000;
                 mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
                 mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
                 break;
-            case CODEC_ID_ADPCM_G722:
+            case AV_CODEC_ID_ADPCM_G722:
                 tCodec->channels = 1;
                 tCodec->sample_rate = 16000;
                 mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000; // different time base as defined in RFC
                 mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
                 break;
-            case CODEC_ID_GSM:
-            case CODEC_ID_PCM_ALAW:
-            case CODEC_ID_PCM_MULAW:
+            case AV_CODEC_ID_GSM:
+            case AV_CODEC_ID_PCM_ALAW:
+            case AV_CODEC_ID_PCM_MULAW:
                 tCodec->channels = 1;
                 tCodec->sample_rate = 8000;
                 mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
                 mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
                 break;
-            case CODEC_ID_PCM_S16BE:
+            case AV_CODEC_ID_PCM_S16BE:
                 tCodec->channels = 2;
                 tCodec->sample_rate = 44100;
                 mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
                 mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
                 break;
-            case CODEC_ID_MP3:
+            case AV_CODEC_ID_MP3:
                 mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
                 mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
                 break;
@@ -885,7 +885,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
                 mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
                 mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
                 break;
-        }
+		}
     }
 
     // finds and opens the correct decoder
@@ -1954,15 +1954,18 @@ void* MediaSourceMem::Run(void* pArgs)
                                                     LOG(LOG_VERBOSE, "Scale (within decoder thread) video frame..");
                                                     LOG(LOG_VERBOSE, "Video frame data: %p, %p", tSourceFrame->data[0], tSourceFrame->data[1]);
                                                     LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1]);
+
+                                                    // scale the video frame
+                                                    LOG(LOG_VERBOSE, "Scaling video input picture..");
                                                 #endif
 
-                                                // scale the video frame
-                                                LOG(LOG_VERBOSE, "Scaling video input picture..");
                                                 tRes = HM_sws_scale(mVideoScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
                                                 if (tRes == 0)
                                                     LOG(LOG_ERROR, "Failed to scale the video frame");
 
-                                                LOG(LOG_VERBOSE, "Decoded picture into RGB frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+                                                #ifdef MSMEM_DEBUG_PACKETS
+                                                    LOG(LOG_VERBOSE, "Decoded picture into RGB frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+                                                #endif
 
                                                 mDecoderSinglePictureResX = mTargetResX;
                                                 mDecoderSinglePictureResY = mTargetResY;

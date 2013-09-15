@@ -82,7 +82,7 @@ protected:
     int64_t             mIncomingAVStreamStartPts;
     int64_t				mIncomingAVStreamLastPts;
     bool                mIncomingFirstPacket;
-    enum CodecID        mIncomingAVStreamCodecID;
+    enum AVCodecID      mIncomingAVStreamCodecID;
     AVStream*			mIncomingAVStream;
     AVCodecContext*	 	mIncomingAVStreamCodecContext;
     /* general stream handling */

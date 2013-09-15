@@ -201,7 +201,7 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
     if (pStream != NULL)
     {
         // save maximum network packet size to use it later within SendPacket() function
-        if (pStream->codec->codec_id == CODEC_ID_H261)
+        if (pStream->codec->codec_id == AV_CODEC_ID_H261)
             tNewMaxNetworkPacketSize = RTP::GetH261PayloadSizeMax() + RTP_HEADER_SIZE + 4 /* H.261 rtp payload header */;
         else
             tNewMaxNetworkPacketSize = pStream->codec->rtp_payload_size;
@@ -209,7 +209,7 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         // update max. network packet size
         if (mMaxNetworkPacketSize != tNewMaxNetworkPacketSize)
         {
-            LOG(LOG_WARN, "Setting max. network packet size to: %d for codec: %s", tNewMaxNetworkPacketSize, avcodec_get_name(pStream->codec->codec_id));
+            LOG(LOG_WARN, "Setting max. network packet size to: %d for codec: %s", tNewMaxNetworkPacketSize, HM_avcodec_get_name(pStream->codec->codec_id));
             mMaxNetworkPacketSize = tNewMaxNetworkPacketSize;
         }
     }

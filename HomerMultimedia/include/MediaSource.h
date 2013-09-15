@@ -216,9 +216,9 @@ public:
     virtual MediaSource* GetMediaSource();
 
     /* codec identifier translation */
-    enum CodecID GetCodecIDFromGuiName(std::string pName);
-    static std::string GetGuiNameFromCodecID(enum CodecID pCodecId);
-    std::string GetFormatName(enum CodecID pCodecId);
+    enum AVCodecID GetCodecIDFromGuiName(std::string pName);
+    static std::string GetGuiNameFromCodecID(enum AVCodecID pCodecId);
+    std::string GetFormatName(enum AVCodecID pCodecId);
 
     /* audio */
     static int AudioQuality2BitRate(int pQuality);
@@ -271,7 +271,7 @@ public:
     virtual void StopGrabbing();
     virtual bool IsGrabbingStopped();
     virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
-    virtual enum CodecID GetSourceCodec();
+    virtual enum AVCodecID GetSourceCodec();
     virtual std::string GetSourceCodecStr();
     virtual std::string GetSourceCodecDescription();
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pRtpActivated = false, bool pDoReset = false);
@@ -411,7 +411,7 @@ protected:
     void EventGrabChunkFailed(std::string pSource, int pLine, std::string pReason);
 
     /* FFMPEG helpers */
-    bool FfmpegDescribeInput(string pSource/* caller source */, int pLine /* caller line */, CodecID pCodecId, AVInputFormat **pFormat);
+    bool FfmpegDescribeInput(string pSource/* caller source */, int pLine /* caller line */, AVCodecID pCodecId, AVInputFormat **pFormat);
 
 public:
     static bool FfmpegCreateIOContext(string pSource/* caller source */, int pLine /* caller line */, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext);
@@ -446,7 +446,7 @@ protected:
     double              mSourceTimeShiftForRTGrabbing;
     double              mInputStartPts;
     double              mNumberOfFrames;
-    enum CodecID        mSourceCodecId;
+    enum AVCodecID      mSourceCodecId;
     bool                mEOFReached;
     /* RT grabbing */
     std::list<int64_t>  mRTGrabbingFrameTimestamps;

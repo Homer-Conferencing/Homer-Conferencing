@@ -224,6 +224,7 @@ ELSE ()
 		HomerNAPI
 		HomerMonitor
 		asound
+		pthread
 	)
 
 	SET (LIBS_LINUX_STATIC

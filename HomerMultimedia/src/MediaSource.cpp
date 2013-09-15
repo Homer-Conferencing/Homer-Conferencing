@@ -525,137 +525,137 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  *        AMR							CODEC_ID_AMR_NB
  *
  ****************************************************/
-enum CodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
+enum AVCodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
 {
-    enum CodecID tResult = (GetMediaType() == MEDIA_AUDIO) ? CODEC_ID_ADPCM_G722 : CODEC_ID_H263P;
+    enum AVCodecID tResult = (GetMediaType() == MEDIA_AUDIO) ? CODEC_ID_ADPCM_G722 : CODEC_ID_H263P;
 
     /* video */
     if (pName == "H.261")
-        tResult = CODEC_ID_H261;
+        tResult = AV_CODEC_ID_H261;
     if (pName == "H.263")
-        tResult = CODEC_ID_H263;
+        tResult = AV_CODEC_ID_H263;
     if (pName == "MPEG1")
-        tResult = CODEC_ID_MPEG1VIDEO;
+        tResult = AV_CODEC_ID_MPEG1VIDEO;
     if (pName == "MPEG2")
-        tResult = CODEC_ID_MPEG2VIDEO;
+        tResult = AV_CODEC_ID_MPEG2VIDEO;
     if (pName == "H.263+")
-        tResult = CODEC_ID_H263P;
+        tResult = AV_CODEC_ID_H263P;
     if (pName == "H.264")
-        tResult = CODEC_ID_H264;
+        tResult = AV_CODEC_ID_H264;
     if (pName == "MPEG2TS")
-        tResult = CODEC_ID_MPEG2TS;
+        tResult = AV_CODEC_ID_MPEG2TS;
     if (pName == "MPEG4")
-        tResult = CODEC_ID_MPEG4;
+        tResult = AV_CODEC_ID_MPEG4;
     if (pName == "MJPEG")
-        tResult = CODEC_ID_MJPEG;
+        tResult = AV_CODEC_ID_MJPEG;
     if (pName == "THEORA")
-        tResult = CODEC_ID_THEORA;
+        tResult = AV_CODEC_ID_THEORA;
     if (pName == "VP8")
-        tResult = CODEC_ID_VP8;
+        tResult = AV_CODEC_ID_VP8;
 
     /* audio */
     if ((pName == "G711 µ-law") || (pName == "G711 µ-law (PCMU)" /*historic*/))
-        tResult = CODEC_ID_PCM_MULAW;
+        tResult = AV_CODEC_ID_PCM_MULAW;
     if (pName == "GSM")
-        tResult = CODEC_ID_GSM;
+        tResult = AV_CODEC_ID_GSM;
     if ((pName == "G711 A-law") || (pName == "G711 A-law (PCMA)" /*historic*/))
-        tResult = CODEC_ID_PCM_ALAW;
+        tResult = AV_CODEC_ID_PCM_ALAW;
     if (pName == "G722 adpcm")
-        tResult = CODEC_ID_ADPCM_G722;
+        tResult = AV_CODEC_ID_ADPCM_G722;
     if ((pName == "PCM16") || (pName == "PCM_S16_LE" /*historic*/))
-        tResult = CODEC_ID_PCM_S16BE;
+        tResult = AV_CODEC_ID_PCM_S16BE;
     if (pName == "MP2")
-        tResult = CODEC_ID_MP2;
+        tResult = AV_CODEC_ID_MP2;
     if ((pName == "MP3") || (pName == "MP3 (MPA)" /*historic*/))
-        tResult = CODEC_ID_MP3;
+        tResult = AV_CODEC_ID_MP3;
     if (pName == "AAC")
-        tResult = CODEC_ID_AAC;
+        tResult = AV_CODEC_ID_AAC;
     if (pName == "AMR")
-        tResult = CODEC_ID_AMR_NB;
+        tResult = AV_CODEC_ID_AMR_NB;
     if (pName == "AC3")
-        tResult = CODEC_ID_AC3;
+        tResult = AV_CODEC_ID_AC3;
 
     //LOG(LOG_VERBOSE, "Translated %s to %d", pName.c_str(), tResult);
 
     return tResult;
 }
 
-string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
+string MediaSource::GetGuiNameFromCodecID(enum AVCodecID pCodecId)
 {
     string tResult = "";
 
     switch(pCodecId)
     {
     	/* video */
-    	case CODEC_ID_H261:
+    	case AV_CODEC_ID_H261:
     			tResult = "H.261";
     			break;
-    	case CODEC_ID_H263:
+    	case AV_CODEC_ID_H263:
     			tResult = "H.263";
     			break;
-    	case CODEC_ID_MPEG1VIDEO:
+    	case AV_CODEC_ID_MPEG1VIDEO:
     			tResult = "MPEG1";
     			break;
-        case CODEC_ID_MPEG2VIDEO:
+        case AV_CODEC_ID_MPEG2VIDEO:
     			tResult = "MPEG2";
     			break;
-        case CODEC_ID_H263P:
+        case AV_CODEC_ID_H263P:
     			tResult = "H.263+";
     			break;
-        case CODEC_ID_H264:
+        case AV_CODEC_ID_H264:
     			tResult = "H.264";
     			break;
-        case CODEC_ID_MPEG2TS:
+        case AV_CODEC_ID_MPEG2TS:
                 tResult = "MPEG2TS";
                 break;
-        case CODEC_ID_MPEG4:
+        case AV_CODEC_ID_MPEG4:
     			tResult = "MPEG4";
     			break;
-        case CODEC_ID_MJPEG:
+        case AV_CODEC_ID_MJPEG:
     			tResult = "MJPEG";
     			break;
-        case CODEC_ID_THEORA:
+        case AV_CODEC_ID_THEORA:
     			tResult = "THEORA";
     			break;
-        case CODEC_ID_VP8:
+        case AV_CODEC_ID_VP8:
     			tResult = "VP8";
     			break;
 
 		/* audio */
-        case CODEC_ID_PCM_MULAW:
+        case AV_CODEC_ID_PCM_MULAW:
     			tResult = "G711 µ-law";
     			break;
-        case CODEC_ID_GSM:
+        case AV_CODEC_ID_GSM:
     			tResult = "GSM";
     			break;
-        case CODEC_ID_PCM_ALAW:
+        case AV_CODEC_ID_PCM_ALAW:
     			tResult = "G711 A-law";
     			break;
-        case CODEC_ID_ADPCM_G722:
+        case AV_CODEC_ID_ADPCM_G722:
     			tResult = "G722 adpcm";
     			break;
-        case CODEC_ID_PCM_S16BE:
+        case AV_CODEC_ID_PCM_S16BE:
     			tResult = "PCM16";
     			break;
-        case CODEC_ID_MP2:
+        case AV_CODEC_ID_MP2:
                 tResult = "MP2";
                 break;
-        case CODEC_ID_MP3:
+        case AV_CODEC_ID_MP3:
     			tResult = "MP3";
     			break;
-        case CODEC_ID_AAC:
+        case AV_CODEC_ID_AAC:
     			tResult = "AAC";
     			break;
-        case CODEC_ID_AMR_NB:
+        case AV_CODEC_ID_AMR_NB:
     			tResult = "AMR";
     			break;
-        case CODEC_ID_AC3:
+        case AV_CODEC_ID_AC3:
     			tResult = "AC3";
     			break;
 
         default:
                 {
-                    const char *tName = avcodec_get_name(pCodecId);
+                    const char *tName = HM_avcodec_get_name(pCodecId);
                     tResult = string(tName);
                     //LOGEX(MediaSource, LOG_WARN, "Detected unsupported codec %d", pCodecId);
                 }
@@ -670,107 +670,107 @@ string MediaSource::GetGuiNameFromCodecID(enum CodecID pCodecId)
 /*************************************************
  *  video codec ID to format mapping:
  *  ================================
- *        CODEC_ID_H261					h261
- *        CODEC_ID_H263					h263
- *        CODEC_ID_MPEG1VIDEO			mpeg1video
- *        CODEC_ID_MPEG2VIDEO			mpeg2video
- *        CODEC_ID_H263P+				h263 // same like H263
- *        CODEC_ID_H264					h264
- *        CODEC_ID_MPEG2TS              mpegts
- *        CODEC_ID_MPEG4				m4v
- *        CODEC_ID_MJPEG				mjpeg
- *        CODEC_ID_THEORA				ogg
- *        CODEC_ID_VP8					webm
+ *        AV_CODEC_ID_H261					h261
+ *        AV_CODEC_ID_H263					h263
+ *        AV_CODEC_ID_MPEG1VIDEO			mpeg1video
+ *        AV_CODEC_ID_MPEG2VIDEO			mpeg2video
+ *        AV_CODEC_ID_H263P+				h263 // same like H263
+ *        AV_CODEC_ID_H264					h264
+ *        AV_CODEC_ID_MPEG2TS              	mpegts
+ *        AV_CODEC_ID_MPEG4					m4v
+ *        AV_CODEC_ID_MJPEG					mjpeg
+ *        AV_CODEC_ID_THEORA				ogg
+ *        AV_CODEC_ID_VP8					webm
  *
  *
  *  audio codec ID to format mapping:
  *  ================================
- *        CODEC_ID_PCM_MULAW			mulaw
- *        CODEC_ID_GSM					libgsm
- *        CODEC_ID_PCM_ALAW				alaw
- *        CODEC_ID_ADPCM_G722			g722
- *        CODEC_ID_PCM_S16BE			s16be
- *        CODEC_ID_MP2                  mp3
- *        CODEC_ID_MP3					mp3
- *        CODEC_ID_AAC					aac
- *        CODEC_ID_AMR_NB				amr
+ *        AV_CODEC_ID_PCM_MULAW				mulaw
+ *        AV_CODEC_ID_GSM					libgsm
+ *        AV_CODEC_ID_PCM_ALAW				alaw
+ *        AV_CODEC_ID_ADPCM_G722			g722
+ *        AV_CODEC_ID_PCM_S16BE				s16be
+ *        AV_CODEC_ID_MP2                  	mp3
+ *        AV_CODEC_ID_MP3					mp3
+ *        AV_CODEC_ID_AAC					aac
+ *        AV_CODEC_ID_AMR_NB				amr
  *
  ****************************************************/
-string MediaSource::GetFormatName(enum CodecID pCodecId)
+string MediaSource::GetFormatName(enum AVCodecID pCodecId)
 {
     string tResult = "";
 
     switch(pCodecId)
     {
     	/* video */
-    	case CODEC_ID_H261:
+    	case AV_CODEC_ID_H261:
     			tResult = "h261";
     			break;
-    	case CODEC_ID_H263:
+    	case AV_CODEC_ID_H263:
     			tResult = "h263";
     			break;
-    	case CODEC_ID_MPEG1VIDEO:
+    	case AV_CODEC_ID_MPEG1VIDEO:
     			tResult = "mpeg1video";
     			break;
-        case CODEC_ID_MPEG2VIDEO:
+        case AV_CODEC_ID_MPEG2VIDEO:
     			tResult = "mpeg2video";
     			break;
-        case CODEC_ID_H263P:
+        case AV_CODEC_ID_H263P:
     			tResult = "h263"; // ffmpeg has no separate h263+ format
     			break;
-        case CODEC_ID_H264:
+        case AV_CODEC_ID_H264:
     			tResult = "h264";
     			break;
-        case CODEC_ID_MPEG2TS:
+        case AV_CODEC_ID_MPEG2TS:
                 tResult = "mpegts";
                 break;
-        case CODEC_ID_MPEG4:
+        case AV_CODEC_ID_MPEG4:
     			tResult = "m4v";
     			break;
-        case CODEC_ID_MJPEG:
+        case AV_CODEC_ID_MJPEG:
     			tResult = "mjpeg";
     			break;
-        case CODEC_ID_THEORA:
+        case AV_CODEC_ID_THEORA:
     			tResult = "ogg";
     			break;
-        case CODEC_ID_VP8:
+        case AV_CODEC_ID_VP8:
     			tResult = "webm";
     			break;
 
 		/* audio */
-        case CODEC_ID_PCM_MULAW:
+        case AV_CODEC_ID_PCM_MULAW:
     			tResult = "mulaw";
     			break;
-        case CODEC_ID_GSM:
+        case AV_CODEC_ID_GSM:
     			tResult = "gsm";
     			break;
-        case CODEC_ID_PCM_ALAW:
+        case AV_CODEC_ID_PCM_ALAW:
     			tResult = "alaw";
     			break;
-        case CODEC_ID_ADPCM_G722:
+        case AV_CODEC_ID_ADPCM_G722:
     			tResult = "g722";
     			break;
-        case CODEC_ID_PCM_S16BE:
+        case AV_CODEC_ID_PCM_S16BE:
     			tResult = "s16be";
     			break;
-        case CODEC_ID_MP2:
+        case AV_CODEC_ID_MP2:
                 tResult = "mp3";
                 break;
-        case CODEC_ID_MP3:
+        case AV_CODEC_ID_MP3:
     			tResult = "mp3";
     			break;
-        case CODEC_ID_AAC:
+        case AV_CODEC_ID_AAC:
     			tResult = "aac";
     			break;
-        case CODEC_ID_AMR_NB:
+        case AV_CODEC_ID_AMR_NB:
     			tResult = "amr";
     			break;
-        case CODEC_ID_AC3:
+        case AV_CODEC_ID_AC3:
     			tResult = "ac3";
     			break;
 
         default:
-        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported %s codec %s(%d)", GetMediaTypeStr().c_str(), avcodec_get_name(pCodecId), pCodecId);
+        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported %s codec %s(%d)", GetMediaTypeStr().c_str(), HM_avcodec_get_name(pCodecId), pCodecId);
         	break;
     }
 
@@ -1238,7 +1238,7 @@ bool MediaSource::Reset(enum MediaType pMediaType)
     return tResult;
 }
 
-enum CodecID MediaSource::GetSourceCodec()
+enum AVCodecID MediaSource::GetSourceCodec()
 {
     return mSourceCodecId;
 }
@@ -1786,7 +1786,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     AVOutputFormat      *tFormat;
     AVCodec             *tCodec;
     AVDictionary        *tOptions = NULL;
-    CodecID             tSaveFileCodec = CODEC_ID_NONE;
+    AVCodecID           tSaveFileCodec = AV_CODEC_ID_NONE;
 
     LOG(LOG_VERBOSE, "Going to open recorder, media type is \"%s\"", GetMediaTypeStr().c_str());
 
@@ -1884,7 +1884,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                     // add some extra parameters depending on the selected codec
                     switch(tFormat->video_codec)
                     {
-                        case CODEC_ID_MPEG4:
+                        case AV_CODEC_ID_MPEG4:
                                         mRecorderCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
                                         break;
                     }
@@ -1943,11 +1943,11 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
 
                     // define audio format for recording
                     mRecorderAudioChannels = 2;
-                    if (mRecorderCodecContext->codec_id == CODEC_ID_MP3)
+                    if (mRecorderCodecContext->codec_id == AV_CODEC_ID_MP3)
                         mRecorderAudioFormat = AV_SAMPLE_FMT_S16P;
                     else
                         mRecorderAudioFormat = AV_SAMPLE_FMT_S16;
-                    mRecorderAudioChannelLayout = av_get_default_channel_layout(mRecorderAudioChannels);
+                    mRecorderAudioChannelLayout = HM_av_get_default_channel_layout(mRecorderAudioChannels);
                     mRecorderAudioSampleRate = mInputAudioSampleRate;
 
                     mRecorderCodecContext->channels = mRecorderAudioChannels;
@@ -1960,7 +1960,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                     if (mRecorderAudioResampleContext != NULL)
                         LOG(LOG_ERROR, "State of audio recorder resample context inconsistent");
                     LOG(LOG_WARN, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mRecorderAudioSampleRate, mRecorderAudioChannels, av_get_sample_fmt_name(mRecorderAudioFormat));
-                    mRecorderAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mRecorderAudioChannels), mRecorderAudioFormat, mRecorderAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
+                    mRecorderAudioResampleContext = HM_swr_alloc_set_opts(NULL, HM_av_get_default_channel_layout(mRecorderAudioChannels), mRecorderAudioFormat, mRecorderAudioSampleRate, HM_av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
                     if (mRecorderAudioResampleContext != NULL)
                     {// everything okay, we have to init the context
                         int tRes = 0;
@@ -3078,7 +3078,6 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
                 LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample rate: %d", mCodecContext->sample_rate);
                 LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..channels: %d [layout: %s]", mCodecContext->channels, tChannelLayoutStr);
                 LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample format: %s", av_get_sample_fmt_name(mCodecContext->sample_fmt));
-                LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..audio preload: %d", mFormatContext->audio_preload);
                 break;
             default:
                 LOG(LOG_ERROR, "Media type unknown");
@@ -3140,11 +3139,11 @@ void MediaSource::EventGrabChunkFailed(string pSource, int pLine, string pReason
 // ####################################################################################
 // ### FFMPEG helpers
 // ####################################################################################
-bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, CodecID pCodecId, AVInputFormat **pFormat)
+bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, AVCodecID pCodecId, AVInputFormat **pFormat)
 {
 	AVInputFormat *tResult = NULL;
 
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to find %s input format for codec %s(0x%x)..", GetMediaTypeStr().c_str(), avcodec_get_name(pCodecId), pCodecId);
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to find %s input format for codec %s(0x%x)..", GetMediaTypeStr().c_str(), HM_avcodec_get_name(pCodecId), pCodecId);
 
 	if (pFormat == NULL)
 	{
@@ -3273,7 +3272,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     // limit frame analyzing time for ffmpeg internal codec auto detection for non file based media sources
     if (GetSourceType() != SOURCE_FILE)
     {
-        if (mSourceCodecId == CODEC_ID_MPEG2TS)
+        if (mSourceCodecId == AV_CODEC_ID_MPEG2TS)
         {
             mFormatContext->max_analyze_duration = mFormatContext->max_analyze_duration / 8;
         }else
@@ -3284,10 +3283,10 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
             }else{
                 switch(mSourceCodecId)
                 {
-                    case CODEC_ID_MPEG1VIDEO:
-                    case CODEC_ID_MPEG2VIDEO:
-                    case CODEC_ID_MPEG4:
-                    case CODEC_ID_H264:
+                    case AV_CODEC_ID_MPEG1VIDEO:
+                    case AV_CODEC_ID_MPEG2VIDEO:
+                    case AV_CODEC_ID_MPEG4:
+                    case AV_CODEC_ID_H264:
                         // we shouldn't limit the analyzing time because the analyzer needs the entire time period to deliver a reliable result
                         break;
                     default:
@@ -3489,19 +3488,19 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
         // try to find a vdpau decoder
         switch(mCodecContext->codec_id)
         {
-            case CODEC_ID_H264:
+            case AV_CODEC_ID_H264:
                 tCodec = avcodec_find_decoder_by_name("h264_vdpau");
                 break;
-            case CODEC_ID_MPEG1VIDEO:
+            case AV_CODEC_ID_MPEG1VIDEO:
                 tCodec = avcodec_find_decoder_by_name("mpeg1video_vdpau");
                 break;
-            case CODEC_ID_MPEG2VIDEO:
+            case AV_CODEC_ID_MPEG2VIDEO:
                 tCodec = avcodec_find_decoder_by_name("mpegvideo_vdpau");
                 break;
-            case CODEC_ID_MPEG4:
+            case AV_CODEC_ID_MPEG4:
                 tCodec = avcodec_find_decoder_by_name("mpeg4_vdpau");
                 break;
-            case CODEC_ID_WMV3:
+            case AV_CODEC_ID_WMV3:
                 tCodec = avcodec_find_decoder_by_name("wmv3_vdpau");
                 break;
             default:
@@ -3527,7 +3526,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s decoder successfully found", GetMediaTypeStr().c_str());
 
     //H.264: force thread count to 1 since the h264 decoder will not extract SPS and PPS to extradata during multi-threaded decoding
-    if (mCodecContext->codec_id == CODEC_ID_H264)
+    if (mCodecContext->codec_id == AV_CODEC_ID_H264)
     {
             if (strcmp(mFormatContext->filename, "") == 0)
             {// we have a net/mem based media source
@@ -3622,7 +3621,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
                 if (mAudioResampleContext != NULL)
                     LOG_REMOTE(LOG_ERROR, pSource, pLine, "State of audio resample context inconsistent");
                 LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
-                mAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mOutputAudioChannels), mOutputAudioFormat, mOutputAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
+                mAudioResampleContext = HM_swr_alloc_set_opts(NULL, HM_av_get_default_channel_layout(mOutputAudioChannels), mOutputAudioFormat, mOutputAudioSampleRate, HM_av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
                 if (mAudioResampleContext != NULL)
                 {// everything okay, we have to init the context
                     int tRes = 0;

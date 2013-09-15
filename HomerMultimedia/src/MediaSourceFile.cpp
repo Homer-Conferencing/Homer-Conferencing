@@ -300,7 +300,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 	}
 
 	// avoid frame dropping during decoding (mDecoderExpectedMaxOutputPerInputFrame might be wrong otherwise), assume 64 kB as max. input per read cycle
-    if ((tIsNetworkStream) && (mCodecContext->codec_id == CODEC_ID_WMAV2))
+    if ((tIsNetworkStream) && (mCodecContext->codec_id == AV_CODEC_ID_WMAV2))
     {
     	LOG(LOG_VERBOSE, "Detected WMAV2 codec in hidden network stream, will assume a default frame size of 64kB to prevent frame dropping");
     	mCodecContext->frame_size = 64 * 1024;

@@ -418,7 +418,7 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		plugins/imageformats/libqtiff.so
 	)
 	SET (LIBS_LINUX_STATIC
-		glib-2.0  # avoid link problems in QtWebKit
+		#glib-2.0  # avoid link problems in QtWebKit
 	)
 ENDIF()
 

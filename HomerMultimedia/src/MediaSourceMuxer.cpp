@@ -66,7 +66,7 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mSourceType = SOURCE_MUXER;
     mStreamPacketBuffer = (char*)av_malloc(MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE);
     SetOutgoingStream();
-    mStreamCodecId = CODEC_ID_NONE;
+    mStreamCodecId = AV_CODEC_ID_NONE;
     mStreamMaxPacketSize = 500;
     mStreamQuality = 20;
     mStreamBitRate = -1;
@@ -195,7 +195,7 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
 {
     // HINT: returns if something has changed
     bool tResult = false;
-    enum CodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
+    enum AVCodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
 
     pMaxPacketSize -= IP6_HEADER_SIZE; // IPv6 overhead is bigger than IPv4
     pMaxPacketSize -= IP_OPTIONS_SIZE; // IP options size: used for QoS signaling
@@ -285,12 +285,12 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
     return tResult;
 }
 
-void MediaSourceMuxer::ValidateVideoResolutionForEncoderCodec(int &pResX, int &pResY, enum CodecID pCodec)
+void MediaSourceMuxer::ValidateVideoResolutionForEncoderCodec(int &pResX, int &pResY, enum AVCodecID pCodec)
 {
 	LOG(LOG_VERBOSE, "Checking the video resolution %d * %d for compatibility with codec %s", pResX, pResY, GetGuiNameFromCodecID(pCodec).c_str());
     switch(pCodec)
     {
-        case CODEC_ID_H261: // supports QCIF, CIF
+        case AV_CODEC_ID_H261: // supports QCIF, CIF
                 if (pResX > 176)
                 {// CIF
                 	pResX = 352;
@@ -301,7 +301,7 @@ void MediaSourceMuxer::ValidateVideoResolutionForEncoderCodec(int &pResX, int &p
                 	pResY = 144;
                 }
                 break;
-        case CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
+        case AV_CODEC_ID_H263:  // supports SQCIF, QCIF, CIF, CIF4,CIF16
                 if(pResX > 704)
                 {// CIF16
                 	pResX = 1408;
@@ -324,7 +324,7 @@ void MediaSourceMuxer::ValidateVideoResolutionForEncoderCodec(int &pResX, int &p
                 	pResY = 96;
                 }
                 break;
-        case CODEC_ID_H263P:
+        case AV_CODEC_ID_H263P:
                 if ((pResX > 2048) || (pResY > 1152))
                 {// max. video resolution is 2048x1152
                     pResX = 2048;
@@ -343,7 +343,7 @@ void MediaSourceMuxer::ValidateVideoResolutionForEncoderCodec(int &pResX, int &p
                 pResY *= 4;
 
                 break;
-        case CODEC_ID_H264:
+        case AV_CODEC_ID_H264:
 
         		// for H.2634 both width and height must be multiples of 2
 				pResX += 1;
@@ -354,7 +354,7 @@ void MediaSourceMuxer::ValidateVideoResolutionForEncoderCodec(int &pResX, int &p
 				pResY /= 2;
 				pResY *= 2;
 				break;
-        case CODEC_ID_THEORA:
+        case AV_CODEC_ID_THEORA:
         		pResX = 352;
         		pResY = 288;
                 break;
@@ -449,10 +449,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     LOG(LOG_VERBOSE, "Using format \"%s\" for VIDEO codec %d", tFormat->name, mStreamCodecId);
 
     // explicit codec selection for H263, otherwise ffmpeg would use the last H263-selection
-    if (mStreamCodecId == CODEC_ID_H263P)
-        tFormat->video_codec = CODEC_ID_H263P;
-    if (mStreamCodecId == CODEC_ID_H263)
-        tFormat->video_codec = CODEC_ID_H263;
+    if (mStreamCodecId == AV_CODEC_ID_H263P)
+        tFormat->video_codec = AV_CODEC_ID_H263P;
+    if (mStreamCodecId == AV_CODEC_ID_H263)
+        tFormat->video_codec = AV_CODEC_ID_H263;
 
     // set correct output format
     mFormatContext->oformat = tFormat;
@@ -499,7 +499,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
      * identically to 1.
      */
     // mpeg1/2 codecs support only non-rational frame rates
-    if (((tFormat->video_codec == CODEC_ID_MPEG1VIDEO) || (tFormat->video_codec == CODEC_ID_MPEG2VIDEO)) && (mInputFrameRate = 29.97))
+    if (((tFormat->video_codec == AV_CODEC_ID_MPEG1VIDEO) || (tFormat->video_codec == AV_CODEC_ID_MPEG2VIDEO)) && (mInputFrameRate = 29.97))
     {
         //HACK: pretend a frame rate of 30 fps, the actual frame rate corresponds to the frame rate from the base media source
         mCodecContext->time_base = (AVRational){100, (int)(30 * 100)};
@@ -510,7 +510,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         mEncoderStream->time_base = (AVRational){100, (int)(mInputFrameRate * 100)};
     }
     // set i frame distance: GOP = group of pictures
-    if (mStreamCodecId != CODEC_ID_THEORA)
+    if (mStreamCodecId != AV_CODEC_ID_THEORA)
         mCodecContext->gop_size = (100 - mStreamQuality) / 5; // default is 12
     else
         mCodecContext->gop_size = 0; // force GOP size of 0 for THEORA
@@ -521,13 +521,13 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // set max. packet size for RTP based packets
     //HINT: don't set if we use H261, otherwise ffmpeg internal functions in mpegvideo_enc.c (MPV_*) would get confused because H261 support is missing in ffmpeg's RTP support
     //TODO: fix packet size limitation here, ffmpegs lacks support for RTP encaps. for H.261 based video streams
-    if (tFormat->video_codec != CODEC_ID_H261)
+    if (tFormat->video_codec != AV_CODEC_ID_H261)
         mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
     else
         RTP::SetH261PayloadSizeMax(mStreamMaxPacketSize);
 
     // set pixel format
-    if (tFormat->video_codec == CODEC_ID_MJPEG)
+    if (tFormat->video_codec == AV_CODEC_ID_MJPEG)
         mCodecContext->pix_fmt = PIX_FMT_YUVJ420P;
     else
         mCodecContext->pix_fmt = PIX_FMT_YUV420P;
@@ -760,30 +760,30 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     mCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
     switch(mCodecContext->codec_id)
     {
-		case CODEC_ID_ADPCM_G722:
+		case AV_CODEC_ID_ADPCM_G722:
 			mOutputAudioChannels = 1;
 			mOutputAudioSampleRate = 16000;
 			mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
 			break;
-		case CODEC_ID_AMR_NB:
+		case AV_CODEC_ID_AMR_NB:
 			mOutputAudioChannels = 1;
 			mCodecContext->bit_rate = 7950; // force to 7.95kHz , limit is given by libopencore_amrnb
 			mOutputAudioSampleRate = 8000; //force 8 kHz for AMR-NB
 			mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
 			break;
-		case CODEC_ID_GSM:
-		case CODEC_ID_PCM_ALAW:
-		case CODEC_ID_PCM_MULAW:
+		case AV_CODEC_ID_GSM:
+		case AV_CODEC_ID_PCM_ALAW:
+		case AV_CODEC_ID_PCM_MULAW:
 			mOutputAudioChannels = 1;
 			mOutputAudioSampleRate = 8000;
 			mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
 			break;
-    	case CODEC_ID_PCM_S16BE:
+    	case AV_CODEC_ID_PCM_S16BE:
 			mOutputAudioChannels = 2;
 			mOutputAudioSampleRate = 44100;
 			mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16; // packed
 			break;
-        case CODEC_ID_MP3:
+        case AV_CODEC_ID_MP3:
 			mOutputAudioChannels = pChannels;
 			mOutputAudioSampleRate = pSampleRate;
 			mCodecContext->sample_fmt = AV_SAMPLE_FMT_S16P; // planar
@@ -803,7 +803,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
         mEncoderStream->time_base = (AVRational){1, 90000};
 
 	mCodecContext->channels = mOutputAudioChannels;
-	mCodecContext->channel_layout = av_get_default_channel_layout(mOutputAudioChannels);
+	mCodecContext->channel_layout = HM_av_get_default_channel_layout(mOutputAudioChannels);
     mCodecContext->sample_rate = mOutputAudioSampleRate;
     // set max. packet size for RTP based packets
     mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
@@ -2007,7 +2007,7 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
         int tResY = pResY;
         switch(mStreamCodecId)
         {
-            case CODEC_ID_H261: // supports QCIF, CIF
+            case AV_CODEC_ID_H261: // supports QCIF, CIF
                     if (((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)))
                     {
                         LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.261", pResX, pResY);
@@ -2027,7 +2027,7 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
                     if (pResY < 144)
                         tResY = 144;
                     break;
-            case CODEC_ID_H263:  // supports QCIF, CIF, CIF4
+            case AV_CODEC_ID_H263:  // supports QCIF, CIF, CIF4
                     if (((pResX == 128) && (pResY == 96)) || ((pResX == 176) && (pResY == 144)) || ((pResX == 352) && (pResY == 288)) || ((pResX == 704) && (pResY == 576)) || ((pResX == 1408) && (pResY == 1152)))
                     {
                         LOG(LOG_VERBOSE, "Resolution %d*%d supported by H.263", pResX, pResY);
@@ -2047,7 +2047,7 @@ void MediaSourceMuxer::SetVideoGrabResolution(int pResX, int pResY)
                     if (pResY < 144)
                         tResY = 144;
                     break;
-            case CODEC_ID_H263P:
+            case AV_CODEC_ID_H263P:
             default:
                     break;
         }
@@ -2197,12 +2197,12 @@ bool MediaSourceMuxer::Reset(enum MediaType pMediaType)
     return tResult;
 }
 
-enum CodecID MediaSourceMuxer::GetSourceCodec()
+enum AVCodecID MediaSourceMuxer::GetSourceCodec()
 {
     if (mMediaSource != NULL)
         return mMediaSource->GetSourceCodec();
     else
-        return CODEC_ID_NONE;
+        return AV_CODEC_ID_NONE;
 }
 
 string MediaSourceMuxer::GetSourceCodecStr()

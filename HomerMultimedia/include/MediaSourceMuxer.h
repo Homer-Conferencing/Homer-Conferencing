@@ -108,7 +108,7 @@ public:
 
     /* streaming control */
     bool SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pBitRate, int pMaxPacketSize = 1300 /* works only with RTP packetizing */, bool pDoReset = false, int pResX = 352, int pResY = 288, bool pRtpActivated = true, int pMaxFps = 0);
-    enum CodecID GetStreamCodecId() { return mStreamCodecId; } // used in RTSPListenerMediaSession
+    enum AVCodecID GetStreamCodecId() { return mStreamCodecId; } // used in RTSPListenerMediaSession
 
     /* frame stats */
     virtual bool SupportsDecoderFrameStatistics();
@@ -136,7 +136,7 @@ public:
     virtual void StopGrabbing();
     virtual bool IsGrabbingStopped();
     virtual bool Reset(enum MediaType = MEDIA_UNKNOWN);
-    virtual enum CodecID GetSourceCodec();
+    virtual enum AVCodecID GetSourceCodec();
     virtual std::string GetSourceCodecStr();
     virtual std::string GetSourceCodecDescription();
     virtual bool SetInputStreamPreferences(std::string pStreamCodec, bool pRtpActivated = false, bool pDoReset = false);
@@ -198,7 +198,7 @@ public:
 
 private:
     /* video resolution limitation depending on video codec capabilities */
-    void ValidateVideoResolutionForEncoderCodec(int &pResX, int &pResY, enum CodecID pCodec);
+    void ValidateVideoResolutionForEncoderCodec(int &pResX, int &pResY, enum AVCodecID pCodec);
 
     bool OpenVideoMuxer(int pResX = 352, int pResY = 288, float pFps = 29.97);
     bool OpenAudioMuxer(int pSampleRate = 44100, int pChannels = 2);
@@ -218,7 +218,7 @@ private:
     static int DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
 
     MediaSource         *mMediaSource;
-    enum CodecID        mStreamCodecId;
+    enum AVCodecID      mStreamCodecId;
     int                 mStreamMaxPacketSize;
     int                 mStreamQuality;
     int                 mStreamBitRate;
