@@ -88,7 +88,7 @@ IF (WINDOWS)
         INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/CMakeCPackWin.txt)
 ENDIF(WINDOWS)
 
-# STGZ/RPM/DEB specific configuration for Windows
+# STGZ/RPM/DEB specific configuration for Linux
 IF (LINUX)
         INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../${RELOCATION_INCLUDES}HomerBuild/CMakeCPackLinux.txt)
 ENDIF(LINUX)
