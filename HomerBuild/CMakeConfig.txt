@@ -85,7 +85,7 @@ if (APPLE)
 endif(APPLE)
 
 ##############################################################
-# detect Linux
+# detect Windows
 IF (WIN32)
 	SET (WINDOWS "true")
 	IF ("${ARCH_BITS}" EQUAL "64")
