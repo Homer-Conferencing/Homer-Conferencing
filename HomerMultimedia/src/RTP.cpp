@@ -665,7 +665,6 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     LOG(LOG_INFO, "    ..stream start real-time: %"PRId64"", mRtpFormatContext->start_time_realtime);
     LOG(LOG_INFO, "    ..stream start time: %"PRId64"", mRtpEncoderStream->start_time);
     LOG(LOG_INFO, "    ..max. delay: %d", mRtpFormatContext->max_delay);
-    LOG(LOG_INFO, "    ..audio preload: %d", mRtpFormatContext->audio_preload);
     LOG(LOG_INFO, "    ..start A/V PTS: %"PRId64"", tAVPacketPts);
     LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRtpEncoderStream->r_frame_rate.num, mRtpEncoderStream->r_frame_rate.den);
     LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRtpEncoderStream->time_base.num, mRtpEncoderStream->time_base.den);
@@ -1564,7 +1563,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     char *tRtpPacketStart = pData;
 
     if ((mStreamCodecID != AV_CODEC_ID_NONE) && (mStreamCodecID != pCodecId))
-        LOG(LOG_WARN, "Codec change from %d(%s) to %d(%s) in inout stream detected", mStreamCodecID, avcodec_get_name(mStreamCodecID), pCodecId, avcodec_get_name(pCodecId));
+        LOG(LOG_WARN, "Codec change from %d(%s) to %d(%s) in inout stream detected", mStreamCodecID, HM_avcodec_get_name(mStreamCodecID), pCodecId, HM_avcodec_get_name(pCodecId));
 
     mStreamCodecID = pCodecId;
 

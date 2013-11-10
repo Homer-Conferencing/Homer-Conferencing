@@ -170,6 +170,31 @@ inline void HM_swr_free(struct ReSampleContext **s)
     #define AVCODEC_MAX_AUDIO_FRAME_SIZE   192000
 #endif
  
+#ifndef AV_PICTURE_TYPE_NONE
+#define AV_PICTURE_TYPE_NONE ((enum AVPictureType)0)
+#endif
+
+inline int64_t HM_av_get_default_channel_layout(int nb_channels)
+{
+    #if (LIBAVUTIL_VERSION_INT < AV_VERSION_INT(52, 13, 100))
+        switch(nb_channels)
+        {
+            case 1:
+                return AV_CH_LAYOUT_MONO;
+            case 2:
+                return AV_CH_LAYOUT_STEREO;
+            case 6:
+                return AV_CH_LAYOUT_5POINT1;
+            case 8:
+                return AV_CH_LAYOUT_7POINT1;
+            default:
+                return AV_CH_LAYOUT_STEREO;
+        }
+    #else
+        return av_get_default_channel_layout(nb_channels);
+    #endif
+}
+
 #if (LIBAVCODEC_VERSION_INT <= AV_VERSION_INT(54, 51, 100))
     #define AVCodecID CodecID
     #define AV_CODEC_ID_AAC CODEC_ID_AAC
@@ -201,6 +226,15 @@ inline void HM_swr_free(struct ReSampleContext **s)
     #define AV_CODEC_ID_WMAV2 CODEC_ID_WMAV2
     #define AV_CODEC_ID_WMV3 CODEC_ID_WMV3
 #endif
+
+inline const char *HM_avcodec_get_name(enum AVCodecID id)
+{
+    #if (LIBAVCODEC_VERSION_INT <= AV_VERSION_INT(53, 61, 100))
+        return "N/A"; //TODO: add some implementation here?
+    #else
+        return avcodec_get_name(id);
+    #endif
+}
 
 inline int HM_av_samples_fill_arrays(uint8_t **audio_data, int *linesize, uint8_t *buf, int nb_channels, int nb_samples, enum AVSampleFormat sample_fmt, int align)
 {

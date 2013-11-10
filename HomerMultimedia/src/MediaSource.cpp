@@ -1914,7 +1914,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                         mRecorderAudioFormat = AV_SAMPLE_FMT_S16P;
                     else
                         mRecorderAudioFormat = AV_SAMPLE_FMT_S16;
-                    mRecorderAudioChannelLayout = av_get_default_channel_layout(mRecorderAudioChannels);
+                    mRecorderAudioChannelLayout = HM_av_get_default_channel_layout(mRecorderAudioChannels);
                     mRecorderAudioSampleRate = mInputAudioSampleRate;
 
                     mRecorderCodecContext->channels = mRecorderAudioChannels;
@@ -1927,7 +1927,7 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
                     if (mRecorderAudioResampleContext != NULL)
                         LOG(LOG_ERROR, "State of audio recorder resample context inconsistent");
                     LOG(LOG_WARN, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mRecorderAudioSampleRate, mRecorderAudioChannels, av_get_sample_fmt_name(mRecorderAudioFormat));
-                    mRecorderAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mRecorderAudioChannels), mRecorderAudioFormat, mRecorderAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
+                    mRecorderAudioResampleContext = HM_swr_alloc_set_opts(NULL, HM_av_get_default_channel_layout(mRecorderAudioChannels), mRecorderAudioFormat, mRecorderAudioSampleRate, HM_av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
                     if (mRecorderAudioResampleContext != NULL)
                     {// everything okay, we have to init the context
                         int tRes = 0;
@@ -3018,7 +3018,6 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample rate: %d", mCodecContext->sample_rate);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..channels: %d [layout: %s]", mCodecContext->channels, tChannelLayoutStr);
             LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..sample format: %s", av_get_sample_fmt_name(mCodecContext->sample_fmt));
-            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..audio preload: %d", mFormatContext->audio_preload);
             break;
         default:
             LOG(LOG_ERROR, "Media type unknown");
@@ -3534,7 +3533,7 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
                 if (mAudioResampleContext != NULL)
                     LOG_REMOTE(LOG_ERROR, pSource, pLine, "State of audio resample context inconsistent");
                 LOG_REMOTE(LOG_WARN, pSource, pLine, "Audio samples with rate of %d Hz and %d channels (format: %s) have to be resampled to %d Hz and %d channels (format: %s)", mInputAudioSampleRate, mInputAudioChannels, av_get_sample_fmt_name(mInputAudioFormat), mOutputAudioSampleRate, mOutputAudioChannels, av_get_sample_fmt_name(mOutputAudioFormat));
-                mAudioResampleContext = HM_swr_alloc_set_opts(NULL, av_get_default_channel_layout(mOutputAudioChannels), mOutputAudioFormat, mOutputAudioSampleRate, av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
+                mAudioResampleContext = HM_swr_alloc_set_opts(NULL, HM_av_get_default_channel_layout(mOutputAudioChannels), mOutputAudioFormat, mOutputAudioSampleRate, HM_av_get_default_channel_layout(mInputAudioChannels), mInputAudioFormat, mInputAudioSampleRate, 0, NULL);
                 if (mAudioResampleContext != NULL)
                 {// everything okay, we have to init the context
                     int tRes = 0;

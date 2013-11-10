@@ -800,7 +800,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     }
 	mEncoderStream->time_base = (AVRational){1, mOutputAudioSampleRate};
 	mCodecContext->channels = mOutputAudioChannels;
-	mCodecContext->channel_layout = av_get_default_channel_layout(mOutputAudioChannels);
+	mCodecContext->channel_layout = HM_av_get_default_channel_layout(mOutputAudioChannels);
     mCodecContext->sample_rate = mOutputAudioSampleRate;
     // set max. packet size for RTP based packets
     mCodecContext->rtp_payload_size = mStreamMaxPacketSize;

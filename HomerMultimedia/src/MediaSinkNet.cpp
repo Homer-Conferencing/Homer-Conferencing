@@ -209,7 +209,7 @@ void MediaSinkNet::ProcessPacket(char* pPacketData, unsigned int pPacketSize, AV
         // update max. network packet size
         if (mMaxNetworkPacketSize != tNewMaxNetworkPacketSize)
         {
-            LOG(LOG_WARN, "Setting max. network packet size to: %d for codec: %s", tNewMaxNetworkPacketSize, avcodec_get_name(pStream->codec->codec_id));
+            LOG(LOG_WARN, "Setting max. network packet size to: %d for codec: %s", tNewMaxNetworkPacketSize, HM_avcodec_get_name(pStream->codec->codec_id));
             mMaxNetworkPacketSize = tNewMaxNetworkPacketSize;
         }
     }

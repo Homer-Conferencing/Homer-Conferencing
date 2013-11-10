@@ -374,17 +374,17 @@ GrabResolutions MediaSourceMem::GetSupportedVideoGrabResolutions()
 
     if (mMediaType == MEDIA_VIDEO)
     {
-        tFormat.Name="SQCIF";      //      128 ×  96
+        tFormat.Name="SQCIF";      //      128 ï¿½  96
         tFormat.ResX = 128;
         tFormat.ResY = 96;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="QCIF";       //      176 × 144
+        tFormat.Name="QCIF";       //      176 ï¿½ 144
         tFormat.ResX = 176;
         tFormat.ResY = 144;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="CIF";        //      352 × 288
+        tFormat.Name="CIF";        //      352 ï¿½ 288
         tFormat.ResX = 352;
         tFormat.ResY = 288;
         mSupportedVideoFormats.push_back(tFormat);
@@ -394,12 +394,12 @@ GrabResolutions MediaSourceMem::GetSupportedVideoGrabResolutions()
         tFormat.ResY = 480;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="CIF4";       //      704 × 576
+        tFormat.Name="CIF4";       //      704 ï¿½ 576
         tFormat.ResX = 704;
         tFormat.ResY = 576;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="DVD";        //      720 × 576
+        tFormat.Name="DVD";        //      720 ï¿½ 576
         tFormat.ResX = 720;
         tFormat.ResY = 576;
         mSupportedVideoFormats.push_back(tFormat);
@@ -414,32 +414,32 @@ GrabResolutions MediaSourceMem::GetSupportedVideoGrabResolutions()
         tFormat.ResY = 768;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="CIF9";       //     1056 × 864
+        tFormat.Name="CIF9";       //     1056 ï¿½ 864
         tFormat.ResX = 1056;
         tFormat.ResY = 864;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="SXGA";       //     1280 × 1024
+        tFormat.Name="SXGA";       //     1280 ï¿½ 1024
         tFormat.ResX = 1280;
         tFormat.ResY = 1024;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="WXGA+";      //     1440 × 900
+        tFormat.Name="WXGA+";      //     1440 ï¿½ 900
         tFormat.ResX = 1440;
         tFormat.ResY = 900;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="SXGA+";       //     1440 × 1050
+        tFormat.Name="SXGA+";       //     1440 ï¿½ 1050
         tFormat.ResX = 1440;
         tFormat.ResY = 1050;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="CIF16";      //     1408 × 1152
+        tFormat.Name="CIF16";      //     1408 ï¿½ 1152
         tFormat.ResX = 1408;
         tFormat.ResY = 1152;
         mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="HDTV";       //     1920 × 1080
+        tFormat.Name="HDTV";       //     1920 ï¿½ 1080
         tFormat.ResX = 1920;
         tFormat.ResY = 1080;
         mSupportedVideoFormats.push_back(tFormat);
@@ -542,7 +542,7 @@ bool MediaSourceMem::HasInputStreamChanged()
         }
         if ((tNewCodecId != AV_CODEC_ID_NONE) && (tNewCodecId != mSourceCodecId))
         {
-            LOG(LOG_VERBOSE, "Suggesting codec change from %d(%s) to %d(%s)", mSourceCodecId, avcodec_get_name(mSourceCodecId), tNewCodecId, avcodec_get_name(tNewCodecId));
+            LOG(LOG_VERBOSE, "Suggesting codec change from %d(%s) to %d(%s)", mSourceCodecId, HM_avcodec_get_name(mSourceCodecId), tNewCodecId, HM_avcodec_get_name(tNewCodecId));
             mRtpSourceCodecIdHint = tNewCodecId;
         }
     }
@@ -1933,15 +1933,18 @@ void* MediaSourceMem::Run(void* pArgs)
                                                     LOG(LOG_VERBOSE, "Scale (within decoder thread) video frame..");
                                                     LOG(LOG_VERBOSE, "Video frame data: %p, %p", tSourceFrame->data[0], tSourceFrame->data[1]);
                                                     LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1]);
-                                                #endif
 
-                                                // scale the video frame
-                                                LOG(LOG_VERBOSE, "Scaling video input picture..");
+													// scale the video frame
+													LOG(LOG_VERBOSE, "Scaling video input picture..");
+												#endif
+
                                                 tRes = HM_sws_scale(mVideoScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
                                                 if (tRes == 0)
                                                     LOG(LOG_ERROR, "Failed to scale the video frame");
 
-                                                LOG(LOG_VERBOSE, "Decoded picture into RGB frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+												#ifdef MSMEM_DEBUG_PACKETS
+                                                	LOG(LOG_VERBOSE, "Decoded picture into RGB frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+												#endif
 
                                                 mDecoderSinglePictureResX = mTargetResX;
                                                 mDecoderSinglePictureResY = mTargetResY;
