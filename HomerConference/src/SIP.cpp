@@ -2082,7 +2082,7 @@ void SIP::initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, str
      *              * source from SIP header is not a DNS name (means the SIP header is not from a SIP server (PBX box))
      */
 
-    if ((pSourceIp.size()) && (pSourceIp != "0.0.0.0") && (pSourceIp != "::") && (!IsLetter(&pHost[0])))
+    if ((pSourceIp.size()) && (pSourceIp != "0.0.0.0") && (pSourceIp != "::") && (!IsLetter(&pHost[0]) /* avoid DNS name here */))
     {
         pHost = pSourceIp;
     }else
