@@ -3,7 +3,7 @@
 # flexible feature selection: modify as desired
 ######################################################################################
 ######################################################################################
-set(FEATURE_PULSEAUDIO OFF)
+set(FEATURE_PULSEAUDIO ON)
 
 
 

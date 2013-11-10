@@ -33,6 +33,10 @@ ELSE (LINUX)
 ENDIF (LINUX)
 
 ##############################################################
+# find package "swresample"
+CHECK_LIBRARY_EXISTS(swresample swresample_version "" HAVE_SWRESAMPLE) 
+
+##############################################################
 # include dirs
 SET (INCLUDE_DIRS
 	${INCLUDE_DIRS}
@@ -211,12 +215,17 @@ IF (${BUILD} MATCHES "Default")
 		avcodec
 		avutil
 		avfilter
-		swresample
 		swscale
 		x264
 		${SDL_LIBRARY}		
 		portaudio
 	)
+	IF (HAVE_SWRESAMPLE)
+		SET (LIBS_LINUX
+			${LIBS_LINUX}
+			swresample
+		)
+	ENDIF ()
 ELSE ()
 	# USED LIBRARIES for linux environment
 	SET (LIBS_LINUX

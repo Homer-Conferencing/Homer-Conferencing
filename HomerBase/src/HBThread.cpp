@@ -368,7 +368,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
 		if ((tFile = fopen(tFileName, "r")) != NULL)
 		{
 		    long int tPriority, tBasePriority;
-		    if (EOF == fscanf(tFile, "%d %*s %*c %d %*d %*d %*d %*d %*u %*lu %*lu %*lu %*lu %"PRIu64" %"PRIu64" %"PRId64" %"PRId64" %"PRId64" %"PRId64" %d 0 %*"PRIu64" %"PRIu64" %"PRId64"", &pPid, &pPPid, &tJiffiesUserMode, &tJiffiesKernelMode, &tJiffiesUserModeChildWait, &tJiffiesKernelModeChildWait, &tPriority, &tBasePriority, &pThreadCount, &pMemVirtual, (long int*)&pMemPhysical))
+		    if (EOF == fscanf(tFile, "%d %*s %*c %d %*d %*d %*d %*d %*u %*u %*u %*u %*u %"PRIu64" %"PRIu64" %"PRId64" %"PRId64" %"PRId64" %"PRId64" %d 0 %*u %"PRIu64" %"PRId64"", &pPid, &pPPid, &tJiffiesUserMode, &tJiffiesKernelMode, &tJiffiesUserModeChildWait, &tJiffiesKernelModeChildWait, &tPriority, &tBasePriority, &pThreadCount, &pMemVirtual, (long int*)&pMemPhysical))
 		        LOGEX(Thread, LOG_ERROR, "Failed to parse file content because of input failure");
 		    pPriority = tPriority;
 		    pBasePriority = tBasePriority;
