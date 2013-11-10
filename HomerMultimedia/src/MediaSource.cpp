@@ -131,47 +131,47 @@ MediaSource::MediaSource(string pName):
     // ###################################################################
     VideoFormatDescriptor tFormat;
 
-    tFormat.Name="SQCIF";      //      128 ×  96
+    tFormat.Name="SQCIF";      //      128 ï¿½  96
     tFormat.ResX = 128;
     tFormat.ResY = 96;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="QCIF";       //      176 × 144
+    tFormat.Name="QCIF";       //      176 ï¿½ 144
     tFormat.ResX = 176;
     tFormat.ResY = 144;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="CIF";        //      352 × 288
+    tFormat.Name="CIF";        //      352 ï¿½ 288
     tFormat.ResX = 352;
     tFormat.ResY = 288;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="CIF4";       //      704 × 576
+    tFormat.Name="CIF4";       //      704 ï¿½ 576
     tFormat.ResX = 704;
     tFormat.ResY = 576;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="DVD";        //      720 × 576
+    tFormat.Name="DVD";        //      720 ï¿½ 576
     tFormat.ResX = 720;
     tFormat.ResY = 576;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="CIF9";       //     1056 × 864
+    tFormat.Name="CIF9";       //     1056 ï¿½ 864
     tFormat.ResX = 1056;
     tFormat.ResY = 864;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="EDTV";       //     1280 × 720
+    tFormat.Name="EDTV";       //     1280 ï¿½ 720
     tFormat.ResX = 1280;
     tFormat.ResY = 720;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="CIF16";      //     1408 × 1152
+    tFormat.Name="CIF16";      //     1408 ï¿½ 1152
     tFormat.ResX = 1408;
     tFormat.ResY = 1152;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="HDTV";       //     1920 × 1080
+    tFormat.Name="HDTV";       //     1920 ï¿½ 1080
     tFormat.ResX = 1920;
     tFormat.ResY = 1080;
     mSupportedVideoFormats.push_back(tFormat);
@@ -240,7 +240,7 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
     if (pSendToLoggerOnly)
         LOGEX(MediaSource, LOG_VERBOSE, "%s", tIntro.c_str());
     else
-        printf("%s\n");
+        printf("%s\n", tIntro.c_str());
 
     while ((tCodec != NULL))
     {
@@ -300,7 +300,7 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
     if (pSendToLoggerOnly)
         LOGEX(MediaSource, LOG_VERBOSE, "%s", tIntro.c_str());
     else
-        printf("%s\n");
+        printf("%s\n", tIntro.c_str());
 
     while ((tCodec != NULL))
     {
@@ -366,7 +366,7 @@ void MediaSource::LogSupportedInputFormats(bool pSendToLoggerOnly)
     if (pSendToLoggerOnly)
         LOGEX(MediaSource, LOG_VERBOSE, "%s", tIntro.c_str());
     else
-        printf("%s\n");
+        printf("%s\n", tIntro.c_str());
 
     while ((tFormat != NULL))
     {
@@ -396,7 +396,7 @@ void MediaSource::LogSupportedOutputFormats(bool pSendToLoggerOnly)
     if (pSendToLoggerOnly)
         LOGEX(MediaSource, LOG_VERBOSE, "%s", tIntro.c_str());
     else
-        printf("%s\n");
+        printf("%s\n", tIntro.c_str());
 
     while ((tFormat != NULL))
     {
@@ -514,7 +514,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  *  ================================
  *        G711 A-law					CODEC_ID_PCM_MULAW
  *        GSM							CODEC_ID_GSM
- *        G711 µ-law					CODEC_ID_PCM_ALAW
+ *        G711 ï¿½-law					CODEC_ID_PCM_ALAW
  *        G722 adpcm					CODEC_ID_ADPCM_G722
  *        PCM16							CODEC_ID_PCM_S16BE
  *        MP3							CODEC_ID_MP3
@@ -549,7 +549,7 @@ enum AVCodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
         tResult = AV_CODEC_ID_VP8;
 
     /* audio */
-    if ((pName == "G711 µ-law") || (pName == "G711 µ-law (PCMU)" /*historic*/))
+    if ((pName == "G711 ï¿½-law") || (pName == "G711 ï¿½-law (PCMU)" /*historic*/))
         tResult = AV_CODEC_ID_PCM_MULAW;
     if (pName == "GSM")
         tResult = AV_CODEC_ID_GSM;
@@ -613,7 +613,7 @@ string MediaSource::GetGuiNameFromCodecID(enum AVCodecID pCodecId)
 
 		/* audio */
         case AV_CODEC_ID_PCM_MULAW:
-    			tResult = "G711 µ-law";
+    			tResult = "G711 ï¿½-law";
     			break;
         case AV_CODEC_ID_GSM:
     			tResult = "GSM";
@@ -853,39 +853,39 @@ void MediaSource::VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY)
     switch(pFormat)
     {
 
-        case SQCIF:      /*      128 ×  96       */
+        case SQCIF:      /*      128 ï¿½  96       */
                     pX = 128;
                     pY = 96;
                     break;
-        case QCIF:       /*      176 × 144       */
+        case QCIF:       /*      176 ï¿½ 144       */
                     pX = 176;
                     pY = 144;
                     break;
-        case CIF:        /*      352 × 288       */
+        case CIF:        /*      352 ï¿½ 288       */
                     pX = 352;
                     pY = 288;
                     break;
-        case CIF4:       /*      704 × 576       */
+        case CIF4:       /*      704 ï¿½ 576       */
                     pX = 704;
                     pY = 576;
                     break;
-        case DVD:        /*      720 × 576       */
+        case DVD:        /*      720 ï¿½ 576       */
                     pX = 720;
                     pY = 576;
                     break;
-        case CIF9:       /*     1056 × 864       */
+        case CIF9:       /*     1056 ï¿½ 864       */
                     pX = 1056;
                     pY = 864;
                     break;
-        case EDTV:       /*     1280 × 720       */
+        case EDTV:       /*     1280 ï¿½ 720       */
                     pX = 1280;
                     pY = 720;
                     break;
-        case CIF16:      /*     1408 × 1152      */
+        case CIF16:      /*     1408 ï¿½ 1152      */
                     pX = 1408;
                     pY = 1152;
                     break;
-        case HDTV:       /*     1920 × 1080       */
+        case HDTV:       /*     1920 ï¿½ 1080       */
                     pX = 1920;
                     pY = 1080;
                     break;
