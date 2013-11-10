@@ -143,6 +143,7 @@ SET (FLAGS
 	-Wno-format
 	-Wno-uninitialized
 	-Wno-unused-parameter
+	-Wno-unused-but-set-parameter
 )
 IF (DEFINED FORCE_ARCH_BITS)
 	SET (FLAGS
