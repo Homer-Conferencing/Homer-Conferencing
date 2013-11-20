@@ -250,6 +250,8 @@ void StreamingControlWidget::SelectedNewVideoInputStream(int pIndex)
     LOG(LOG_VERBOSE, "User selected new video input stream: %d", pIndex);
     if (pIndex >= 0)
         mVideoWorker->SelectInputStream(pIndex);
+    else
+    	LOG(LOG_VERBOSE, "  ..input stream selection aborted for stream: %d", pIndex);
 }
 
 void StreamingControlWidget::SelectPushToTalkMode(bool pActive)

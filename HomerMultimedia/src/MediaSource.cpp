@@ -3321,7 +3321,8 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
         HM_avformat_close_input(mFormatContext);
 
         return false;
-    }
+    }else
+        LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..avformat_find_stream_info() was successful");
 
 	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected all %s streams", GetMediaTypeStr().c_str());
 
