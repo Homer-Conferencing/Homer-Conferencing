@@ -871,7 +871,12 @@ bool Socket::SetSendBufferSize(int pSize)
 			int tGot = GetSendBufferSize();
 			if (pSize != tGot)
 			{
-				LOG(LOG_ERROR, "Socket %d reports %d bytes as send buffer size, which differs from the expected %d bytes", mSocketHandle, tGot, pSize);
+                if(tGot > pSize)
+                {
+                	LOG(LOG_WARN, "Socket %d reports %d bytes as send buffer size, which differs from the expected %d bytes", mSocketHandle, tGot, pSize);
+                }else{
+                	LOG(LOG_ERROR, "Socket %d reports %d bytes as send buffer size, which differs from the expected %d bytes", mSocketHandle, tGot, pSize);
+                }
 				tResult = false;
 			}
 		}else
@@ -917,7 +922,12 @@ bool Socket::SetReceiveBufferSize(int pSize)
 			int tGot = GetReceiveBufferSize();
 			if (pSize != tGot)
 			{
-                LOG(LOG_ERROR, "Socket %d reports %d bytes as receive buffer size, which differs from the expected %d bytes", mSocketHandle, tGot, pSize);
+                if(tGot > pSize)
+                {
+                	LOG(LOG_WARN, "Socket %d reports %d bytes as receive buffer size, which differs from the expected %d bytes", mSocketHandle, tGot, pSize);
+                }else{
+                	LOG(LOG_ERROR, "Socket %d reports %d bytes as receive buffer size, which differs from the expected %d bytes", mSocketHandle, tGot, pSize);
+                }
 				tResult = false;
 			}
 		}else
