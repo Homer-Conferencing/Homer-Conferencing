@@ -2204,12 +2204,14 @@ void* MediaSourceMem::Run(void* pArgs)
             mDecoderNeedWorkConditionMutex.unlock();
         }else
         {// decoder FIFO is full, nothing to be done
-            #ifdef MSMEM_DEBUG_DECODER_STATE
-                if(mDecoderFifo != NULL)
-                    LOG(LOG_VERBOSE, "Nothing to do for %s decoder, FIFO has %d of %d entries, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), mDecoderFifo->GetUsage(), mDecoderFifo->GetSize(), ++tWaitLoop);
-                else
+            if(mDecoderFifo != NULL)
+                LOG(LOG_WARN, "Nothing to do for %s decoder, FIFO has %d of %d entries, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), mDecoderFifo->GetUsage(), mDecoderFifo->GetSize(), ++tWaitLoop);
+            else
+            {
+                #ifdef MSMEM_DEBUG_DECODER_STATE
                     LOG(LOG_VERBOSE, "Nothing to do for %s decoder, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
-            #endif
+                #endif
+            }
             mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
             #ifdef MSMEM_DEBUG_DECODER_STATE
                 if(mDecoderFifo != NULL)
