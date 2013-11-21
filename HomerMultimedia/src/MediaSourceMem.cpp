@@ -1650,7 +1650,7 @@ void* MediaSourceMem::Run(void* pArgs)
             // #########################################
             if (((tPacket->data != NULL) && (tPacket->size > 0)) || (mDecoderSinglePictureGrabbed /* we already grabbed the single frame from the picture input */))
             {
-                if (mMediaType == MEDIA_VIDEO)
+                if (mFormatContext->iformat->flags & AVFMT_TS_DISCONT)
                 {
                     if ((tPacket->duration != mFrameDuration) && (tPacket->duration> 0))
                     {
@@ -2204,14 +2204,14 @@ void* MediaSourceMem::Run(void* pArgs)
             mDecoderNeedWorkConditionMutex.unlock();
         }else
         {// decoder FIFO is full, nothing to be done
-            if(mDecoderFifo != NULL)
-                LOG(LOG_WARN, "Nothing to do for %s decoder, FIFO has %d of %d entries, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), mDecoderFifo->GetUsage(), mDecoderFifo->GetSize(), ++tWaitLoop);
-            else
-            {
-                #ifdef MSMEM_DEBUG_DECODER_STATE
+            #ifdef MSMEM_DEBUG_DECODER_STATE
+                if(mDecoderFifo != NULL)
+                    LOG(LOG_WARN, "Nothing to do for %s decoder, FIFO has %d of %d entries, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), mDecoderFifo->GetUsage(), mDecoderFifo->GetSize(), ++tWaitLoop);
+                else
+                {
                     LOG(LOG_VERBOSE, "Nothing to do for %s decoder, wait some time and check again, loop %d", GetMediaTypeStr().c_str(), ++tWaitLoop);
-                #endif
-            }
+                }
+            #endif
             mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
             #ifdef MSMEM_DEBUG_DECODER_STATE
                 if(mDecoderFifo != NULL)
