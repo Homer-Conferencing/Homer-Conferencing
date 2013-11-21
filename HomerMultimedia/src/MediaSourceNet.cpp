@@ -279,25 +279,34 @@ void NetworkListener::StopListener()
 	// tell network listener thread: it isn't needed anymore
 	mListenerNeeded = false;
 
-	if (mNAPIUsed)
+	if(IsRunning())
 	{
-		mNAPIDataSocket->cancel();
-	}else
-	{
-		if (mDataSocket != NULL)
-			mDataSocket->StopReceiving();
+        if (mNAPIUsed)
+        {
+            LOG(LOG_VERBOSE, "  ..canceling NAPI");
+            mNAPIDataSocket->cancel();
+        }else
+        {
+            if (mDataSocket != NULL)
+            {
+                LOG(LOG_VERBOSE, "  ..stopping (receiver) Berkeley socket");
+                mDataSocket->StopReceiving();
+            }
+        }
+
+        // wait for termination of decoder thread
+        while(IsRunning())
+        {
+            if(tSignalingRound > 0)
+                LOG(LOG_WARN, "Signaling attempt %d to stop %s network listener", tSignalingRound, mMediaSourceNet->GetMediaTypeStr().c_str());
+            tSignalingRound++;
+
+            Suspend(25 * 1000);
+        }
+	}else{
+	    LOG(LOG_VERBOSE, "  ..%s network listener isn't running", mMediaSourceNet->GetMediaTypeStr().c_str());
 	}
 
-	// wait for termination of decoder thread
-	while(IsRunning())
-	{
-		if(tSignalingRound > 0)
-			LOG(LOG_WARN, "Signaling attempt %d to stop %s network listener", tSignalingRound, mMediaSourceNet->GetMediaTypeStr().c_str());
-		tSignalingRound++;
-
-		Suspend(25 * 1000);
-	}
-    
     LOG(LOG_VERBOSE, "%s network listener stopped", mMediaSourceNet->GetMediaTypeStr().c_str());
 }
 
@@ -666,6 +675,18 @@ unsigned int MediaSourceNet::GetListenerPort()
         return mNetworkListener->GetListenerPort();
     else
         return 0;
+}
+
+void MediaSourceNet::StopGrabbing()
+{
+    LOG(LOG_VERBOSE, "Stopping grabber");
+
+    if(mNetworkListener != NULL)
+        mNetworkListener->StopListener();
+
+    MediaSourceMem::StopGrabbing();
+
+    LOG(LOG_VERBOSE, "Network based %s source successfully stopped", GetMediaTypeStr().c_str());
 }
 
 bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
