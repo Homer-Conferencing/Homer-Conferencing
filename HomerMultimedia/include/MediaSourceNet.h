@@ -69,9 +69,6 @@ public:
     /// The destructor
     virtual ~MediaSourceNet();
 
-    /* grabbing control */
-    virtual void StopGrabbing();
-
     /* device control */
     virtual std::string GetCurrentDevicePeerName();
 

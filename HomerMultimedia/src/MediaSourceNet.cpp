@@ -582,7 +582,7 @@ void* NetworkListener::Run(void* pArgs)
                 mMediaSourceNet->WriteFragment(tPacketBuffer, 0, 0);
             }else
             {
-                LOG(LOG_VERBOSE, "Got faulty %s packet", mMediaSourceNet->GetMediaTypeStr().c_str());
+                LOG(LOG_VERBOSE, "Got faulty %s packet with size: %d from %s:%u", mMediaSourceNet->GetMediaTypeStr().c_str(), tDataSize, tSourceHost.c_str(), tSourcePort);
                 tDataSize = -1;
             }
         }
@@ -675,18 +675,6 @@ unsigned int MediaSourceNet::GetListenerPort()
         return mNetworkListener->GetListenerPort();
     else
         return 0;
-}
-
-void MediaSourceNet::StopGrabbing()
-{
-    LOG(LOG_VERBOSE, "Stopping grabber");
-
-    if(mNetworkListener != NULL)
-        mNetworkListener->StopListener();
-
-    MediaSourceMem::StopGrabbing();
-
-    LOG(LOG_VERBOSE, "Network based %s source successfully stopped", GetMediaTypeStr().c_str());
 }
 
 bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
