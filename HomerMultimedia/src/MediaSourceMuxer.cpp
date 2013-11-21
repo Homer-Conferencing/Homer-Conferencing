@@ -401,7 +401,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if (mStreamBitRate == -1)
         mStreamBitRate = MEDIA_SOURCE_MUX_DEFAULT_VIDEO_BIT_RATE;
 
-    // for better debbuging
+    // for better debugging
     mGrabMutex.AssignName(GetMediaTypeStr() + "MuxerGrab");
     mEncoderFifoAvailableMutex.AssignName(GetMediaTypeStr() + "MuxerEncoderFifo");
     mMediaSourcesMutex.AssignName(GetMediaTypeStr() + "MuxerMediaSources");
@@ -479,12 +479,11 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // resolution
     if (((mRequestedStreamingResX == -1) || (mRequestedStreamingResY == -1)) && (mMediaSource != NULL))
     {
-    	mRequestedStreamingResX = mSourceResX;
-    	mRequestedStreamingResY = mSourceResY;
+        mMediaSource->GetVideoSourceResolution(mCurrentStreamingResX, mCurrentStreamingResY);
+    }else{
+        mCurrentStreamingResX = mRequestedStreamingResX;
+        mCurrentStreamingResY = mRequestedStreamingResY;
     }
-
-	mCurrentStreamingResX = mRequestedStreamingResX;
-	mCurrentStreamingResY = mRequestedStreamingResY;
     ValidateVideoResolutionForEncoderCodec(mCurrentStreamingResX, mCurrentStreamingResY, mStreamCodecId);
 
     LOG(LOG_VERBOSE, "Using in %s muxer a resolution %d * %d (requested: %d * %d) and %3.2f fps", GetMediaTypeStr().c_str(), mCurrentStreamingResX, mCurrentStreamingResY, mRequestedStreamingResX, mRequestedStreamingResY, pFps);
