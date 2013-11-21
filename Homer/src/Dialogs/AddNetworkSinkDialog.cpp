@@ -313,7 +313,7 @@ void AddNetworkSinkDialog::LoadConfiguration()
     switch(mDataType)
     {
         case DATA_TYPE_VIDEO:
-            mGrpTarget->setTitle(" Send video to ");
+            mGrpTarget->setTitle(Homer::Gui::AddNetworkSinkDialog::tr(" Send video to "));
             if (mMediaSource->SupportsMuxing())
                 mCbRtp->setChecked(CONF.GetVideoRtp());
             tTransport = QString(Socket::TransportType2String(CONF.GetVideoTransportType()).c_str());
@@ -324,7 +324,7 @@ void AddNetworkSinkDialog::LoadConfiguration()
             mSbDataRate->setValue(20);
             break;
         case DATA_TYPE_AUDIO:
-            mGrpTarget->setTitle(" Send audio to ");
+            mGrpTarget->setTitle(Homer::Gui::AddNetworkSinkDialog::tr(" Send audio to "));
             if (mMediaSource->SupportsMuxing())
                 mCbRtp->setChecked(CONF.GetAudioRtp());
             tTransport = QString(Socket::TransportType2String(CONF.GetAudioTransportType()).c_str());
@@ -335,7 +335,7 @@ void AddNetworkSinkDialog::LoadConfiguration()
             mSbDataRate->setValue(8);
             break;
         case DATA_TYPE_FILE:
-            mGrpTarget->setTitle(" Send file to ");
+            mGrpTarget->setTitle(Homer::Gui::AddNetworkSinkDialog::tr(" Send file to "));
             tTransport = QString(Socket::TransportType2String(CONF.GetAppDataTransportType()).c_str());
             tNAPIImpl = CONF.GetAppDataNAPIImpl();
 
