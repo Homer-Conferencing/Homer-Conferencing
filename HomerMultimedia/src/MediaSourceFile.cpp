@@ -90,6 +90,7 @@ void MediaSourceFile::getVideoDevices(VideoDevices &pVList)
     tDevice.Name = mDesiredDevice;
     tDevice.Card = mDesiredDevice;
     tDevice.Desc = "file source: \"" + mDesiredDevice + "\"";
+    tDevice.Type = VideoFile;
 
     pVList.push_back(tDevice);
 }
@@ -101,6 +102,7 @@ void MediaSourceFile::getAudioDevices(AudioDevices &pAList)
     tDevice.Name = mDesiredDevice;
     tDevice.Card = mDesiredDevice;
     tDevice.Desc = "file source: \"" + mDesiredDevice + "\"";
+    tDevice.Type = AudioFile;
     tDevice.IoType = "Input/Output";
 
     pAList.push_back(tDevice);
