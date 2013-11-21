@@ -88,7 +88,7 @@ enum VideoDeviceType{
     VideoFile,
     Camera,
     Tv,
-    SVideoComp
+    SVideoComp // analog video signal from an external source
 };
 
 struct VideoDeviceDescriptor
