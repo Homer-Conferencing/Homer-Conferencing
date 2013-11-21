@@ -55,6 +55,7 @@ MediaSourceV4L2::MediaSourceV4L2(string pDesiredDevice):
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     mCurrentInputChannelName = "";
+    mAnalogVideoSignal = false;
 
     bool tNewDeviceSelected = false;
     SelectDevice(pDesiredDevice, MEDIA_VIDEO, tNewDeviceSelected);
@@ -75,6 +76,8 @@ void MediaSourceV4L2::getVideoDevices(VideoDevices &pVList)
     static bool tFirstCall = true;
     struct v4l2_capability tV4L2Caps;
     struct v4l2_input tV4L2Input;
+    struct v4l2_frmivalenum tV4L2FrameIntervals;
+    struct v4l2_frmsizeenum tV4L2FrameSizes;
 
     VideoDeviceDescriptor tDevice;
     string tDeviceFile;
@@ -88,89 +91,184 @@ void MediaSourceV4L2::getVideoDevices(VideoDevices &pVList)
     if (tFirstCall)
         LOG(LOG_VERBOSE, "Enumerating hardware..");
 
-    for (int tDeviceId = 0; tDeviceId != 10; tDeviceId++)
+    for (int tDeviceId = 0; tDeviceId < 10; tDeviceId++)
     {
         tDeviceFile = "/dev/video";
         tDeviceFile += char(tDeviceId + 48);
         if ((tFd = open(tDeviceFile.c_str(), O_RDONLY)) >= 0)
         {
-            tDevice.Name = "V4L2 device ";
-            tDevice.Name += char(tDeviceId + 48);
+        	string tDeviceIdStr = "";
+        	tDeviceIdStr += char(tDeviceId + 48);
+            tDevice.Name = "V4L2 device " + tDeviceIdStr;
             tDevice.Card = tDeviceFile;
-            tDevice.Desc = "V4L2 based video device";
+            tDevice.Desc = "V4L2 based video device " + tDeviceIdStr;
             tDevice.Type = GeneralVideoDevice;
 
             if (tFirstCall)
+            {
                 if (tDevice.Name.size())
+                {
                     LOG(LOG_VERBOSE, "Found video device: %s (device file: %s)", tDevice.Name.c_str(), tDeviceFile.c_str());
+                }
+            }
 
+            memset(&tV4L2Caps, 0, sizeof(tV4L2Caps));
+	        LOG(LOG_VERBOSE, "(trying to query caps for: %s)", tDeviceFile.c_str());
             if (ioctl(tFd, VIDIOC_QUERYCAP, &tV4L2Caps) < 0)
                 LOG(LOG_ERROR, "Can't get device capabilities for \"%s\" because of \"%s\"", tDeviceFile.c_str(), strerror(errno));
             else
             {
-                tDevice.Name = toString(tV4L2Caps.card);
+                tDevice.Name = toString(tV4L2Caps.card) + " [" + tDeviceFile + "]";
                 tDevice.Desc += " \"" + toString(tV4L2Caps.card) + "\"";
                 if (tFirstCall)
                 {
-                    LOG(LOG_VERBOSE, "..driver name: %s", tV4L2Caps.driver);
-                    LOG(LOG_VERBOSE, "..card name: %s", tV4L2Caps.card);
-                    LOG(LOG_VERBOSE, "..connected at: %s", tV4L2Caps.bus_info);
-                    LOG(LOG_VERBOSE, "..driver version: %u.%u.%u", (tV4L2Caps.version >> 16) & 0xFF, (tV4L2Caps.version >> 8) & 0xFF, tV4L2Caps.version & 0xFF);
+                    LOG(LOG_VERBOSE, "  ..driver name: %s", tV4L2Caps.driver);
+                    LOG(LOG_VERBOSE, "  ..card name: %s", tV4L2Caps.card);
+                    LOG(LOG_VERBOSE, "  ..connected at: %s", tV4L2Caps.bus_info);
+                    LOG(LOG_VERBOSE, "  ..driver version: %u.%u.%u", (tV4L2Caps.version >> 16) & 0xFF, (tV4L2Caps.version >> 8) & 0xFF, tV4L2Caps.version & 0xFF);
                     if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_CAPTURE)
-                        LOG(LOG_VERBOSE, "supporting video capture interface");
+                        LOG(LOG_VERBOSE, "  ..supporting video capture interface");
                     if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_OUTPUT)
-                        LOG(LOG_VERBOSE, "supporting video output interface");
+                        LOG(LOG_VERBOSE, "  ..supporting video output interface");
                     if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_OVERLAY)
-                        LOG(LOG_VERBOSE, "supporting video overlay interface");
+                        LOG(LOG_VERBOSE, "  ..supporting video overlay interface");
                     if (tV4L2Caps.capabilities & V4L2_CAP_TUNER)
-                        LOG(LOG_VERBOSE, "..onboard tuner");
+                        LOG(LOG_VERBOSE, "  ..onboard tuner");
                     if (tV4L2Caps.capabilities & V4L2_CAP_AUDIO)
-                        LOG(LOG_VERBOSE, "..onboard audio");
+                        LOG(LOG_VERBOSE, "  ..onboard audio");
                     if (tV4L2Caps.capabilities & V4L2_CAP_RDS_CAPTURE)
-                        LOG(LOG_VERBOSE, "..onboard RDS");
+                        LOG(LOG_VERBOSE, "  ..onboard RDS");
                     if (tV4L2Caps.capabilities & V4L2_CAP_VIDEO_OUTPUT_OVERLAY)
-                        LOG(LOG_VERBOSE, "..supporting OnScreenDisplay (OSD)");
+                        LOG(LOG_VERBOSE, "  ..supporting OnScreenDisplay (OSD)");
                 }
             }
 
             int tIndex = 0;
+#if 0
+            for(;;)
+            {
+                memset(&tV4L2FrameIntervals, 0, sizeof(tV4L2FrameIntervals));
+                tV4L2FrameIntervals.index = tIndex;
+                LOG(LOG_VERBOSE, "(trying to query frame intervals for: %s)", tDeviceFile.c_str());
+                if (ioctl(tFd, VIDIOC_ENUM_FRAMEINTERVALS, &tV4L2FrameIntervals) < 0)
+                    break;
+                else
+                {
+                    if (tFirstCall)
+                    {
+                        LOG(LOG_VERBOSE, "    ..format index: %u", tV4L2FrameIntervals.index);
+                        LOG(LOG_VERBOSE, "      ..pixel format: %u", tV4L2FrameIntervals.pixel_format);
+                        LOG(LOG_VERBOSE, "      ..width: %u", tV4L2FrameIntervals.width);
+                        LOG(LOG_VERBOSE, "      ..height: %u", tV4L2FrameIntervals.height);
+                        switch(tV4L2FrameIntervals.type)
+                        {
+                                case V4L2_FRMIVAL_TYPE_DISCRETE:
+                                    LOG(LOG_VERBOSE, "      ..interval type: DISCRETE");
+                                    LOG(LOG_VERBOSE, "        ..FPS: %u / %u", tV4L2FrameIntervals.discrete.numerator, tV4L2FrameIntervals.discrete.denominator);
+                                    break;
+                                case V4L2_FRMIVAL_TYPE_CONTINUOUS:
+                                    LOG(LOG_VERBOSE, "      ..interval type: CONTINUOUS");
+                                    break;
+                                case V4L2_FRMIVAL_TYPE_STEPWISE:
+                                    LOG(LOG_VERBOSE, "      ..interval type: STEPWISE");
+                                    LOG(LOG_VERBOSE, "        ..max: %u / %u", tV4L2FrameIntervals.stepwise.min.numerator, tV4L2FrameIntervals.stepwise.min.denominator);
+                                    LOG(LOG_VERBOSE, "        ..max: %u / %u", tV4L2FrameIntervals.stepwise.max.numerator, tV4L2FrameIntervals.stepwise.max.denominator);
+                                    LOG(LOG_VERBOSE, "        ..step: %u / %u", tV4L2FrameIntervals.stepwise.step.numerator, tV4L2FrameIntervals.stepwise.step.denominator);
+                                    break;
+                                default:
+                                    LOG(LOG_WARN, "      ..interval type: UNSUPPORTED");
+                        }
+                    }
+                }
+                tIndex++;
+            }
+
+            tIndex = 0;
+            for(;;)
+            {
+                memset(&tV4L2FrameSizes, 0, sizeof(tV4L2FrameSizes));
+                tV4L2FrameIntervals.index = tIndex;
+                tV4L2FrameIntervals.pixel_format = 0;
+                LOG(LOG_VERBOSE, "(trying to query frame sizes for: %s)", tDeviceFile.c_str());
+                if (ioctl(tFd, VIDIOC_ENUM_FRAMESIZES, &tV4L2FrameSizes) < 0)
+                    break;
+                else
+                {
+                    if (tFirstCall)
+                    {
+                        LOG(LOG_VERBOSE, "    ..frame size index: %u", tV4L2FrameSizes.index);
+                        LOG(LOG_VERBOSE, "      ..pixel format: %u", tV4L2FrameSizes.pixel_format);
+                        switch(tV4L2FrameSizes.type)
+                        {
+                                case V4L2_FRMIVAL_TYPE_DISCRETE:
+                                    LOG(LOG_VERBOSE, "      ..frame size description: DISCRETE");
+                                    LOG(LOG_VERBOSE, "        ..width: %u", tV4L2FrameSizes.discrete.width);
+                                    LOG(LOG_VERBOSE, "        ..height: %u", tV4L2FrameSizes.discrete.height);
+                                    break;
+                                case V4L2_FRMIVAL_TYPE_CONTINUOUS:
+                                    LOG(LOG_VERBOSE, "      ..frame size description: CONTINUOUS");
+                                    break;
+                                case V4L2_FRMIVAL_TYPE_STEPWISE:
+                                    LOG(LOG_VERBOSE, "      ..frame size description: STEPWISE");
+                                    LOG(LOG_VERBOSE, "        ..width (min.): %u", tV4L2FrameSizes.stepwise.min_width);
+                                    LOG(LOG_VERBOSE, "        ..width (max.): %u", tV4L2FrameSizes.stepwise.max_width);
+                                    LOG(LOG_VERBOSE, "        ..width (step): %u", tV4L2FrameSizes.stepwise.step_width);
+                                    LOG(LOG_VERBOSE, "        ..height (min.): %u", tV4L2FrameSizes.stepwise.min_height);
+                                    LOG(LOG_VERBOSE, "        ..height (max.): %u", tV4L2FrameSizes.stepwise.max_height);
+                                    LOG(LOG_VERBOSE, "        ..height (step): %u", tV4L2FrameSizes.stepwise.step_height);
+                                    break;
+                                default:
+                                    LOG(LOG_WARN, "      ..interval type: UNSUPPORTED");
+                        }
+                    }
+                }
+                tIndex++;
+            }
+#endif
+            tIndex = 0;
             for(;;)
             {
                 memset(&tV4L2Input, 0, sizeof(tV4L2Input));
                 tV4L2Input.index = tIndex;
+                LOG(LOG_VERBOSE, "(trying to query inputs for: %s)", tDeviceFile.c_str());
                 if (ioctl(tFd, VIDIOC_ENUMINPUT, &tV4L2Input) < 0)
                     break;
                 else
                 {
-                    switch(tV4L2Input.type)
+                    // detect S-Video/Composite
+                    if(tV4L2Input.std == 0 /* 0 means: no special TV-standard support -> not an analog video signal */)
                     {
-                        case V4L2_INPUT_TYPE_TUNER:
-                                if(tDevice.Type != Camera)
+                        switch(tV4L2Input.type)
+                        {
+                            case V4L2_INPUT_TYPE_TUNER:
                                     tDevice.Type = Tv;
-                                break;
-                        case V4L2_INPUT_TYPE_CAMERA:
-                                if (tDevice.Type != Tv)
+                                    break;
+                            case V4L2_INPUT_TYPE_CAMERA:
                                     tDevice.Type = Camera;
-                                break;
+                                    break;
+                        }
+                    }else{
+                        tDevice.Type = SVideoComp;
                     }
 
                     if (tFirstCall)
                     {
-                        LOG(LOG_VERBOSE, "..input index: %u", tV4L2Input.index);
-                        LOG(LOG_VERBOSE, "..input name: %u", tV4L2Input.name);
+                        LOG(LOG_VERBOSE, "    ..input index: %u", tV4L2Input.index);
+                        LOG(LOG_VERBOSE, "      ..input name: %u", tV4L2Input.name);
                         switch(tV4L2Input.type)
                         {
                             case V4L2_INPUT_TYPE_TUNER:
-                                    LOG(LOG_VERBOSE, "..input type: tuner");
+                                    LOG(LOG_VERBOSE, "      ..input type: tuner");
                                     break;
                             case V4L2_INPUT_TYPE_CAMERA:
-                                    LOG(LOG_VERBOSE, "..input type: camera");
+                                    LOG(LOG_VERBOSE, "      ..input type: camera");
                                     break;
                         }
-                        // audioset
-                        // tuner
-                        // std
-                        LOG(LOG_VERBOSE, "..input status: 0x%x", tV4L2Input.status);
+                        LOG(LOG_VERBOSE, "      ..input audio set: %u", tV4L2Input.audioset);
+                        LOG(LOG_VERBOSE, "      ..input tuner: %u", tV4L2Input.tuner);
+                        LOG(LOG_VERBOSE, "      ..input std: 0x%x", tV4L2Input.std);
+                        LOG(LOG_VERBOSE, "      ..input status: 0x%x", tV4L2Input.status);
+                        LOG(LOG_VERBOSE, "      ..input caps.: %u", tV4L2Input.capabilities);
                     }
                 }
                 tIndex++;
@@ -217,18 +315,22 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
         mDesiredDevice = "";
 
+    mAnalogVideoSignal = false;
+
     //########################################################################################################
     // ### check if the selected input from the selected device is a camera device and has no overlay support
     //########################################################################################################
+    bool tOverlaySupport = true;
+    bool tAnalogVideo = false;
     if (mDesiredDevice != "")
     {
         struct v4l2_capability tV4L2Caps;
         struct v4l2_input tV4L2Input;
         int tFd = 0;
-        bool tOverlaySupport = true;
 
         if ((tFd = open(mDesiredDevice.c_str(), O_RDONLY)) >= 0)
         {
+            memset(&tV4L2Caps, 0, sizeof(tV4L2Caps));
             if (ioctl(tFd, VIDIOC_QUERYCAP, &tV4L2Caps) < 0)
                 LOG(LOG_ERROR, "Can't get device capabilities for \"%s\" because of \"%s\"", mDesiredDevice.c_str(), strerror(errno));
             else
@@ -245,6 +347,11 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
                     mCurrentInputChannelName = "";
                 }else
                 {
+                	if(tV4L2Input.std != 0 /* 0 means: no special TV-standard support -> not an analog video signal */)
+                	{
+                		tAnalogVideo = true;
+                	}
+
                     switch(tV4L2Input.type)
                     {
                         case V4L2_INPUT_TYPE_TUNER:
@@ -252,7 +359,7 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
                                 break;
                         case V4L2_INPUT_TYPE_CAMERA:
                                 LOG(LOG_INFO, "Selected input %d of device \"%s\" is a camera", mDesiredInputChannel, mDesiredDevice.c_str());
-                                if (!tOverlaySupport)
+                                if ((!tOverlaySupport) && (!tAnalogVideo))
                                     tSelectedInputSupportsFps = true;
                                 break;
                     }
@@ -266,7 +373,16 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //##################################################################################
     // ### begin to open the selected input from the selected device
     //##################################################################################
+    LOG(LOG_INFO, "Selected input channel: %d", mDesiredInputChannel);
     av_dict_set(&tOptions, "channel", toString(mDesiredInputChannel).c_str(), 0);
+    if(tAnalogVideo){
+//    	if(((pResX != 352) || (pResY != 288)) && ((pResX != 720) || (pResY != 576)))
+//    	{
+    		pResX = 720;
+    		pResY = 576;
+    	}
+//    }
+    LOG(LOG_INFO, "Selected input resolution: %d x %d", pResX, pResY);
     av_dict_set(&tOptions, "video_size", (toString(pResX) + "x" + toString(pResY)).c_str(), 0);
     if (tSelectedInputSupportsFps)
         av_dict_set(&tOptions, "framerate", toString((int)pFps).c_str(), 0);
@@ -276,6 +392,8 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find input format");
         return false;
+    }else{
+        LOG(LOG_VERBOSE, "..found input format");
     }
 
     // alocate new format context
@@ -298,11 +416,18 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         }
         // retrieve stream information and find right stream
         if (DetectAllStreams())
+        {
             tFound = true;
+            mAnalogVideoSignal = tAnalogVideo;
+            LOG(LOG_VERBOSE, "..found all streams for %s, got resolution: %d x %d", mDesiredDevice.c_str(), mSourceResX, mSourceResY);
+            if((pResX != mSourceResX) || (pResY != mSourceResY)){
+                LOG(LOG_WARN, "Got video resolution %d x %d instead of the desired %d x %d pixels from device %s", mSourceResX, mSourceResY, pResX, pResY, mDesiredDevice.c_str());
+            }
+        }
     }
 
     //########################################
-    //### auto probing possible device files
+    //### FALL-BACK: auto probing possible device files
     //########################################
     if(!tFound)
     {
@@ -319,9 +444,9 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
                 {
                     tFound = true;
                     break;
-                }else
+                }else{
                     continue;
-
+                }
             }
         }
         if (!tFound)
@@ -583,61 +708,75 @@ GrabResolutions MediaSourceV4L2::GetSupportedVideoGrabResolutions()
 
     if (mMediaType == MEDIA_VIDEO)
     {
-        tFormat.Name="SQCIF";      //      128 ×  96
-        tFormat.ResX = 128;
-        tFormat.ResY = 96;
-        mSupportedVideoFormats.push_back(tFormat);
+    	if(mAnalogVideoSignal)
+    	{
+			tFormat.Name="CIF";        //      352 x 288
+			tFormat.ResX = 352;
+			tFormat.ResY = 288;
+			mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="QCIF";       //      176 × 144
-        tFormat.ResX = 176;
-        tFormat.ResY = 144;
-        mSupportedVideoFormats.push_back(tFormat);
+			tFormat.Name="DVD";        //      720 x 576
+			tFormat.ResX = 720;
+			tFormat.ResY = 576;
+			mSupportedVideoFormats.push_back(tFormat);
+    	}else
+    	{
+            tFormat.Name="SQCIF";      //      128 ×  96
+            tFormat.ResX = 128;
+            tFormat.ResY = 96;
+            mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="CIF";        //      352 × 288
-        tFormat.ResX = 352;
-        tFormat.ResY = 288;
-        mSupportedVideoFormats.push_back(tFormat);
+            tFormat.Name="QCIF";       //      176 × 144
+            tFormat.ResX = 176;
+            tFormat.ResY = 144;
+            mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="VGA";       //       640 x 480
-        tFormat.ResX = 640;
-        tFormat.ResY = 480;
-        mSupportedVideoFormats.push_back(tFormat);
+            tFormat.Name="CIF";        //      352 × 288
+            tFormat.ResX = 352;
+            tFormat.ResY = 288;
+            mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="CIF4";       //      704 × 576
-        tFormat.ResX = 704;
-        tFormat.ResY = 576;
-        mSupportedVideoFormats.push_back(tFormat);
+            tFormat.Name="VGA";       //       640 x 480
+            tFormat.ResX = 640;
+            tFormat.ResY = 480;
+            mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="DVD";        //      720 × 576
-        tFormat.ResX = 720;
-        tFormat.ResY = 576;
-        mSupportedVideoFormats.push_back(tFormat);
+            tFormat.Name="CIF4";       //      704 × 576
+            tFormat.ResX = 704;
+            tFormat.ResY = 576;
+            mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="SVGA";       //      800 x 600
-        tFormat.ResX = 800;
-        tFormat.ResY = 600;
-        mSupportedVideoFormats.push_back(tFormat);
+            tFormat.Name="DVD";        //      720 × 576
+            tFormat.ResX = 720;
+            tFormat.ResY = 576;
+            mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="WVGA";       //      854 x 480
-        tFormat.ResX = 864;
-        tFormat.ResY = 480;
-        mSupportedVideoFormats.push_back(tFormat);
+            tFormat.Name="SVGA";       //      800 x 600
+            tFormat.ResX = 800;
+            tFormat.ResY = 600;
+            mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="CIF9";       //     1056 x 864
-        tFormat.ResX = 1056;
-        tFormat.ResY = 864;
-        mSupportedVideoFormats.push_back(tFormat);
+            tFormat.Name="WVGA";       //      854 x 480
+            tFormat.ResX = 864;
+            tFormat.ResY = 480;
+            mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="EDTV";       //     1280 × 720
-        tFormat.ResX = 1280;
-        tFormat.ResY = 720;
-        mSupportedVideoFormats.push_back(tFormat);
+            tFormat.Name="CIF9";       //     1056 x 864
+            tFormat.ResX = 1056;
+            tFormat.ResY = 864;
+            mSupportedVideoFormats.push_back(tFormat);
 
-        tFormat.Name="HDTV";       //     1920 x 1080
-        tFormat.ResX = 1920;
-        tFormat.ResY = 1080;
-        mSupportedVideoFormats.push_back(tFormat);
-    }
+            tFormat.Name="EDTV";       //     1280 × 720
+            tFormat.ResX = 1280;
+            tFormat.ResY = 720;
+            mSupportedVideoFormats.push_back(tFormat);
+
+            tFormat.Name="HDTV";       //     1920 x 1080
+            tFormat.ResX = 1920;
+            tFormat.ResY = 1080;
+            mSupportedVideoFormats.push_back(tFormat);
+        }
+	}
 
     return mSupportedVideoFormats;
 }

@@ -152,6 +152,8 @@ void MediaSourceGrabberThread::SetCurrentDevice(QString pName)
 
 QString MediaSourceGrabberThread::GetDeviceDescription(QString pName)
 {
+    QString tResult = "";
+
     if (mMediaSource->GetMediaType() == MEDIA_VIDEO)
     {
         VideoDevices::iterator tIt;
@@ -159,8 +161,33 @@ QString MediaSourceGrabberThread::GetDeviceDescription(QString pName)
 
         mMediaSource->getVideoDevices(tVList);
         for (tIt = tVList.begin(); tIt != tVList.end(); tIt++)
+        {
             if (pName.toStdString() == tIt->Name)
-                return QString(tIt->Desc.c_str());
+            {
+                // set the type prefix
+                switch(tIt->Type)
+                {
+                    case VideoFile:
+                            tResult = "[FILE]";
+                            break;
+                    case Camera:
+                            tResult = "[CAMERA]";
+                            break;
+                    case Tv:
+                            tResult = "[TV]";
+                            break;
+                    case SVideoComp:
+                            tResult = "[S-VIDEO/COMP]";
+                            break;
+                    default:
+                            tResult = "[GENERIC]";
+                            break;
+                }
+                // add the detailed description
+                tResult += ": " + QString(tIt->Desc.c_str());
+                break;
+            }
+        }
     }else if (mMediaSource->GetMediaType() == MEDIA_AUDIO)
     {
         AudioDevices::iterator tIt;
@@ -168,10 +195,33 @@ QString MediaSourceGrabberThread::GetDeviceDescription(QString pName)
 
         mMediaSource->getAudioDevices(tVList);
         for (tIt = tVList.begin(); tIt != tVList.end(); tIt++)
+        {
             if (pName.toStdString() == tIt->Name)
-                return QString(tIt->Desc.c_str());
+            {
+                // set the type prefix
+                switch(tIt->Type)
+                {
+                    case AudioFile:
+                            tResult = "[FILE]";
+                            break;
+                    case Microphone:
+                            tResult = "[MICROPHONE]";
+                            break;
+                    case TvAudio:
+                            tResult = "[TV]";
+                            break;
+                    default:
+                            tResult = "[GENERIC]";
+                            break;
+                }
+                // add the detailed description
+                tResult += ": " + QString(tIt->Desc.c_str());
+                break;
+            }
+        }
     }
-    return "";
+
+    return tResult;
 }
 
 bool MediaSourceGrabberThread::PlayFile(QString pName)

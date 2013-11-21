@@ -87,7 +87,8 @@ enum VideoDeviceType{
     GeneralVideoDevice = 0,
     VideoFile,
     Camera,
-    Tv
+    Tv,
+    SVideoComp
 };
 
 struct VideoDeviceDescriptor

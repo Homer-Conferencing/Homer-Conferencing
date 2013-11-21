@@ -83,6 +83,7 @@ private:
 
     std::string         mCurrentInputChannelName;
     bool                mSupportsMultipleInputChannels;
+    bool				mAnalogVideoSignal;
     /* video decoding */
     AVFrame             *mSourceFrame;
     AVFrame             *mRGBFrame;
