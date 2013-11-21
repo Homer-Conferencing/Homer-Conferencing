@@ -116,6 +116,7 @@ AudioWidget::AudioWidget(QWidget* pParent):
     mCurrentFrameRate = 0;
     mLastFrameNumber = 0;
     mCustomEventReason = 0;
+    mAudioSource = NULL;
     mAudioWorker = NULL;
     mAssignedAction = NULL;
     mShowLiveStats = false;
