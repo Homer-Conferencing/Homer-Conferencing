@@ -556,7 +556,7 @@ void MediaSourceMem::StopGrabbing()
 
 	MediaSource::StopGrabbing();
 
-	if (!mMediaSourceOpened)
+	if ((!mMediaSourceOpened) && (!mOpenInputStream))
 	{
 	    LOG(LOG_VERBOSE, "Stopping grabber aborted - source wasn't started yet");
 	    return;
@@ -2306,6 +2306,12 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
 		}
 		LOG(LOG_VERBOSE, "Time since last call of %s WriteFrameOutputBuffer(): %"PRId64" ms", GetMediaTypeStr().c_str(), tTimeToLastcall / 1000);
 	#endif
+
+    if(!mMediaSourceOpened)
+    {
+        LOG(LOG_WARN, "%s %s decoder was already closed", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
+        return;
+    }
 
     if (mDecoderFifo == NULL)
     {
