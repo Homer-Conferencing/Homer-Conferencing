@@ -1777,10 +1777,14 @@ bool ParticipantWidget::PlayingMovieFile()
         VideoWorkerThread *tVWorker = mVideoWidget->GetWorker();
         AudioWorkerThread *tAWorker = mAudioWidget->GetWorker();
 
-        bool tPlayingSameFile = (tVWorker->CurrentFile() == tAWorker->CurrentFile());
-        return ((tVWorker->PlayingFile()) && (tAWorker->PlayingFile()) && tPlayingSameFile);
-    }else
-        return false;
+        if((tVWorker != NULL) && (tAWorker != NULL))
+        {
+            bool tPlayingSameFile = (tVWorker->CurrentFile() == tAWorker->CurrentFile());
+            return ((tVWorker->PlayingFile()) && (tAWorker->PlayingFile()) && tPlayingSameFile);
+        }
+    }
+
+    return false;
 }
 
 void ParticipantWidget::UpdateParticipantName(QString pParticipantName)
