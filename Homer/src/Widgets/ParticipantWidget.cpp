@@ -213,7 +213,7 @@ ParticipantWidget* ParticipantWidget::CreateBroadcast(MainWindow *pMainWindow, Q
 
 ParticipantWidget* ParticipantWidget::CreateParticipant(MainWindow *pMainWindow, QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport)
 {
-    ParticipantWidget *tResult = new ParticipantWidget(BROADCAST, pMainWindow);
+    ParticipantWidget *tResult = new ParticipantWidget(PARTICIPANT, pMainWindow);
     tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pVideoSourceMuxer, pAudioSourceMuxer, pParticipant, pTransport);
 
     return tResult;
