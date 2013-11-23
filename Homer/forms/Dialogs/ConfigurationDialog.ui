@@ -3268,8 +3268,8 @@ background-color: rgb(150, 150, 150);
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>674</width>
-              <height>522</height>
+              <width>431</width>
+              <height>552</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
@@ -5864,8 +5864,8 @@ background-color: rgb(150, 150, 150);
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
-             <red>255</red>
-             <green>255</green>
+             <red>250</red>
+             <green>250</green>
              <blue>255</blue>
             </color>
            </brush>
@@ -5884,8 +5884,8 @@ background-color: rgb(150, 150, 150);
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
-             <red>255</red>
-             <green>255</green>
+             <red>250</red>
+             <green>250</green>
              <blue>255</blue>
             </color>
            </brush>
@@ -5895,8 +5895,8 @@ background-color: rgb(150, 150, 150);
           <colorrole role="Base">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
-             <red>255</red>
-             <green>255</green>
+             <red>250</red>
+             <green>250</green>
              <blue>255</blue>
             </color>
            </brush>
@@ -5904,8 +5904,8 @@ background-color: rgb(150, 150, 150);
           <colorrole role="Window">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
-             <red>255</red>
-             <green>255</green>
+             <red>250</red>
+             <green>250</green>
              <blue>255</blue>
             </color>
            </brush>
