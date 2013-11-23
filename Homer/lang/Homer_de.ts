@@ -2066,6 +2066,11 @@ Bitte Konfiguration prüfen!</translation>
         <source>Load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
+    <message>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="786"/>
+        <source>Contacts</source>
+        <translation>Kontakte</translation>
+    </message>
 </context>
 <context>
     <name>Homer::Gui::OverviewDataStreamsWidget</name>
@@ -4986,72 +4991,41 @@ als Installer</translation>
 <context>
     <name>VersionDialog</name>
     <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="31"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="25"/>
         <source>About Homer Conferencing</source>
         <translation>Über Homer Conferencing</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="184"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="178"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="237"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="231"/>
         <source>0.999</source>
         <translation>0.999</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="357"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="335"/>
         <source>Special thanks to:</source>
         <translation>Speziellen Dank an:</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="399"/>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="443"/>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="493"/>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="540"/>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="591"/>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="635"/>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="679"/>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="723"/>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="992"/>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="1205"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="377"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="421"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="471"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="630"/>
         <source>click to open the web browser with this web site</source>
         <translation>den Webbrowser mit dieser Webseite öffnen</translation>
     </message>
     <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="882"/>
-        <source>click to write a mail to this address</source>
-        <translation>eine Mail an diese Adresse schreiben</translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="885"/>
-        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Tahoma&apos;; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;mailto:info@homer-conferencing.com&quot;&gt;&lt;span style=&quot; font-size:16pt; text-decoration: underline; color:#ffffff;&quot;&gt;info@homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="995"/>
+        <location filename="../forms/Dialogs/VersionDialog.ui" line="633"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Tahoma&apos;; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://www.homer-conferencing.com&quot;&gt;&lt;span style=&quot; font-size:16pt; text-decoration: underline; color:#ffffff;&quot;&gt;www.homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation></translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="1159"/>
-        <source>follow on</source>
-        <translation>Folge auf </translation>
-    </message>
-    <message>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="957"/>
-        <location filename="../forms/Dialogs/VersionDialog.ui" line="1064"/>
-        <source> |</source>
-        <translation> |</translation>
     </message>
 </context>
 </TS>

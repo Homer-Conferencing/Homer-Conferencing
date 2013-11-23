@@ -783,7 +783,7 @@ QVariant ContactListModel::headerData(int pSection, Qt::Orientation pOrientation
                     case 0:
                         return "";
                     case 1:
-                        return "Contacts";
+                        return Homer::Gui::OverviewContactsWidget::tr("Contacts");
                     default:
                         break;
                 }
