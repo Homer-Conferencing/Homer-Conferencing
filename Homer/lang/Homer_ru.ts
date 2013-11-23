@@ -1542,6 +1542,10 @@ Check configuration!</source>
         <source>Do you want to delete </source>
         <translation>Вы хотите удалить </translation>
     </message>
+    <message>
+        <source>Contacts</source>
+        <translation type="unfinished">Контакты</translation>
+    </message>
 </context>
 <context>
     <name>Homer::Gui::OverviewDataStreamsWidget</name>
@@ -3799,10 +3803,6 @@ as installer</source>
 <context>
     <name>VersionDialog</name>
     <message>
-        <source> |</source>
-        <translation> |</translation>
-    </message>
-    <message>
         <source>0.999</source>
         <translation>0.999</translation>
     </message>
@@ -3811,16 +3811,8 @@ as installer</source>
         <translation>нажмите, чтобы открыть веб-браузер для данного веб-сайта</translation>
     </message>
     <message>
-        <source>follow on</source>
-        <translation>Следуйте на </translation>
-    </message>
-    <message>
         <source>Special thanks to:</source>
         <translation>Особая благодарность:</translation>
-    </message>
-    <message>
-        <source>click to write a mail to this address</source>
-        <translation>нажмите чтобы написать письмо на этот адрес</translation>
     </message>
     <message>
         <source>Version</source>
@@ -3836,14 +3828,6 @@ as installer</source>
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Tahoma&apos;; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://www.homer-conferencing.com&quot;&gt;&lt;span style=&quot; font-size:16pt; text-decoration: underline; color:#ffffff;&quot;&gt;www.homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Tahoma&apos;; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;mailto:info@homer-conferencing.com&quot;&gt;&lt;span style=&quot; font-size:16pt; text-decoration: underline; color:#ffffff;&quot;&gt;info@homer-conferencing.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation></translation>
     </message>
 </context>
