@@ -231,7 +231,8 @@ private:
 
     void ShowNewState();
     void ShowStreamPosition(float pCurPos, float pEndPos);
-    void CallStopped(bool pIncoming);
+    void SessionEstablished(bool pIncoming);
+    void SessionStopped(bool pIncoming);
 
     MainWindow          	*mMainWindow;
     QMessageBox         	*mCallBox;
@@ -245,7 +246,10 @@ private:
     MediaSourceMuxer    	*mAudioSourceMuxer;
     MediaSourceMuxer    	*mVideoSourceMuxer;
     MediaSinkNet            *mParticipantVideoSink;
+    bool                    mParticipantVideoSinkActivation;
     MediaSinkNet            *mParticipantAudioSink;
+    bool                    mParticipantAudioSinkActivation;
+    bool                    mSessionIsRunning; // a call is running?
     QString             	mRemoteAudioAdr;
     unsigned int        	mRemoteAudioPort;
     QString            		mRemoteAudioCodec;

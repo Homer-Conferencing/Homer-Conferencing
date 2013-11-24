@@ -176,7 +176,12 @@ void AddNetworkSinkDialog::CreateNewMediaSink()
     string tOldNAPIImpl = NAPI.getCurrentImplName();
     NAPI.selectImpl(mCbNAPIImpl->currentText().toStdString());
     if (mMediaSource != NULL)
-        mMediaSource->RegisterMediaSink(tHost.toStdString(), tRequs, mCbRtp->isChecked());
+    {
+        // create the new sink
+        MediaSinkNet *tMediaSinkNet = mMediaSource->RegisterMediaSink(tHost.toStdString(), tRequs, mCbRtp->isChecked());
+        // reactive the sink immediately
+        tMediaSinkNet->SetActivation(true);
+    }
     NAPI.selectImpl(tOldNAPIImpl);
 }
 

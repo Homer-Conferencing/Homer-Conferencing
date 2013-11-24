@@ -118,7 +118,10 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mRemoteVideoPort = 0;
     mRemoteAudioPort = 0;
     mParticipantVideoSink = NULL;
+    mParticipantVideoSinkActivation = true;
     mParticipantAudioSink = NULL;
+    mParticipantAudioSinkActivation = true;
+    mSessionIsRunning = false;
     mVideoSource = NULL;
     mAudioSource = NULL;
     mFullscreeMovieControlWidget = NULL;
@@ -1159,7 +1162,7 @@ void ParticipantWidget::HandleCallCancel(bool pIncoming)
         return;
     }
 
-    CallStopped(pIncoming);
+    SessionStopped(pIncoming);
 
     if (pIncoming)
     {
@@ -1179,7 +1182,7 @@ void ParticipantWidget::HandleCallHangup(bool pIncoming)
         return;
     }
 
-    CallStopped(pIncoming);
+    SessionStopped(pIncoming);
 
     if (pIncoming)
     {
@@ -1199,7 +1202,7 @@ void ParticipantWidget::HandleCallTermination(bool pIncoming)
         return;
     }
 
-    CallStopped(pIncoming);
+    SessionStopped(pIncoming);
 
     if (pIncoming)
     {
@@ -1210,17 +1213,73 @@ void ParticipantWidget::HandleCallTermination(bool pIncoming)
     }
 }
 
-void ParticipantWidget::CallStopped(bool pIncoming)
+void ParticipantWidget::SessionEstablished(bool pIncoming)
 {
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
     {
-        LOG(LOG_ERROR, "This function is not support for preview widgets");
+        LOG(LOG_ERROR, "SessionEstablished() is not support for preview widgets");
         return;
     }
 
+    mSessionIsRunning = true;
+
+    // activate the A/V media sinks
+    if(mParticipantAudioSink != NULL)
+    {
+        LOG(LOG_VERBOSE, "Setting audio sink activation to: %d", mParticipantAudioSinkActivation);
+        mParticipantAudioSink->SetActivation(mParticipantAudioSinkActivation);
+    }else{
+        LOG(LOG_WARN, "Cannot set the activation of invalid audio sink to: %d", mParticipantAudioSinkActivation);
+    }
+    if(mParticipantVideoSink != NULL)
+    {
+        LOG(LOG_VERBOSE, "Setting video sink activation to: %d", mParticipantVideoSinkActivation);
+        mParticipantVideoSink->SetActivation(mParticipantVideoSinkActivation);
+    }else{
+        LOG(LOG_WARN, "Cannot set the activation of invalid video sink to: %d", mParticipantAudioSinkActivation);
+    }
+
     if (mMessageWidget != NULL)
-        mMessageWidget->AddMessage("", "call stopped", true);
+        mMessageWidget->AddMessage("", "session established", true);
+
+    UpdateParticipantState(CONTACT_AVAILABLE);
+    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_AVAILABLE);
+
+    ShowNewState();
+    if (mVideoWidget != NULL)
+    {
+        mVideoWidgetFrame->show();
+        mVideoWidget->SetVisible(true);
+    }
+    if (mAudioWidget != NULL)
+    {
+        mAudioWidget->SetVisible(true);
+        mAudioWidget->ToggleMuteState(true);
+    }
+    ResizeAVView(288);
+    mIncomingCall = false;
+}
+
+void ParticipantWidget::SessionStopped(bool pIncoming)
+{
+    // return immediately if we are a preview only
+    if (mSessionType == PREVIEW)
+    {
+        LOG(LOG_ERROR, "SessionStopped() is not support for preview widgets");
+        return;
+    }
+
+    mSessionIsRunning = false;
+
+    // deactivate the A/V media sinks
+    if(mParticipantAudioSink != NULL)
+        mParticipantAudioSink->SetActivation(false);
+    if(mParticipantVideoSink != NULL)
+        mParticipantVideoSink->SetActivation(false);
+
+    if (mMessageWidget != NULL)
+        mMessageWidget->AddMessage("", "session stopped", true);
 
     ResetMediaSinks();
 
@@ -1267,7 +1326,7 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
 
     if (!mIncomingCall)
     {
-    	CallStopped(pIncoming);
+    	SessionStopped(pIncoming);
         UpdateParticipantState(CONTACT_UNAVAILABLE);
         CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
 
@@ -1276,7 +1335,7 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
 		else
         	ShowError(Homer::Gui::ParticipantWidget::tr("Participant unavailable"), Homer::Gui::ParticipantWidget::tr("The participant") + " " + mSessionName + " " + Homer::Gui::ParticipantWidget::tr("is currently unavailable for a call! The reason is") + " \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
     }else
-    	CallStopped(pIncoming);
+    	SessionStopped(pIncoming);
 
     if (pIncoming)
     {
@@ -1299,7 +1358,7 @@ void ParticipantWidget::HandleCallDenied(bool pIncoming)
     if (mMessageWidget != NULL)
         mMessageWidget->AddMessage("", "call denied", true);
 
-	CallStopped(pIncoming);
+	SessionStopped(pIncoming);
 
     if (pIncoming)
     {
@@ -1319,25 +1378,7 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
         return;
     }
 
-    UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_AVAILABLE);
-
-    if (mMessageWidget != NULL)
-        mMessageWidget->AddMessage("", "session established", true);
-
-    ShowNewState();
-    if (mVideoWidget != NULL)
-    {
-        mVideoWidgetFrame->show();
-        mVideoWidget->SetVisible(true);
-    }
-    if (mAudioWidget != NULL)
-    {
-        mAudioWidget->SetVisible(true);
-        mAudioWidget->ToggleMuteState(true);
-    }
-    ResizeAVView(288);
-    mIncomingCall = false;
+    SessionEstablished(pIncoming);
 
     if (mWaveOut != NULL)
     {
@@ -1387,6 +1428,27 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
             mParticipantVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, mVideoSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
         if (pRemoteAudioPort != 0)
             mParticipantAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, mAudioSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
+
+        mSessionIsRunning = true;
+
+        // activate the A/V media sinks
+        if(mSessionIsRunning)
+        {
+            if(mParticipantAudioSink != NULL)
+            {
+                LOG(LOG_VERBOSE, "Setting audio sink activation to: %d", mParticipantAudioSinkActivation);
+                mParticipantAudioSink->SetActivation(mParticipantAudioSinkActivation);
+            }else{
+                LOG(LOG_WARN, "Cannot set the activation of invalid audio sink to: %d", mParticipantAudioSinkActivation);
+            }
+            if(mParticipantVideoSink != NULL)
+            {
+                LOG(LOG_VERBOSE, "Setting video sink activation to: %d", mParticipantVideoSinkActivation);
+                mParticipantVideoSink->SetActivation(mParticipantVideoSinkActivation);
+            }else{
+                LOG(LOG_WARN, "Cannot set the activation of invalid video sink to: %d", mParticipantAudioSinkActivation);
+            }
+        }
 
         if (mParticipantVideoSink != NULL)
             mParticipantVideoSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
@@ -2328,22 +2390,18 @@ void ParticipantWidget::ActionToggleAudioSenderActivation(bool pActivation)
 {
     if (mParticipantAudioSink != NULL)
     {
-        if (pActivation)
-            mParticipantAudioSink->Start();
-        else
-            mParticipantAudioSink->Stop();
+        mParticipantAudioSink->SetActivation(pActivation);
     }
+    mParticipantAudioSinkActivation = pActivation;
 }
 
 void ParticipantWidget::ActionToggleVideoSenderActivation(bool pActivation)
 {
     if (mParticipantVideoSink != NULL)
     {
-        if (pActivation)
-            mParticipantVideoSink->Start();
-        else
-            mParticipantVideoSink->Stop();
+        mParticipantVideoSink->SetActivation(pActivation);
     }
+    mParticipantVideoSinkActivation = pActivation;
 }
 
 void ParticipantWidget::ActionPlaylistPrevious()
