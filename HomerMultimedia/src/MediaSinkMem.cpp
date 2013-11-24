@@ -97,9 +97,9 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
     #endif
 
     // return immediately if the sink is stopped
-	if (!mRunning)
+	if (!mSinkIsActive)
 	{
-	    LOG(LOG_WARN, "Media sink isn't active yet");
+//	    LOG(LOG_WARN, "Media sink isn't active yet");
 	    return;
 	}
 

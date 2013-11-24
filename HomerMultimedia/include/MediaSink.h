@@ -55,8 +55,7 @@ public:
 
     virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream, bool pIsKeyFrame) = 0;
     virtual void UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp);
-    virtual void Start();
-    virtual void Stop();
+    virtual void SetActivation(bool pState);
 
     std::string GetId();
 
@@ -67,7 +66,7 @@ public:
 protected:
     bool BelowMaxFps(int pFrameNumber);
 
-    bool                mRunning;
+    bool                mSinkIsActive;
     std::string         mCodec;
     unsigned long       mPacketNumber;
     std::string         mMediaId;

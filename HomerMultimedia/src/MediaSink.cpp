@@ -44,7 +44,7 @@ MediaSink::MediaSink(enum MediaSinkType pType):
     mMediaId = "";
     mMaxFps = 0;
     mCodec = "";
-    mRunning = true;
+    mSinkIsActive = false;
     mMaxFpsTimestampLastFragment = 0;
     mMaxFpsFrameNumberLastFragment = 0;
     switch(pType)
@@ -71,14 +71,9 @@ void MediaSink::UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pR
     // nothing to do
 }
 
-void MediaSink::Start()
+void MediaSink::SetActivation(bool pState)
 {
-    mRunning = true;
-}
-
-void MediaSink::Stop()
-{
-    mRunning = false;
+    mSinkIsActive = pState;
 }
 
 string MediaSink::GetId()
