@@ -216,6 +216,8 @@ private:
     void ReportVideoDelay(float pDelay); // adds an additional delay to audio if video presentation is delayed
     void InformAboutVideoSeekingComplete();
     bool PlayingMovieFile();
+    bool isVideoFilePaused();
+    bool isAudioFilePaused();
     void AVSeek(int pPos); // position given in x/1000
 
     /* fullscreen movie controls */

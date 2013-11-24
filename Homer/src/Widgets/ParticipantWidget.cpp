@@ -1617,7 +1617,7 @@ void ParticipantWidget::AVSync()
                 // are audio and video playback out of synch.?
                 if (((tTimeDiff < -AV_SYNC_MAX_DRIFT_UNTIL_RESYNC) || (tTimeDiff > AV_SYNC_MAX_DRIFT_UNTIL_RESYNC)))
                 {
-                    if ((mSessionType != BROADCAST) || ((!mVideoWidget->GetWorker()->EofReached()) && (!mAudioWidget->GetWorker()->IsPaused()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice())))
+                    if ((mSessionType != BROADCAST) || ((!mVideoWidget->GetWorker()->EofReached()) && (!isVideoFilePaused()) && (mVideoWidget->GetWorker()->GetCurrentDevice() == mAudioWidget->GetWorker()->GetCurrentDevice())))
                     {
                         if (mAVAsyncCounterSinceLastSynchronization >= AV_SYNC_CONSECUTIVE_ASYNC_THRESHOLD)
                         {
@@ -1862,6 +1862,16 @@ bool ParticipantWidget::PlayingMovieFile()
     return false;
 }
 
+bool ParticipantWidget::isVideoFilePaused()
+{
+    return ((mVideoSource) && (mVideoWidget->GetWorker()->IsPaused()));
+}
+
+bool ParticipantWidget::isAudioFilePaused()
+{
+    return ((mAudioSource) && (mAudioWidget->GetWorker()->IsPaused()));
+}
+
 void ParticipantWidget::UpdateParticipantName(QString pParticipantName)
 {
 	mWidgetTitle = pParticipantName;
@@ -1917,7 +1927,7 @@ QString ParticipantWidget::GetSipInterface()
 void ParticipantWidget::ActionPlayPauseMovieFile(QString pFileName)
 {
     LOG(LOG_VERBOSE, "User triggered play/pause");
-    if (mVideoWidget->GetWorker()->IsPaused() || mAudioWidget->GetWorker()->IsPaused())
+    if (isVideoFilePaused() || isAudioFilePaused())
     {
         LOG(LOG_VERBOSE, "User triggered play, button state: %d", mPlayPauseButtonIsPaused);
         mVideoWidget->GetWorker()->PlayFile(pFileName);
@@ -2104,7 +2114,7 @@ void ParticipantWidget::CreateFullscreenControls(int tFullscreenPosX, int tFulls
             QPoint tPos = QPoint(tFullscreenPosX, tFullscreenPosY + mVideoWidget->height() - 58);
             LOG(LOG_VERBOSE, "Creating fullscreen controls at (%d, %d)", tPos.x(), tPos.y());
             mFullscreeMovieControlWidget->move(tPos.x(), tPos.y());
-            if (mVideoWidget->GetWorker()->IsPaused() || mAudioWidget->GetWorker()->IsPaused())
+            if (isVideoFilePaused() || isAudioFilePaused())
 				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Play.png"));
             else
 				mFullscreeMovieControlWidget->mTbPlayPause->setIcon(QPixmap(":/images/22_22/AV_Pause.png"));
@@ -2269,7 +2279,7 @@ void ParticipantWidget::UpdateMovieControls()
         ShowStreamPosition(tCurPos, tEndPos);
 
         // update play/pause button
-        if (((mVideoSource) && (mVideoWidget->GetWorker()->IsPaused())) || ((mAudioSource) && (mAudioWidget->GetWorker()->IsPaused())))
+        if (isVideoFilePaused() || isAudioFilePaused())
         {
             if (mPlayPauseButtonIsPaused != 0)
             {

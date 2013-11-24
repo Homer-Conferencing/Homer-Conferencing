@@ -1674,7 +1674,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     }
     if (((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play))  && (pEvent->modifiers() == 0))
     {
-        if ((mVideoWorker->IsPaused()) || ((mParticipantWidget->GetAudioWorker() != NULL) && (mParticipantWidget->GetAudioWorker()->IsPaused())))
+        if (mParticipantWidget->isVideoFilePaused() || mParticipantWidget->isAudioFilePaused())
         {
         	ShowOsdMessage(Homer::Gui::VideoWidget::tr("Playing.."));
             mParticipantWidget->ActionPlayPauseMovieFile();
