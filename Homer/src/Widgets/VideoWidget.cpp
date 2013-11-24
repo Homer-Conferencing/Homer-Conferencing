@@ -1524,7 +1524,7 @@ void VideoWidget::paintEvent(QPaintEvent *pEvent)
     if ((IsFullScreen()) || (mMosaicMode))
         tBackgroundColor = QColor(Qt::black);
     else
-        tBackgroundColor = QApplication::palette().brush(backgroundRole()).color();
+        tBackgroundColor = QColor(Qt::black); //QApplication::palette().brush(backgroundRole()).color();
     #ifdef DEBUG_VIDEOWIDGET_PERFORMANCE
         tBackgroundColor = QColor((int)((long)256 * qrand() / RAND_MAX), (int)((long)256 * qrand() / RAND_MAX), (int)((long)256 * qrand() / RAND_MAX));
     #endif
