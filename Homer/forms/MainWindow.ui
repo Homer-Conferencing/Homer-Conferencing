@@ -44,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>448</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuSettings">
@@ -825,7 +825,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Mosaik mode</string>
+    <string>Mosaic mode</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
