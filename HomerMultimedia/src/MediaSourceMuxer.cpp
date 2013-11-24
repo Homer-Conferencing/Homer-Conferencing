@@ -190,12 +190,33 @@ MediaSource* MediaSourceMuxer::GetMediaSource()
     return mMediaSource;
 }
 
+bool MediaSourceMuxer::IsOutputCodecSupported(std::string pStreamCodec)
+{
+    bool tResult = false;
+
+    enum AVCodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
+    if(GetGuiNameFromCodecID(tStreamCodecId) == pStreamCodec)
+    {
+        if(avcodec_find_encoder(tStreamCodecId) != NULL)
+        {
+            tResult = true;
+        }
+    }
+
+    return tResult;
+}
+
 // return if something has changed
 bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pBitRate, int pMaxPacketSize, bool pDoReset, int pResX, int pResY, bool pRtpActivated, int pMaxFps)
 {
     // HINT: returns if something has changed
     bool tResult = false;
     enum AVCodecID tStreamCodecId = GetCodecIDFromGuiName(pStreamCodec);
+
+    if(!IsOutputCodecSupported(pStreamCodec))
+    {
+        LOG(LOG_ERROR, "Trying to set an unsupported %s codec: %s", GetMediaTypeStr().c_str(), pStreamCodec.c_str());
+    }
 
     pMaxPacketSize -= IP6_HEADER_SIZE; // IPv6 overhead is bigger than IPv4
     pMaxPacketSize -= IP_OPTIONS_SIZE; // IP options size: used for QoS signaling

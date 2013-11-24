@@ -217,7 +217,7 @@ public:
     virtual MediaSource* GetMediaSource();
 
     /* codec identifier translation */
-    enum AVCodecID GetCodecIDFromGuiName(std::string pName);
+    static enum AVCodecID GetCodecIDFromGuiName(std::string pName);
     static std::string GetGuiNameFromCodecID(enum AVCodecID pCodecId);
     std::string GetFormatName(enum AVCodecID pCodecId);
 

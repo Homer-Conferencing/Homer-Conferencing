@@ -527,7 +527,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  ****************************************************/
 enum AVCodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
 {
-    enum AVCodecID tResult = (GetMediaType() == MEDIA_AUDIO) ? CODEC_ID_ADPCM_G722 : CODEC_ID_H263P;
+    enum AVCodecID tResult = CODEC_ID_NONE;
 
     /* video */
     if (pName == "H.261")
