@@ -57,6 +57,7 @@ SDP::~SDP()
 
 void SDP::SetVideoCodecsSupport(int pSelectedCodecs)
 {
+    LOG(LOG_VERBOSE, "Setting video codec support to: %d", pSelectedCodecs);
     mVideoCodecsSupport = pSelectedCodecs;
 }
 
@@ -67,6 +68,7 @@ int SDP::GetVideoCodecsSupport()
 
 void SDP::SetAudioCodecsSupport(int pSelectedCodecs)
 {
+    LOG(LOG_VERBOSE, "Setting audio codec support to: %d", pSelectedCodecs);
     mAudioCodecsSupport = pSelectedCodecs;
 }
 
