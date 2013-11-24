@@ -906,41 +906,13 @@ void MainWindow::loadSettings()
     // init video codec for network streaming, but only support ONE codec and not multiple
     QString tVideoStreamCodec = CONF.GetVideoCodec();
     // set settings within meeting management
-    if (tVideoStreamCodec == "H.261")
-        MEETING.SetVideoCodecsSupport(CODEC_H261);
-    if (tVideoStreamCodec == "H.263")
-        MEETING.SetVideoCodecsSupport(CODEC_H263);
-    if (tVideoStreamCodec == "H.263+")
-        MEETING.SetVideoCodecsSupport(CODEC_H263P);
-    if (tVideoStreamCodec == "H.264")
-        MEETING.SetVideoCodecsSupport(CODEC_H264);
-    if (tVideoStreamCodec == "MPEG4")
-        MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
-    if (tVideoStreamCodec == "THEORA")
-        MEETING.SetVideoCodecsSupport(CODEC_THEORA);
-    if (tVideoStreamCodec == "VP8")
-        MEETING.SetVideoCodecsSupport(CODEC_VP8);
+    MEETING.SetVideoCodecsSupport(SDP::GetSDPCodecIDFromGuiName(tVideoStreamCodec.toStdString()));
     MEETING.SetVideoTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     // init audio codec for network streaming, but only support ONE codec and not multiple
     QString tAudioStreamCodec = CONF.GetAudioCodec();
     // set settings within meeting management
-    if (tAudioStreamCodec == "AMR")
-        MEETING.SetAudioCodecsSupport(CODEC_AMR_NB);
-    if (tAudioStreamCodec == "MP3")
-        MEETING.SetAudioCodecsSupport(CODEC_MP3);
-    if (tAudioStreamCodec == "G711 A-law")
-        MEETING.SetAudioCodecsSupport(CODEC_G711ALAW);
-    if (tAudioStreamCodec == "G711 µ-law")
-        MEETING.SetAudioCodecsSupport(CODEC_G711ULAW);
-    if (tAudioStreamCodec == "AAC")
-        MEETING.SetAudioCodecsSupport(CODEC_AAC);
-    if (tAudioStreamCodec == "PCM16")
-        MEETING.SetAudioCodecsSupport(CODEC_PCMS16);
-    if (tAudioStreamCodec == "GSM")
-        MEETING.SetAudioCodecsSupport(CODEC_GSM);
-    if (tAudioStreamCodec == "G722 adpcm")
-        MEETING.SetAudioCodecsSupport(CODEC_G722ADPCM);
+    MEETING.SetAudioCodecsSupport(SDP::GetSDPCodecIDFromGuiName(tAudioStreamCodec.toStdString()));
     MEETING.SetAudioTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     LOG(LOG_VERBOSE, "..video/audio settings");

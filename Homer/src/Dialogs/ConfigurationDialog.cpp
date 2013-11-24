@@ -465,38 +465,7 @@ void ConfigurationDialog::SaveConfiguration()
     //### VIDEO configuration
     //######################################################################
     CONF.SetVideoActivation(mGrpVideo->isChecked());
-    switch(mCbVideoCodec->currentIndex())
-    {
-        case 0:
-                MEETING.SetVideoCodecsSupport(CODEC_H261);
-                break;
-        case 1:
-                MEETING.SetVideoCodecsSupport(CODEC_H263);
-                break;
-        case 2:
-                MEETING.SetVideoCodecsSupport(CODEC_H263P);
-                break;
-        case 3:
-                MEETING.SetVideoCodecsSupport(CODEC_H264);
-                break;
-        case 4:
-                MEETING.SetVideoCodecsSupport(CODEC_MPEG1VIDEO);
-                break;
-        case 5:
-                MEETING.SetVideoCodecsSupport(CODEC_MPEG2VIDEO);
-                break;
-        case 6:
-                MEETING.SetVideoCodecsSupport(CODEC_MPEG4);
-                break;
-        case 7:
-                MEETING.SetVideoCodecsSupport(CODEC_THEORA);
-                break;
-        case 8:
-                MEETING.SetVideoCodecsSupport(CODEC_VP8);
-                break;
-        default:
-                break;
-    }
+    MEETING.SetVideoCodecsSupport(SDP::GetSDPCodecIDFromGuiName(mCbVideoCodec->currentText().toStdString()));
 
     //### capture source
     CONF.SetLocalVideoSource(mCbVideoSource->currentText());
@@ -532,29 +501,7 @@ void ConfigurationDialog::SaveConfiguration()
     //### AUDIO configuration
     //######################################################################
     CONF.SetAudioActivation(mGrpAudio->isChecked());
-    switch(mCbAudioCodec->currentIndex())
-    {
-//		case 0:
-//				MEETING.SetAudioCodecsSupport(CODEC_AMR_NB);
-//				break;
-        case 0:
-                MEETING.SetAudioCodecsSupport(CODEC_G711ALAW);
-                break;
-        case 1:
-                MEETING.SetAudioCodecsSupport(CODEC_G711ULAW);
-                break;
-        case 2:
-                MEETING.SetAudioCodecsSupport(CODEC_G722ADPCM);
-                break;
-        case 3:
-                MEETING.SetAudioCodecsSupport(CODEC_PCMS16);
-                break;
-        case 4:
-                MEETING.SetAudioCodecsSupport(CODEC_MP3);
-                break;
-        default:
-                break;
-    }
+    MEETING.SetAudioCodecsSupport(SDP::GetSDPCodecIDFromGuiName(mCbAudioCodec->currentText().toStdString()));
 
     //### capture source
     CONF.SetLocalAudioSource(mCbAudioSource->currentText());
