@@ -239,11 +239,10 @@ bool MediaSourceGrabberThread::PlayFile(QString pName)
     {
     	LOG(LOG_VERBOSE, "Given file name was empty, setting old name: %s", mCurrentFile.toStdString().c_str());
     	pName = mCurrentFile;
+    }else{
+        PLAYLISTWIDGET.CheckAndRemoveFilePrefix(pName);
+        pName = QString(pName.toLocal8Bit());
     }
-
-    PLAYLISTWIDGET.CheckAndRemoveFilePrefix(pName);
-
-    pName = QString(pName.toLocal8Bit());
 
     if (mMediaSource->GetMediaType() == MEDIA_VIDEO)
     {// video
