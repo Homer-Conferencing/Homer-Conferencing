@@ -40,10 +40,13 @@
 	#include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#include <MediaSourceMuxer.h>
+
 namespace Homer { namespace Gui {
 
 using namespace std;
 using namespace Homer::Conference;
+using namespace Homer::Multimedia;
 
 Configuration sConfiguration;
 
@@ -1217,7 +1220,12 @@ bool Configuration::GetVideoRtp()
 
 QString Configuration::GetVideoCodec()
 {
-    return mQSettings->value("Streaming/VideoStreamCodec", QString("H.263+")).toString();
+    QString tResult = mQSettings->value("Streaming/VideoStreamCodec", QString("H.263+")).toString();
+    if(!MediaSourceMuxer::IsOutputCodecSupported(tResult.toStdString()))
+    {
+        tResult = "H.261";
+    }
+    return tResult;
 }
 
 int Configuration::GetVideoQuality()
@@ -1297,7 +1305,12 @@ bool Configuration::GetAudioRtp()
 
 QString Configuration::GetAudioCodec()
 {
-    return mQSettings->value("Streaming/AudioStreamCodec", QString("G722 adpcm")).toString();
+    QString tResult = mQSettings->value("Streaming/AudioStreamCodec", QString("G722 adpcm")).toString();
+    if(!MediaSourceMuxer::IsOutputCodecSupported(tResult.toStdString()))
+    {
+        tResult = "G722 adpcm";
+    }
+    return tResult;
 }
 
 int Configuration::GetAudioBitRate()
