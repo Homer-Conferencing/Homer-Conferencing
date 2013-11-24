@@ -119,10 +119,12 @@ private slots:
     void actionActivateToolBarMediaSources(bool pActive);
     void actionActivateStatusBar(bool pActive);
     void actionActivateMenuBar(bool pActive);
+    void toggleMainMenu();
     void actionActivateDebuggingWidgets();
     void actionActivateDebuggingGlobally();
     void actionActivateNetworkSimulationWidgets();
     void actionActivateMosaicMode(bool pActive);
+    void toggleMosaicMode();
 
     void activatedSysTray(QSystemTrayIcon::ActivationReason pReason);
 
@@ -211,6 +213,7 @@ private:
 	QString						mCurrentLanguage;
 	QTranslator					*mTranslator;
 	/* Mosaic mode */
+	bool                        mMosaicModeActive;
 	QFlags<Qt::WindowType>		mMosaicModeFormerWindowFlags;
 	bool						mMosaicModeToolBarOnlineStatusWasVisible;
 	bool						mMosaicModeToolBarMediaSourcesWasVisible;

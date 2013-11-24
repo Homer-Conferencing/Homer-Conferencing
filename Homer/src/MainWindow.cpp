@@ -117,6 +117,7 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     mOverviewContactsWidget = NULL;
     mOverviewFileTransfersWidget = NULL;
     mOnlineStatusWidget = NULL;
+    mMosaicModeActive = false;
 
     QCoreApplication::setApplicationName("Homer");
     QCoreApplication::setApplicationVersion(HOMER_VERSION);
@@ -2092,6 +2093,8 @@ void MainWindow::actionActivateMosaicMode(bool pActive)
     ParticipantWidgetList::iterator tIt;
     LOG(LOG_VERBOSE, "Setting mosaic mode to: %d", pActive);
 
+    mMosaicModeActive = pActive;
+
     if (pActive)
 	{
     	mMosaicModeFormerWindowFlags = windowFlags();
@@ -2154,6 +2157,12 @@ void MainWindow::actionActivateMosaicMode(bool pActive)
 	}
 }
 
+void MainWindow::toggleMosaicMode()
+{
+    LOG(LOG_VERBOSE, "Toggling mosaic mode to %d", !mMosaicModeActive);
+    actionActivateMosaicMode(!mMosaicModeActive);
+}
+
 void MainWindow::actionActivateToolBarOnlineStatus(bool pActive)
 {
 	LOG(LOG_VERBOSE, "Setting online status tool bar visibility to: %d", pActive);
@@ -2180,6 +2189,11 @@ void MainWindow::actionActivateMenuBar(bool pActive)
 	LOG(LOG_VERBOSE, "Setting menu bar visibility to: %d", pActive);
 	CONF.SetVisibilityMenuBar(pActive);
 	mMenuBar->setVisible(pActive);
+}
+
+void MainWindow::toggleMainMenu()
+{
+    actionActivateMenuBar(!mMenuBar->isVisible());
 }
 
 void MainWindow::actionActivateDebuggingWidgets()
@@ -2222,6 +2236,32 @@ void MainWindow::UpdateSysTrayContextMenu()
         tAction->setIcon(*tIcon);
         connect(tAction, SIGNAL(triggered()), this, SLOT(actionToggleWindowState()));
 
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Main menu"));
+        tAction->setCheckable(true);
+        if(mMenuBar->isVisible())
+        {
+            tAction->setChecked(true);
+        }else{
+            tAction->setChecked(false);
+        }
+        QList<QKeySequence> tMBKeys;
+        tMBKeys.push_back(Qt::ALT + Qt::Key_M);
+        tAction->setShortcuts(tMBKeys);
+        connect(tAction, SIGNAL(triggered()), this, SLOT(toggleMainMenu()));
+
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Mosaic mode"));
+        tAction->setCheckable(true);
+        if(mMosaicModeActive)
+        {
+            tAction->setChecked(true);
+        }else{
+            tAction->setChecked(false);
+        }
+        QList<QKeySequence> tMKeys;
+        tMKeys.push_back(Qt::CTRL + Qt::Key_F);
+        tAction->setShortcuts(tMKeys);
+        connect(tAction, SIGNAL(triggered()), this, SLOT(toggleMosaicMode()));
+
         mSysTrayMenu->addSeparator();
 
         if (mLocalUserParticipantWidget->GetAudioWorker()->GetMuteState())
@@ -2252,11 +2292,30 @@ void MainWindow::UpdateSysTrayContextMenu()
             connect(tMenu, SIGNAL(triggered(QAction *)), mOnlineStatusWidget, SLOT(Selected(QAction *)));
         }
 
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Configuration"));
+        tIcon = new QIcon(":/images/22_22/Configuration.png");
+        tAction->setIcon(*tIcon);
+        QList<QKeySequence> tCKeys;
+        tCKeys.push_back(Qt::ALT + Qt::Key_C);
+        tAction->setShortcuts(tCKeys);
+        connect(tAction, SIGNAL(triggered()), this, SLOT(actionConfiguration()));
+
         mSysTrayMenu->addSeparator();
+
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Version"));
+        tIcon = new QIcon(":/images/22_22/LogoHomer3.png");
+        tAction->setIcon(*tIcon);
+        QList<QKeySequence> tVKeys;
+        tVKeys.push_back(Qt::Key_F12);
+        tAction->setShortcuts(tVKeys);
+        connect(tAction, SIGNAL(triggered()), this, SLOT(actionVersion()));
 
         tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Exit"));
         tIcon = new QIcon(":/images/22_22/Exit.png");
         tAction->setIcon(*tIcon);
+        QList<QKeySequence> tXKeys;
+        tXKeys.push_back(Qt::ALT + Qt::Key_X);
+        tAction->setShortcuts(tXKeys);
         connect(tAction, SIGNAL(triggered()), this, SLOT(actionExit()));
     }
 
