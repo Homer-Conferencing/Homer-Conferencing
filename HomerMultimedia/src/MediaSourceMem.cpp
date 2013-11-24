@@ -1652,11 +1652,12 @@ void* MediaSourceMem::Run(void* pArgs)
             {
                 if (mFormatContext->iformat->flags & AVFMT_TS_DISCONT)
                 {
-                    if ((tPacket->duration != mFrameDuration) && (tPacket->duration> 0))
-                    {
-                        LOG(LOG_WARN, "Detected new packet duration, changing the frame timestamp factor from %d to %d", mFrameDuration, tPacket->duration);
-                        mFrameDuration = tPacket->duration;
-                    }
+//TODO: deactivated again because it leads to problems with VOB files
+//                    if ((tPacket->duration != mFrameDuration) && (tPacket->duration> 0))
+//                    {
+//                        LOG(LOG_WARN, "Detected new packet duration, changing the frame timestamp factor from %d to %d", mFrameDuration, tPacket->duration);
+//                        mFrameDuration = tPacket->duration;
+//                    }
                 }
 
                 #ifdef MSMEM_DEBUG_PACKET_RECEIVER
