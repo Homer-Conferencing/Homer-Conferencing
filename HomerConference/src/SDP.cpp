@@ -171,6 +171,46 @@ string SDP::GetMediaTransportStr(enum MediaTransportType pType)
     return tResult;
 }
 
+int SDP::GetSDPCodecIDFromGuiName(std::string pCodecName)
+{
+    int tResult = 0;
+
+    if (pCodecName == "H.261")
+        tResult = CODEC_H261;
+    if (pCodecName == "H.263")
+        tResult = CODEC_H263;
+    if (pCodecName == "H.263+")
+        tResult = CODEC_H263P;
+    if (pCodecName == "H.264")
+        tResult = CODEC_H264;
+    if (pCodecName == "MPEG4")
+        tResult = CODEC_MPEG4;
+    if (pCodecName == "THEORA")
+        tResult = CODEC_THEORA;
+    if (pCodecName == "VP8")
+        tResult = CODEC_VP8;
+
+    // set settings within meeting management
+    if (pCodecName == "AMR")
+        tResult = CODEC_AMR_NB;
+    if (pCodecName == "MP3")
+        tResult = CODEC_MP3;
+    if (pCodecName == "G711 A-law")
+        tResult = CODEC_G711ALAW;
+    if (pCodecName == "G711 µ-law")
+        tResult = CODEC_G711ULAW;
+    if (pCodecName == "AAC")
+        tResult = CODEC_AAC;
+    if (pCodecName == "PCM16")
+        tResult = CODEC_PCMS16;
+    if (pCodecName == "GSM")
+        tResult = CODEC_GSM;
+    if (pCodecName == "G722 adpcm")
+        tResult = CODEC_G722ADPCM;
+
+    return tResult;
+}
+
 /*************************************************
  *  Video codec to name mapping:
  *  ============================

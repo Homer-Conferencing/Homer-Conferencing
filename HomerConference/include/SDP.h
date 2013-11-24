@@ -77,6 +77,7 @@ public:
 
     static enum MediaTransportType CreateMediaTransportType(TransportType pSocketType, bool pRtp);
     static enum TransportType GetSocketTypeFromMediaTransportType(enum MediaTransportType pType);
+    static int GetSDPCodecIDFromGuiName(std::string pCodecName);
     void SetVideoCodecsSupport(int pSelectedCodecs);
     int GetVideoCodecsSupport();
     void SetAudioCodecsSupport(int pSelectedCodecs);
