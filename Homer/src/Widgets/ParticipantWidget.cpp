@@ -563,6 +563,14 @@ void ParticipantWidget::InitializeMenuAVControls(QMenu *pMenu)
 
     pMenu->clear();
 
+    if(PlayingMovieFile())
+    {
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Configuration_Video.png"), Homer::Gui::PlaybackSlider::tr("Adjust A/V drift"));
+        tAction->setCheckable(true);
+        if (mAVDriftFrame != NULL)
+            tAction->setChecked(mAVDriftFrame->isVisible());
+    }
+
     if (mMovieAudioControlsFrame->isVisible())
         tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::ParticipantWidget::tr("Close"));
     else
@@ -581,6 +589,11 @@ void ParticipantWidget::SelectedMenuAVControls(QAction *pAction)
         if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Close")) == 0)
         {
         	ToggleAVControlsVisibility();
+            return;
+        }
+        if (pAction->text().compare(Homer::Gui::PlaybackSlider::tr("Adjust A/V drift")) == 0)
+        {
+            ActionToggleUserAVDriftWidget();
             return;
         }
     }
