@@ -940,6 +940,7 @@ bool MediaSourceMem::CloseGrabDevice()
     mResXLastGrabbedFrame = 0;
     mResYLastGrabbedFrame = 0;
     mDecoderSynchPoints = 0;
+    mMetaData.clear();
 
     // reinit. RTP parser
     RTP::Init();

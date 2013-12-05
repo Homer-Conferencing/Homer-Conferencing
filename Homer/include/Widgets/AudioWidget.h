@@ -90,7 +90,7 @@ public:
 
     AudioWorkerThread* GetWorker();
 
-    QStringList GetAudioStatistic();
+    QStringList GetAudioInfo();
 
     /* volume control */
     void SetVolume(int pValue); // 0-300 %

@@ -153,6 +153,14 @@ struct FrameDescriptor
     void        *Data;
 };
 
+struct MetaDataEntry
+{
+    std::string     Key;
+    std::string     Value;
+};
+
+typedef std::vector<MetaDataEntry> MetaData;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // possible GrabChunk results
@@ -178,6 +186,7 @@ struct FrameDescriptor
 #define CloseFormatConverter()                              FfmpegCloseFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
 #define CloseAll()											FfmpegCloseAll(GetObjectNameStr(this).c_str(), __LINE__)
 #define EncodeAndWritePacket(FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames, Timestamp) FfmpegEncodeAndWritePacket(GetObjectNameStr(this).c_str(), __LINE__, FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames, Timestamp)
+#define DetermineMetaData(MetaDataStorage)                  FfmpegDetermineMetaData(GetObjectNameStr(this).c_str(), __LINE__, MetaDataStorage)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -353,6 +362,9 @@ public:
     virtual void SetMarker(bool pActivation = true);
     virtual void MoveMarker(float pRelX, float pRelY);
 
+    /* meta data*/
+    virtual MetaData GetMetaData();
+
 public:
     /* abstract interface which has to be implemented by derived classes */
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97) = 0;
@@ -429,8 +441,12 @@ protected:
     /* encoder helpers */
     bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int &pBufferedFrames, int64_t &pPacketTimestamp);
 
+    void FfmpegDetermineMetaData(string pSource /* caller source */, int pLine /* caller line */, AVDictionary *pMetaData);
+
+
     bool                mMediaSourceOpened;
     bool                mGrabbingStopped;
+    MetaData            mMetaData;
     bool                mRecording;
     std::string         mRecordingSaveFileName;
     int                 mFrameNumber;

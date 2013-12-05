@@ -87,7 +87,6 @@ protected:
     virtual void CalibrateRTGrabbing();
 
 private:
-
     std::vector<string> mInputChannels;
     float				mLastDecoderFilePosition;
 };

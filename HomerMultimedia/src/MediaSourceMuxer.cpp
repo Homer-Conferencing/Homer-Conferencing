@@ -2864,6 +2864,13 @@ bool MediaSourceMuxer::SupportsMarking()
     return true;
 }
 
+MetaData MediaSourceMuxer::GetMetaData()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetMetaData();
+    else
+        return mMetaData;
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

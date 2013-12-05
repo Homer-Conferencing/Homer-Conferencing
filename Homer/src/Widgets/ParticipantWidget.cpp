@@ -2314,17 +2314,26 @@ void ParticipantWidget::UpdateAVInfo()
     if ((mLbAVInfo->isVisible()) && (!mLbAVInfo->hasSelectedText()))
     {// time for an update
         QString tAVStats = "";
-        QStringList tStats;
+        QStringList tInfo;
         int tStatLines;
 
         if (mVideoWidget != NULL)
         {
 			// VIDEO
 			tAVStats += Homer::Gui::ParticipantWidget::tr("Video:");
-			tStats = mVideoWidget->GetVideoStatistic();
-			tStatLines = tStats.size();
+			tInfo = mVideoWidget->GetVideoInfo();
+			tStatLines = tInfo.size();
 			for (int i = 0; i < tStatLines; i++)
-				tAVStats += "\n     " + tStats[i];
+				tAVStats += "\n     " + tInfo[i];
+
+            tInfo = mVideoWidget->GetWorker()->GetSourceMetaInfo();
+            if(tInfo.size() > 0)
+            {
+                tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("MetaData:");
+                tStatLines = tInfo.size();
+                for (int i = 0; i < tStatLines; i++)
+                    tAVStats += "\n        " + tInfo[i];
+            }
 
 			tAVStats += "\n\n";
         }
@@ -2355,10 +2364,19 @@ void ParticipantWidget::UpdateAVInfo()
         {
 			// AUDIO
 			tAVStats += Homer::Gui::ParticipantWidget::tr("Audio:");
-			tStats = mAudioWidget->GetAudioStatistic();
-			tStatLines = tStats.size();
+			tInfo = mAudioWidget->GetAudioInfo();
+			tStatLines = tInfo.size();
 			for (int i = 0; i < tStatLines; i++)
-				tAVStats += "\n     " + tStats[i];
+				tAVStats += "\n     " + tInfo[i];
+
+			tInfo = mAudioWidget->GetWorker()->GetSourceMetaInfo();
+			if(tInfo.size() > 0)
+			{
+	            tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("MetaData:");
+	            tStatLines = tInfo.size();
+	            for (int i = 0; i < tStatLines; i++)
+	                tAVStats += "\n        " + tInfo[i];
+			}
 
 			mLbAVInfo->setText(tAVStats);
         }

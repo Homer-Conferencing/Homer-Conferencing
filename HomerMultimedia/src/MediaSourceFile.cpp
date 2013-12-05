@@ -132,6 +132,8 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!SelectStream())
     	return false;
 
+    DetermineMetaData(mFormatContext->metadata);
+
     if (!OpenDecoder())
     	return false;
 
@@ -285,12 +287,14 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
         return false;
     }
 
+    DetermineMetaData(mFormatContext->metadata);
+
     mCurrentInputChannel = mDesiredInputChannel;
 
     if (!OpenDecoder())
     	return false;
 
-	//HINT: OpenFormatConverter() will be called by the Run() method of MediaSourceMem
+    //HINT: OpenFormatConverter() will be called by the Run() method of MediaSourceMem
 		
 	if (SupportsSeeking())
 	{

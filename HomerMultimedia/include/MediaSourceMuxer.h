@@ -187,6 +187,9 @@ public:
     /* live OSD marking */
     virtual bool SupportsMarking();
 
+    /* meta data*/
+    virtual MetaData GetMetaData();
+
 public:
     virtual bool OpenVideoGrabDevice(int pResX = 352, int pResY = 288, float pFps = 29.97);
     virtual bool OpenAudioGrabDevice(int pSampleRate = 44100, int pChannels = 2);

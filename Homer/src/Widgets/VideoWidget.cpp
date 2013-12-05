@@ -741,11 +741,11 @@ void VideoWidget::DialogAddNetworkSink()
     tANSDialog.exec();
 }
 
-QStringList VideoWidget::GetVideoStatistic()
+QStringList VideoWidget::GetVideoInfo()
 {
-	QStringList tVideoStatistic;
+	QStringList tVideoInfo;
 	if (mVideoSource == NULL)
-		return tVideoStatistic;
+		return tVideoInfo;
 
 	QString tAspectRatio = Homer::Gui::VideoWidget::tr(SupportedAspectRatios[mAspectRatio].name.c_str());
 
@@ -900,25 +900,25 @@ QStringList VideoWidget::GetVideoStatistic()
 
     //derive resulting video statistic
     if (tLine_Source != "")
-    	tVideoStatistic += tLine_Source;
+        tVideoInfo += tLine_Source;
     if (tLine_Frame != "")
-    	tVideoStatistic += tLine_Frame;
+        tVideoInfo += tLine_Frame;
     if (tLine_Fps != "")
-    	tVideoStatistic += tLine_Fps;
+        tVideoInfo += tLine_Fps;
     if (tLine_InputCodec != "")
-    	tVideoStatistic += tLine_InputCodec;
+        tVideoInfo += tLine_InputCodec;
     if (tLine_Playback != "")
-    	tVideoStatistic += tLine_Playback;
+        tVideoInfo += tLine_Playback;
     if (tLine_Time != "")
-    	tVideoStatistic += tLine_Time;
+        tVideoInfo += tLine_Time;
     if (tLine_OutputCodec != "")
-    	tVideoStatistic += tLine_OutputCodec;
+        tVideoInfo += tLine_OutputCodec;
     if (tLine_Peer != "")
-    	tVideoStatistic += tLine_Peer;
+        tVideoInfo += tLine_Peer;
     if (tLine_RecorderTime != "")
-    	tVideoStatistic += tLine_RecorderTime;
+        tVideoInfo += tLine_RecorderTime;
 
-    return tVideoStatistic;
+    return tVideoInfo;
 }
 
 void VideoWidget::ShowFrame(void* pBuffer)
@@ -1011,22 +1011,22 @@ void VideoWidget::ShowFrame(void* pBuffer)
         tPainter->setRenderHint(QPainter::TextAntialiasing, true);
         tPainter->setFont(tFont);
 
-        QStringList tVideoStatistic = GetVideoStatistic();
-        int tStatLines = tVideoStatistic.size();
+        QStringList tVideoInfo = GetVideoInfo();
+        int tStatLines = tVideoInfo.size();
 
         // #######################
         // ### black shadow text
         // #######################
         tPainter->setPen(QColor(Qt::darkRed));
         for (int i = 0; i < tStatLines; i++)
-    		tPainter->drawText(10, 41 + i * 20, tVideoStatistic[i]);
+    		tPainter->drawText(10, 41 + i * 20, tVideoInfo[i]);
 
         // #######################
         // ### red foreground text
         // #######################
         tPainter->setPen(QColor(Qt::red));
         for (int i = 0; i < tStatLines; i++)
-    		tPainter->drawText(9, 40 + i * 20, tVideoStatistic[i]);
+    		tPainter->drawText(9, 40 + i * 20, tVideoInfo[i]);
     }
 
     //#############################################################

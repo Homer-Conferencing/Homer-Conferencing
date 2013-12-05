@@ -2980,6 +2980,11 @@ void MediaSource::MoveMarker(float pRelX, float pRelY)
     }
 }
 
+MetaData MediaSource::GetMetaData()
+{
+    return mMetaData;
+}
+
 void MediaSource::InitFpsEmulator()
 {
     mSourceStartTimeForRTGrabbing = av_gettime();
@@ -3869,6 +3874,21 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
 
     return tResult;
 }
+
+void MediaSource::FfmpegDetermineMetaData(string pSource, int pLine, AVDictionary *pMetaData)
+{
+    AVDictionaryEntry *tEntry=NULL;
+
+    mMetaData.clear();
+
+     while((tEntry = HM_av_dict_get(pMetaData, "", tEntry))) {
+         MetaDataEntry tMetaEntry;
+         tMetaEntry.Key = string(tEntry->key);
+         tMetaEntry.Value = string(tEntry->value);
+         mMetaData.push_back(tMetaEntry);
+     }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

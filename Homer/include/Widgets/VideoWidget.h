@@ -103,7 +103,7 @@ public:
 
     VideoWorkerThread* GetWorker();
 
-    QStringList GetVideoStatistic();
+    QStringList GetVideoInfo();
 
     void InitializeMenuVideoSettings(QMenu *pMenu);
 

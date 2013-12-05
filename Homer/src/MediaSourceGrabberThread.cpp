@@ -441,6 +441,28 @@ void MediaSourceGrabberThread::SetRelayActivation(bool pActive)
         LOG(LOG_VERBOSE, "Cannot set %s relay activation of a media source which is not a muxer", mMediaSource->GetMediaTypeStr().c_str());
 }
 
+QStringList MediaSourceGrabberThread::GetSourceMetaInfo()
+{
+    QStringList tAudioMetaInfo;
+
+    if(mMediaSource != NULL)
+    {
+        int tEntries = mMediaSource->GetMetaData().size();
+        if(tEntries > 0)
+        {
+            Homer::Multimedia::MetaData tSourceMetaData = mMediaSource->GetMetaData();
+            //LOG(LOG_VERBOSE, "Found %d meta data entries");
+            for(int i = 0; i < tEntries; i++)
+            {
+                //LOG(LOG_VERBOSE, "  ..entry: %s -> %s", tSourceMetaData[i].Key.c_str(), tSourceMetaData[i].Value.c_str());
+                tAudioMetaInfo.push_back(QString(tSourceMetaData[i].Key.c_str()) + ": " + QString(tSourceMetaData[i].Value.c_str()));
+            }
+        }
+    }
+
+    return tAudioMetaInfo;
+}
+
 void MediaSourceGrabberThread::StartRecorder(std::string pSaveFileName, int pQuality)
 {
     mSaveFileName = pSaveFileName;

@@ -498,11 +498,11 @@ void AudioWidget::DialogAddNetworkSink()
     tANSDialog.exec();
 }
 
-QStringList AudioWidget::GetAudioStatistic()
+QStringList AudioWidget::GetAudioInfo()
 {
-	QStringList tAudioStatistic;
+	QStringList tAudioInfo;
 	if (mAudioSource == NULL)
-		return tAudioStatistic;
+		return tAudioInfo;
 
 	int tHour = 0, tMin = 0, tSec = 0, tTime = mAudioSource->GetSeekPos();
     tSec = tTime % 60;
@@ -622,25 +622,25 @@ QStringList AudioWidget::GetAudioStatistic()
 
     //derive resulting Audio statistic
     if (tLine_Source != "")
-    	tAudioStatistic += tLine_Source;
+        tAudioInfo += tLine_Source;
     if (tLine_Frame != "")
-    	tAudioStatistic += tLine_Frame;
+        tAudioInfo += tLine_Frame;
     if (tLine_Fps != "")
-    	tAudioStatistic += tLine_Fps;
+        tAudioInfo += tLine_Fps;
     if (tLine_InputCodec != "")
-    	tAudioStatistic += tLine_InputCodec;
+        tAudioInfo += tLine_InputCodec;
     if (tLine_Playback != "")
-    	tAudioStatistic += tLine_Playback;
+        tAudioInfo += tLine_Playback;
     if (tLine_Time != "")
-    	tAudioStatistic += tLine_Time;
+        tAudioInfo += tLine_Time;
     if (tLine_OutputCodec != "")
-    	tAudioStatistic += tLine_OutputCodec;
+        tAudioInfo += tLine_OutputCodec;
     if (tLine_Peer != "")
-    	tAudioStatistic += tLine_Peer;
+        tAudioInfo += tLine_Peer;
     if (tLine_RecorderTime != "")
-    	tAudioStatistic += tLine_RecorderTime;
+        tAudioInfo += tLine_RecorderTime;
 
-	return tAudioStatistic;
+	return tAudioInfo;
 }
 
 void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
@@ -661,13 +661,13 @@ void AudioWidget::ShowSample(void* pBuffer, int pSampleSize)
         tFont.setFixedPitch(true);
         mLbStreamInfo->setFont(tFont);
 
-        QStringList tAudioStatistic = GetAudioStatistic();
-        int tStatLines = tAudioStatistic.size();
+        QStringList tAudioInfo = GetAudioInfo();
+        int tStatLines = tAudioInfo.size();
         if (tStatLines > 2)
         	tStatLines = 2;
         QString tText = "<font color=red><b>";
         for (int i = 0; i < tStatLines; i++)
-    		tText += tAudioStatistic[i] + "<br>";
+    		tText += tAudioInfo[i] + "<br>";
         tText += "</b></font>";
         mLbStreamInfo->setText(tText);
     }

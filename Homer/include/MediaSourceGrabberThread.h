@@ -114,6 +114,9 @@ public:
     /* relay control */
     void SetRelayActivation(bool pActive);
 
+    /* meta data*/
+    QStringList GetSourceMetaInfo();
+
 protected:
     /* recording */
     virtual void DoStartRecorder();
