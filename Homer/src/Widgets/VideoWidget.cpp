@@ -1671,7 +1671,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 		pEvent->accept();
 		return;
     }
-    if (((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play))  && (pEvent->modifiers() == 0))
+    if (((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play)) && (pEvent->modifiers() == 0))
     {
         if (mParticipantWidget->isVideoFilePaused() || mParticipantWidget->isAudioFilePaused())
         {
@@ -1686,6 +1686,18 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
 			pEvent->accept();
             return;
         }
+    }
+    if((pEvent->key() == Qt::Key_MediaNext) && (pEvent->modifiers() == 0))
+    {
+        PLAYLISTWIDGET.PlayNext();
+    }
+    if((pEvent->key() == Qt::Key_MediaPrevious) && (pEvent->modifiers() == 0))
+    {
+        PLAYLISTWIDGET.PlayPrevious();
+    }
+    if((pEvent->key() == Qt::Key_VolumeMute) && (pEvent->modifiers() == 0))
+    {
+        mParticipantWidget->GetAudioWorker()->SetMuteState(!mParticipantWidget->GetAudioWorker()->GetMuteState());
     }
     if ((pEvent->key() == Qt::Key_Right) && (IsFullScreen()))
     {
