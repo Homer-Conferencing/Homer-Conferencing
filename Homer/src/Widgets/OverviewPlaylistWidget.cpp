@@ -166,6 +166,9 @@ QString OverviewPlaylistWidget::LetUserSelectVideoSaveFile(QWidget *pParent, QSt
 
 bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
 {
+    if(pFileName == "")
+        return false;
+
     pFileName = QString(pFileName.toLocal8Bit());
 
     int tPos = pFileName.lastIndexOf('.', -1);
@@ -261,6 +264,9 @@ QString OverviewPlaylistWidget::LetUserSelectAudioSaveFile(QWidget *pParent, QSt
 
 bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
 {
+    if(pFileName == "")
+        return false;
+
     // explicitly allow audio streams
     if (IS_SUPPORTED_WEB_LINK(pFileName))
         return true;
