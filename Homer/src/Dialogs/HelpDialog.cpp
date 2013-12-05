@@ -111,12 +111,21 @@ QString HelpDialog::GetSystemInfo()
             case QSysInfo::MV_SNOWLEOPARD:
                         tOs = "OS X Snow Leopard";
                         break;
-            case QSysInfo::MV_LION:
-                        tOs = "OS X Lion";
-                        break;
-            case QSysInfo::MV_MOUNTAINLION:
-                        tOs = "OS X Mountain Lion";
-                        break;
+            #if (QT_VERSION >= 0x040000)
+                case QSysInfo::MV_LION:
+                            tOs = "OS X Lion";
+                            break;
+            #endif
+            #if (QT_VERSION >= 0x040803)
+                case QSysInfo::MV_MOUNTAINLION:
+                            tOs = "OS X Mountain Lion";
+                            break;
+            #endif
+            #if (QT_VERSION >= 0x050101)
+                case QSysInfo::MV_MAVERICKS:
+                            tOs = "OS X Mavericks";
+                            break;
+            #endif
             default:
                         tOs = "OS X unknown version";
                         break;
