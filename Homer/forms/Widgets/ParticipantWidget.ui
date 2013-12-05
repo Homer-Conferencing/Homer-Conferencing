@@ -159,7 +159,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,1">
           <item>
-           <widget class="QLabel" name="mLbAVStatistics">
+           <widget class="QLabel" name="mLbAVInfo">
             <property name="frameShape">
              <enum>QFrame::Panel</enum>
             </property>

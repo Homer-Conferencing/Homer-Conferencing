@@ -273,7 +273,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 
     mSlMovie->Init(this);
     mAVDriftFrame->hide();
-    mLbAVStatistics->hide();
+    mLbAVInfo->hide();
 
     //TODO: remove the following if the feature is complete
     #ifdef RELEASE_VERSION
@@ -745,15 +745,15 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                     tAction->setChecked(false);
                 }
                 tAction->setIcon(tIcon2);
-                if (mLbAVStatistics->isVisible())
+                if (mLbAVInfo->isVisible())
                 {
-                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Hide A/V statistics"));
+                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Hide A/V info"));
                     tAction->setCheckable(true);
                     tAction->setChecked(true);
 
                 }else
                 {
-                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Show A/V statistics"));
+                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Show A/V info"));
                     tAction->setCheckable(true);
                     tAction->setChecked(false);
                 }
@@ -772,14 +772,14 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                         mSessionInfoWidget->SetVisible(false);
                         return;
                     }
-                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Show A/V statistics")) == 0)
+                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Show A/V info")) == 0)
                     {
-                    	mLbAVStatistics->setVisible(true);
+                    	mLbAVInfo->setVisible(true);
                         return;
                     }
-                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Hide A/V statistics")) == 0)
+                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Hide A/V info")) == 0)
                     {
-                    	mLbAVStatistics->setVisible(false);
+                    	mLbAVInfo->setVisible(false);
                         return;
                     }
                 }
@@ -791,14 +791,14 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
             {
                 QIcon tIcon2;
                 tIcon2.addPixmap(QPixmap(":/images/22_22/Info.png"), QIcon::Normal, QIcon::Off);
-                if (mLbAVStatistics->isVisible())
+                if (mLbAVInfo->isVisible())
                 {
-                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Hide A/V statistics"));
+                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Hide A/V info"));
                     tAction->setCheckable(true);
                     tAction->setChecked(true);
                 }else
                 {
-                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Show A/V statistics"));
+                    tAction = tMenu.addAction(Homer::Gui::ParticipantWidget::tr("Show A/V info"));
                     tAction->setCheckable(true);
                     tAction->setChecked(false);
                 }
@@ -807,14 +807,14 @@ void ParticipantWidget::contextMenuEvent(QContextMenuEvent *pEvent)
                 QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
                 if (tPopupRes != NULL)
                 {
-                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Show A/V statistics")) == 0)
+                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Show A/V info")) == 0)
                     {
-                    	mLbAVStatistics->setVisible(true);
+                    	mLbAVInfo->setVisible(true);
                         return;
                     }
-                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Hide A/V statistics")) == 0)
+                    if (tPopupRes->text().compare(Homer::Gui::ParticipantWidget::tr("Hide A/V info")) == 0)
                     {
-                    	mLbAVStatistics->setVisible(false);
+                    	mLbAVInfo->setVisible(false);
                         return;
                     }
                 }
@@ -2308,10 +2308,10 @@ void ParticipantWidget::UpdateMovieControls()
     }
 }
 
-void ParticipantWidget::UpdateAVStatistics()
+void ParticipantWidget::UpdateAVInfo()
 {
-    // should we update the A/V statistic widget?
-    if ((mLbAVStatistics->isVisible()) && (!mLbAVStatistics->hasSelectedText()))
+    // should we update the A/V info widget?
+    if ((mLbAVInfo->isVisible()) && (!mLbAVInfo->hasSelectedText()))
     {// time for an update
         QString tAVStats = "";
         QStringList tStats;
@@ -2320,7 +2320,7 @@ void ParticipantWidget::UpdateAVStatistics()
         if (mVideoWidget != NULL)
         {
 			// VIDEO
-			tAVStats += Homer::Gui::ParticipantWidget::tr("Video statistics:");
+			tAVStats += Homer::Gui::ParticipantWidget::tr("Video:");
 			tStats = mVideoWidget->GetVideoStatistic();
 			tStatLines = tStats.size();
 			for (int i = 0; i < tStatLines; i++)
@@ -2329,7 +2329,7 @@ void ParticipantWidget::UpdateAVStatistics()
 			tAVStats += "\n\n";
         }
 
-		tAVStats += Homer::Gui::ParticipantWidget::tr("Video/audio:");
+		tAVStats += Homer::Gui::ParticipantWidget::tr("A/V synchronization:");
 
 		tAVStats += "\n     " + Homer::Gui::ParticipantWidget::tr("A/V pre-buffering:") + " ";
 		if (mAVPreBuffering)
@@ -2354,13 +2354,13 @@ void ParticipantWidget::UpdateAVStatistics()
         if (mAudioWidget)
         {
 			// AUDIO
-			tAVStats += Homer::Gui::ParticipantWidget::tr("Audio statistics:");
+			tAVStats += Homer::Gui::ParticipantWidget::tr("Audio:");
 			tStats = mAudioWidget->GetAudioStatistic();
 			tStatLines = tStats.size();
 			for (int i = 0; i < tStatLines; i++)
 				tAVStats += "\n     " + tStats[i];
 
-			mLbAVStatistics->setText(tAVStats);
+			mLbAVInfo->setText(tAVStats);
         }
 	}
 }
@@ -2393,7 +2393,7 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
 
     AVSync();
 
-    UpdateAVStatistics();
+    UpdateAVInfo();
 
     pEvent->accept();
 }

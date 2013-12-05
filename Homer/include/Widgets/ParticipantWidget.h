@@ -196,7 +196,7 @@ private:
 	void Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu = NULL, MediaSourceMuxer *pVideoSourceMuxer = NULL, MediaSourceMuxer *pAudioSourceMuxer = NULL, QString pParticipant = "", enum TransportType pTransport = SOCKET_UDP);
     void FindSipInterface(QString pSessionName);
     void UpdateMovieControls();
-    void UpdateAVStatistics();
+    void UpdateAVInfo();
     virtual void contextMenuEvent(QContextMenuEvent *event);
     virtual void closeEvent(QCloseEvent* pEvent = NULL);
     virtual void dragEnterEvent(QDragEnterEvent *pEvent);

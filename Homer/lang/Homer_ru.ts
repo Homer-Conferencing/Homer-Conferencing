@@ -1258,6 +1258,10 @@
         <source>Linked AVCodec:</source>
         <translation>Линк для AVCodec:</translation>
     </message>
+    <message>
+        <source>Linked glibc:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Homer::Gui::IdentityDialog</name>
@@ -1342,6 +1346,22 @@ Check configuration!</source>
     <message>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation>Не удалось опубликовать свой новый присутствия государства на сервере SIP</translation>
+    </message>
+    <message>
+        <source>Configuration</source>
+        <translation type="unfinished">Конфигурация</translation>
+    </message>
+    <message>
+        <source>Mosaic mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation type="unfinished">Версия</translation>
+    </message>
+    <message>
+        <source>Main menu</source>
+        <translation type="unfinished">Главное меню</translation>
     </message>
 </context>
 <context>
@@ -1768,10 +1788,6 @@ Check configuration!</source>
         <translation>Запись видео с качеством:</translation>
     </message>
     <message>
-        <source>Video/audio:</source>
-        <translation>Видео/Аудио:</translation>
-    </message>
-    <message>
         <source>Audio</source>
         <translation>Аудио</translation>
     </message>
@@ -1794,14 +1810,6 @@ Check configuration!</source>
     <message>
         <source>Hide A/V statistics</source>
         <translation>Скрыть A/V статистику</translation>
-    </message>
-    <message>
-        <source>Video statistics:</source>
-        <translation>Видеостатистика:</translation>
-    </message>
-    <message>
-        <source>Audio statistics:</source>
-        <translation>Аудиостатистика:</translation>
     </message>
     <message>
         <source>Session info</source>
@@ -1910,6 +1918,22 @@ Check configuration!</source>
     <message>
         <source>Participant unavailable</source>
         <translation>Участник недоступен</translation>
+    </message>
+    <message>
+        <source>Video:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hide A/V info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show A/V info</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2762,12 +2786,12 @@ Check configuration!</source>
         <translation>Показать/скрыть контакты</translation>
     </message>
     <message>
-        <source>Mosaik mode</source>
-        <translation>Mosaik-Modus</translation>
-    </message>
-    <message>
         <source>Close sessions</source>
         <translation>Закрыть сессии</translation>
+    </message>
+    <message>
+        <source>Mosaic mode</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -2427,14 +2427,22 @@ Bitte Konfiguration prüfen!</translation>
     <message>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="750"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="780"/>
+        <source>Hide A/V info</source>
+        <translation>Verstecke A/V-Info</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="756"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="775"/>
+        <source>Show A/V info</source>
+        <translation>Zeige A/V-Info</translation>
+    </message>
+    <message>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="796"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="815"/>
         <source>Hide A/V statistics</source>
         <translation>Verstecke A/V Statistiken</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="756"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="775"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="801"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="810"/>
         <source>Show A/V statistics</source>
@@ -2552,13 +2560,13 @@ Bitte Konfiguration prüfen!</translation>
     </message>
     <message>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="2323"/>
-        <source>Video statistics:</source>
-        <translation>Videostatistiken:</translation>
+        <source>Video:</source>
+        <translation>Video:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2332"/>
-        <source>Video/audio:</source>
-        <translation>Video/Audio:</translation>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2357"/>
+        <source>Audio:</source>
+        <translation>Audio:</translation>
     </message>
     <message>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="2334"/>
@@ -2583,6 +2591,7 @@ Bitte Konfiguration prüfen!</translation>
         <translation>(auto. Neustart)</translation>
     </message>
     <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2332"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="2343"/>
         <source>A/V synchronization:</source>
         <translation>A/V Synchronisierung:</translation>
@@ -2591,11 +2600,6 @@ Bitte Konfiguration prüfen!</translation>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="2349"/>
         <source>A/V synchronizations:</source>
         <translation>A/V Synchronisierungen:</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2357"/>
-        <source>Audio statistics:</source>
-        <translation>Audiostatistiken:</translation>
     </message>
 </context>
 <context>
