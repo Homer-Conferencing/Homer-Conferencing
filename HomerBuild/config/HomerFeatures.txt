@@ -4,6 +4,7 @@
 ######################################################################################
 ######################################################################################
 set(FEATURE_PULSEAUDIO ON)
+set(FEATURE_NETWORK_SIMULATOR OFF)
 
 
 
@@ -19,7 +20,7 @@ set(HOMER_APP_WITH_VERSIONING OFF)
 ###########################################
 # automatically include network simulator
 ###########################################
-IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-NetworkSimulator/HomerNetworkSimulator" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-NetworkSimulator/HomerNetworkSimulator")
+IF(FEATURE_NETWORK_SIMULATOR AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-NetworkSimulator/HomerNetworkSimulator" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../../Homer-NetworkSimulator/HomerNetworkSimulator")
 	MESSAGE("---------- NetworkSimulator found and integrated into build process -----------")
 	SET(HOMER_NETWORK_SIMULATOR ON)
 ELSE()
