@@ -76,7 +76,7 @@ QString HelpDialog::GetSystemInfo()
         tOs = "Linux";
         tCurArch = (System::GetMachineType() == "x86") ? "linux32" : "linux64";
         tTargetArch = "linux" + QString("%1").arg(ARCH_BITS);
-        tAdditionaLiblLines = "Linked glibc:  " + QString("%1").arg(__GLIBC__) + "." + QString("%1").arg(__GLIBC_MINOR__) + "\n";
+        tAdditionaLiblLines = Homer::Gui::HelpDialog::tr("Linked glibc:") + "  " + QString("%1").arg(__GLIBC__) + "." + QString("%1").arg(__GLIBC_MINOR__) + "\n";
     #endif
     #if (defined BSD) && (not defined APPLE)
         tOs = "BSD";
