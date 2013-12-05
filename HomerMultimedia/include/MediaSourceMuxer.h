@@ -21,7 +21,6 @@
 
 /*
  * Purpose: media source multiplexer which grabs frames from registered media sources, transcodes them and distributes all of them to the registered media sinks
- * Author:  Thomas Volkert
  * Since:   2009-01-04
  */
 

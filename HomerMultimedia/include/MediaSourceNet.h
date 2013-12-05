@@ -21,7 +21,6 @@
 
 /*
  * Purpose: ffmpeg based network video source
- * Author:  Thomas Volkert
  * Since:   2008-12-16
  */
 

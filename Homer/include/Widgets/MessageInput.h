@@ -21,7 +21,6 @@
 
 /*
  * Purpose: modified QTextEdit for message input
- * Author:  Thomas Volkert
  * Since:   2009-07-21
  */
 

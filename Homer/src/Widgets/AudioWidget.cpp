@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of the widget for audio display
- * Author:  Thomas Volkert
  * Since:   2009-02-12
  */
 

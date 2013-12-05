@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of an audio playback
- * Author:  Thomas Volkert
  * Since:   2012-08-16
  */
 

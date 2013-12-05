@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Main window header
- * Author:  Thomas Volkert
  * Since:   2008-11-25
  */
 

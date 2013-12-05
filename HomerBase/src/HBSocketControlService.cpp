@@ -20,8 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: Implemenation of socket control service as singleton
- * Author:  Thomas Volkert
+ * Purpose: Implementation of socket control service as singleton
  * Since:   2011-11-16
 */
 #include <Header_Windows.h>

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Events
- * Author:  Thomas Volkert
  * Since:   2012-04-18
  */
 

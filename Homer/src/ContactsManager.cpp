@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of data pool for contacts management
- * Author:  Thomas Volkert
  * Since:   2009-04-07
  */
 

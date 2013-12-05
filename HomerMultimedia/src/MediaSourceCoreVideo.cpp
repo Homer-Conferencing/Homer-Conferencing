@@ -21,7 +21,6 @@
 
 /*
  * Purpose: CoreVideo capture implementation for OSX
- * Author:  Thomas Volkert
  * Since:   2011-11-16
  */
 

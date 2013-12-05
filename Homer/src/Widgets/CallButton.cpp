@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a modified QPushButton for call button
- * Author:  Thomas Volkert
  * Since:   2008-12-15
  */
 

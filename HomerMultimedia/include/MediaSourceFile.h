@@ -21,7 +21,6 @@
 
 /*
  * Purpose: ffmpeg based local file source
- * Author:  Thomas Volkert
  * Since:   2009-02-24
  */
 

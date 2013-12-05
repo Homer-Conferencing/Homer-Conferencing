@@ -21,7 +21,6 @@
 
 /*
  * Purpose: video scaler
- * Author:  Thomas Volkert
  * Since:   2012-08-09
  */
 

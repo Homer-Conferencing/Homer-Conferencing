@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of OverviewErrorsWidget
- * Author:  Thomas Volkert
  * Since:   2011-08-14
  */
 

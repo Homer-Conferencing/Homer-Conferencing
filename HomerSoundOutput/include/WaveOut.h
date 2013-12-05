@@ -21,7 +21,6 @@
 
 /*
  * Purpose: abstract wave out
- * Author:  Thomas Volkert
  * Since:   2010-11-30
  */
 

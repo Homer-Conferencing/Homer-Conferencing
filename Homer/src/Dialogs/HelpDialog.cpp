@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a help dialog
- * Author:  Thomas Volkert
  * Since:   2010-12-19
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of OverviewContactsWidget.h
- * Author:  Thomas Volkert
  * Since:   2011-01-07
  */
 

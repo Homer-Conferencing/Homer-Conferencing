@@ -21,7 +21,6 @@
 
 /*
  * Purpose: session description protocol
- * Author:  Thomas Volkert
  * Since:   2009-04-14
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: ffmpeg based local VFW video media source
- * Author:  Thomas Volkert
  * Since:   2010-10-19
  */
 

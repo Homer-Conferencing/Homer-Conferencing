@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a media source multiplexer
- * Author:  Thomas Volkert
  * Since:   2009-01-04
  */
 

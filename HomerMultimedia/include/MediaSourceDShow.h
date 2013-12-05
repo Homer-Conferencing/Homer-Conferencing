@@ -21,7 +21,6 @@
 
 /*
  * Purpose: DirectShow based local video media source
- * Author:  Thomas Volkert
  * Since:   2012-08-16
  */
 

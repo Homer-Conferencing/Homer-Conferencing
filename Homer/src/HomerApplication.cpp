@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a modified QApplication
- * Author:  Thomas Volkert
  * Since:   2012-08-24
  */
 

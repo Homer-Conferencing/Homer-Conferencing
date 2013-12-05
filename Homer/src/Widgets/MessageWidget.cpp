@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a widget for a message dialoge
- * Author:  Thomas Volkert
  * Since:   2008-12-02
  */
 

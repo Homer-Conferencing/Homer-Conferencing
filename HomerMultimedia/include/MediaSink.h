@@ -21,7 +21,6 @@
 
 /*
  * Purpose: abstract media sink
- * Author:  Thomas Volkert
  * Since:   2009-01-06
  */
 

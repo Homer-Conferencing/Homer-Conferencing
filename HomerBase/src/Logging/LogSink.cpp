@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of abstract log sink
- * Author:  Thomas Volkert
  * Since:   2011-07-27
  */
 

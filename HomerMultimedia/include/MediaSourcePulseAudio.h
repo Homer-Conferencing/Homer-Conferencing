@@ -21,7 +21,6 @@
 
 /*
  * Purpose: PulseAudio capturing
- * Author:  Thomas Volkert
  * Since:   2013-02-09
  */
 

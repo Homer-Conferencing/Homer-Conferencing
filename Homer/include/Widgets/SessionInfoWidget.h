@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Widget for displaying extended session information
- * Author:  Thomas Volkert
  * Since:   2010-09-18
  */
 

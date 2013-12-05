@@ -21,7 +21,6 @@
 
 /*
  * Purpose: network communication statistic and control dock widget
- * Author:  Thomas Volkert
  * Since:   2011-11-16
  */
 

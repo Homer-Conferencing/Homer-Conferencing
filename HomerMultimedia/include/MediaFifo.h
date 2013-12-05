@@ -21,7 +21,6 @@
 
 /*
  * Purpose: FIFO memory for buffering media data in a preallocated data storage
- * Author:  Thomas Volkert
  * Since:   2011-11-13
  */
 

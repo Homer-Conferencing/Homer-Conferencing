@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of OverviewFileTransfersWidget.h
- * Author:  Thomas Volkert
  * Since:   2011-01-30
  */
 

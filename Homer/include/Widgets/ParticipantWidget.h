@@ -21,7 +21,6 @@
 
 /*
  * Purpose: participant widget
- * Author:  Thomas Volkert
  * Since:   2008-12-06
  */
 

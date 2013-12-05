@@ -21,7 +21,6 @@
 
 /*
  * Purpose: header includes for alsa library
- * Author:  Thomas Volkert
  * Since:   2009-06-05
  */
 

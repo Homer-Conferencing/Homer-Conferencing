@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Windows includes, compatibility definitions for VC
- * Author:  Thomas Volkert
  * Since:   2011-12-20
  */
 

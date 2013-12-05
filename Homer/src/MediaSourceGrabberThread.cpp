@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a worker thread for video/audio grabbing
- * Author:  Thomas Volkert
  * Since:   2012-08-08
  */
 

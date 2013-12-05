@@ -21,7 +21,6 @@
 
 /*
  * Purpose: ffmpeg based local v4l2 video media source
- * Author:  Thomas Volkert
  * Since:   2008-12-01
  */
 

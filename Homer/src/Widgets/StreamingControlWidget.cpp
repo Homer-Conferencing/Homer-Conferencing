@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of StreamingControlWidget.h
- * Author:  Thomas Volkert
  * Since:   2010-11-17
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: header includes for Windows multimedia system
- * Author:  Thomas Volkert
  * Since:   2010-12-11
  */
 

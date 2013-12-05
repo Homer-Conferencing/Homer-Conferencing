@@ -21,7 +21,6 @@
 
 /*
  * Purpose: packet statistic dock widget
- * Author:  Thomas Volkert
  * Since:   2009-04-20
  */
 

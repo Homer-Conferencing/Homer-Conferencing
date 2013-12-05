@@ -22,7 +22,6 @@
 
 /*
  * Purpose: Alsa Audio Capture
- * Author:  Stefan Koegel, Thomas Volkert
  * Since:   2009-05-18
  */
 

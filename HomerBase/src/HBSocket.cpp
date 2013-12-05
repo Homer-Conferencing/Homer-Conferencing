@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of wrapper for os independent socket handling
- * Author:  Thomas Volkert
  * Since:   2010-09-22
  */
 

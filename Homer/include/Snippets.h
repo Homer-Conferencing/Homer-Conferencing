@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Small function snippets
- * Author:  Thomas Volkert
  * Since:   2011-09-25
  */
 

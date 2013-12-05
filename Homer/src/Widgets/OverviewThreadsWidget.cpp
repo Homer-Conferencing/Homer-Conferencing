@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of OverviewThreadsWidget.h
- * Author:  Thomas Volkert
  * Since:   2009-05-17
  */
 

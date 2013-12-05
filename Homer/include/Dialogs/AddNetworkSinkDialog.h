@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Dialog for adding an additional network based media sink
- * Author:  Thomas Volkert
  * Since:   2010-06-20
  */
 

@@ -20,8 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: Dialog for fine tuning of audio silence suppresion
- * Author:  Thomas Volkert
+ * Purpose: Dialog for fine tuning of audio silence suppression
  * Since:   2013-01-06
  */
 

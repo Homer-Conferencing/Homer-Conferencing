@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a modified QTextEdit for message history
- * Author:  Thomas Volkert
  * Since:   2008-12-15
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: session initiation protocol's stun support
- * Author:  Thomas Volkert
  * Since:   2009-06-20
  */
 

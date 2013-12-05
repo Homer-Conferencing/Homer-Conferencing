@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Process statistic service
- * Author:  Thomas Volkert
  * Since:   2010-11-07
  */
 

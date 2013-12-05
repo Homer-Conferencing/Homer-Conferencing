@@ -21,7 +21,6 @@
 
 /*
  * Purpose: header for class reflection
- * Author:  Thomas Volkert
  * Since:   2011-03-10
  */
 

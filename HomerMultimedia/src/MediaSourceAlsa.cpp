@@ -22,7 +22,6 @@
 
 /*
  * Purpose: Alsa Capture Implementation
- * Author:  Stefan Kögel, Thomas Volkert
  * Since:   2009-05-18
  */
 

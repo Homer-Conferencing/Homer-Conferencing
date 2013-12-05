@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of OverviewPlaylistWidget
- * Author:  Thomas Volkert
  * Since:   2011-03-22
  */
 

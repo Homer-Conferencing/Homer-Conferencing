@@ -21,7 +21,6 @@
 
 /*
  * Purpose: QoS settings support
- * Author:  Thomas Volkert
  * Since:   2011-10-20
  */
 

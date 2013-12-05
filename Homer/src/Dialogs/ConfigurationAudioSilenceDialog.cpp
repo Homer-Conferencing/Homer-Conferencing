@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a dialog for fine tuning of audio silence suppresion
- * Author:  Thomas Volkert
  * Since:   2013-01-06
  */
 

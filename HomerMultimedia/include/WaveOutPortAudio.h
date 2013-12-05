@@ -21,7 +21,6 @@
 
 /*
  * Purpose: wave out based on PortAudio
- * Author:  Thomas Volkert
  * Since:   2012-05-07
  */
 

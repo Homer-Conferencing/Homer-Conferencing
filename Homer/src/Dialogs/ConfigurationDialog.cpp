@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a dialog for configuration edit
- * Author:  Thomas Volkert
  * Since:   2010-10-03
  */
 

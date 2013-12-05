@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a ffmpeg based memory media source
- * Author:  Thomas Volkert
  * Since:   2011-05-05
  */
 

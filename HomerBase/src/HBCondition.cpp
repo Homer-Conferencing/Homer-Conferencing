@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of os independent condition handling
- * Author:  Thomas Volkert
  * Since:   2011-02-05
  */
 

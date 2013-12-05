@@ -21,7 +21,6 @@
 
 /*
  * Purpose: header file for logger
- * Author:  Thomas Volkert
  * Since:   2009-05-19
  */
 

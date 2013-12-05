@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a dialog to open video/audio preview
- * Author:  Thomas Volkert
  * Since:   2011-11-28
  */
 

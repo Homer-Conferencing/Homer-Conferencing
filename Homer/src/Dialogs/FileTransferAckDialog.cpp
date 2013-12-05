@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a dialog for acknowledging the files to transfer
- * Author:  Thomas Volkert
  * Since:   2011-02-04
  */
 

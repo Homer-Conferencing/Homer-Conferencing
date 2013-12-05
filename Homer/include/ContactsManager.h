@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Data pool for contacts management
- * Author:  Thomas Volkert
  * Since:   2009-04-07
  */
 

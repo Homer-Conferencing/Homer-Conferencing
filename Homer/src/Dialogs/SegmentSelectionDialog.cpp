@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a dialog for selecting the screen segment which is to be captured
- * Author:  Thomas Volkert
  * Since:   2010-12-19
  */
 

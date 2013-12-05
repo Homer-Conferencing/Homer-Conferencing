@@ -21,7 +21,6 @@
 
 /*
  * Purpose: wrapper for os independent conditional waiting
- * Author:  Thomas Volkert
  * Since:   2011-02-05
  */
 

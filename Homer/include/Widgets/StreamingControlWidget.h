@@ -21,7 +21,6 @@
 
 /*
  * Purpose: tool buttons for streaming control
- * Author:  Thomas Volkert
  * Since:   2010-11-17
  */
 

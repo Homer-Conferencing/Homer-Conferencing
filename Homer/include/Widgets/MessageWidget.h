@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Widget for handling instant message
- * Author:  Thomas Volkert
  * Since:   2008-12-02
  */
 

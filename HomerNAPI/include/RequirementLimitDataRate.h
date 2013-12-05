@@ -21,7 +21,6 @@
 
 /*
  * Purpose: RequirementLimitDataRate
- * Author:  Thomas Volkert
  * Since:   2011-12-10
  */
 

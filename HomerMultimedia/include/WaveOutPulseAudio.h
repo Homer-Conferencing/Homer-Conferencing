@@ -21,7 +21,6 @@
 
 /*
  * Purpose: wave out based on PulseAudio
- * Author:  Thomas Volkert
  * Since:   2013-02-09
  */
 

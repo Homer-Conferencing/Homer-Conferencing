@@ -21,7 +21,6 @@
 
 /*
  * Purpose: QEvent management
- * Author:  Thomas Volkert
  * Since:   2012-07-03
  */
 

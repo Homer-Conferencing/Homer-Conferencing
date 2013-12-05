@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Process statistic
- * Author:  Thomas Volkert
  * Since:   2009-05-18
  */
 

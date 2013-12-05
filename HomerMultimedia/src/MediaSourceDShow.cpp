@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a DirectShow based local video source
- * Author:  Thomas Volkert
  * Since:   2012-08-16
  */
 

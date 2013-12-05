@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Extension for netinet/in.h for MinGw environments
- * Author:  Thomas Volkert
  * Since:   2011-10-20
  */
 

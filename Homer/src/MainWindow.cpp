@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of MainWindow.h
- * Author:  Thomas Volkert
  * Since:   2008-11-25
  */
 #include <string>

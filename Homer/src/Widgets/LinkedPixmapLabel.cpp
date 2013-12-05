@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a modified QLabel for showing a linked pixmap
- * Author:  Thomas Volkert
  * Since:   2012-08-21
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: ffmpeg based local MMSys audio media source
- * Author:  Thomas Volkert
  * Since:   2010-10-29
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Dialog for check for updates
- * Author:  Thomas Volkert
  * Since:   2010-12-19
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: widget for video display
- * Author:  Thomas Volkert
  * Since:   2008-12-01
  */
 

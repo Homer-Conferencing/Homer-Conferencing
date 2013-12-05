@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a dialog for editing a contact
- * Author:  Thomas Volkert
  * Since:   2009-04-06
  */
 

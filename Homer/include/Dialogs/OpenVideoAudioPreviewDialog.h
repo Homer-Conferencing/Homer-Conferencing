@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Dialog to open a video/audio preview
- * Author:  Thomas Volkert
  * Since:   2011-11-28
  */
 

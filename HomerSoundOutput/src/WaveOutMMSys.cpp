@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Wave output based on Alsa
- * Author:  Thomas Volkert
  * Since:   2010-12-11
  */
 

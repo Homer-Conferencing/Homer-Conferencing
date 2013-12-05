@@ -21,7 +21,6 @@
 
 /*
  * Purpose: header file for log sink for console outputs
- * Author:  Thomas Volkert
  * Since:   2011-07-27
  */
 

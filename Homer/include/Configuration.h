@@ -21,7 +21,6 @@
 
 /*
  * Purpose: global program settings
- * Author:  Thomas Volkert
  * Since:   2009-07-30
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: header file for abstract log sink
- * Author:  Thomas Volkert
  * Since:   2011-07-27
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of os independent mutex handling
- * Author:  Thomas Volkert
  * Since:   2010-09-20
  */
 

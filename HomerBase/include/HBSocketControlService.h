@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Socket control service
- * Author:  Thomas Volkert
  * Since:   2011-11-16
  */
 

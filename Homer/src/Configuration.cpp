@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of the global program settings management
- * Author:  Thomas Volkert
  * Since:   2009-07-30
  */
 

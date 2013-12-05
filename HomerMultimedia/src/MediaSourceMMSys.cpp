@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a ffmpeg based local MMSys video source
- * Author:  Thomas Volkert
  * Since:   2010-10-29
  */
 

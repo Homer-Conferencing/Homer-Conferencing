@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Wave output based on PortAudio
- * Author:  Thomas Volkert
  * Since:   2012-05-07
  */
 

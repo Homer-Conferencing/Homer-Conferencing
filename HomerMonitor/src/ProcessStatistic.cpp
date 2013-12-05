@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implemenation of process statistic
- * Author:  Thomas Volkert
  * Since:   2009-05-18
 */
 

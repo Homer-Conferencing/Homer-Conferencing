@@ -21,7 +21,6 @@
 
 /*
  * Purpose: header includes for sofia-sip library
- * Author:  Thomas Volkert
  * Since:   2009-02-16
  */
 

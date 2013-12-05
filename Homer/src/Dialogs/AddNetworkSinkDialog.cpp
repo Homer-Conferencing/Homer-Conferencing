@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a dialog for adding an additional network based sink
- * Author:  Thomas Volkert
  * Since:   2010-06-20
  */
 

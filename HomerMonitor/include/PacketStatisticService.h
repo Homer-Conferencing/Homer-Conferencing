@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Packet statistic service
- * Author:  Thomas Volkert
  * Since:   2010-10-27
  */
 

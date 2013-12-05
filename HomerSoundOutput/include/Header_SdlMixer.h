@@ -21,7 +21,6 @@
 
 /*
  * Purpose: header includes for SDL_mixer library
- * Author:  Thomas Volkert
  * Since:   2009-02-16
  */
 

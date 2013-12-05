@@ -21,7 +21,6 @@
 
 /*
  * Purpose: modified tool button for setting the availability state
- * Author:  Thomas Volkert
  * Since:   2009-05-09
  */
 

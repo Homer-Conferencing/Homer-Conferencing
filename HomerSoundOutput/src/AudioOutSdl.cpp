@@ -22,7 +22,6 @@
 
 /*
  * Purpose: Implementation of an universal SDL based audio output
- * Author:  Stefan Koegel, Thomas Volkert
  * Since:   2009-03-18
  */
 

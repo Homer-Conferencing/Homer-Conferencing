@@ -20,8 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: Implementation of several basic system functions
- * Author:  Thomas Volkert
+ * Purpose: Implementation of system information functions
  * Since:   2011-02-25
  */
 

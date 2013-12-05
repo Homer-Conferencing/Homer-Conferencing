@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implemenation of packet statistic service as singleton
- * Author:  Thomas Volkert
  * Since:   2010-10-27
 */
 #include <PacketStatisticService.h>

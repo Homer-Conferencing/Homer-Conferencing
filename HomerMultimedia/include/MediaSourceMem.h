@@ -21,7 +21,6 @@
 
 /*
  * Purpose: ffmpeg based memory video source
- * Author:  Thomas Volkert
  * Since:   2011-05-05
  */
 

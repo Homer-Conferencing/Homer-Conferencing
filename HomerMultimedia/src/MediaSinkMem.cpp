@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a memory based media sink which supports RTP
- * Author:  Thomas Volkert
  * Since:   2012-06-07
  */
 

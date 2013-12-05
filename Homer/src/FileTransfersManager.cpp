@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of file transfers management
- * Author:  Thomas Volkert
  * Since:   2012-07-09
  */
 

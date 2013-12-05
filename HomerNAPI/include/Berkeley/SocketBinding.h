@@ -21,7 +21,6 @@
 
 /*
  * Purpose: SocketBinding
- * Author:  Thomas Volkert
  * Since:   2012-05-19
  */
 

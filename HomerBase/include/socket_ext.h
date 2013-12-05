@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Extension for sys/socket.h
- * Author:  Thomas Volkert
  * Since:   2011-10-20
  */
 

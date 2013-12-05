@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Wave output based on PulseAudio
- * Author:  Thomas Volkert
  * Since:   2013-02-09
  */
 

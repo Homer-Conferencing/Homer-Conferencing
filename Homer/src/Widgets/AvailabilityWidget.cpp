@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of AvailabilityWidget.h
- * Author:  Thomas Volkert
  * Since:   2009-05-09
  */
 

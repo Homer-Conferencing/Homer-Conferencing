@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Event management
- * Author:  Thomas Volkert
  * Since:   2008-12-09
  */
 

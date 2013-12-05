@@ -21,7 +21,6 @@
 
 /*
  * Purpose: header includes for PortAudio
- * Author:  Thomas Volkert
  * Since:   2012-04-25
  */
 

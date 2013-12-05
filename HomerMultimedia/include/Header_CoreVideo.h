@@ -21,7 +21,6 @@
 
 /*
  * Purpose: header includes for CoreVideo on OSX
- * Author:  Thomas Volkert
  * Since:   2011-11-16
  */
 

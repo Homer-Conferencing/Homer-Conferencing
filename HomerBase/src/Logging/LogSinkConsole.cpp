@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of log sink for console output
- * Author:  Thomas Volkert
  * Since:   2011-07-27
  */
 

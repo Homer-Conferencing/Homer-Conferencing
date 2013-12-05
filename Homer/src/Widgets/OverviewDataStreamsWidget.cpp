@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of OverviewDataStreamsWidget.h
- * Author:  Thomas Volkert
  * Since:   2009-04-20
  */
 

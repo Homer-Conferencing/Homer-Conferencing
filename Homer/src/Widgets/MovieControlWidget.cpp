@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a movie control widget
- * Author:  Thomas Volkert
  * Since:   2012-11-16
  */
 

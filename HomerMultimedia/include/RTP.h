@@ -21,7 +21,6 @@
 
 /*
  * Purpose: real-time transport protocol handling
- * Author:  Thomas Volkert
  * Since:   2009-01-20
  */
 

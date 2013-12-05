@@ -21,7 +21,6 @@
 
 /*
  * Purpose: forward declaration of some basic sofia-sip types to avoid direct dependency from sofia-sip headers
- * Author:  Thomas Volkert
  * Since:   2011-10-28
  */
 

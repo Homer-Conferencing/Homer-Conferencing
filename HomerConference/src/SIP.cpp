@@ -22,7 +22,6 @@
 /*
  * Purpose: Implementation for session initiation protocol
  *          implemented as base class (some inits are done within MEETING class)
- * Author:  Thomas Volkert
  * Since:   2009-04-14
  */
 

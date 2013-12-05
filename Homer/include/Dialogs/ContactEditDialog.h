@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Dialog for editing a contact
- * Author:  Thomas Volkert
  * Since:   2009-04-06
  */
 

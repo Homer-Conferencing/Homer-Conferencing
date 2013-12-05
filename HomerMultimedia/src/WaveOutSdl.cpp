@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Wave output based on SDL
- * Author:  Thomas Volkert
  * Since:   2012-05-13
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: logo video source
- * Author:  Thomas Volkert
  * Since:   2012-10-25
  */
 

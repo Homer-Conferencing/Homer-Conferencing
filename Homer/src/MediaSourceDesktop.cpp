@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a desktop video source
- * Author:  Thomas Volkert
  * Since:   2010-02-15
  */
 

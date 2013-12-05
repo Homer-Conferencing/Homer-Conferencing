@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implemenation of packet statistic
- * Author:  Thomas Volkert
  * Since:   2009-04-17
 */
 #include <PacketStatistic.h>

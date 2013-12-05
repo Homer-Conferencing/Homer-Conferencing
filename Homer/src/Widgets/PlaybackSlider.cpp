@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a modified QSlider for file playback
- * Author:  Thomas Volkert
  * Since:   2012-07-29
  */
 

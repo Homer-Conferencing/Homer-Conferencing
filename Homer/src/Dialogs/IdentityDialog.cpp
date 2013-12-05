@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of a dialog for identity edit
- * Author:  Thomas Volkert
  * Since:   2008-12-02
  */
 

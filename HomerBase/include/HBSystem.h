@@ -20,8 +20,7 @@
  *****************************************************************************/
 
 /*
- * Purpose: header for system specific and unspecific basic functions
- * Author:  Thomas Volkert
+ * Purpose: header for system information functions
  * Since:   2011-02-25
  */
 

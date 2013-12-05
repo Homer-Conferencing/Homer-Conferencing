@@ -21,7 +21,6 @@
 
 /*
  * Purpose: Implementation of wrapper for os independent random number generator
- * Author:  Thomas Volkert
  * Since:   2010-09-28
  */
 

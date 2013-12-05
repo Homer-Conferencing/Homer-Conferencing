@@ -21,7 +21,6 @@
 
 /*
  * Purpose: contact list dock widget
- * Author:  Thomas Volkert
  * Since:   2011-01-07
  */
 

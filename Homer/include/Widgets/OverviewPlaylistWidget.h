@@ -21,7 +21,6 @@
 
 /*
  * Purpose: playlist dock widget
- * Author:  Thomas Volkert
  * Since:   2011-03-22
  */
 

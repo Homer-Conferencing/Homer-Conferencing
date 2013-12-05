@@ -21,7 +21,6 @@
 
 /*
  * Purpose: process statistic dock widget
- * Author:  Thomas Volkert
  * Since:   2009-05-17
  */
 

@@ -21,7 +21,6 @@
 
 /*
  * Purpose: wrapper for os independent thread handling
- * Author:  Thomas Volkert
  * Since:   2010-09-28
  */
 
