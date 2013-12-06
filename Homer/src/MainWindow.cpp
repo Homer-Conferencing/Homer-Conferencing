@@ -1827,7 +1827,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 				ShowInfo("Participant is already contacted", "The contact with the address \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already contacted and a participant widget is currently open!");
     	}else
     	{
-			ShowInfo("Loop detected", "Loop detected: you tried to contact yoursel!");
+			ShowInfo("Loop detected", "Loop detected: you tried to contact yourself!");
     	}
 	}
     return tParticipantWidget;
