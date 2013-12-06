@@ -54,7 +54,8 @@ namespace Homer { namespace Conference {
 // de/activate strict assertions
 //#define SIP_ASSERTS
 
-#define USER_AGENT_SIGNATURE                            "homer-conferencing.com"
+#define USER_AGENT_SIGNATURE_PREFIX                     "homer-conferencing.com"
+#define USER_AGENT_SIGNATURE                            (((string)USER_AGENT_SIGNATURE_PREFIX + mUserAgentSignatureSuffix).c_str())
 #define ORGANIZATION_SIGNATURE                          "homer-conferencing.com"
 
 enum AvailabilityState{
@@ -76,6 +77,8 @@ public:
     virtual ~SIP();
 
     static std::string GetSofiaSipVersion();
+
+    void SetUserAgentSignatureSuffix(std::string pSuffix);
 
     /* presence management */
     void SetAvailabilityState(enum AvailabilityState pState, std::string pStateText = "");
@@ -145,7 +148,8 @@ protected:
     void SipReceivedCallHangupResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
     void SipReceivedCallTermination(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
     void SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, void* pTags, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
-    void SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
+    void SipReceivedOptions(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, char const *pPhrase, sip_t const *pSip, void* pTags, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
+        void SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
         /* helpers for "options response */
         void SipReceivedOptionsResponseAccept(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
         void SipReceivedOptionsResponseUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
@@ -171,6 +175,7 @@ protected:
     bool SipLoginAtServer();
     void SipLogoutAtServer();
 
+    std::string         mUserAgentSignatureSuffix;
     EventManager        mOutgoingEvents; // from users point of view
     enum AvailabilityState mAvailabilityState;
     SipContext          *mSipContext;
