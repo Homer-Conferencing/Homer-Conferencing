@@ -93,8 +93,6 @@ void OverviewContactsWidget::initializeGUI()
 {
     setupUi(this);
 
-    mTvContacts->header()->resizeSection(0, 25);
-    mTvContacts->header()->resizeSection(1, 150);
     mTvContacts->sortByColumn(1);
 }
 
@@ -249,7 +247,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
     tMenu.addSeparator();
 
-    tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Check availability of contacts"));
+    tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Update availability"));
     tAction->setCheckable(true);
     tAction->setChecked(CONF.GetSipContactsProbing());
 
@@ -293,7 +291,7 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
             return;
         }
 
-        if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Check availability of contacts")))
+        if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Update availability")))
         {
             bool tOldState = CONF.GetSipContactsProbing();
             CONF.SetSipContactsProbing(!CONF.GetSipContactsProbing());
@@ -322,6 +320,8 @@ void OverviewContactsWidget::Dialog2Contact(ContactEditDialog *pCED, ContactDesc
 	pContact->Host = pContact->Host.toLower();
     pContact->Port      = (QString("%1").arg(pCED->mSbPort->value()));
     pContact->Transport = Socket::String2TransportType(pCED->mCbTransport->currentText().toStdString());
+    pContact->Unknown = false;
+    pContact->Software = "";
     if (pNewContact)
     {
         pContact->Id    = CONTACTS.GetNextFreeId();
@@ -624,7 +624,7 @@ int ContactListModel::columnCount(const QModelIndex &pParent) const
 {
     int tResult = 0;
 
-    tResult = 2;
+    tResult = 3;
 
     //LOG(LOG_VERBOSE, "column count for %d:%d => %d", pParent.column(), pParent.row(), tResult);
 
@@ -645,12 +645,20 @@ QVariant ContactListModel::data(const QModelIndex &pIndex, int pRole) const
                     case 0:
                     	if (CONF.GetSipContactsProbing())
                     	{
-                    		if (GetContactAvailability(pIndex))
+                    		if (IsContactAvailable(pIndex))
                     		{
-                    			tResult = QPixmap(":/images/20_20/UserAvailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                    		    if(IsContactKnown(pIndex))
+                    		    {
+                    		        tResult = QPixmap(":/images/20_20/UserAvailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                    		    }else{
+                                    tResult = QPixmap(":/images/22_22/Help.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                    		    }
                     		}else
                     		{
-                    			tResult = QPixmap(":/images/20_20/UserUnavailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                                if(IsContactKnown(pIndex))
+                                {
+                                    tResult = QPixmap(":/images/20_20/UserUnavailable.png");//.scaled(20, 20, Qt::KeepAspectRatio, Qt::FastTransformation);
+                                }
                     		}
                     	}else
                     	{
@@ -659,6 +667,8 @@ QVariant ContactListModel::data(const QModelIndex &pIndex, int pRole) const
                         break;
                     case 1:
                         //tResult = QPixmap(":/images/Users1.png").scaled(25, 25, Qt::KeepAspectRatio, Qt::FastTransformation);
+                        break;
+                    case 2:
                         break;
                     default:
                         break;
@@ -672,7 +682,10 @@ QVariant ContactListModel::data(const QModelIndex &pIndex, int pRole) const
                     case 1:
                         tResult = GetContactName(pIndex);
                         break;
-                    default:
+                    case 2:
+                        tResult = GetContactSoftware(pIndex);
+                        break;
+                     default:
                         break;
                 }
                 break;
@@ -685,6 +698,31 @@ QVariant ContactListModel::data(const QModelIndex &pIndex, int pRole) const
                     case 1:
                         tResult = QSize(250,25);
                         break;
+                    case 2:
+                        tResult = QSize(150,25);
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case Qt::BackgroundColorRole:
+                switch(pIndex.column())
+                {
+                    default:
+                        break;
+                }
+                break;
+            case Qt::TextColorRole:
+                switch(pIndex.column())
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        tResult = QColor(0, 0, 0);
+                        break;
+                    case 2:
+                        tResult = Qt::gray;
+                        break;
                     default:
                         break;
                 }
@@ -695,7 +733,10 @@ QVariant ContactListModel::data(const QModelIndex &pIndex, int pRole) const
                     case 0:
                         break;
                     case 1:
-                        tResult = QFont("Sans", 9, QFont::Bold);
+                        tResult = QFont("Arial", 9, QFont::Normal);
+                        break;
+                    case 2:
+                        tResult = QFont("Arial", 8, QFont::Normal);
                         break;
                     default:
                         break;
@@ -772,6 +813,8 @@ QVariant ContactListModel::headerData(int pSection, Qt::Orientation pOrientation
                     case 1:
                         tResult = QPixmap(":/images/22_22/User.png");
                         break;
+                    case 2:
+                        break;
                     default:
                         break;
                 }
@@ -782,24 +825,29 @@ QVariant ContactListModel::headerData(int pSection, Qt::Orientation pOrientation
                     case 0:
                         return "";
                     case 1:
-                        return Homer::Gui::OverviewContactsWidget::tr("Contacts");
+                        return Homer::Gui::OverviewContactsWidget::tr("Name");
+                    case 2:
+                        return Homer::Gui::OverviewContactsWidget::tr("Software");
                     default:
                         break;
                 }
                 break;
-            case Qt::SizeHintRole:
-                switch(pSection)
-                {
-                    case 0:
-                        tResult = QSize(25,25);
-                        break;
-                    case 1:
-                        tResult = QSize(250,25);
-                        break;
-                    default:
-                        break;
-                }
-                break;
+//            case Qt::SizeHintRole:
+//                switch(pSection)
+//                {
+//                    case 0:
+//                        tResult = QSize(25,25);
+//                        break;
+//                    case 1:
+//                        tResult = QSize(250,25);
+//                        break;
+//                    case 2:
+//                        tResult = QSize(150,25);
+//                        break;
+//                    default:
+//                        break;
+//                }
+//                break;
             case Qt::FontRole:
                 switch(pSection)
                 {
@@ -807,7 +855,10 @@ QVariant ContactListModel::headerData(int pSection, Qt::Orientation pOrientation
                         tResult = QFont("Sans", 8, QFont::Bold);
                         break;
                     case 1:
-                        tResult = QFont("Sans", 8, QFont::Bold);
+                        tResult = QFont("Sans", 8, QFont::Normal);
+                        break;
+                    case 2:
+                        tResult = QFont("Sans", 8, QFont::Normal);
                         break;
                     default:
                         break;
@@ -828,6 +879,9 @@ void ContactListModel::UpdateView()
     reset();
 
     mOverviewContactsWidget->mTvContacts->setCurrentIndex(tIndex);
+    mOverviewContactsWidget->mTvContacts->header()->setResizeMode(0, QHeaderView::Fixed);
+    mOverviewContactsWidget->mTvContacts->header()->setResizeMode(1, QHeaderView::Stretch);
+    mOverviewContactsWidget->mTvContacts->header()->setResizeMode(2, QHeaderView::Stretch);
 }
 
 void ContactListModel::sort (int pColumn, Qt::SortOrder pOrder)
@@ -846,18 +900,52 @@ void ContactListModel::sort (int pColumn, Qt::SortOrder pOrder)
     }
 }
 
+QString ContactListModel::GetContactSoftware(const QModelIndex &pIndex) const
+{
+    QString tResult = "";
+
+    QString tSoftware = "";
+    if (pIndex.internalPointer() != NULL)
+        tSoftware = ((ContactDescriptor*)pIndex.internalPointer())->GetSoftwareName();
+
+    if(tSoftware.startsWith(USER_AGENT_SIGNATURE_PREFIX))
+    {
+        int tPos = tSoftware.indexOf("/");
+        if(tPos != -1)
+        {
+            tResult = "Homer Conferencing " + tSoftware.right(tSoftware.size() - tPos -1);
+        }else
+        {
+            tResult = "Homer Conferencing";
+        }
+    }else{
+        tResult = tSoftware;
+        tResult.replace("/", " ");
+    }
+
+    return tResult;
+}
+
 QString ContactListModel::GetContactName(const QModelIndex &pIndex) const
 {
     if (pIndex.internalPointer() != NULL)
-        return ((ContactDescriptor*)pIndex.internalPointer())->toString();
+        return ((ContactDescriptor*)pIndex.internalPointer())->GetContactName();
     else
         return "";
 }
 
-bool ContactListModel::GetContactAvailability(const QModelIndex &pIndex) const
+bool ContactListModel::IsContactAvailable(const QModelIndex &pIndex) const
 {
     if (pIndex.internalPointer() != NULL)
-        return ((ContactDescriptor*)pIndex.internalPointer())->isOnline();
+        return ((ContactDescriptor*)pIndex.internalPointer())->IsOnline();
+    else
+        return false;
+}
+
+bool ContactListModel::IsContactKnown(const QModelIndex &pIndex) const
+{
+    if (pIndex.internalPointer() != NULL)
+        return ((ContactDescriptor*)pIndex.internalPointer())->IsKnown();
     else
         return false;
 }

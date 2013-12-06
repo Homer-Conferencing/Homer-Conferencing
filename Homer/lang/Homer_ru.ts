@@ -1531,10 +1531,6 @@ Check configuration!</source>
         <translation>Добавить контакт</translation>
     </message>
     <message>
-        <source>Check availability of contacts</source>
-        <translation>Проверить наличие контактов</translation>
-    </message>
-    <message>
         <source>Acknowledge deletion</source>
         <translation>Подтверждение удаления</translation>
     </message>
@@ -1563,8 +1559,16 @@ Check configuration!</source>
         <translation>Вы хотите удалить </translation>
     </message>
     <message>
-        <source>Contacts</source>
-        <translation type="unfinished">Контакты</translation>
+        <source>Name</source>
+        <translation type="unfinished">Имя</translation>
+    </message>
+    <message>
+        <source>Software</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update availability</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1808,10 +1812,6 @@ Check configuration!</source>
         <translation>A/V synchronizations:</translation>
     </message>
     <message>
-        <source>Hide A/V statistics</source>
-        <translation>Скрыть A/V статистику</translation>
-    </message>
-    <message>
         <source>Session info</source>
         <translation>Информация о сессии</translation>
     </message>
@@ -1862,10 +1862,6 @@ Check configuration!</source>
     <message>
         <source>is currently unavailable for a call! The reason is</source>
         <translation>в настоящее время недоступен для звонка! Причина в том</translation>
-    </message>
-    <message>
-        <source>Show A/V statistics</source>
-        <translation>Показать A/V статистику</translation>
     </message>
     <message>
         <source>because</source>
@@ -1933,6 +1929,10 @@ Check configuration!</source>
     </message>
     <message>
         <source>Show A/V info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MetaData:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

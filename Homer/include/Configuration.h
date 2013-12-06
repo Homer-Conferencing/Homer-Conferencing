@@ -45,8 +45,9 @@ namespace Homer { namespace Gui {
 //#define DEBUG_TIMING
 
 // version string which is checked/used in the whole application
-//#define RELEASE_VERSION -> is now defined automatically via build system
+//#define HOMER_VERSION -> is now defined automatically via build system
 #define RELEASE_VERSION_STRING          "Beta "HOMER_VERSION
+#define SIP_USER_AGENT_SUFFIX           "/"HOMER_VERSION
 
 // for home calls
 #define RELEASE_SERVER                  "www.homer-conferencing.com"

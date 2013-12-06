@@ -1697,120 +1697,120 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1297"/>
+        <location filename="../src/MainWindow.cpp" line="1300"/>
         <source>NAT detection failed</source>
         <translation>NAT Erkennung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1297"/>
+        <location filename="../src/MainWindow.cpp" line="1300"/>
         <source>Could not detect NAT address and type via STUN server. The failure reason is</source>
         <translation>Konnte die NAT-Adresse und -Typ nicht via STUN-Server erkennen. Die Fehlerursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1680"/>
-        <location filename="../src/MainWindow.cpp" line="1684"/>
+        <location filename="../src/MainWindow.cpp" line="1706"/>
+        <location filename="../src/MainWindow.cpp" line="1710"/>
         <source>Registration failed</source>
         <translation>Registrierung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1680"/>
-        <location filename="../src/MainWindow.cpp" line="1684"/>
+        <location filename="../src/MainWindow.cpp" line="1706"/>
+        <location filename="../src/MainWindow.cpp" line="1710"/>
         <source>Could not register</source>
         <translation>Registerung fehlgeschlagen für</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1680"/>
-        <location filename="../src/MainWindow.cpp" line="1684"/>
+        <location filename="../src/MainWindow.cpp" line="1706"/>
+        <location filename="../src/MainWindow.cpp" line="1710"/>
         <source>at the SIP server</source>
         <translation>am SIP-Server</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1680"/>
-        <location filename="../src/MainWindow.cpp" line="1700"/>
+        <location filename="../src/MainWindow.cpp" line="1706"/>
+        <location filename="../src/MainWindow.cpp" line="1726"/>
         <source>The reason is</source>
         <translation>Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1681"/>
-        <location filename="../src/MainWindow.cpp" line="1685"/>
-        <location filename="../src/MainWindow.cpp" line="1701"/>
+        <location filename="../src/MainWindow.cpp" line="1707"/>
+        <location filename="../src/MainWindow.cpp" line="1711"/>
+        <location filename="../src/MainWindow.cpp" line="1727"/>
         <source>SIP server runs software</source>
         <translation>Der SIP-Server nutzt die Software</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1684"/>
+        <location filename="../src/MainWindow.cpp" line="1710"/>
         <source>The login name or password is wrong. Check configuration!
 </source>
         <translation>Der Loginname oder das Passwort sind falsch. Bitte die Konfiguration prüfen!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1700"/>
+        <location filename="../src/MainWindow.cpp" line="1726"/>
         <source>Presence publication failed</source>
         <translation>Verfügbarkeitsstatus nicht aktualisiert</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1700"/>
+        <location filename="../src/MainWindow.cpp" line="1726"/>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2201"/>
-        <location filename="../src/MainWindow.cpp" line="2300"/>
+        <location filename="../src/MainWindow.cpp" line="2227"/>
+        <location filename="../src/MainWindow.cpp" line="2326"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2204"/>
-        <location filename="../src/MainWindow.cpp" line="2303"/>
+        <location filename="../src/MainWindow.cpp" line="2230"/>
+        <location filename="../src/MainWindow.cpp" line="2329"/>
         <source>Hide window</source>
         <translation>Fenster minimieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2210"/>
+        <location filename="../src/MainWindow.cpp" line="2236"/>
         <source>Main menu</source>
         <translation>Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2223"/>
+        <location filename="../src/MainWindow.cpp" line="2249"/>
         <source>Mosaic mode</source>
         <translation>Mosaikmodus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2240"/>
-        <location filename="../src/MainWindow.cpp" line="2313"/>
+        <location filename="../src/MainWindow.cpp" line="2266"/>
+        <location filename="../src/MainWindow.cpp" line="2339"/>
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2244"/>
-        <location filename="../src/MainWindow.cpp" line="2317"/>
+        <location filename="../src/MainWindow.cpp" line="2270"/>
+        <location filename="../src/MainWindow.cpp" line="2343"/>
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2250"/>
-        <location filename="../src/MainWindow.cpp" line="2323"/>
+        <location filename="../src/MainWindow.cpp" line="2276"/>
+        <location filename="../src/MainWindow.cpp" line="2349"/>
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2259"/>
-        <location filename="../src/MainWindow.cpp" line="2332"/>
+        <location filename="../src/MainWindow.cpp" line="2285"/>
+        <location filename="../src/MainWindow.cpp" line="2358"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2266"/>
+        <location filename="../src/MainWindow.cpp" line="2292"/>
         <source>Configuration</source>
         <translation>Konfiguration</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2276"/>
+        <location filename="../src/MainWindow.cpp" line="2302"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2284"/>
+        <location filename="../src/MainWindow.cpp" line="2310"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -1998,57 +1998,57 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::OverviewContactsWidget</name>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="135"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="143"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="212"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="269"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="133"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="141"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="210"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="267"/>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="399"/>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="442"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="198"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="259"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="196"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="257"/>
         <source>Send message</source>
         <translation>Nachrichten senden</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="204"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="264"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="202"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="262"/>
         <source>Call</source>
         <translation>Anrufen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="220"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="279"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="218"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="277"/>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="472"/>
         <source>Edit contact</source>
         <translation>Kontakt bearbeiten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="226"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="274"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="224"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="272"/>
         <source>Duplicate contact</source>
         <translation>Kontakt duplizieren</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="231"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="284"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="229"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="282"/>
         <source>Delete contact</source>
         <translation>Kontakt entfernen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="242"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="290"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="240"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="288"/>
         <source>Reset contact list</source>
         <translation>Kontaktliste zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="252"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="296"/>
-        <source>Check availability of contacts</source>
-        <translation>Verfügbarkeit von Kontakten prüfen</translation>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="250"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="294"/>
+        <source>Update availability</source>
+        <translation>Verfügbarkeit aktualisieren</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="498"/>
@@ -2092,9 +2092,15 @@ Bitte Konfiguration prüfen!</translation>
         <translation>Laden der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="785"/>
-        <source>Contacts</source>
-        <translation>Kontakte</translation>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="828"/>
+        <source>Name</source>
+        <translatorcomment>Name</translatorcomment>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="830"/>
+        <source>Software</source>
+        <translation>Software</translation>
     </message>
 </context>
 <context>
@@ -2264,9 +2270,9 @@ Bitte Konfiguration prüfen!</translation>
     <message>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="126"/>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="148"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="187"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="243"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="286"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="190"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="246"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="292"/>
         <source>All supported formats</source>
         <translation>Alle unterstützten Formate</translation>
     </message>
@@ -2276,80 +2282,80 @@ Bitte Konfiguration prüfen!</translation>
         <translation>/Homer-Video.avi</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="251"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="254"/>
         <source>/Homer-Audio.mp3</source>
         <translation>/Homer-Audio.mp3</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="402"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="438"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="408"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="444"/>
         <source>Play selected</source>
         <translation>Auswahl abspielen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="408"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="443"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="414"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="449"/>
         <source>Add file(s)</source>
         <translation>Datei(en) hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="411"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="448"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="417"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="454"/>
         <source>Add url</source>
         <translation>Url hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="415"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="453"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="421"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="459"/>
         <source>Rename selected</source>
         <translation>Auswahl umbenennen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="418"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="458"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="424"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="464"/>
         <source>Delete selected</source>
         <translation>Auswahl entfernen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="426"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="463"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="432"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="469"/>
         <source>Reset playlist</source>
         <translation>Playlist zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="431"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="468"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="437"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="474"/>
         <source>Endless loop</source>
         <translation>Endlosschleife</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="496"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="502"/>
         <source>Add file(s) to playlist</source>
         <translation>Datei(en) zur Playlist hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="526"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="532"/>
         <source>Adding an url to the playlist</source>
         <translation>Hinzufügen einer Url zur Playlist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="567"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="573"/>
         <source>Save playlist</source>
         <translation>Speichern der Playlist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="569"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="570"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="575"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="576"/>
         <source>Playlist File</source>
         <translation>Playlist-Datei</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="602"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="608"/>
         <source>Could not store playlist file</source>
         <translation>Abspeichern der Playlist fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="602"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="608"/>
         <source>Couldn&apos;t write playlist in</source>
         <translation>Abspeichern der Playlist ist fehlgeschlagen in </translation>
     </message>
@@ -2427,26 +2433,18 @@ Bitte Konfiguration prüfen!</translation>
     <message>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="750"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="780"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="796"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="815"/>
         <source>Hide A/V info</source>
         <translation>Verstecke A/V-Info</translation>
     </message>
     <message>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="756"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="775"/>
-        <source>Show A/V info</source>
-        <translation>Zeige A/V-Info</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="796"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="815"/>
-        <source>Hide A/V statistics</source>
-        <translation>Verstecke A/V Statistiken</translation>
-    </message>
-    <message>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="801"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="810"/>
-        <source>Show A/V statistics</source>
-        <translation>Zeige A/V Statistiken</translation>
+        <source>Show A/V info</source>
+        <translation>Zeige A/V-Info</translation>
     </message>
     <message>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="943"/>
@@ -2564,40 +2562,46 @@ Bitte Konfiguration prüfen!</translation>
         <translation>Video:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2357"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2366"/>
         <source>Audio:</source>
         <translation>Audio:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2334"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2332"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2375"/>
+        <source>MetaData:</source>
+        <translation>Metadaten:</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2343"/>
         <source>A/V pre-buffering:</source>
         <translation>A/V Vorpufferung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2336"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="2345"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2354"/>
         <source>active</source>
         <translation>aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2338"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="2347"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2356"/>
         <source>inactive</source>
         <translation>inaktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2341"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2350"/>
         <source>(auto restart)</source>
         <translation>(auto. Neustart)</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2332"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2343"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2341"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2352"/>
         <source>A/V synchronization:</source>
         <translation>A/V Synchronisierung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2349"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2358"/>
         <source>A/V synchronizations:</source>
         <translation>A/V Synchronisierungen:</translation>
     </message>
@@ -3096,29 +3100,29 @@ Bitte Konfiguration prüfen!</translation>
         <translation>Pausierend..</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1727"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1737"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1739"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1749"/>
         <source>Volume:</source>
         <translation>Lautstärke:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2032"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2034"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2044"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2046"/>
         <source>Video source not available</source>
         <translation>Videoquelle nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2032"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2044"/>
         <source>The selected video source &quot;</source>
         <translation>Die ausgewählte Videoquelle &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2032"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2044"/>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot; ist nicht verfügbar. Bitte eine andere auswählen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2034"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2046"/>
         <source>The selected video source auto detection was not successful. Please, connect an additional video device to your hardware!</source>
         <translation>Die ausgewählte automatische Erkennung der Videoquelle war nicht erfolgreich. Bitte ein zusätzliches Gerät anschließen!</translation>
     </message>
@@ -3190,7 +3194,7 @@ Bitte Konfiguration prüfen!</translation>
         <translation>Aufgenommen:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="526"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="532"/>
         <source>Adding url:</source>
         <translation>Hinzuzufügende Url:</translation>
     </message>
@@ -3198,7 +3202,7 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::VideoWorkerThread</name>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2118"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2130"/>
         <source>Waiting for data..</source>
         <translation>Warte auf Daten..</translation>
     </message>
@@ -4122,22 +4126,22 @@ datei</translation>
         <translation>Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="152"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="155"/>
         <source>save contact list</source>
         <translation>Speichern der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="198"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="201"/>
         <source>load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="244"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="247"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="290"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="293"/>
         <source>Remove contact(s)</source>
         <translation>Kontakt(e) entfernen</translation>
     </message>

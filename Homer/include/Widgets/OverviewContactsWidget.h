@@ -148,8 +148,10 @@ public:
 
 private:
     virtual void sort (int pColumn, Qt::SortOrder pOrder = Qt::AscendingOrder);
+    QString GetContactSoftware(const QModelIndex &pIndex) const;
     QString GetContactName(const QModelIndex &pIndex) const;
-    bool GetContactAvailability(const QModelIndex &pIndex) const;
+    bool IsContactAvailable(const QModelIndex &pIndex) const;
+    bool IsContactKnown(const QModelIndex &pIndex) const;
     void *GetContactPointer(unsigned int pIndex) const;
 
     OverviewContactsWidget   *mOverviewContactsWidget;

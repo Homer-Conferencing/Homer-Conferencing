@@ -568,6 +568,7 @@ void MainWindow::initializeConferenceManagement()
     if (CONF.ConferencingEnabled())
     {
         LOG(LOG_INFO, "Using conference management IP address: %s", tLocalSourceIp.toStdString().c_str());
+        MEETING.SetUserAgentSignatureSuffix(SIP_USER_AGENT_SUFFIX);
         MEETING.Init(tLocalSourceIp.toStdString(), mLocalAddresses, CONF.GetNatSupportActivation(), "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
     }
     MEETING.AddObserver(this);
@@ -1111,7 +1112,7 @@ void MainWindow::GetEventSource(GeneralEvent *pEvent, QString &pSender, QString 
 {
     pSender = (pEvent->SenderName != "") ? QString(pEvent->SenderName.c_str()) : QString(pEvent->Sender.c_str());
     pSenderApp = (pEvent->SenderApplication != "") ? QString(pEvent->SenderApplication.c_str()) : "";
-    if (pSenderApp == USER_AGENT_SIGNATURE)
+    if (pSenderApp.startsWith(USER_AGENT_SIGNATURE_PREFIX))
         pSenderApp = "Homer-Conferencing";
 }
 
@@ -1230,6 +1231,7 @@ void MainWindow::customEvent(QEvent* pEvent)
     RegistrationFailedEvent *tRFEvent;
     PublicationEvent *tPEvent;
     PublicationFailedEvent *tPFEvent;
+    OptionsEvent *tOEvent;
     OptionsAcceptEvent *tOAEvent;
     OptionsUnavailableEvent *tOUAEvent;
     GeneralEvent *tEvent = ((QMeetingEvent*) pEvent)->getEvent();
@@ -1250,6 +1252,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                                                 (tEvent->getType() != ADD_PARTICIPANT) &&
                                                 (tEvent->getType() != REGISTRATION) &&
                                                 (tEvent->getType() != REGISTRATION_FAILED) &&
+                                                (tEvent->getType() != OPTIONS) &&
                                                 (tEvent->getType() != OPTIONS_ACCEPT) &&
                                                 (tEvent->getType() != OPTIONS_UNAVAILABLE) &&
                                                 (tEvent->getType() != PUBLICATION) &&
@@ -1300,12 +1303,35 @@ void MainWindow::customEvent(QEvent* pEvent)
                     	LOG(LOG_VERBOSE, "NAT detection was successful");
                     }
                     break;
+        case OPTIONS:
+                    //########################## OPTIONS ##############################
+                    tOEvent = (OptionsEvent*) tEvent;
+
+                    // inform contacts pool about online state
+                    CONTACTS.UpdateContact(QString::fromLocal8Bit(tOEvent->Sender.c_str()), tOEvent->Transport, CONTACT_AVAILABLE, QString(tOEvent->SenderApplication.c_str()));
+
+                    // inform participant widget about new state
+                    if (mParticipantWidgets.size())
+                    {
+                        // search for corresponding participant widget
+                        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                        {
+                            if ((*tIt)->IsThisParticipant(QString(tOEvent->Sender.c_str()), tOEvent->Transport))
+                            {
+                                tKnownParticipant = true;
+                                (*tIt)->UpdateParticipantState(CONTACT_AVAILABLE);
+                                break;
+                            }
+                        }
+                    }
+
+                    break;
         case OPTIONS_ACCEPT:
                     //######################## OPTIONS ACCEPT ##########################
                     tOAEvent = (OptionsAcceptEvent*) tEvent;
 
                     // inform contacts pool about online state
-                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), tOAEvent->Transport, CONTACT_AVAILABLE);
+                    CONTACTS.UpdateContact(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), tOAEvent->Transport, CONTACT_AVAILABLE, QString(tOAEvent->SenderApplication.c_str()));
 
                     // inform participant widget about new state
                     if (mParticipantWidgets.size())
@@ -1328,7 +1354,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tOUAEvent = (OptionsUnavailableEvent*) tEvent;
 
                     // inform contacts pool about online state
-                    CONTACTS.UpdateContactState(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), tOUAEvent->Transport, CONTACT_UNAVAILABLE);
+                    CONTACTS.UpdateContact(QString::fromLocal8Bit(tOUAEvent->Sender.c_str()), tOUAEvent->Transport, CONTACT_UNAVAILABLE, QString(tOUAEvent->SenderApplication.c_str()));
 
                     LOG(LOG_WARN, "Contact unavailable, reason is \"%s\"(%d).", tOUAEvent->Description.c_str(), tOUAEvent->StatusCode);
 

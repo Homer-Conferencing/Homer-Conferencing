@@ -1055,7 +1055,7 @@ void ParticipantWidget::HandleGeneralError(bool pIncoming, int pCode, QString pD
     }
 
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
-    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNDEFINED_STATE);
+    CONTACTS.UpdateContact(mSessionName, mSessionTransport, CONTACT_UNDEFINED_STATE);
 
     ShowError(Homer::Gui::ParticipantWidget::tr("General error occurred"), Homer::Gui::ParticipantWidget::tr("General error of code") + " " + QString("%1").arg(pCode) + " " + Homer::Gui::ParticipantWidget::tr("occurred. The error is described with") + " \"" + pDescription + "\"");
 }
@@ -1070,7 +1070,7 @@ void ParticipantWidget::HandleMessageAccept(bool pIncoming)
     }
 
     UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_AVAILABLE);
+    CONTACTS.UpdateContact(mSessionName, mSessionTransport, CONTACT_AVAILABLE);
 }
 
 void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
@@ -1086,7 +1086,7 @@ void ParticipantWidget::HandleMessageAcceptDelayed(bool pIncoming)
         mMessageWidget->AddMessage("", "server delays message(s)", true);
 
     UpdateParticipantState(CONTACT_UNDEFINED_STATE);
-    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNDEFINED_STATE);
+    CONTACTS.UpdateContact(mSessionName, mSessionTransport, CONTACT_UNDEFINED_STATE);
 }
 
 void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode, QString pDescription)
@@ -1099,7 +1099,7 @@ void ParticipantWidget::HandleMessageUnavailable(bool pIncoming, int pStatusCode
     }
 
     UpdateParticipantState(CONTACT_UNAVAILABLE);
-    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
+    CONTACTS.UpdateContact(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
     ShowError(Homer::Gui::ParticipantWidget::tr("Participant unavailable"), Homer::Gui::ParticipantWidget::tr("The participant") + " " + mSessionName + " " + Homer::Gui::ParticipantWidget::tr("is currently unavailable for an instant message! The reason is") + " \"" + pDescription + "\"(" + QString("%1").arg(pStatusCode) + ").");
 }
 
@@ -1256,7 +1256,7 @@ void ParticipantWidget::SessionEstablished(bool pIncoming)
         mMessageWidget->AddMessage("", "session established", true);
 
     UpdateParticipantState(CONTACT_AVAILABLE);
-    CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_AVAILABLE);
+    CONTACTS.UpdateContact(mSessionName, mSessionTransport, CONTACT_AVAILABLE);
 
     ShowNewState();
     if (mVideoWidget != NULL)
@@ -1340,7 +1340,7 @@ void ParticipantWidget::HandleCallUnavailable(bool pIncoming, int pStatusCode, Q
     {
     	SessionStopped(pIncoming);
         UpdateParticipantState(CONTACT_UNAVAILABLE);
-        CONTACTS.UpdateContactState(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
+        CONTACTS.UpdateContact(mSessionName, mSessionTransport, CONTACT_UNAVAILABLE);
 
         if (pStatusCode == 488)
         	ShowError(Homer::Gui::ParticipantWidget::tr("Participant unavailable"), Homer::Gui::ParticipantWidget::tr("The participant") + " " + mSessionName + " " + Homer::Gui::ParticipantWidget::tr("does not accept your video/audio codecs. Please, check the configuration and use different settings."));

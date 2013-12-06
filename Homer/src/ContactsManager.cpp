@@ -106,16 +106,19 @@ void ContactsManager::SavePool(string pContactsFile)
     mContactsMutex.lock();
     for (tIt = mContacts.begin(); tIt != mContacts.end(); tIt++)
     {
-        QDomElement tEntry = tXml.createElement("entry");
+        if(!tIt->Unknown)
+        {
+            QDomElement tEntry = tXml.createElement("entry");
 
-        tEntry.setAttribute("Name", QString(tIt->Name.toAscii()));
-        tEntry.setAttribute("User", QString(tIt->User.toAscii()));
-        tEntry.setAttribute("Host", QString(tIt->Host.toAscii()));
-        tEntry.setAttribute("Port", QString(tIt->Port.toAscii()));
-        tEntry.setAttribute("Transport", QString(QString(Socket::TransportType2String(tIt->Transport).c_str()).toAscii()));
-        tEntry.setAttribute("Index", QString("%1").arg(tIt->Id));
+            tEntry.setAttribute("Name", QString(tIt->Name.toAscii()));
+            tEntry.setAttribute("User", QString(tIt->User.toAscii()));
+            tEntry.setAttribute("Host", QString(tIt->Host.toAscii()));
+            tEntry.setAttribute("Port", QString(tIt->Port.toAscii()));
+            tEntry.setAttribute("Transport", QString(QString(Socket::TransportType2String(tIt->Transport).c_str()).toAscii()));
+            tEntry.setAttribute("Index", QString("%1").arg(tIt->Id));
 
-        tRoot.appendChild(tEntry);
+            tRoot.appendChild(tEntry);
+        }
     }
     mContactsMutex.unlock();
 
@@ -203,6 +206,8 @@ void ContactsManager::LoadPool(string pContactsFile)
 				tContact.Host = QString::fromAscii(tEntry.attribute("Host", "Host").toStdString().c_str());
 				tContact.Host = tContact.Host.toLower();
 				tContact.Port = QString::fromAscii(tEntry.attribute("Port", "5060").toStdString().c_str());
+				tContact.Unknown = false;
+				tContact.Software = "";
 				tContact.Transport = Socket::String2TransportType(QString::fromAscii(tEntry.attribute("Transport", "UDP").toStdString().c_str()).toStdString());
 				LOG(LOG_VERBOSE, "Loaded contact: name=%s, address=%s, port=%s, transport=%s", QString(tContact.Name.toAscii()).toStdString().c_str(), QString(tContact.User.toAscii() + "@" + tContact.Host.toAscii()).toStdString().c_str(), tContact.Port.toStdString().c_str(), Socket::TransportType2String(tContact.Transport).c_str());
 				tContact.Id = tEntry.attribute("Index", "0").toUInt();
@@ -241,7 +246,7 @@ void ContactsManager::AddContact(ContactDescriptor &pContact)
     mContactsMutex.lock();
     mContacts.push_back(pContact);
     if (CONF.GetSipContactsProbing())
-        MEETING.SendProbe(MEETING.SipCreateId(pContact.getUserStdStr(), pContact.getHostStdStr(), pContact.getPortStdStr()), pContact.Transport);
+        MEETING.SendProbe(MEETING.SipCreateId(pContact.GetUserStdStr(), pContact.GetHostStdStr(), pContact.GetPortStdStr()), pContact.Transport);
     mContactsMutex.unlock();
     if (mContactsModel != NULL)
         mContactsModel->UpdateView();
@@ -457,13 +462,13 @@ void ContactsManager::ProbeAvailabilityForAll()
 
     for (tIt = mContacts.begin(); tIt != tItEnd; tIt++)
     {
-        MEETING.SendProbe(MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()), tIt->Transport);
+        MEETING.SendProbe(MEETING.SipCreateId(tIt->GetUserStdStr(), tIt->GetHostStdStr(), tIt->GetPortStdStr()), tIt->Transport);
     }
 
     mContactsMutex.unlock();
 }
 
-void ContactsManager::UpdateContactState(QString pContact, enum TransportType pContactTransport, bool pState)
+void ContactsManager::UpdateContact(QString pContact, enum TransportType pContactTransport, bool pState, QString pSoftware)
 {
     ContactsVector::iterator tIt, tItEnd = mContacts.end();
     QString tContactTransport = QString(Socket::TransportType2String(pContactTransport).c_str());
@@ -473,20 +478,46 @@ void ContactsManager::UpdateContactState(QString pContact, enum TransportType pC
     pContact = QString(pContact.toLocal8Bit());
     LOG(LOG_VERBOSE, "Updating availability state for %s[%s] to %d", pContact.toStdString().c_str(), tContactTransport.toStdString().c_str(), pState);
 
+    QString tUser = "";
+    QString tHost = "";
+    QString tPort = "";
+    SplitAddress(pContact, tUser, tHost, tPort);
+
+    bool tFoundContact = false;
     mContactsMutex.lock();
     for (tIt = mContacts.begin(); tIt != tItEnd; tIt++)
     {
         QString tItTransport = QString(Socket::TransportType2String(tIt->Transport).c_str());
         if (tItTransport == "auto")
             tItTransport = "UDP";
-        LOG(LOG_VERBOSE, "Comparing %s==%s, %s==%s", MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()).c_str(), pContact.toStdString().c_str(), tItTransport.toStdString().c_str(), tContactTransport.toStdString().c_str());
-        if ((MEETING.SipCreateId(tIt->getUserStdStr(), tIt->getHostStdStr(), tIt->getPortStdStr()) == pContact.toStdString()) && (tItTransport == tContactTransport))
+        LOG(LOG_VERBOSE, "Comparing %s==%s, %s==%s", MEETING.SipCreateId(tIt->GetUserStdStr(), tIt->GetHostStdStr(), tIt->GetPortStdStr()).c_str(), pContact.toStdString().c_str(), tItTransport.toStdString().c_str(), tContactTransport.toStdString().c_str());
+        if ((MEETING.SipCreateId("", tIt->GetHostStdStr(), tIt->GetPortStdStr()) == MEETING.SipCreateId("", tHost.toStdString(), tPort.toStdString())) &&
+             (tItTransport == tContactTransport))
         {
             tIt->State = pState;
+            if(pSoftware != "")
+                tIt->Software = pSoftware;
+            tFoundContact = true;
             LOG(LOG_VERBOSE, " ..found and set state");
         }
     }
     mContactsMutex.unlock();
+
+    // add the unknown contact
+    if(!tFoundContact)
+    {
+        LOG(LOG_VERBOSE, "Detected unknown contact: %s[%s] with software %s", pContact.toStdString().c_str(), tContactTransport.toStdString().c_str(), pSoftware.toStdString().c_str());
+        ContactDescriptor tUnknownContact;
+        tUnknownContact.User = tUser;
+        tUnknownContact.Host = tHost;
+        tUnknownContact.Port = tPort;
+        tUnknownContact.Name = tUnknownContact.User;
+        tUnknownContact.Transport = pContactTransport;
+        tUnknownContact.Software = pSoftware;
+        tUnknownContact.Unknown = true;
+        tUnknownContact.Id = CONTACTS.GetNextFreeId();
+        AddContact(tUnknownContact);
+    }
 
     if (mContactsModel != NULL)
         mContactsModel->UpdateView();
@@ -623,7 +654,7 @@ void ContactsManager::RegisterAtController(ContactListModel *pContactsModel)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-QString ContactDescriptor::toString()
+QString ContactDescriptor::GetContactName()
 {
     QString tResult = "";
 
@@ -635,36 +666,49 @@ QString ContactDescriptor::toString()
     return tResult;
 }
 
-string ContactDescriptor::getUserStdStr()
+QString ContactDescriptor::GetSoftwareName()
+{
+    QString tResult = "";
+
+    tResult = Software;
+
+    return tResult;
+}
+
+string ContactDescriptor::GetUserStdStr()
 {
     return QString(User.toLocal8Bit()).toStdString();
 }
 
-string ContactDescriptor::getHostStdStr()
+string ContactDescriptor::GetHostStdStr()
 {
     return QString(Host.toLocal8Bit()).toStdString();
 }
 
-string ContactDescriptor::getPortStdStr()
+string ContactDescriptor::GetPortStdStr()
 {
     return QString(Port.toLocal8Bit()).toStdString();
 }
 
-void ContactDescriptor::setUserStdStr(string pUser)
+void ContactDescriptor::SetUserStdStr(string pUser)
 {
     User = QString::fromAscii(pUser.c_str());
 }
 
-void ContactDescriptor::setHostStdStr(string pHost)
+void ContactDescriptor::SetHostStdStr(string pHost)
 {
     User = QString::fromAscii(pHost.c_str());
 }
 
-bool ContactDescriptor::isOnline()
+bool ContactDescriptor::IsOnline()
 {
     return (State == CONTACT_AVAILABLE);
 }
 
+bool ContactDescriptor::IsKnown()
+{
+    return !Unknown;
+}
 ///////////////////////////////////////////////////////////////////////////////
 
 }} //namespace

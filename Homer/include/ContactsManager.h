@@ -50,17 +50,21 @@ struct ContactDescriptor
     QString        User;
     QString        Host;
     QString        Port;
+    QString        Software;
     enum TransportType Transport;
+    bool           Unknown;
     int            State; // 0-offline, 1-online/available
     unsigned int   Id;
 
-    QString     toString();
-    std::string getUserStdStr();
-    std::string getHostStdStr();
-    std::string getPortStdStr();
-    void        setUserStdStr(std::string pUser);
-    void        setHostStdStr(std::string pHost);
-    bool        isOnline();
+    QString     GetContactName();
+    QString     GetSoftwareName();
+    std::string GetUserStdStr();
+    std::string GetHostStdStr();
+    std::string GetPortStdStr();
+    void        SetUserStdStr(std::string pUser);
+    void        SetHostStdStr(std::string pHost);
+    bool        IsOnline();
+    bool        IsKnown();
 };
 
 typedef std::vector<ContactDescriptor> ContactsVector;
@@ -110,7 +114,7 @@ public:
 
     /* contact availability management */
     void ProbeAvailabilityForAll();
-    void UpdateContactState(QString pContact, enum TransportType pContactTransport, bool pState);
+    void UpdateContact(QString pContact, enum TransportType pContactTransport, bool pState, QString pSoftware = "");
 
     /* sorting */
     void SortByState(bool pDescending);

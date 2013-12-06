@@ -76,10 +76,10 @@
           <enum>QAbstractItemView::DropOnly</enum>
          </property>
          <property name="selectionMode">
-          <enum>QAbstractItemView::ExtendedSelection</enum>
+          <enum>QAbstractItemView::SingleSelection</enum>
          </property>
          <property name="textElideMode">
-          <enum>Qt::ElideLeft</enum>
+          <enum>Qt::ElideRight</enum>
          </property>
          <property name="rootIsDecorated">
           <bool>false</bool>
@@ -107,6 +107,9 @@
          </attribute>
          <attribute name="headerShowSortIndicator" stdset="0">
           <bool>true</bool>
+         </attribute>
+         <attribute name="headerStretchLastSection">
+          <bool>false</bool>
          </attribute>
         </widget>
        </item>
