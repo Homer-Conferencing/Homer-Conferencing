@@ -120,6 +120,7 @@ ELSE ()
 		HomerBase
 		HomerMonitor
 		HomerMultimedia
+		dl
 	)
 	SET (LIBS_LINUX_STATIC
 		sofia-sip-ua
