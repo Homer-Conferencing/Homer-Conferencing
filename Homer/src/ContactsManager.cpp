@@ -39,6 +39,7 @@
 #include <QFile>
 #include <QIODevice>
 #include <QTextStream>
+#include <QNetworkInterface>
 
 namespace Homer { namespace Gui {
 
@@ -241,8 +242,6 @@ void ContactsManager::ResetPool()
 
 void ContactsManager::AddContact(ContactDescriptor &pContact)
 {
-    pContact.State = CONTACT_UNAVAILABLE;
-
     mContactsMutex.lock();
     mContacts.push_back(pContact);
     if (CONF.GetSipContactsProbing())
@@ -466,6 +465,79 @@ void ContactsManager::ProbeAvailabilityForAll()
     }
 
     mContactsMutex.unlock();
+
+    if(CONF.GetSipUnknownContactsProbing())
+    {
+        /*
+         * The following generates a storm of PROBE packets.
+         * TODO: maybe we should limit this!?
+         */
+        LOG(LOG_INFO, "Detecting unknown contacts...");
+        QList<QNetworkInterface> tLocalInterfaces = QNetworkInterface::allInterfaces ();
+        QNetworkInterface tLocalInterface;
+        foreach(tLocalInterface, tLocalInterfaces)
+        {
+            if((tLocalInterface.flags().testFlag(QNetworkInterface::IsUp)) && (tLocalInterface.flags().testFlag(QNetworkInterface::IsRunning)) && (!tLocalInterface.flags().testFlag(QNetworkInterface::IsLoopBack)))
+            {
+                QList<QNetworkAddressEntry> tLocalAddressEntries = tLocalInterface.addressEntries();
+
+                for (int i = 0; i < tLocalAddressEntries.size(); i++)
+                {
+                    QHostAddress tHostAddress = tLocalAddressEntries[i].ip();
+                    QHostAddress tHostAddressNetmask = tLocalAddressEntries[i].netmask();
+                    QHostAddress tHostAddressNetwork;
+                    tHostAddressNetwork.setAddress(tHostAddress.toIPv4Address() & tHostAddressNetmask.toIPv4Address());
+
+                    QString tAddress = tHostAddress.toString().toLower();
+                    QString tNetmask = tHostAddressNetmask.toString().toLower();
+                    if ((tHostAddress.protocol() == QAbstractSocket::IPv4Protocol) || ((tHostAddress.protocol() == QAbstractSocket::IPv6Protocol) && (!Socket::IsIPv6LinkLocal(tAddress.toStdString()))))
+                    {
+                        QHostAddress tCurrentProbeAddress;
+                        QHostAddress tCurrentProbeAddressNetwork;
+                        QHostAddress tNextProbeAddressNetwork;// to ignore broadcast addresses
+
+                        LOG(LOG_INFO, "  ..local address: %s [%s]", tAddress.toStdString().c_str(), tNetmask.toStdString().c_str());
+                        if(tHostAddress.protocol() == QAbstractSocket::IPv4Protocol)
+                        {
+                            quint32 tIPv4AddrNumber = tHostAddress.toIPv4Address();
+                            quint32 tIPv4NetNumber = tHostAddressNetmask.toIPv4Address();
+                            quint32 tIPv4AddrCurrentNumber = (tIPv4AddrNumber & tIPv4NetNumber);
+                            quint32 tIPv4AddrCurrentNumberNetwork = 0;
+
+                            tIPv4AddrCurrentNumber++;
+                            tIPv4AddrCurrentNumberNetwork = (tIPv4AddrCurrentNumber & tIPv4NetNumber);
+                            tCurrentProbeAddress.setAddress(tIPv4AddrCurrentNumber);
+                            tCurrentProbeAddressNetwork.setAddress(tIPv4AddrCurrentNumberNetwork);
+
+                            int tFoundAddresses = 0;
+                            do
+                            {
+                                if(tCurrentProbeAddressNetwork.toString() == tHostAddressNetwork.toString())
+                                {
+                                    tFoundAddresses++;
+                                    LOG(LOG_INFO, "   ..probing: %s (%u)", tCurrentProbeAddress.toString().toStdString().c_str(), tIPv4AddrCurrentNumber);
+                                    MEETING.SendProbe(MEETING.SipCreateId("", tCurrentProbeAddress.toString().toStdString(), "5060"), SOCKET_UDP);
+                                }else{
+                                    LOG(LOG_INFO, "   ..stopping at: %s [%s != %s]", tCurrentProbeAddress.toString().toStdString().c_str(), tCurrentProbeAddressNetwork.toString().toStdString().c_str(), tHostAddressNetwork.toString().toStdString().c_str());
+                                    break;
+                                }
+
+                                /**
+                                 * Increase the current IP address
+                                 */
+                                tIPv4AddrCurrentNumber++;
+                                tIPv4AddrCurrentNumberNetwork = (tIPv4AddrCurrentNumber & tIPv4NetNumber);
+
+                                tCurrentProbeAddress.setAddress(tIPv4AddrCurrentNumber);
+                                tCurrentProbeAddressNetwork.setAddress(tIPv4AddrCurrentNumberNetwork);
+                                tNextProbeAddressNetwork.setAddress(((tIPv4AddrCurrentNumber + 1) & tIPv4NetNumber));
+                            }while((tCurrentProbeAddressNetwork.toString() == tHostAddressNetwork.toString()) && (tNextProbeAddressNetwork.toString() == tHostAddressNetwork.toString()));
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void ContactsManager::UpdateContact(QString pContact, enum TransportType pContactTransport, bool pState, QString pSoftware)
@@ -519,6 +591,7 @@ void ContactsManager::UpdateContact(QString pContact, enum TransportType pContac
                 tUnknownContact.Transport = pContactTransport;
                 tUnknownContact.Software = pSoftware;
                 tUnknownContact.Unknown = true;
+                tUnknownContact.State = pState;
                 tUnknownContact.Id = CONTACTS.GetNextFreeId();
                 AddContact(tUnknownContact);
             }
