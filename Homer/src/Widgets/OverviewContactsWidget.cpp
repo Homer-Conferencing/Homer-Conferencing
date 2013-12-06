@@ -338,7 +338,6 @@ void OverviewContactsWidget::Dialog2Contact(ContactEditDialog *pCED, ContactDesc
     pContact->Port      = (QString("%1").arg(pCED->mSbPort->value()));
     pContact->Transport = Socket::String2TransportType(pCED->mCbTransport->currentText().toStdString());
     pContact->Unknown = false;
-    pContact->Software = "";
     if (pNewContact)
     {
         pContact->Id    = CONTACTS.GetNextFreeId();
