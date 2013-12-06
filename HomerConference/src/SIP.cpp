@@ -127,6 +127,10 @@ void SIP::Init(int pStartPort, TransportType pSipListenerTransport, bool pSipNat
     mSipHostPortTransport = pSipListenerTransport;
     mStunHostPort = pStunPort;
     mSipNatTraversalSupport = pSipNatTraversalSupport;
+    if(GetSofiaSipVersion() == "1.12.11devel")
+    {
+        LOG(LOG_ERROR, "Library \"sofiasip\" (version %s) is broken. Please, replace this library with another version. Otherwise, the conference functions won't work correctly.", GetSofiaSipVersion().c_str());
+    }
 }
 
 void SIP::DeInit()
