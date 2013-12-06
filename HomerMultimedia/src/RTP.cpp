@@ -630,9 +630,11 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     switch(mStreamCodecID)
     {
         case AV_CODEC_ID_H263:
-                // use older rfc2190 for RTP packetizing
-                if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0)) < 0)
-                	LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
+                #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(54, 6, 100)
+                    // use older rfc2190 for RTP packetizing
+                    if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0)) < 0)
+                        LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
+                #endif
                 break;
         default:
                 break;
@@ -966,7 +968,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 
     av_init_packet(&tPacket);
     #ifdef RTP_DEBUG_PACKET_ENCODER_PTS
-        LOG(LOG_VERBOSE, "Sending packet with PTS: %"PRId64", outgoing RTP-PTS: %.2f", pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
+        LOG(LOG_VERBOSE, "Sending %d bytes packet with PTS: %"PRId64", outgoing RTP-PTS: %.2f", pDataSize, pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
     #endif
 
     // we only have one stream per media stream
@@ -1000,7 +1002,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     //####################################################################
     if ((tResult = av_write_frame(mRtpFormatContext, &tPacket)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't write encoded frame of %u bytes at %p with PTS %"PRId64" into RTP buffer because \"%s\".", pDataSize, pData, pPacketPts, strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't write encoded %s(%d) frame of %u bytes at %p with PTS %"PRId64" into RTP buffer because \"%s\".", mRtpEncoderStream->codec->codec_name, mStreamCodecID, pDataSize, pData, pPacketPts, strerror(AVUNERROR(tResult)));
 
         return false;
     }
@@ -1839,7 +1841,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
         {
             uint64_t tLostPackets = mRemoteSequenceNumber - mRemoteSequenceNumberLastPacket - 1;
             AnnounceLostPackets(tLostPackets);
-            LOG(LOG_ERROR, "Packet loss detected (sequ. nr.: %"PRIu64"->%"PRIu64"), lost %"PRIu64" packets, overall packet loss is now %"PRIu64, mRemoteSequenceNumberLastPacket, mRemoteSequenceNumber, tLostPackets, mLostPackets);
+            LOG(LOG_ERROR, "Packet loss for codec %d detected (sequ. nr.: %"PRIu64"->%"PRIu64"), lost %"PRIu64" packets, overall packet loss is now %"PRIu64, mStreamCodecID, mRemoteSequenceNumberLastPacket, mRemoteSequenceNumber, tLostPackets, mLostPackets);
         }
 
         // ############################################################

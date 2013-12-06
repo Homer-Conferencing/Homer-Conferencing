@@ -474,6 +474,13 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     if (mStreamCodecId == AV_CODEC_ID_H263)
         tFormat->video_codec = AV_CODEC_ID_H263;
 
+    #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(54, 6, 100)
+        if(mStreamCodecId == AV_CODEC_ID_H263)
+        {
+            LOG(LOG_ERROR, "Library \"avformat\" (version %s) is broken. Please, replace this library with another version. Otherwise, the RTP packetizing of H.263 streams won't work correctly.", LIBAVFORMAT_IDENT);
+        }
+    #endif
+
     // set correct output format
     mFormatContext->oformat = tFormat;
     // set correct IO-context
