@@ -949,6 +949,30 @@ void Socket::DisableQoSSupport()
     sQoSSupported = false;
 }
 
+bool Socket::IsIPv6LinkLocal(string pAddress)
+{
+    #define PREFIX_LENGTH       5
+
+    bool tResult = false;
+
+    if(pAddress.size() >= PREFIX_LENGTH)
+    {
+        string tPrefix = pAddress.substr(0, 5);
+
+        for(int i = 0; i < (int)tPrefix.size(); i++)
+        {
+            tPrefix[i] = (char)toupper(tPrefix[i]);
+        }
+
+        if ((tPrefix >= "FE80:") && (tPrefix <= "FFFF"))
+        {
+            tResult = true;
+        }
+    }
+
+    return tResult;
+}
+
 bool Socket::IsIPv6Supported()
 {
     if (sIPv6Supported == -1)
