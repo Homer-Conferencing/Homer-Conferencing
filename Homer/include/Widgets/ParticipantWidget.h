@@ -183,6 +183,8 @@ private:
     // private constructor, factory functions should be used to create a new participant widget
     ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow);
 
+    QMenu *GetMenuSettings();
+
     friend class VideoWidget;
 
 	/* media sink helper */

@@ -153,9 +153,9 @@ void MessageWidget::InitializeMenuMessagesSettings(QMenu *pMenu)
 
     tAction = pMenu->addAction(QPixmap(":/images/22_22/Save.png"), Homer::Gui::MessageWidget::tr("Save history"));
     if (isVisible())
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::MessageWidget::tr("Close"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::MessageWidget::tr("Close window"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::MessageWidget::tr("Show"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::MessageWidget::tr("Show window"));
     pMenu->addSeparator();
 
     if ((!IsKnownContact()) && (mParticipant != BROACAST_IDENTIFIER))
@@ -166,12 +166,12 @@ void MessageWidget::SelectedMenuMessagesSettings(QAction *pAction)
 {
     if (pAction != NULL)
     {
-        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Show")) == 0)
+        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Show window")) == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Close")) == 0)
+        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Close window")) == 0)
         {
             ToggleVisibility();
             return;

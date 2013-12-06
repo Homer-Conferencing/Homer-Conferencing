@@ -540,6 +540,11 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
     OpenPlaybackDevice(mSessionName + "-Events");
 }
 
+QMenu* ParticipantWidget::GetMenuSettings()
+{
+    return mMenuSettings;
+}
+
 void ParticipantWidget::UpdateMenuSettings()
 {
     if (mVideoSource != NULL)
@@ -571,21 +576,21 @@ void ParticipantWidget::InitializeMenuAVControls(QMenu *pMenu)
     }
 
     if (mMovieAudioControlsFrame->isVisible())
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::ParticipantWidget::tr("Close"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::ParticipantWidget::tr("Close window"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::ParticipantWidget::tr("Show"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::ParticipantWidget::tr("Show window"));
 }
 
 void ParticipantWidget::SelectedMenuAVControls(QAction *pAction)
 {
     if (pAction != NULL)
     {
-        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Show")) == 0)
+        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Show window")) == 0)
         {
         	ToggleAVControlsVisibility();
             return;
         }
-        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Close")) == 0)
+        if (pAction->text().compare(Homer::Gui::MessageWidget::tr("Close window")) == 0)
         {
         	ToggleAVControlsVisibility();
             return;

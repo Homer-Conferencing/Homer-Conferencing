@@ -558,14 +558,6 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
     //### RESET SOURCE
     //###############################################################################
     tAction = pMenu->addAction(QPixmap(":/images/22_22/Reload.png"), Homer::Gui::VideoWidget::tr("Reset source"));
-
-    //###############################################################################
-    //### Show/CLOSE SOURCE
-    //###############################################################################
-    if (isVisible())
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::VideoWidget::tr("Close"));
-    else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::VideoWidget::tr("Show"));
 }
 
 void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
@@ -577,12 +569,12 @@ void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
         vector<string> tRegisteredVideoSinks = mVideoSource->ListRegisteredMediaSinks();
         vector<string>::iterator tRegisteredVideoSinksIt;
 
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Show")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Show window")) == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Close")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Close window")) == 0)
         {
             ToggleVisibility();
             return;
@@ -723,15 +715,20 @@ void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
 
 void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
 {
-    QMenu tMenu(this);
-    InitializeMenuVideoSettings(&tMenu);
+    if(IsFullScreen()){
+        QMenu *tMenu = mParticipantWidget->GetMenuSettings();
+        tMenu->exec(pEvent->globalPos());
+    }else{
+        QMenu tMenu(this);
+        InitializeMenuVideoSettings(&tMenu);
 
-    //###############################################################################
-    //### RESULTING REACTION
-    //###############################################################################
-    QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
-    if (tPopupRes != NULL)
-        SelectedMenuVideoSettings(tPopupRes);
+        //###############################################################################
+        //### RESULTING REACTION
+        //###############################################################################
+        QAction* tPopupRes = tMenu.exec(pEvent->globalPos());
+        if (tPopupRes != NULL)
+            SelectedMenuVideoSettings(tPopupRes);
+    }
 }
 
 void VideoWidget::DialogAddNetworkSink()

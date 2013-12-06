@@ -336,14 +336,6 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     //### RESET SOURCE
     //###############################################################################
     tAction = pMenu->addAction(QPixmap(":/images/22_22/Reload.png"), Homer::Gui::AudioWidget::tr("Reset source"));
-
-    //###############################################################################
-    //### CLOSE SOURCE
-    //###############################################################################
-    if (isVisible())
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Close.png"), Homer::Gui::AudioWidget::tr("Close"));
-    else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Screencasting.png"), Homer::Gui::AudioWidget::tr("Show"));
 }
 
 void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)
@@ -355,12 +347,12 @@ void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)
         vector<string> tRegisteredAudioSinks = mAudioSource->ListRegisteredMediaSinks();
         vector<string>::iterator tRegisteredAudioSinksIt;
 
-        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Show")) == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Show window")) == 0)
         {
             ToggleVisibility();
             return;
         }
-        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Close")) == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Close window")) == 0)
         {
             ToggleVisibility();
             return;

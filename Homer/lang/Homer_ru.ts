@@ -855,14 +855,6 @@
         <translation>кГц</translation>
     </message>
     <message>
-        <source>Show</source>
-        <translation>Показать</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>Закрыть</translation>
-    </message>
-    <message>
         <source>delay</source>
         <translation>задержка</translation>
     </message>
@@ -1009,6 +1001,14 @@
     <message>
         <source>Add network sink</source>
         <translation>Добавить network sink</translation>
+    </message>
+    <message>
+        <source>Show window</source>
+        <translation type="unfinished">Показать окно</translation>
+    </message>
+    <message>
+        <source>Close window</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1431,16 +1431,8 @@ The participant is known as</source>
 <context>
     <name>Homer::Gui::MessageWidget</name>
     <message>
-        <source>Show</source>
-        <translation>Показать</translation>
-    </message>
-    <message>
         <source>Error occurred</source>
         <translation>Произошла ошибка</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>Закрыть</translation>
     </message>
     <message>
         <source>contact available</source>
@@ -1473,6 +1465,14 @@ The participant is known as</source>
     <message>
         <source>undefined state</source>
         <translation>неопределенное состояние</translation>
+    </message>
+    <message>
+        <source>Close window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show window</source>
+        <translation type="unfinished">Показать окно</translation>
     </message>
 </context>
 <context>
@@ -1857,10 +1857,6 @@ The participant is known as</source>
 <context>
     <name>Homer::Gui::ParticipantWidget</name>
     <message>
-        <source>Show</source>
-        <translation>Показать</translation>
-    </message>
-    <message>
         <source>chat</source>
         <translation>Чат</translation>
     </message>
@@ -1879,10 +1875,6 @@ The participant is known as</source>
     <message>
         <source>Audio</source>
         <translation>Аудио</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>Закрыть</translation>
     </message>
     <message>
         <source>Video</source>
@@ -2019,6 +2011,14 @@ The participant is known as</source>
     <message>
         <source>MetaData:</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show window</source>
+        <translation type="unfinished">Показать окно</translation>
     </message>
 </context>
 <context>
@@ -2198,14 +2198,6 @@ The participant is known as</source>
 </context>
 <context>
     <name>Homer::Gui::VideoWidget</name>
-    <message>
-        <source>Show</source>
-        <translation>Показать</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>Закрыть</translation>
-    </message>
     <message>
         <source>The settings for video playback cannot be changed if the recording is active!</source>
         <translation>Настройка для воспроизведения видео не может быть изменена, если запись активна!</translation>
@@ -2465,6 +2457,14 @@ The participant is known as</source>
     <message>
         <source>Fast display</source>
         <translation>Быстрый показ</translation>
+    </message>
+    <message>
+        <source>Show window</source>
+        <translation type="unfinished">Показать окно</translation>
+    </message>
+    <message>
+        <source>Close window</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

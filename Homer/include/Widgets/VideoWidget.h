@@ -112,6 +112,7 @@ public:
 
     /* fullscreen mode */
     void ToggleFullScreenMode(bool pActive);
+    bool IsFullScreen();
 
 public slots:
     void ToggleVisibility();
@@ -122,7 +123,6 @@ private slots:
 
 private:
     void SendActivityToSystem(); // informs the system that there is still activity and screensaver/sleep mode isn't needed, has to be called periodically
-    bool IsFullScreen();
     void DialogAddNetworkSink();
     void ShowFrame(void* pBuffer);
     void SetScaling(float pVideoScaleFactor);
