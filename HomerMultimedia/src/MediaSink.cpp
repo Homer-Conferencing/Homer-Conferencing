@@ -43,6 +43,7 @@ MediaSink::MediaSink(enum MediaSinkType pType):
     mMediaId = "";
     mMaxFps = 0;
     mCodec = "";
+    mMediaSinkOpened = false;
     mSinkIsActive = false;
     mMaxFpsTimestampLastFragment = 0;
     mMaxFpsFrameNumberLastFragment = 0;

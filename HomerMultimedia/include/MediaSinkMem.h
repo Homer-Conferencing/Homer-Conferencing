@@ -77,7 +77,6 @@ protected:
     unsigned int        mTargetPort;
     /* RTP stream handling */
     bool                mRtpActivated;
-    bool                mRtpStreamOpened;
     int64_t             mIncomingAVStreamStartPts;
     int64_t				mIncomingAVStreamLastPts;
     bool                mIncomingFirstPacket;

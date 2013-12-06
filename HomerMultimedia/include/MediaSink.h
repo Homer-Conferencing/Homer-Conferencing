@@ -65,6 +65,7 @@ public:
 protected:
     bool BelowMaxFps(int pFrameNumber);
 
+    bool                mMediaSinkOpened;
     bool                mSinkIsActive;
     std::string         mCodec;
     unsigned long       mPacketNumber;

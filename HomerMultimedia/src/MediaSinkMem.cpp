@@ -57,7 +57,6 @@ MediaSinkMem::MediaSinkMem(string pMediaId, enum MediaSinkType pType, bool pRtpA
 	mIncomingAVStreamCodecID = AV_CODEC_ID_NONE;
 	mTargetHost = "";
 	mTargetPort = 0;
-    mRtpStreamOpened = false;
 	mIncomingAVStreamCodecContext = NULL;
     mRtpActivated = pRtpActivated;
     mWaitUntillFirstKeyFrame = (pType == MEDIA_SINK_VIDEO) ? true : false;
@@ -132,8 +131,8 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
             LOG(LOG_VERBOSE, "Stream PTS: %lld, packet PTS: %lld", tStreamPts, pPacketTimestamp);
         #endif
 
-        if (pPacketTimestamp < mLastPacketPts)
-            LOG(LOG_ERROR, "Current packet pts (%lld) from A/V encoder is lower than last one (%"PRId64")", pPacketTimestamp, mLastPacketPts);
+        if ((pPacketTimestamp != (int64_t)AV_NOPTS_VALUE) && (pPacketTimestamp < mLastPacketPts))
+            LOG(LOG_ERROR, "Current %s packet pts (%lld) from A/V encoder is lower than last one (%"PRId64")", GetDataTypeStr().c_str(), pPacketTimestamp, mLastPacketPts);
 
         // do we have monotonously increasing PTS values
         if (mIncomingAVStreamLastPts > pPacketTimestamp)
@@ -153,6 +152,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         }else if (mIncomingAVStreamCodecContext != pStream->codec)
         {
             LOG(LOG_WARN, "Incoming AV stream unchanged but stream codec context changed from %p to %p (codec %s), resetting RTP streamer..", mIncomingAVStreamCodecContext, pStream->codec, pStream->codec->codec->name);
+            LOG(LOG_WARN, "  ..sink opened: %d", (int)mMediaSinkOpened);
             tResetNeeded = true;
         }else if (mIncomingAVStreamCodecID != pStream->codec->codec_id)
         {
@@ -163,16 +163,20 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         //####################################################################
         // send packet(s) with frame data to the correct target host and port
         //####################################################################
-        if (!mRtpStreamOpened)
+        if (!mMediaSinkOpened)
         {
             if (pStream == NULL)
             {
-                LOG(LOG_ERROR, "Tried to process packets while streaming is closed, implicit open impossible");
+                LOG(LOG_ERROR, "Tried to process %s packets while streaming is closed, implicit open impossible",GetDataTypeStr().c_str());
 
                 return;
             }
 
-            OpenStreamer(pStream);
+            if(!OpenStreamer(pStream))
+            {
+                LOG(LOG_ERROR, "Couldn't open %s packetizer, skipping packet processing", GetDataTypeStr().c_str());
+                return;
+            }
             tResetNeeded = false;
         }
 
@@ -181,7 +185,16 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         {
             LOG(LOG_VERBOSE, "Restarting RTP encoder");
             CloseStreamer();
-            OpenStreamer(pStream);
+            if(!OpenStreamer(pStream))
+            {
+                LOG(LOG_ERROR, "Couldn't reset %s packetizer, skipping packet processing", GetDataTypeStr().c_str());
+                return;
+            }
+        }
+
+        if(!mMediaSinkOpened)
+        {
+            return;
         }
 
         //####################################################################
@@ -287,7 +300,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
 
 void MediaSinkMem::UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp)
 {
-    if ((mRtpActivated) && (mRtpStreamOpened))
+    if ((mRtpActivated) && (mMediaSinkOpened))
         SetSynchronizationReferenceForRTP((uint64_t)pReferenceNtpTimestamp, (uint64_t)(pReferenceFrameTimestamp- mIncomingAVStreamStartPts));
 }
 
@@ -355,22 +368,29 @@ void MediaSinkMem::WriteFragment(char* pData, unsigned int pSize, int64_t pFragm
     {
         mSinkFifo->WriteFifo(pData, (int)pSize, pFragmentNumber);
     }else
-        LOG(LOG_ERROR, "Packet for media sink of %u bytes is too big for FIFO with entries of %d bytes", pSize, mSinkFifo->GetEntrySize());
+        LOG(LOG_ERROR, "Packet for %s media sink of %u bytes is too big for FIFO with entries of %d bytes", GetDataTypeStr().c_str(), pSize, mSinkFifo->GetEntrySize());
 }
 
 bool MediaSinkMem::OpenStreamer(AVStream *pStream)
 {
-    if (mRtpStreamOpened)
+    if (mMediaSinkOpened)
     {
-        LOG(LOG_ERROR, "Already opened");
-        return false;
+        LOG(LOG_WARN, "Already opened");
+        return true;
     }
 
     mCodec = pStream->codec->codec->name;
     if (mRtpActivated)
-        OpenRtpEncoder(mTargetHost, mTargetPort, pStream);
+    {
+        if (!OpenRtpEncoder(mTargetHost, mTargetPort, pStream))
+        {
+            LOG(LOG_ERROR, "Couldn't open the %s RTP packetizer", GetDataTypeStr().c_str());
 
-    mRtpStreamOpened = true;
+            return false;
+        }
+    }
+
+    mMediaSinkOpened = true;
 
     mIncomingFirstPacket = true;
     mIncomingAVStreamStartPts = 0;
@@ -383,13 +403,13 @@ bool MediaSinkMem::OpenStreamer(AVStream *pStream)
 
 bool MediaSinkMem::CloseStreamer()
 {
-    if (!mRtpStreamOpened)
+    if (!mMediaSinkOpened)
         return false;
 
     if (mRtpActivated)
         CloseRtpEncoder();
 
-    mRtpStreamOpened = false;
+    mMediaSinkOpened = false;
 
     return true;
 }
