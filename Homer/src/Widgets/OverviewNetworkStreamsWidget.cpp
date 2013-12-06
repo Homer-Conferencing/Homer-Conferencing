@@ -106,7 +106,7 @@ void TableEntryLossless::BoxToggled(bool pChecked)
     SVC_SOCKET_CONTROL.ReleaseClientSocketsControl();
 
     if (tApplied)
-        ShowInfo("New QoS settings applied", "The required feature \"lossless\" was " + (pChecked ? QString("activated") : QString("deactivated")) + " in the socket settings");
+        ShowInfo(Homer::Gui::OverviewNetworkStreamsWidget::tr("New QoS settings applied"), Homer::Gui::OverviewNetworkStreamsWidget::tr("The feature \"lossless\" was") + " " + (pChecked ? Homer::Gui::OverviewNetworkStreamsWidget::tr("activated") : Homer::Gui::OverviewNetworkStreamsWidget::tr("deactivated")) + " " + Homer::Gui::OverviewNetworkStreamsWidget::tr("in the socket settings"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -179,7 +179,7 @@ void TableEntryDelay::EditFinished()
     SVC_SOCKET_CONTROL.ReleaseClientSocketsControl();
 
     if (tApplied)
-        ShowInfo("New QoS settings applied", "The required delay was set from " + QString("%1").arg(tOldDelay) + " to " + QString("%1").arg(tNewDelay) + " ms in the socket settings");
+        ShowInfo(Homer::Gui::OverviewNetworkStreamsWidget::tr("New QoS settings applied"), Homer::Gui::OverviewNetworkStreamsWidget::tr("The delay was set from") + " " + QString("%1").arg(tOldDelay) + " " + Homer::Gui::OverviewNetworkStreamsWidget::tr("to") + " " + QString("%1").arg(tNewDelay) + " " + Homer::Gui::OverviewNetworkStreamsWidget::tr("ms in the socket settings"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -252,7 +252,7 @@ void TableEntryDatarate::EditFinished()
     SVC_SOCKET_CONTROL.ReleaseClientSocketsControl();
 
     if (tApplied)
-        ShowInfo("New QoS settings applied", "The required data rate was set from " + QString("%1").arg(tOldDatarate) + " to " + QString("%1").arg(tNewDatarate) + " Kb/s in the socket settings");
+        ShowInfo(Homer::Gui::OverviewNetworkStreamsWidget::tr("New QoS settings applied"), Homer::Gui::OverviewNetworkStreamsWidget::tr("The data rate was set from") + " " + QString("%1").arg(tOldDatarate) + " " + Homer::Gui::OverviewNetworkStreamsWidget::tr("to") + " " + QString("%1").arg(tNewDatarate) + " " + Homer::Gui::OverviewNetworkStreamsWidget::tr("Kb/s in the socket settings"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

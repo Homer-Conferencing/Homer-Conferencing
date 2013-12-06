@@ -863,7 +863,7 @@ void MainWindow::GotAnswerForVersionRequest(bool pError)
     {
         QString tServerVersion = QString(mHttpGetVersionServer->readAll().constData());
         if (tServerVersion != RELEASE_VERSION_STRING)
-            ShowInfo("Update available", "An updated version of Homer-Conferencing is available. Current version on server is <font color='green'><b>" + tServerVersion +"</b></font>. Have a look in the \"update check\" dialog in the application menu.");
+            ShowInfo(Homer::Gui::MainWindow::tr("Update available"), Homer::Gui::MainWindow::tr("An updated version of Homer Conferencing is available. The new version is") + " <font color='green'><b>" + tServerVersion +"</b></font>. " + Homer::Gui::MainWindow::tr("You can download the version via \"update check\" in the main menu."));
     }
 }
 
@@ -1801,7 +1801,7 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 							return NULL;
 						}else
 						{
-							ShowInfo("Participant already called", "The participant \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already called!\nThe participant is known as \"" + (*tIt)->GetParticipantName() + "\".");
+							ShowInfo(Homer::Gui::MainWindow::tr("Participant already called"), Homer::Gui::MainWindow::tr("The participant") + " \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" " + Homer::Gui::MainWindow::tr("is already called!\nThe participant is known as") + " \"" + (*tIt)->GetParticipantName() + "\".");
 							return NULL;
 						}
 					 }else
@@ -1824,10 +1824,10 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 				if (pInitState == CALLSTATE_RINGING)
 					MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()), pTransport);
 			} else
-				ShowInfo("Participant is already contacted", "The contact with the address \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" is already contacted and a participant widget is currently open!");
+				ShowInfo(Homer::Gui::MainWindow::tr("Participant is already contacted"), Homer::Gui::MainWindow::tr("The participant with the address") + " \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" " + Homer::Gui::MainWindow::tr("is already contacted and a participant window is currently open!"));
     	}else
     	{
-			ShowInfo("Loop detected", "Loop detected: you tried to contact yourself!");
+			ShowInfo(Homer::Gui::MainWindow::tr("Loop detected"), Homer::Gui::MainWindow::tr("You tried to contact yourself!"));
     	}
 	}
     return tParticipantWidget;

@@ -1363,6 +1363,51 @@ Check configuration!</source>
         <source>Main menu</source>
         <translation type="unfinished">Главное меню</translation>
     </message>
+    <message>
+        <source>Update available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Participant already called</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The participant</source>
+        <translation type="unfinished">Участник</translation>
+    </message>
+    <message>
+        <source>is already called!
+The participant is known as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Participant is already contacted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>is already contacted and a participant window is currently open!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Loop detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You tried to contact yourself!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An updated version of Homer Conferencing is available. The new version is</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You can download the version via &quot;update check&quot; in the main menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The participant with the address</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Homer::Gui::MessageHistory</name>
@@ -1685,6 +1730,46 @@ Check configuration!</source>
     <message>
         <source>Comma-Separated Values File</source>
         <translation>Значений, разделенных запятыми файле</translation>
+    </message>
+    <message>
+        <source>New QoS settings applied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>in the socket settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>to</source>
+        <translation type="unfinished">для</translation>
+    </message>
+    <message>
+        <source>ms in the socket settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Kb/s in the socket settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>activated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>deactivated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The feature &quot;lossless&quot; was</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The delay was set from</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The data rate was set from</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

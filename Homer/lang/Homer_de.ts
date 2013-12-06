@@ -1697,6 +1697,21 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::MainWindow</name>
     <message>
+        <location filename="../src/MainWindow.cpp" line="866"/>
+        <source>Update available</source>
+        <translation>Aktualisierung verfügbar</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="866"/>
+        <source>An updated version of Homer Conferencing is available. The new version is</source>
+        <translation>Eine aktualisierte Version von Homer Conferencing ist verfügbar. Die neue Version ist</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="866"/>
+        <source>You can download the version via &quot;update check&quot; in the main menu.</source>
+        <translation>Sie können die Version via &quot;Aktualisierung überprüfen&quot; im Hauptmenü herunterladen.</translation>
+    </message>
+    <message>
         <location filename="../src/MainWindow.cpp" line="1300"/>
         <source>NAT detection failed</source>
         <translation>NAT Erkennung fehlgeschlagen</translation>
@@ -1752,6 +1767,48 @@ Bitte Konfiguration prüfen!</translation>
         <location filename="../src/MainWindow.cpp" line="1726"/>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1804"/>
+        <source>Participant already called</source>
+        <translation>Teilnehmer bereits angerufen</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1804"/>
+        <source>The participant</source>
+        <translation>Der Teilnehmer</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1804"/>
+        <source>is already called!
+The participant is known as</source>
+        <translation>ist bereits angerufen!
+Der Teilnehmer ist bekannt unter</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1827"/>
+        <source>Participant is already contacted</source>
+        <translation>Teilnehmer bereits kontaktiert</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1827"/>
+        <source>is already contacted and a participant window is currently open!</source>
+        <translation>ist bereits kontaktiert und ein Teilnehmerfenster ist aktuell offen!</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1827"/>
+        <source>The participant with the address</source>
+        <translation>Der Teilnehmer mit der Adresse</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1830"/>
+        <source>Loop detected</source>
+        <translation>Schleife erkannt</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1830"/>
+        <source>You tried to contact yourself!</source>
+        <translation>Sie versuchten sich selbst zu kontaktieren!</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2227"/>
@@ -2241,6 +2298,59 @@ Bitte Konfiguration prüfen!</translation>
 </context>
 <context>
     <name>Homer::Gui::OverviewNetworkStreamsWidget</name>
+    <message>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="109"/>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="182"/>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="255"/>
+        <source>New QoS settings applied</source>
+        <translation>Neue QoS-Einstellungen übernommen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="109"/>
+        <source>in the socket settings</source>
+        <translation>in den Socket-Einstellungen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="182"/>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="255"/>
+        <source>to</source>
+        <translation>auf</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="182"/>
+        <source>ms in the socket settings</source>
+        <translation>ms in den Socket-Einstellungen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="109"/>
+        <source>The feature &quot;lossless&quot; was</source>
+        <translation>Die Funktion &quot;verlustlos&quot; wurde</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="109"/>
+        <source>activated</source>
+        <translation>aktiviert</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="109"/>
+        <source>deactivated</source>
+        <translation>deaktiviert</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="182"/>
+        <source>The delay was set from</source>
+        <translation>Die Verzögerung wurde von</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="255"/>
+        <source>Kb/s in the socket settings</source>
+        <translation>Kb/s in den Socketeinstellungen gesetzt</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="255"/>
+        <source>The data rate was set from</source>
+        <translation>Die Datenrate wurde von</translation>
+    </message>
     <message>
         <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="349"/>
         <location filename="../src/Widgets/OverviewNetworkStreamsWidget.cpp" line="357"/>
