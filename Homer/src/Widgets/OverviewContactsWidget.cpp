@@ -251,6 +251,10 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
     tAction->setCheckable(true);
     tAction->setChecked(CONF.GetSipContactsProbing());
 
+    tAction = tMenu.addAction(Homer::Gui::OverviewContactsWidget::tr("Detect unknown contacts"));
+    tAction->setCheckable(true);
+    tAction->setChecked(CONF.GetSipUnknownContactsProbing());
+
     QAction* tPopupRes = tMenu.exec(QCursor::pos());
     if (tPopupRes != NULL)
     {
@@ -302,6 +306,19 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
 
             return;
         }
+
+        if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Detect unknown contacts")))
+        {
+            bool tOldState = CONF.GetSipUnknownContactsProbing();
+            CONF.SetSipUnknownContactsProbing(!CONF.GetSipUnknownContactsProbing());
+
+            // trigger an explicit auto probing in case the user has activated this feature
+            if (!tOldState)
+                CONTACTS.ProbeAvailabilityForAll();
+
+            return;
+        }
+
     }
 }
 

@@ -1381,14 +1381,6 @@ The participant is known as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Participant is already contacted</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>is already contacted and a participant window is currently open!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Loop detected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1402,10 +1394,6 @@ The participant is known as</source>
     </message>
     <message>
         <source>You can download the version via &quot;update check&quot; in the main menu.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>The participant with the address</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1613,6 +1601,10 @@ The participant is known as</source>
     </message>
     <message>
         <source>Update availability</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detect unknown contacts</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

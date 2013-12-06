@@ -199,6 +199,7 @@ public:
     QString GetSipServer();
     int GetSipServerPort();
     bool GetSipContactsProbing();
+    bool GetSipUnknownContactsProbing();
     int GetSipInfrastructureMode();
     bool GetNatSupportActivation();
     QString GetStunServer();
@@ -368,6 +369,7 @@ public:
     void SetSipServerPort(int pPort);
     void SetSipInfrastructureMode(int pMode);
     void SetSipContactsProbing(bool pActivation);
+    void SetSipUnknownContactsProbing(bool pActivation);
     void SetStunServer(QString pServer);
     void SetNatSupportActivation(bool pActivation);
     void SetSipListenerAddress(QString pAddress);

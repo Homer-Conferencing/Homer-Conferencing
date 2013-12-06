@@ -1813,8 +1813,9 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 			}
 
 			pHost = CompleteIpAddress(pHost);
-			if (MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString(), pTransport))
-			{
+			MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString(), pTransport);
+//          if
+//			{
 				QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
 				tParticipantWidget = ParticipantWidget::CreateParticipant(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
@@ -1823,8 +1824,8 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 
 				if (pInitState == CALLSTATE_RINGING)
 					MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()), pTransport);
-			} else
-				ShowInfo(Homer::Gui::MainWindow::tr("Participant is already contacted"), Homer::Gui::MainWindow::tr("The participant with the address") + " \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" " + Homer::Gui::MainWindow::tr("is already contacted and a participant window is currently open!"));
+//			} else
+//				ShowInfo(Homer::Gui::MainWindow::tr("Participant is already contacted"), Homer::Gui::MainWindow::tr("The participant with the address") + " \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" " + Homer::Gui::MainWindow::tr("is already contacted and a participant window is currently open!"));
     	}else
     	{
 			ShowInfo(Homer::Gui::MainWindow::tr("Loop detected"), Homer::Gui::MainWindow::tr("You tried to contact yourself!"));

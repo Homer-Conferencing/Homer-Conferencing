@@ -714,6 +714,13 @@ void Configuration::SetSipContactsProbing(bool pActivation)
     mQSettings->endGroup();
 }
 
+void Configuration::SetSipUnknownContactsProbing(bool pActivation)
+{
+    mQSettings->beginGroup("Network");
+    mQSettings->setValue("UnknownContactsProbing", pActivation);
+    mQSettings->endGroup();
+}
+
 void Configuration::SetSipListenerAddress(QString pAddress)
 {
     mQSettings->beginGroup("Network");
@@ -1395,6 +1402,11 @@ int Configuration::GetSipServerPort()
 bool Configuration::GetSipContactsProbing()
 {
     return mQSettings->value("Network/ContactsProbing", true).toBool();
+}
+
+bool Configuration::GetSipUnknownContactsProbing()
+{
+    return mQSettings->value("Network/UnknownContactsProbing", false).toBool();
 }
 
 int Configuration::GetSipInfrastructureMode()

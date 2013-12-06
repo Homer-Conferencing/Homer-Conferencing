@@ -1784,88 +1784,73 @@ The participant is known as</source>
 Der Teilnehmer ist bekannt unter</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1827"/>
-        <source>Participant is already contacted</source>
-        <translation>Teilnehmer bereits kontaktiert</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1827"/>
-        <source>is already contacted and a participant window is currently open!</source>
-        <translation>ist bereits kontaktiert und ein Teilnehmerfenster ist aktuell offen!</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1827"/>
-        <source>The participant with the address</source>
-        <translation>Der Teilnehmer mit der Adresse</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1830"/>
+        <location filename="../src/MainWindow.cpp" line="1831"/>
         <source>Loop detected</source>
         <translation>Schleife erkannt</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1830"/>
+        <location filename="../src/MainWindow.cpp" line="1831"/>
         <source>You tried to contact yourself!</source>
         <translation>Sie versuchten sich selbst zu kontaktieren!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2227"/>
-        <location filename="../src/MainWindow.cpp" line="2326"/>
+        <location filename="../src/MainWindow.cpp" line="2228"/>
+        <location filename="../src/MainWindow.cpp" line="2327"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2230"/>
-        <location filename="../src/MainWindow.cpp" line="2329"/>
+        <location filename="../src/MainWindow.cpp" line="2231"/>
+        <location filename="../src/MainWindow.cpp" line="2330"/>
         <source>Hide window</source>
         <translation>Fenster minimieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2236"/>
+        <location filename="../src/MainWindow.cpp" line="2237"/>
         <source>Main menu</source>
         <translation>Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2249"/>
+        <location filename="../src/MainWindow.cpp" line="2250"/>
         <source>Mosaic mode</source>
         <translation>Mosaikmodus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2266"/>
-        <location filename="../src/MainWindow.cpp" line="2339"/>
+        <location filename="../src/MainWindow.cpp" line="2267"/>
+        <location filename="../src/MainWindow.cpp" line="2340"/>
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2270"/>
-        <location filename="../src/MainWindow.cpp" line="2343"/>
+        <location filename="../src/MainWindow.cpp" line="2271"/>
+        <location filename="../src/MainWindow.cpp" line="2344"/>
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2276"/>
-        <location filename="../src/MainWindow.cpp" line="2349"/>
+        <location filename="../src/MainWindow.cpp" line="2277"/>
+        <location filename="../src/MainWindow.cpp" line="2350"/>
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2285"/>
-        <location filename="../src/MainWindow.cpp" line="2358"/>
+        <location filename="../src/MainWindow.cpp" line="2286"/>
+        <location filename="../src/MainWindow.cpp" line="2359"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2292"/>
+        <location filename="../src/MainWindow.cpp" line="2293"/>
         <source>Configuration</source>
         <translation>Konfiguration</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2302"/>
+        <location filename="../src/MainWindow.cpp" line="2303"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2310"/>
+        <location filename="../src/MainWindow.cpp" line="2311"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -2056,104 +2041,110 @@ Der Teilnehmer ist bekannt unter</translation>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="133"/>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="141"/>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="210"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="267"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="399"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="442"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="271"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="416"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="459"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="196"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="257"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="261"/>
         <source>Send message</source>
         <translation>Nachrichten senden</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="202"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="262"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="266"/>
         <source>Call</source>
         <translation>Anrufen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="218"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="277"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="472"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="281"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="489"/>
         <source>Edit contact</source>
         <translation>Kontakt bearbeiten</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="224"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="272"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="276"/>
         <source>Duplicate contact</source>
         <translation>Kontakt duplizieren</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="229"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="282"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="286"/>
         <source>Delete contact</source>
         <translation>Kontakt entfernen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="240"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="288"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="292"/>
         <source>Reset contact list</source>
         <translation>Kontaktliste zurücksetzen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="250"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="294"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="298"/>
         <source>Update availability</source>
         <translation>Verfügbarkeit aktualisieren</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="498"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="504"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="254"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="310"/>
+        <source>Detect unknown contacts</source>
+        <translation>Unbekannte Kontakte erkennen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="515"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="521"/>
         <source>Acknowledge deletion</source>
         <translation>Bestätigung der Löschung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="498"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="515"/>
         <source>Do you want to delete &quot;</source>
         <translation>Soll &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="498"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="515"/>
         <source>&quot; from the contact list?</source>
         <translation>&quot; aus der Kontaktliste gelöscht werden?</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="504"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="521"/>
         <source>Do you want to delete </source>
         <translation>Sollen </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="504"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="521"/>
         <source> entries from the contact list?</source>
         <translation> Einträge aus der Kontaktliste gelöscht werden?</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="555"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="572"/>
         <source>Insert duplicated contact</source>
         <translation>Duplizierten Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="576"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="593"/>
         <source>Save contact list</source>
         <translation>Speichern der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="593"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="610"/>
         <source>Load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="828"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="845"/>
         <source>Name</source>
         <translatorcomment>Name</translatorcomment>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="830"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="847"/>
         <source>Software</source>
         <translation>Software</translation>
     </message>
@@ -2468,8 +2459,8 @@ Der Teilnehmer ist bekannt unter</translation>
         <translation>Abspeichern der Playlist ist fehlgeschlagen in </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="578"/>
         <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="595"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="612"/>
         <source>Contact list</source>
         <translation>Kontaktliste</translation>
     </message>

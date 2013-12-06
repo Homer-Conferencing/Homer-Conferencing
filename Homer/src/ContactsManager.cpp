@@ -506,17 +506,20 @@ void ContactsManager::UpdateContact(QString pContact, enum TransportType pContac
     // add the unknown contact
     if(!tFoundContact)
     {
-        LOG(LOG_VERBOSE, "Detected unknown contact: %s[%s] with software %s", pContact.toStdString().c_str(), tContactTransport.toStdString().c_str(), pSoftware.toStdString().c_str());
-        ContactDescriptor tUnknownContact;
-        tUnknownContact.User = tUser;
-        tUnknownContact.Host = tHost;
-        tUnknownContact.Port = tPort;
-        tUnknownContact.Name = tUnknownContact.User;
-        tUnknownContact.Transport = pContactTransport;
-        tUnknownContact.Software = pSoftware;
-        tUnknownContact.Unknown = true;
-        tUnknownContact.Id = CONTACTS.GetNextFreeId();
-        AddContact(tUnknownContact);
+        if(CONF.GetSipUnknownContactsProbing())
+        {
+            LOG(LOG_VERBOSE, "Detected unknown contact: %s[%s] with software %s", pContact.toStdString().c_str(), tContactTransport.toStdString().c_str(), pSoftware.toStdString().c_str());
+            ContactDescriptor tUnknownContact;
+            tUnknownContact.User = tUser;
+            tUnknownContact.Host = tHost;
+            tUnknownContact.Port = tPort;
+            tUnknownContact.Name = tUnknownContact.User;
+            tUnknownContact.Transport = pContactTransport;
+            tUnknownContact.Software = pSoftware;
+            tUnknownContact.Unknown = true;
+            tUnknownContact.Id = CONTACTS.GetNextFreeId();
+            AddContact(tUnknownContact);
+        }
     }
 
     if (mContactsModel != NULL)
