@@ -1406,7 +1406,7 @@ bool Configuration::GetSipContactsProbing()
 
 bool Configuration::GetSipUnknownContactsProbing()
 {
-    return mQSettings->value("Network/UnknownContactsProbing", false).toBool();
+    return mQSettings->value("Network/UnknownContactsProbing", true).toBool();
 }
 
 int Configuration::GetSipInfrastructureMode()
