@@ -347,6 +347,34 @@ inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, cons
     return tResult;
 }
 
+inline int HM_avcodec_encode_audio2(AVCodecContext *avctx, AVPacket *avpkt, const AVFrame *frame, int *got_packet_ptr)
+{
+    int tResult;
+
+    #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 23, 100))
+        tResult = avcodec_encode_audio2(avctx, avpkt, frame, got_packet_ptr);
+
+        if (frame->key_frame)
+            avpkt->flags |= AV_PKT_FLAG_KEY;
+
+        avpkt->pts = frame->pts;
+        avpkt->dts = frame->pts;
+    #else
+        tResult = avcodec_encode_audio2(avctx, avpkt, frame, got_packet_ptr);
+    #endif
+
+    if ((!avctx) || (!(avctx->codec->capabilities & CODEC_CAP_DELAY)))
+    {// no delay by encoder
+        avpkt->pts = frame->pts;
+        avpkt->dts = frame->pts;
+    }else
+    {// possible delay by encoder, e.g., H.264 encoder
+        // encoder has set the pts/dts value during "avcodec_encode_video(2)"
+    }
+
+    return tResult;
+}
+
 inline AVFifoBuffer *HM_av_fifo_alloc(unsigned int size)
 {
     #if (LIBAVUTIL_VERSION_MAJOR < 50)

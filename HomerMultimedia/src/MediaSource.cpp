@@ -3816,7 +3816,7 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
                 tEncoderResult = HM_avcodec_encode_video2(pCodecContext, tPacket, pInputFrame, &tFrameFinished);
                 break;
         case MEDIA_AUDIO:
-                tEncoderResult = avcodec_encode_audio2(pCodecContext, tPacket, pInputFrame, &tFrameFinished);
+                tEncoderResult = HM_avcodec_encode_audio2(pCodecContext, tPacket, pInputFrame, &tFrameFinished);
                 break;
         default:
                 break;
