@@ -85,10 +85,6 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IPV6_LINK_LOCAL_PREFIX                          "fe80" //TODO: check the range FE80-FFFF (link local, site local, multicast)
-
-///////////////////////////////////////////////////////////////////////////////
-
 bool MainWindow::mShuttingDown = false;
 bool MainWindow::mStarting = true;
 
@@ -739,7 +735,7 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
     for (int i = 0; i < tQtLocalAddresses.size(); i++)
     {
     	QString tAddress = tQtLocalAddresses[i].toString().toLower();
-        if ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol) || ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv6Protocol) && (!tAddress.startsWith(IPV6_LINK_LOCAL_PREFIX))))
+        if ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol) || ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv6Protocol) && (!Socket::IsIPv6LinkLocal(tAddress.toStdString()))))
         {
             LOG(LOG_INFO, "...%s", tAddress.toStdString().c_str());
 
@@ -837,7 +833,7 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
             }
             if ((pLocalSourceIp == "") && (tInterfaceUsable))
             {
-                if ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv4Protocol) || ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv6Protocol) && (!tAddress.startsWith(IPV6_LINK_LOCAL_PREFIX))))
+                if ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv4Protocol) || ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv6Protocol) && (!Socket::IsIPv6LinkLocal(tAddress.toStdString()))))
                 {
                     LOG(LOG_INFO, ">>> selected as conference address");
                     pLocalSourceIp = tAddress;
