@@ -1969,8 +1969,9 @@ void MainWindow::actionConfiguration()
 
 void MainWindow::actionHelp()
 {
-    HelpDialog tHelpDia(this);
-    tHelpDia.exec();
+    HelpDialog *tHelpDialog = new HelpDialog(this);
+    tHelpDialog->exec();
+    delete tHelpDialog;
 }
 
 void MainWindow::actionUpdateCheck()

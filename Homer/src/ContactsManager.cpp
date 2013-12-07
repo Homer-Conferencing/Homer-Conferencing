@@ -593,7 +593,7 @@ void ContactsManager::UpdateContact(QString pContact, enum TransportType pContac
                 tUnknownContact.Unknown = true;
                 tUnknownContact.State = pState;
                 tUnknownContact.Id = CONTACTS.GetNextFreeId();
-                AddContact(tUnknownContact);
+                mContacts.push_back(tUnknownContact);
             }
         }
     }
