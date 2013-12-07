@@ -544,22 +544,25 @@ void Socket::StopReceiving()
 	LOG(LOG_VERBOSE, "Stopping local receiver at %s:%u", mLocalHost.c_str(), mLocalPort);
     LOG(LOG_VERBOSE, "Try to do loopback signaling to local IPv%d listener at port %u, transport %d", GetNetworkType(), 0xFFFF & GetLocalPort(), GetTransportType());
     Socket  *tSocket = CreateClientSocket(GetNetworkType(), GetTransportType());
-    char    tData[8];
-    switch(tSocket->GetNetworkType())
+    if(tSocket != NULL)
     {
-        case SOCKET_IPv4:
-            LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener at %s:%u", mLocalHost.c_str(), GetLocalPort());
-            if (!tSocket->Send("127.0.0.1", GetLocalPort(), tData, 0))
-                LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
-            break;
-        case SOCKET_IPv6:
-            LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener at %s:%u", mLocalHost.c_str(), GetLocalPort());
-            if (!tSocket->Send("::1", GetLocalPort(), tData, 0))
-                LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
-            break;
-        default:
-            LOG(LOG_ERROR, "Unknown network type");
-            break;
+        char    tData[8];
+        switch(tSocket->GetNetworkType())
+        {
+            case SOCKET_IPv4:
+                LOG(LOG_VERBOSE, "Doing loopback signaling to IPv4 listener at %s:%u", mLocalHost.c_str(), GetLocalPort());
+                if (!tSocket->Send("127.0.0.1", GetLocalPort(), tData, 0))
+                    LOG(LOG_ERROR, "Error when sending data through loopback IPv4-UDP socket");
+                break;
+            case SOCKET_IPv6:
+                LOG(LOG_VERBOSE, "Doing loopback signaling to IPv6 listener at %s:%u", mLocalHost.c_str(), GetLocalPort());
+                if (!tSocket->Send("::1", GetLocalPort(), tData, 0))
+                    LOG(LOG_ERROR, "Error when sending data through loopback IPv6-UDP socket");
+                break;
+            default:
+                LOG(LOG_ERROR, "Unknown network type");
+                break;
+        }
     }
 
     if (GetTransportType() == SOCKET_TCP)
@@ -647,6 +650,7 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 			//#########################
 			if (!mIsConnected)
 			{
+			    LOG(LOG_VERBOSE, "Connecting socket: %d", mSocketHandle);
 		        if (connect(mSocketHandle, &tAddressDescriptor.sa, tAddressDescriptorSize) < 0)
 		        {
 		            LOG(LOG_ERROR, "Failed to connect socket %d because \"%s\"(%d)", mSocketHandle, strerror(errno), errno);

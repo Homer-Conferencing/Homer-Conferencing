@@ -165,6 +165,7 @@ public:
     static enum TransportType String2TransportType(std::string pTypeStr);
 
     /* network layer support */
+    static std::string GetBestSourceIP(std::string pDestination);
     static bool IsIPv6LinkLocal(std::string pAddress);
     static bool IsIPv6Supported();
     static void DisableIPv6Support();
