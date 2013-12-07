@@ -310,7 +310,7 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, e
         tParticipantDescriptor.Host = pHost;
         tParticipantDescriptor.Port = pPort;
         tParticipantDescriptor.Transport = pTransport;
-        tParticipantDescriptor.OwnIp = GetOwnRoutingAddressForPeer(pHost);
+        tParticipantDescriptor.OwnIp = GetLocalSource(pHost);
         tParticipantDescriptor.OwnPort = (unsigned int)GetHostPort();
         tParticipantDescriptor.RemoteVideoHost = "0.0.0.0";
         tParticipantDescriptor.RemoteVideoPort = 0;

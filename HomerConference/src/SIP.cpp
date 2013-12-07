@@ -279,7 +279,7 @@ bool SIP::IsThisParticipant(string pParticipantUser, string pParticipantHost, st
     return tResult;
 }
 
-string SIP::GetLocalConferenceId(string pDestination)
+string SIP::GetLocalSource(string pDestination)
 {
     string tResult = "";
 
@@ -301,7 +301,7 @@ string SIP::GetLocalConferenceId(string pDestination)
                         uint32_t tNetworkAddress = (tDestinationAddress & mSipContext->SipListener[i].IPv4Netmask);
                         if(tNetworkAddress == mSipContext->SipListener[i].IPv4NetAddress)
                         {
-                            tResult = SipCreateId(GetUserName(), mSipContext->SipListener[i].HostAddress, toString(GetHostPort()));
+                            tResult = mSipContext->SipListener[i].HostAddress;
                             break;
                         }
                     }
@@ -314,7 +314,18 @@ string SIP::GetLocalConferenceId(string pDestination)
      * Fack back
      */
     if(tResult == "")
-        tResult = SipCreateId(GetUserName(), GetHostAdr(), toString(GetHostPort()));
+        tResult = mLocalGatewayAddress;
+
+    //LOG(LOG_ERROR, "ConferenceID %s for destination %s", tResult.c_str(), pDestination.c_str());
+
+    return tResult;
+}
+
+string SIP::GetLocalConferenceId(string pDestination)
+{
+    string tResult = "";
+
+    tResult = SipCreateId(GetUserName(), GetLocalSource(pDestination), toString(GetHostPort()));
 
     //LOG(LOG_ERROR, "ConferenceID %s for destination %s", tResult.c_str(), pDestination.c_str());
 

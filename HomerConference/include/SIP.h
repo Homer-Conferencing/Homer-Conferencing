@@ -106,6 +106,7 @@ public:
     /* server interface/contact data */
     std::string GetServerConferenceId();
     /* local interface/contact data depending on the destination */
+    std::string GetLocalSource(std::string pDestination = "");
     std::string GetLocalConferenceId(std::string pDestination = "");
     /* local interface/contact data */
     std::string GetHostAdr();
