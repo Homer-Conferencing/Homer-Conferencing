@@ -94,17 +94,14 @@ Meeting& Meeting::GetInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Meeting::Init(string pSipHostAdr, LocalAddressesList pLocalAddresses, bool pNatTraversalSupport, string pBroadcastAdr, int pSipStartPort, TransportType pSipListenerTransport, int pStunStartPort, int pVideoAudioStartPort)
+void Meeting::Init(string pLocalGatewayAddress, AddressesList pLocalAddresses, AddressesList pLocalAddressesNetmask, int pSipStartPort, TransportType pSipListenerTransport, bool pNatTraversalSupport, int pStunStartPort, int pVideoAudioStartPort, string pBroadcastIdentifier)
 {
-    SIP::Init(pSipStartPort, pSipListenerTransport, pNatTraversalSupport, pStunStartPort);
+    SIP::Init(pLocalGatewayAddress, pLocalAddresses, pLocalAddressesNetmask, pSipStartPort, pSipListenerTransport, pNatTraversalSupport, pStunStartPort);
 
     // start value for port auto probing (default is 5000)
     SetVideoAudioStartPort(pVideoAudioStartPort);
 
-    //SetHostAdr("0.0.0.0");//pSipHostAdr);
-    SetHostAdr(pSipHostAdr);
-    mBroadcastAdr = pBroadcastAdr;
-    mLocalAddresses = pLocalAddresses;
+    mBroadcastIdentifier = pBroadcastIdentifier;
 
     ParticipantDescriptor tParticipantDescriptor;
 
@@ -130,7 +127,7 @@ void Meeting::Init(string pSipHostAdr, LocalAddressesList pLocalAddresses, bool 
     mOwnMail = "user@host.com";
 
     tParticipantDescriptor.User = GetUserName();
-    tParticipantDescriptor.Host = pSipHostAdr;
+    tParticipantDescriptor.Host = pLocalGatewayAddress;
     tParticipantDescriptor.Port = toString(mSipHostPort);
     tParticipantDescriptor.SipNuaHandleForCalls = NULL;
     tParticipantDescriptor.SipNuaHandleForMsgs = NULL;
@@ -197,45 +194,6 @@ string Meeting::CallStateAsString(int pCallState)
     return tResult;
 }
 
-string Meeting::GetUserName()
-{
-    string tResult = "user";
-    char *tUser;
-
-	tUser = getenv("USER");
-    if (tUser != NULL)
-    	tResult = string(tUser);
-    else
-    {
-    	tUser = getenv("USERNAME");
-        if (tUser != NULL)
-        	tResult = string(tUser);
-    }
-
-    return tResult;
-}
-
-void Meeting::SetHostAdr(string pHost)
-{
-    LOG(LOG_VERBOSE, "Setting SIP host address to %s", pHost.c_str());
-    mSipHostAdr = pHost;
-}
-
-string Meeting::GetHostAdr()
-{
-    return mSipHostAdr;
-}
-
-int Meeting::GetHostPort()
-{
-    return mSipHostPort;
-}
-
-TransportType Meeting::GetHostPortTransport()
-{
-    return mSipHostPortTransport;
-}
-
 string Meeting::GetOwnRoutingAddressForPeer(std::string pForeignHost)
 {
     if(!mSipNatTraversalSupport)
@@ -247,7 +205,7 @@ string Meeting::GetOwnRoutingAddressForPeer(std::string pForeignHost)
         return GetHostAdr();
     }
 
-    if (IS_IPV6_ADDRESS(mSipHostAdr))
+    if (IS_IPV6_ADDRESS(mLocalGatewayAddress))
     {//IPv6
         return GetHostAdr();
     }else
@@ -322,28 +280,6 @@ string Meeting::GetLocalUserName()
 string Meeting::GetLocalUserMailAdr()
 {
     return mOwnMail;
-}
-
-string Meeting::GetLocalConferenceId()
-{
-    string tResult = "";
-
-    tResult = SipCreateId(GetUserName(), GetHostAdr(), toString(GetHostPort()));
-
-    //LOG(LOG_VERBOSE, "Determined local conference ID with \"%s\"", tResult.c_str());
-
-    return tResult;
-}
-
-string Meeting::GetServerConferenceId()
-{
-    string tResult = "";
-
-    tResult = SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort);
-
-    //LOG(LOG_VERBOSE, "Determined server conference ID with \"%s\"", tResult.c_str());
-
-    return tResult;
 }
 
 bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, enum TransportType pTransport)
@@ -590,9 +526,10 @@ bool Meeting::SendMessage(string pParticipant, enum TransportType pParticipantTr
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
     ParticipantList::iterator tIt;
+    string tDestinationAddress = "";
 
     // should we use broadcast scheme instead of unciast one?
-    if (pParticipant == mBroadcastAdr)
+    if (pParticipant == mBroadcastIdentifier)
         return SendBroadcastMessage(pMessage);
 
     LOG(LOG_VERBOSE, "Sending message to: %s[%s]", pParticipant.c_str(), Socket::TransportType2String(pParticipantTransport).c_str());
@@ -610,6 +547,7 @@ bool Meeting::SendMessage(string pParticipant, enum TransportType pParticipantTr
             {
                 LOG(LOG_VERBOSE, "...found");
                 tFound = true;
+                tDestinationAddress = tIt->Host;
                 tHandlePtr = &tIt->SipNuaHandleForMsgs;
                 break;
             }
@@ -622,7 +560,7 @@ bool Meeting::SendMessage(string pParticipant, enum TransportType pParticipantTr
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tMEvent->Sender = "sip:" + GetServerConferenceId();
             else
-                tMEvent->Sender = "sip:" + GetLocalConferenceId();
+                tMEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
             tMEvent->SenderName = GetLocalUserName();
             tMEvent->SenderComment = "";
             tMEvent->Receiver = "sip:" + pParticipant;
@@ -644,6 +582,8 @@ bool Meeting::SendCall(string pParticipant, enum TransportType pParticipantTrans
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
     ParticipantList::iterator tIt;
+    string tDestinationAddress = "";
+
 //TODO: support broadcast, similar to SendMessage()
     // lock
     mParticipantsMutex.lock();
@@ -658,6 +598,7 @@ bool Meeting::SendCall(string pParticipant, enum TransportType pParticipantTrans
             {
                 LOG(LOG_VERBOSE, "...found");
                 tFound = true;
+                tDestinationAddress = tIt->Host;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
                 break;
             }
@@ -670,7 +611,7 @@ bool Meeting::SendCall(string pParticipant, enum TransportType pParticipantTrans
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tCEvent->Sender = "sip:" + GetServerConferenceId();
             else
-                tCEvent->Sender = "sip:" + GetLocalConferenceId();
+                tCEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
             tCEvent->SenderName = GetLocalUserName();
             tCEvent->SenderComment = "";
             tCEvent->Receiver = "sip:" + pParticipant;
@@ -691,6 +632,7 @@ bool Meeting::SendCallAcknowledge(string pParticipant, enum TransportType pParti
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
     ParticipantList::iterator tIt;
+    string tDestinationAddress = "";
 
     // lock
     mParticipantsMutex.lock();
@@ -705,6 +647,7 @@ bool Meeting::SendCallAcknowledge(string pParticipant, enum TransportType pParti
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
+                tDestinationAddress = tIt->Host;
                 LOG(LOG_VERBOSE, "...found");
                 break;
             }
@@ -716,7 +659,7 @@ bool Meeting::SendCallAcknowledge(string pParticipant, enum TransportType pParti
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tCREvent->Sender = "sip:" + GetServerConferenceId();
             else
-                tCREvent->Sender = "sip:" + GetLocalConferenceId();
+                tCREvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
             tCREvent->SenderName = GetLocalUserName();
             tCREvent->SenderComment = "";
             tCREvent->Receiver = "sip:" + pParticipant;
@@ -736,6 +679,7 @@ bool Meeting::SendCallAccept(string pParticipant, enum TransportType pParticipan
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
     ParticipantList::iterator tIt;
+    string tDestinationAddress = "";
 
     // lock
     mParticipantsMutex.lock();
@@ -749,6 +693,7 @@ bool Meeting::SendCallAccept(string pParticipant, enum TransportType pParticipan
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
+                tDestinationAddress = tIt->Host;
                 break;
             }
         }
@@ -759,7 +704,7 @@ bool Meeting::SendCallAccept(string pParticipant, enum TransportType pParticipan
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tCAEvent->Sender = "sip:" + GetServerConferenceId();
             else
-                tCAEvent->Sender = "sip:" + GetLocalConferenceId();
+                tCAEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
             tCAEvent->SenderName = GetLocalUserName();
             tCAEvent->SenderComment = "";
             tCAEvent->Receiver = "sip:" + pParticipant;
@@ -779,6 +724,7 @@ bool Meeting::SendCallCancel(string pParticipant, enum TransportType pParticipan
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
     ParticipantList::iterator tIt;
+    string tDestinationAddress = "";
 
     // lock
     mParticipantsMutex.lock();
@@ -792,6 +738,7 @@ bool Meeting::SendCallCancel(string pParticipant, enum TransportType pParticipan
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
+                tDestinationAddress = tIt->Host;
                 break;
             }
         }
@@ -802,7 +749,7 @@ bool Meeting::SendCallCancel(string pParticipant, enum TransportType pParticipan
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tCCEvent->Sender = "sip:" + GetServerConferenceId();
             else
-                tCCEvent->Sender = "sip:" + GetLocalConferenceId();
+                tCCEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
             tCCEvent->SenderName = GetLocalUserName();
             tCCEvent->SenderComment = "";
             tCCEvent->Receiver = "sip:" + pParticipant;
@@ -822,6 +769,7 @@ bool Meeting::SendCallDeny(string pParticipant, enum TransportType pParticipantT
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
     ParticipantList::iterator tIt;
+    string tDestinationAddress = "";
 
     // lock
     mParticipantsMutex.lock();
@@ -835,6 +783,7 @@ bool Meeting::SendCallDeny(string pParticipant, enum TransportType pParticipantT
             {
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
+                tDestinationAddress = tIt->Host;
                 break;
             }
         }
@@ -845,7 +794,7 @@ bool Meeting::SendCallDeny(string pParticipant, enum TransportType pParticipantT
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tCDEvent->Sender = "sip:" + GetServerConferenceId();
             else
-                tCDEvent->Sender = "sip:" + GetLocalConferenceId();
+                tCDEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
             tCDEvent->SenderName = GetLocalUserName();
             tCDEvent->SenderComment = "";
             tCDEvent->Receiver = "sip:" + pParticipant;
@@ -865,6 +814,7 @@ bool Meeting::SendHangUp(string pParticipant, enum TransportType pParticipantTra
     bool        tFound = false;
     nua_handle_t **tHandlePtr = NULL;
     ParticipantList::iterator tIt;
+    string tDestinationAddress = "";
 
     // lock
     mParticipantsMutex.lock();
@@ -880,6 +830,7 @@ bool Meeting::SendHangUp(string pParticipant, enum TransportType pParticipantTra
                 tFound = true;
                 tIt->CallState = CALLSTATE_STANDBY;
                 tHandlePtr = &tIt->SipNuaHandleForCalls;
+                tDestinationAddress = tIt->Host;
                 //LOG(LOG_VERBOSE, "...found");
                 break;
             }
@@ -891,7 +842,7 @@ bool Meeting::SendHangUp(string pParticipant, enum TransportType pParticipantTra
             if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
                 tCHUEvent->Sender = "sip:" + GetServerConferenceId();
             else
-                tCHUEvent->Sender = "sip:" + GetLocalConferenceId();
+                tCHUEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
             tCHUEvent->SenderName = GetLocalUserName();
             tCHUEvent->SenderComment = "";
             tCHUEvent->Receiver = "sip:" + pParticipant;
@@ -906,20 +857,20 @@ bool Meeting::SendHangUp(string pParticipant, enum TransportType pParticipantTra
     return tFound;
 }
 
-bool Meeting::SendProbe(std::string pParticipant, enum TransportType pParticipantTransport)
+bool Meeting::SendProbe(std::string pHost, std::string pPort, enum TransportType pParticipantTransport)
 {
-    LOG(LOG_VERBOSE, "Probing: %s[%s]", pParticipant.c_str(), Socket::TransportType2String(pParticipantTransport).c_str());
+    LOG(LOG_VERBOSE, "Probing: %s:%s[%s]", pHost.c_str(), pPort.c_str(), Socket::TransportType2String(pParticipantTransport).c_str());
 
     // lock
     mParticipantsMutex.lock();
 
     // is participant user of the registered SIP server then acknowledge directly
-    if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+    if ((pHost.find(mSipRegisterServer) != string::npos) && (pPort.find(mSipRegisterServerPort) != string::npos) && (GetServerRegistrationState()))
     {
-        LOG(LOG_VERBOSE, "Probing of %s skipped and participant reported as available because he belongs to the registered SIP server", pParticipant.c_str());
+        LOG(LOG_VERBOSE, "Probing of %s skipped and participant reported as available because he belongs to the registered SIP server", pHost.c_str());
         OptionsAcceptEvent *tOAEvent = new OptionsAcceptEvent();
 
-        tOAEvent->Sender = pParticipant;
+        tOAEvent->Sender = "sip:" + SipCreateId("", pHost, pPort);
         tOAEvent->Receiver = GetLocalConferenceId();
 
         // unlock
@@ -930,10 +881,10 @@ bool Meeting::SendProbe(std::string pParticipant, enum TransportType pParticipan
     {
 		// probe P2P SIP participants
         OptionsEvent *tOEvent = new OptionsEvent();
-		tOEvent->Sender = "sip:" + GetLocalConferenceId();
+		tOEvent->Sender = "sip:" + GetLocalConferenceId(pHost);
 		tOEvent->SenderName = GetLocalUserName();
 		tOEvent->SenderComment = "";
-		tOEvent->Receiver = "sip:" + pParticipant;
+		tOEvent->Receiver = "sip:" + SipCreateId("", pHost, pPort);
 		tOEvent->HandlePtr = NULL; // done within SIP class
 		tOEvent->Transport = pParticipantTransport;
 		mOutgoingEvents.Fire((GeneralEvent*) tOEvent);
@@ -1222,7 +1173,7 @@ bool Meeting::IsLocalAddress(string pHost, string pPort, enum TransportType pTra
 {
     bool        tFound = false;
     string      tLocalPort = toString(mSipHostPort);
-    LocalAddressesList::iterator tIt;
+    AddressesList::iterator tIt;
 
     for (tIt = mLocalAddresses.begin(); tIt != mLocalAddresses.end(); tIt++)
     {
@@ -1247,7 +1198,7 @@ Socket* Meeting::GetAudioReceiveSocket(string pParticipant, enum TransportType p
     // lock
     mParticipantsMutex.lock();
 
-    if (pParticipant == mBroadcastAdr)
+    if (pParticipant == mBroadcastIdentifier)
         tResult = mParticipants.begin()->AudioReceiveSocket;
     else
     {
@@ -1285,7 +1236,7 @@ Socket* Meeting::GetVideoReceiveSocket(string pParticipant, enum TransportType p
     // lock
     mParticipantsMutex.lock();
 
-    if (pParticipant == mBroadcastAdr)
+    if (pParticipant == mBroadcastIdentifier)
         tResult = mParticipants.begin()->VideoReceiveSocket;
     else
     {
@@ -1323,7 +1274,7 @@ Socket* Meeting::GetAudioSendSocket(string pParticipant, enum TransportType pPar
     // lock
     mParticipantsMutex.lock();
 
-    if (pParticipant == mBroadcastAdr)
+    if (pParticipant == mBroadcastIdentifier)
         tResult = mParticipants.begin()->AudioSendSocket;
     else
     {
@@ -1361,7 +1312,7 @@ Socket* Meeting::GetVideoSendSocket(string pParticipant, enum TransportType pPar
     // lock
     mParticipantsMutex.lock();
 
-    if (pParticipant == mBroadcastAdr)
+    if (pParticipant == mBroadcastIdentifier)
         tResult = mParticipants.begin()->VideoSendSocket;
     else
     {
@@ -1399,7 +1350,7 @@ int Meeting::GetCallState(string pParticipant, enum TransportType pParticipantTr
     // lock
     mParticipantsMutex.lock();
 
-    if (pParticipant == mBroadcastAdr)
+    if (pParticipant == mBroadcastIdentifier)
         tResult = CALLSTATE_INVALID;
     else
     {
@@ -1434,7 +1385,7 @@ bool Meeting::GetSessionInfo(string pParticipant, enum TransportType pParticipan
     // lock
     mParticipantsMutex.lock();
 
-    if (pParticipant == mBroadcastAdr)
+    if (pParticipant == mBroadcastIdentifier)
     {
         tResult = true;
         pInfo->User = "Broadcast";

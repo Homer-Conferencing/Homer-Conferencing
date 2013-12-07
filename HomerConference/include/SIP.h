@@ -64,6 +64,8 @@ enum AvailabilityState{
 	AVAILABILITY_STATE_ONLINE_AUTO = 2
 };
 
+typedef std::list<std::string>            AddressesList;
+
 struct SipContext;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,6 +103,16 @@ public:
     static bool SplitParticipantName(string pParticipant, string &pUser, string &Host, string &pPort);
     bool IsThisParticipant(string pParticipant, enum TransportType pParticipantTransport, string pUser, string pHost, string pPort, enum TransportType pTransport); // supports only IP addresses
 
+    /* server interface/contact data */
+    std::string GetServerConferenceId();
+    /* local interface/contact data depending on the destination */
+    std::string GetLocalConferenceId(std::string pDestination = "");
+    /* local interface/contact data */
+    std::string GetHostAdr();
+    int GetHostPort();
+    TransportType GetHostPortTransport();
+    std::string GetUserName();
+
     /* SIP call back */
     void SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, void* pTags);
 
@@ -112,8 +124,12 @@ private:
     void InitGeneralEvent_FromSipReceivedRequestEvent(const sip_to_t *pRemote, const sip_to_t *pLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, GeneralEvent *pEvent, std::string pEventName, std::string &pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
     std::string InitGeneralEvent_FromSipReceivedResponseEvent(const sip_to_t *pRemote, const sip_to_t *pLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, GeneralEvent *pEvent, std::string pEventName, std::string &pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
 
+    nua_t* StartListener(std::string pHostAddress, int &pHostPort, std::string pTransporType);
+    void StopListener(nua_t *pHandle);
+    int GetSipListener(string pSource);
+
 protected:
-    void Init(int pStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, bool pSipNatTraversalSupport = false, int pStunPort = 5070);
+    void Init(std::string pLocalGatewayAddress, AddressesList pLocalAddresses, AddressesList pLocalAddressesNetmask, int pStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, bool pSipNatTraversalSupport = false, int pStunPort = 5070);
     void DeInit();
 
     void StopSipMainLoop();
@@ -165,7 +181,7 @@ protected:
     void SipSendCallAccept(CallAcceptEvent *pCAEvent);
     void SipSendCallDeny(CallDenyEvent *pCDEvent);
     void SipSendCallHangUp(CallHangUpEvent *pCHUEvent);
-    void SipSendOptionsRequest(OptionsEvent *pOEvent);
+    void SipSendOptions(OptionsEvent *pOEvent);
     void SipProcessOutgoingEvents();
 
     /* auth support */
@@ -179,7 +195,9 @@ protected:
     EventManager        mOutgoingEvents; // from users point of view
     enum AvailabilityState mAvailabilityState;
     SipContext          *mSipContext;
-    std::string         mSipHostAdr;
+    AddressesList       mLocalAddresses;
+    AddressesList       mLocalAddressesNetmask;
+    std::string         mLocalGatewayAddress;
     nua_handle_t        *mSipRegisterHandle, *mSipPublishHandle;
     std::string         mSipRegisterServer;
     std::string         mSipRegisterServerPort;

@@ -68,12 +68,36 @@ using namespace Homer::Monitor;
 #define                 SIP_STATE_REQUEST_TIMEOUT           408
 #define                 SIP_STATE_BAD_EVENT                 489
 
+#define                 MAX_NET_INTERFACES                  8
+#define                 MAX_PROBED_SIP_PORTS                8
+
+struct SipListenerContext
+{
+    nua_t               *Nua; // NUA stack objects
+    string              HostAddress; // "192.168.0.23" or "FE80::1"
+    uint32_t            IPv4NetAddress; // the host order representation
+    uint32_t            IPv4Netmask; // the host order representation
+};
 struct SipContext
 {
-  su_home_t             Home;           /* memory home */
-  su_root_t             *Root;          /* root object */
-  nua_t                 *Nua;           /* NUA stack object */
+  su_home_t             Home;           // memory home
+  su_root_t             *Root;          // root object
+//  nua_t                 *Nua[MAX_NET_INTERFACES]; // NUA stack objects
+  SipListenerContext    SipListener[MAX_NET_INTERFACES];
 };
+
+uint32_t GetIPv4Address(std::string pAddress)
+{
+    int tByte0, tByte1, tByte2, tByte3;
+    sscanf(pAddress.c_str(), "%d.%d.%d.%d", &tByte3, &tByte2, &tByte1, &tByte0);
+    //LOGEX(SIP, LOG_ERROR, "%s => %d, %d, %d, %d", pAddress.c_str(), tByte3, tByte2, tByte1, tByte0);
+    return tByte0 | tByte1 << 8 | tByte2 << 16 | tByte3 << 24;
+}
+
+string GetIPv4AddressStr(uint32_t pAddress)
+{
+    return toString((pAddress >> 24) & 0xFF) + "." + toString((pAddress >> 16) & 0xFF) + "." + toString((pAddress >> 8) & 0xFF) + "." + toString((pAddress >> 0) & 0xFF);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -99,7 +123,11 @@ SIP::SIP():
     mSipRegisterHandle = NULL;
 
     // set to localhost, will be corrected within meeting.C
-    mSipHostAdr = "127.0.0.1";
+    mLocalGatewayAddress = "127.0.0.1";
+    for(int i = 0; i < MAX_NET_INTERFACES; i++)
+    {
+        mSipContext->SipListener[i].Nua = NULL;
+    }
 }
 
 SIP::~SIP()
@@ -120,9 +148,13 @@ void SIP::SetUserAgentSignatureSuffix(string pSuffix)
     mUserAgentSignatureSuffix = pSuffix;
 }
 
-void SIP::Init(int pStartPort, TransportType pSipListenerTransport, bool pSipNatTraversalSupport, int pStunPort)
+void SIP::Init(std::string pLocalGatewayAddress, AddressesList pLocalAddresses, AddressesList pLocalAddressesNetmask, int pStartPort, TransportType pSipListenerTransport, bool pSipNatTraversalSupport, int pStunPort)
 {
     // default port is 5060, auto-probing within run()
+    LOG(LOG_VERBOSE, "Setting SIP host address to %s", pLocalGatewayAddress.c_str());
+    mLocalGatewayAddress = pLocalGatewayAddress;
+    mLocalAddresses = pLocalAddresses;
+    mLocalAddressesNetmask = pLocalAddressesNetmask;
     mSipHostPort = pStartPort;
     mSipHostPortTransport = pSipListenerTransport;
     mStunHostPort = pStunPort;
@@ -247,11 +279,200 @@ bool SIP::IsThisParticipant(string pParticipantUser, string pParticipantHost, st
     return tResult;
 }
 
+string SIP::GetLocalConferenceId(string pDestination)
+{
+    string tResult = "";
+
+    if(pDestination != "")
+    {
+        if(IS_IPV6_ADDRESS(pDestination))
+        {
+            //TODO
+        }else{
+            uint32_t tDestinationAddress = GetIPv4Address(pDestination);
+            for(int i = 1; i < MAX_NET_INTERFACES; i++)
+            {
+                // do we have a valid entry?
+                if(mSipContext->SipListener[i].Nua != NULL)
+                {
+                    //LOG(LOG_ERROR, "POSSIBLE %d CONFERENCEID: %s, net: %s(%u), netmask: %s(%u)", i, mSipContext->SipListener[i].HostAddress.c_str(), GetIPv4AddressStr(mSipContext->SipListener[i].IPv4NetAddress).c_str(), mSipContext->SipListener[i].IPv4NetAddress, GetIPv4AddressStr(mSipContext->SipListener[i].IPv4Netmask).c_str(), mSipContext->SipListener[i].IPv4Netmask);
+                    if(!IS_IPV6_ADDRESS(mSipContext->SipListener[i].HostAddress))
+                    {
+                        uint32_t tNetworkAddress = (tDestinationAddress & mSipContext->SipListener[i].IPv4Netmask);
+                        if(tNetworkAddress == mSipContext->SipListener[i].IPv4NetAddress)
+                        {
+                            tResult = SipCreateId(GetUserName(), mSipContext->SipListener[i].HostAddress, toString(GetHostPort()));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+     * Fack back
+     */
+    if(tResult == "")
+        tResult = SipCreateId(GetUserName(), GetHostAdr(), toString(GetHostPort()));
+
+    //LOG(LOG_ERROR, "ConferenceID %s for destination %s", tResult.c_str(), pDestination.c_str());
+
+    //LOG(LOG_VERBOSE, "Determined local conference ID with \"%s\"", tResult.c_str());
+
+    return tResult;
+}
+
+string SIP::GetServerConferenceId()
+{
+    string tResult = "";
+
+    tResult = SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort);
+
+    //LOG(LOG_VERBOSE, "Determined server conference ID with \"%s\"", tResult.c_str());
+
+    return tResult;
+}
+
+string SIP::GetHostAdr()
+{
+    return mLocalGatewayAddress;
+}
+
+int SIP::GetHostPort()
+{
+    return mSipHostPort;
+}
+
+string SIP::GetUserName()
+{
+    string tResult = "user";
+    char *tUser;
+
+    tUser = getenv("USER");
+    if (tUser != NULL)
+        tResult = string(tUser);
+    else
+    {
+        tUser = getenv("USERNAME");
+        if (tUser != NULL)
+            tResult = string(tUser);
+    }
+
+    return tResult;
+}
+
+TransportType SIP::GetHostPortTransport()
+{
+    return mSipHostPortTransport;
+}
+
 void GlobalSipCallBack(nua_event_t pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, tagi_t pTags[])
 {
     SIP* tSIP = (SIP*)pMagic;
 
     tSIP->SipCallBack((int)pEvent, pStatus, pPhrase, pNua, pMagic, pNuaHandle, pHMagic, pSip, (void*)pTags);
+}
+
+nua_t* SIP::StartListener(std::string pHostAddress, int &pHostPort, std::string pTransporType)
+{
+    nua_t* tResult = NULL;
+    string tHostAddress = "";
+    if(pHostPort == 0)
+        pHostPort = 5060;
+
+    LOG(LOG_VERBOSE, "Binding to IP: %s", pHostAddress.c_str());
+
+    // create NUA stack
+    // auto probe SIP port (default: 5060 to 5064 ..)
+    for(int i = 0; i < MAX_PROBED_SIP_PORTS; i++)
+    {
+        tHostAddress = "";
+
+        LOG(LOG_VERBOSE, "..NUA create");
+
+        // add brackets for IPv6 address
+        if (IS_IPV6_ADDRESS(pHostAddress))
+        {
+            if (Socket::IsIPv6Supported())
+            {// use IPv6 socket
+                tHostAddress = "sip:[" + pHostAddress + "]:" + toString(pHostPort) + ";" + pTransporType;
+            }else
+                LOG(LOG_ERROR, "Cannot use IPv6 address %s because IPv6 sockets are not supported", pHostAddress.c_str());
+        }
+
+        if (tHostAddress == "")
+        {// use IPv4 socket
+            tHostAddress = "sip:" + pHostAddress + ":" + toString(pHostPort) + ";" + pTransporType;
+        }
+
+        // NAT traversal: use keepalive packets with interval of 10 seconds
+        //                otherwise a NAT box won't maintain the state about the NAT forwarding
+        LOG(LOG_VERBOSE, "Probing conference address: %s", tHostAddress.c_str());
+        tResult = nua_create(mSipContext->Root, GlobalSipCallBack, this, NUTAG_URL(URL_STRING_MAKE(tHostAddress.c_str())), TPTAG_KEEPALIVE(10000), NUTAG_OUTBOUND(SIP_OUTBOUND_OPTIONS), TPTAG_REUSE(true), TAG_NULL());
+        if (tResult != NULL)
+        {
+            LOG(LOG_INFO, "Listener assigned to %s", tHostAddress.c_str());
+
+            // set necessary parameters
+           LOG(LOG_VERBOSE, "..setting_params");
+           nua_set_params(tResult, NUTAG_AUTOACK(MEETING_AUTOACK_CALLS), NUTAG_URL(URL_STRING_MAKE(tHostAddress.c_str())), SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_ORGANIZATION_STR(ORGANIZATION_SIGNATURE), NUTAG_OUTBOUND(SIP_OUTBOUND_OPTIONS), NTATAG_USER_VIA(1), TAG_NULL());
+
+           break;
+        }else{
+            switch(mSipHostPortTransport)
+            {
+                default:
+                case SOCKET_UDP:
+                    LOG(LOG_INFO, "Another agent is already listening at %s<%d>(UDP). Probing alternatives...", pHostAddress.c_str(), pHostPort);
+                    break;
+                case SOCKET_TCP:
+                    LOG(LOG_INFO, "Another agent is already listening at %s<%d>(TCP). Probing alternatives...", pHostAddress.c_str(), pHostPort);
+                    break;
+            }
+            pHostPort++;
+        }
+    }
+
+    return tResult;
+}
+
+void SIP::StopListener(nua_t *pHandle)
+{
+    // destroy NUA stack
+    LOG(LOG_VERBOSE, "..NUA destroy for %p", pHandle);
+    nua_destroy(pHandle);
+}
+
+int SIP::GetSipListener(string pSource)
+{
+    int tResult = 0;
+    string tUser = "";
+    string tHost = "";
+    string tPort = "";
+    string tInterface = "default";
+
+    if(SplitParticipantName(pSource, tUser, tHost, tPort))
+    {
+        for(int i = 0; i < MAX_NET_INTERFACES; i++)
+        {
+            if(mSipContext->SipListener[i].Nua != NULL)
+            {
+                if(tHost.find(mSipContext->SipListener[i].HostAddress) != string::npos)
+                {
+                    tResult = i;
+                    tInterface = mSipContext->SipListener[i].HostAddress;
+                    break;
+                }
+            }else{
+                break;
+            }
+        }
+    }
+
+    //LOG(LOG_ERROR, "Interface %d(%s) selected for source %s", tResult, tInterface.c_str(), tHost.c_str());
+
+    return tResult;
 }
 
 void* SIP::Run(void*)
@@ -314,57 +535,63 @@ void* SIP::Run(void*)
                 tTransportAttribute = "transport=tcp";
                 break;
         }
-        // create NUA stack
-        // auto probe SIP port (default: 5060 to 5064)
-        for(int i = 0; i < 5; i++)
+
+        /*
+         * Start MAIN listener for GATEWAY address
+         */
+        mSipContext->SipListener[0].Nua = StartListener(mLocalGatewayAddress, mSipHostPort, tTransportAttribute);
+        mSipContext->SipListener[0].HostAddress = mLocalGatewayAddress;
+        if(mSipContext->SipListener[0].Nua != NULL)
         {
-            LOG(LOG_VERBOSE, "..NUA create");
 
-            // add brackets for IPv6 address
-            tOwnAddress = "";
-            if (IS_IPV6_ADDRESS(mSipHostAdr))
+            AddressesList::iterator tAddrIt;
+            AddressesList::iterator tNetmaskIt;
+            int i = 1;
+            tNetmaskIt = mLocalAddressesNetmask.begin();
+            for(tAddrIt = mLocalAddresses.begin(); tAddrIt != mLocalAddresses.end(); tAddrIt++)
             {
-            	if (Socket::IsIPv6Supported())
-            	{// use IPv6 socket
-            		tOwnAddress = "sip:[" + mSipHostAdr + "]:" + toString(mSipHostPort) + ";" + tTransportAttribute;
-            	}else
-            		LOG(LOG_ERROR, "Cannot use IPv6 address %s because IPv6 sockets are not supported", mSipHostAdr.c_str());
-            }
-
-            if (tOwnAddress == "")
-            {// use IPv4 socket
-	            tOwnAddress = "sip:0.0.0.0:" /* don't limit to mSipHostAdr*/ + toString(mSipHostPort) + ";" + tTransportAttribute;
-            }
-
-            // NAT traversal: use keepalive packets with interval of 10 seconds
-            //                otherwise a NAT box won't maintain the state about the NAT forwarding
-            LOG(LOG_VERBOSE, "Probing conference address: %s", tOwnAddress.c_str());
-            mSipContext->Nua = nua_create(mSipContext->Root, GlobalSipCallBack, this, NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), TPTAG_KEEPALIVE(10000), NUTAG_OUTBOUND(SIP_OUTBOUND_OPTIONS), TPTAG_REUSE(true), TAG_NULL());
-            if (mSipContext->Nua != NULL)
-                break;
-            else
-            {
-                switch(mSipHostPortTransport)
+                int tLocalPort = mSipHostPort;
+                tOwnAddress = *tAddrIt;
+                if(tOwnAddress != mLocalGatewayAddress)
                 {
-                    default:
-                    case SOCKET_UDP:
-                        LOG(LOG_INFO, "Another agent is already listening at %s<%d>(UDP). Probing alternatives...", mSipHostAdr.c_str(), mSipHostPort);
-                        break;
-                    case SOCKET_TCP:
-                        LOG(LOG_INFO, "Another agent is already listening at %s<%d>(TCP). Probing alternatives...", mSipHostAdr.c_str(), mSipHostPort);
-                        break;
+                    mSipContext->SipListener[i].Nua = StartListener(tOwnAddress, tLocalPort, tTransportAttribute);
+                    if(mSipContext->SipListener[i].Nua != NULL)
+                    {
+                        string tNetmask = *tNetmaskIt;
+                        // get the host address
+                        mSipContext->SipListener[i].HostAddress = tOwnAddress;
+                        LOG(LOG_VERBOSE, "Learned network interface: %s [%s]", tOwnAddress.c_str(), tNetmask.c_str());
+
+                        // get the network mask
+                        if(IS_IPV6_ADDRESS(tOwnAddress))
+                        {
+                            LOG(LOG_WARN, "IPv6 address: %s", tOwnAddress.c_str());
+                        }else
+                        {
+                            mSipContext->SipListener[i].IPv4Netmask = GetIPv4Address(tNetmask);
+                        }
+
+                        // get the network address
+                        if(IS_IPV6_ADDRESS(tOwnAddress))
+                        {
+                            LOG(LOG_WARN, "IPv6 address: %s", tOwnAddress.c_str());
+                        }else
+                        {
+                            mSipContext->SipListener[i].IPv4NetAddress = (GetIPv4Address(tOwnAddress) & mSipContext->SipListener[i].IPv4Netmask);
+                        }
+                        LOG(LOG_VERBOSE, "  ..stored as network interface %d: %s, net: %s(%u), netmask: %s(%u)", i, mSipContext->SipListener[i].HostAddress.c_str(), GetIPv4AddressStr(mSipContext->SipListener[i].IPv4NetAddress).c_str(), mSipContext->SipListener[i].IPv4NetAddress, GetIPv4AddressStr(mSipContext->SipListener[i].IPv4Netmask).c_str(), mSipContext->SipListener[i].IPv4Netmask);
+
+                        i++;
+
+                        /*
+                         * Leave the loop if the max. supported interfaces have been learned
+                         */
+                        if(i > MAX_NET_INTERFACES)
+                            break;
+                    }
                 }
+                tNetmaskIt++;
             }
-            mSipHostPort++;
-        }
-
-        if (mSipContext->Nua != NULL)
-        {
-            LOG(LOG_INFO, "Listener assigned to %s", tOwnAddress.c_str());
-
-             // set necessary parameters
-            LOG(LOG_VERBOSE, "..setting_params");
-            nua_set_params(mSipContext->Nua, NUTAG_AUTOACK(MEETING_AUTOACK_CALLS), NUTAG_URL(URL_STRING_MAKE(tOwnAddress.c_str())), SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_ORGANIZATION_STR(ORGANIZATION_SIGNATURE), NUTAG_OUTBOUND(SIP_OUTBOUND_OPTIONS), NTATAG_USER_VIA(1), TAG_NULL());
 
             //###################################################################
             //### STUN support
@@ -398,7 +625,11 @@ void* SIP::Run(void*)
 
             // shutdown NUA stack
             LOG(LOG_VERBOSE, "..shutdown NUA stack");
-            nua_shutdown(mSipContext->Nua);
+            for(int i = 0; i < MAX_NET_INTERFACES; i++)
+            {
+                if(mSipContext->SipListener[i].Nua != NULL)
+                    nua_shutdown(mSipContext->SipListener[i].Nua);
+            }
 
             int64_t tTime = Time::GetTimeStamp();
             // wait for shutdown of NUA stack
@@ -416,14 +647,17 @@ void* SIP::Run(void*)
             }
 
             // destroy NUA stack
-            LOG(LOG_VERBOSE, "..NUA destroy");
-            nua_destroy(mSipContext->Nua);
-
+            for(int i = 0; i < MAX_NET_INTERFACES; i++)
+            {
+                if(mSipContext->SipListener[i].Nua != NULL)
+                    nua_destroy(mSipContext->SipListener[i].Nua);
+            }
         }else
         {
             mSipStackOnline = true; //to continue startup despite the failure
             mSipListenerNeeded = true;
-            LOG(LOG_ERROR, "Unable to start SIP stack. The selected host address is wrong or other SIP clients prevent startup");
+            LOG(LOG_ERROR, "Unable to start SIP stack. The selected host address %s is wrong or other SIP clients prevent startup", mLocalGatewayAddress.c_str());
+            exit(1);
         }
 
         // deinit root object
@@ -498,7 +732,7 @@ bool SIP::SipLoginAtServer()
     tContact = sip_contact_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
 
     // create operation handle
-    mSipRegisterHandle = nua_handle(mSipContext->Nua, &mSipContext->Home, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
+    mSipRegisterHandle = nua_handle(mSipContext->SipListener[0].Nua, &mSipContext->Home, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
 
     if (mSipRegisterHandle == NULL)
     {
@@ -763,7 +997,7 @@ void SIP::SetAvailabilityState(enum AvailabilityState pState, string pStateText)
     tContact = sip_contact_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
 
     // create operation handle
-    mSipPublishHandle = nua_handle(mSipContext->Nua, &mSipContext->Home, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
+    mSipPublishHandle = nua_handle(mSipContext->SipListener[0].Nua, &mSipContext->Home, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
 
     if (mSipPublishHandle == NULL)
     {
@@ -912,6 +1146,14 @@ void SIP::SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t 
 ///////////////////////////////////////////////////////////////////////////////
 void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua, nua_magic_t *pMagic, nua_handle_t *pNuaHandle, nua_hmagic_t *pHMagic, sip_t const *pSip, void* pTags)
 {
+    /*
+     * Return immediately if the listener should be stopped
+     */
+    if(!mSipListenerNeeded)
+    {
+
+    }
+
     string tSourceIp;
     unsigned int tSourcePort = 0;
     enum TransportType tSourcePortTransport = SOCKET_UDP;
@@ -2241,6 +2483,9 @@ void SIP::SipReceivedShutdownResponse(const sip_to_t *pSipRemote, const sip_to_t
 {
     if ((pStatus == SIP_STATE_OKAY /* okay */) || (pStatus == 500 /* timeout */))
         mSipStackOnline = false;
+
+    LOG(LOG_VERBOSE, "Sending BREAK to sofia main loop");
+    su_root_break(mSipContext->Root);
 }
 
 void SIP::SipReceivedAuthenticationResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, char const *pPhrase, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport)
@@ -2935,7 +3180,7 @@ void SIP::SipSendMessage(MessageEvent *pMEvent)
         tFrom->a_url->url_password = pMEvent->SenderComment.c_str();
 
     // create operation handle
-    nua_handle_t *tHandle = nua_handle(mSipContext->Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_TO(tTo), NUTAG_URL(URL_STRING_MAKE(tToTransport.c_str())), SIPTAG_FROM(tFrom), TAG_END());
+    nua_handle_t *tHandle = nua_handle(mSipContext->SipListener[GetSipListener(pMEvent->Sender)].Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_TO(tTo), NUTAG_URL(URL_STRING_MAKE(tToTransport.c_str())), SIPTAG_FROM(tFrom), TAG_END());
 
     if (tHandle == NULL)
     {
@@ -3001,7 +3246,7 @@ void SIP::SipSendCall(CallEvent *pCEvent)
         tFrom->a_url->url_password = pCEvent->SenderComment.c_str();
 
     // create operation handle
-    nua_handle_t *tHandle = nua_handle(mSipContext->Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SOATAG_ADDRESS(tOwnContactIp.c_str()), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), NUTAG_URL(URL_STRING_MAKE(tToTransport.c_str())), SIPTAG_FROM(tFrom), TAG_END());
+    nua_handle_t *tHandle = nua_handle(mSipContext->SipListener[GetSipListener(pCEvent->Sender)].Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SOATAG_ADDRESS(tOwnContactIp.c_str()), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), NUTAG_URL(URL_STRING_MAKE(tToTransport.c_str())), SIPTAG_FROM(tFrom), TAG_END());
 
     if (tHandle == NULL)
     {
@@ -3165,7 +3410,7 @@ void SIP::SipSendCallHangUp(CallHangUpEvent *pCHUEvent)
         MEETING.notifyObservers(tCHUEvent);
 }
 
-void SIP::SipSendOptionsRequest(OptionsEvent *pOEvent)
+void SIP::SipSendOptions(OptionsEvent *pOEvent)
 {
     string tToTransport = pOEvent->Receiver + ";transport=" + Socket::TransportType2String(pOEvent->Transport);
 
@@ -3188,7 +3433,7 @@ void SIP::SipSendOptionsRequest(OptionsEvent *pOEvent)
         tFrom->a_url->url_password = pOEvent->SenderComment.c_str();
 
     // create operation handle
-    nua_handle_t *tHandle = nua_handle(mSipContext->Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_TO(tTo), NUTAG_URL(URL_STRING_MAKE(tToTransport.c_str())), /*SIPTAG_FROM(from),*/ TAG_END());
+    nua_handle_t *tHandle = nua_handle(mSipContext->SipListener[GetSipListener(pOEvent->Sender)].Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SIPTAG_TO(tTo), NUTAG_URL(URL_STRING_MAKE(tToTransport.c_str())), /*SIPTAG_FROM(from),*/ TAG_END());
 
     if (tHandle == NULL)
     {
@@ -3244,7 +3489,7 @@ void SIP::SipProcessOutgoingEvents()
         }
         if (tEvent->getType() == OptionsEvent::type())
         {
-            SipSendOptionsRequest((OptionsEvent*) tEvent);
+            SipSendOptions((OptionsEvent*) tEvent);
         }
         if (tEvent->getType() == InternalNatDetectionEvent::type())
         {

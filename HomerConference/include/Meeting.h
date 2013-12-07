@@ -80,7 +80,6 @@ struct SessionInfo
 
 struct ParticipantDescriptor;
 typedef std::list<ParticipantDescriptor>  ParticipantList;
-typedef std::list<std::string>            LocalAddressesList;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -94,24 +93,15 @@ public:
 
     static Meeting& GetInstance();
 
-    void Init(std::string pSipHostAdr, LocalAddressesList pLocalAddresses, bool pNatTraversalSupport, std::string pBroadcastAdr = "Global messages", int pSipStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, int pStunStartPort = 5070, int pVideoAudioStartPort = 5000);
+    void Init(std::string pLocalGatewayAddress, AddressesList pLocalAddresses, AddressesList pLocalAddressesNetmask, int pSipStartPort = 5060, Homer::Base::TransportType pSipListenerTransport = SOCKET_UDP, bool pNatTraversalSupport = true, int pStunStartPort = 5070, int pVideoAudioStartPort = 5000, std::string pBroadcastIdentifier = "Global messages");
     void SetVideoAudioStartPort(int pPort);
     void Stop();
     void Deinit();
 
-    /* local interface/contact data */
-    std::string GetHostAdr();
-    int GetHostPort();
-    TransportType GetHostPortTransport();
-    std::string GetUserName();
     void SetLocalUserName(std::string pName);
     std::string GetLocalUserName();
     void SetLocalUserMailAdr(std::string pMailAdr);
     std::string GetLocalUserMailAdr();
-    std::string GetLocalConferenceId();
-
-    /* server interface/contact data */
-    std::string GetServerConferenceId();
 
     /* local I/O interfaces and state */
     bool IsLocalAddress(std::string pHost, std::string pPort, enum TransportType pTransport);
@@ -137,12 +127,11 @@ public:
     bool SendCallAccept(std::string pParticipant, enum TransportType pParticipantTransport);
     bool SendCallDeny(std::string pParticipant, enum TransportType pParticipantTransport);
     bool SendHangUp(std::string pParticipant, enum TransportType pParticipantTransport);
-    bool SendProbe(std::string pParticipant, enum TransportType pParticipantTransport);
+    bool SendProbe(std::string pHost, std::string pPort, enum TransportType pParticipantTransport);
 
 private:
     friend class SIP;
 
-    void SetHostAdr(std::string pHost); // no one should be allowed to change the local address from the outside
     std::string GetOwnRoutingAddressForPeer(std::string pForeignHost);
 
     bool SearchParticipantAndSetState(std::string pParticipant, enum TransportType pParticipantTransport, int pState);
@@ -158,10 +147,9 @@ private:
 
     Mutex               mParticipantsMutex;
     ParticipantList     mParticipants;
-    LocalAddressesList  mLocalAddresses;
     std::string         mOwnName;
     std::string         mOwnMail;
-    std::string         mBroadcastAdr;
+    std::string         mBroadcastIdentifier;
     bool                mMeetingInitiated;
     int                 mVideoAudioStartPort;
 };

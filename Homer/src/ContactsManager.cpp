@@ -245,7 +245,7 @@ void ContactsManager::AddContact(ContactDescriptor &pContact)
     mContactsMutex.lock();
     mContacts.push_back(pContact);
     if (CONF.GetSipContactsProbing())
-        MEETING.SendProbe(MEETING.SipCreateId(pContact.GetUserStdStr(), pContact.GetHostStdStr(), pContact.GetPortStdStr()), pContact.Transport);
+        MEETING.SendProbe(pContact.GetHostStdStr(), pContact.GetPortStdStr(), pContact.Transport);
     mContactsMutex.unlock();
     if (mContactsModel != NULL)
         mContactsModel->UpdateView();
@@ -461,7 +461,7 @@ void ContactsManager::ProbeAvailabilityForAll()
 
     for (tIt = mContacts.begin(); tIt != tItEnd; tIt++)
     {
-        MEETING.SendProbe(MEETING.SipCreateId(tIt->GetUserStdStr(), tIt->GetHostStdStr(), tIt->GetPortStdStr()), tIt->Transport);
+        MEETING.SendProbe(tIt->GetHostStdStr(), tIt->GetPortStdStr(), tIt->Transport);
     }
 
     mContactsMutex.unlock();
@@ -516,7 +516,7 @@ void ContactsManager::ProbeAvailabilityForAll()
                                 {
                                     tFoundAddresses++;
                                     LOG(LOG_INFO, "   ..probing: %s (%u)", tCurrentProbeAddress.toString().toStdString().c_str(), tIPv4AddrCurrentNumber);
-                                    MEETING.SendProbe(MEETING.SipCreateId("", tCurrentProbeAddress.toString().toStdString(), "5060"), SOCKET_UDP);
+                                    MEETING.SendProbe(tCurrentProbeAddress.toString().toStdString(), "5060", SOCKET_UDP);
                                 }else{
                                     LOG(LOG_INFO, "   ..stopping at: %s [%s != %s]", tCurrentProbeAddress.toString().toStdString().c_str(), tCurrentProbeAddressNetwork.toString().toStdString().c_str(), tHostAddressNetwork.toString().toStdString().c_str());
                                     break;

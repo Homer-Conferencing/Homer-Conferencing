@@ -164,7 +164,7 @@ private:
     void SetLanguage(QString pLanguage);
     void CreateSysTray();
     void loadSettings();
-    bool GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString &pLocalSourceIp, QString &pLocalLoopIp);
+    bool GetNetworkInfo(AddressesList &pLocalAddressesList, AddressesList &pLocalAddressesNetmaskList,QString &pLocalGatewayIp, QString &pLocalLoopIp);
     QString CompleteIpAddress(QString pAddr);
     ParticipantWidget* AddParticipantSession(QString pUser, QString pHost, QString pPort, enum TransportType pTransport, QString pIp, int pInitState);
     void DeleteParticipantSession(ParticipantWidget *pParticipantWidget);
@@ -177,7 +177,8 @@ private:
     QString		 			    mAbsBinPath;
     AvailabilityWidget 		    *mOnlineStatusWidget;
     StreamingControlWidget 	    *mMediaSourcesControlWidget;
-    LocalAddressesList 		    mLocalAddresses;
+    AddressesList 	    	    mLocalAddresses;
+    AddressesList               mLocalAddressesNetmask;
     OverviewContactsWidget 	    *mOverviewContactsWidget;
     OverviewDataStreamsWidget   *mOverviewDataStreamsWidget;
     OverviewErrorsWidget        *mOverviewErrorsWidget;

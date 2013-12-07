@@ -541,7 +541,7 @@ void MainWindow::initializeConferenceManagement()
 {
     QString tLocalSourceIp = "";
     QString tLocalLoopIp = "";
-    bool tInterfaceFound = GetNetworkInfo(mLocalAddresses, tLocalSourceIp, tLocalLoopIp);
+    bool tInterfaceFound = GetNetworkInfo(mLocalAddresses, mLocalAddressesNetmask, tLocalSourceIp, tLocalLoopIp);
 
     LOG(LOG_VERBOSE, "Initialization of conference management..");
     if (!tInterfaceFound)
@@ -565,7 +565,8 @@ void MainWindow::initializeConferenceManagement()
     {
         LOG(LOG_INFO, "Using conference management IP address: %s", tLocalSourceIp.toStdString().c_str());
         MEETING.SetUserAgentSignatureSuffix(SIP_USER_AGENT_SUFFIX);
-        MEETING.Init(tLocalSourceIp.toStdString(), mLocalAddresses, CONF.GetNatSupportActivation(), "BROADCAST", CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort());
+        MEETING.Init(tLocalSourceIp.toStdString(), mLocalAddresses, mLocalAddressesNetmask,CONF.GetSipStartPort(), CONF.GetSipListenerTransport(), CONF.GetNatSupportActivation(), CONF.GetSipStartPort() + 10, CONF.GetVideoAudioStartPort(), "BROADCAST");
+
     }
     MEETING.AddObserver(this);
 }
@@ -721,34 +722,47 @@ void MainWindow::initializeWidgetsAndMenus()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString &pLocalSourceIp, QString &pLocalLoopIp)
+bool MainWindow::GetNetworkInfo(AddressesList &pLocalAddressesList, AddressesList &pLocalAddressesNetmaskList, QString &pLocalGatewayIp, QString &pLocalLoopIp)
 {
     QString tLastSipListenerAddress = CONF.GetSipListenerAddress();
     bool tLocalInterfaceSet = false;
-    pLocalSourceIp = "";
-
-    //### determine all local IP addresses
-    QList<QHostAddress> tQtLocalAddresses = QNetworkInterface::allAddresses();
+    pLocalGatewayIp = "";
 
     LOG(LOG_INFO, "Last listener address: %s", tLastSipListenerAddress.toStdString().c_str());
+
+    QList<QNetworkInterface> tLocalInterfaces = QNetworkInterface::allInterfaces ();
+    QNetworkInterface tLocalInterface;
     LOG(LOG_INFO, "Locally usable IPv4/6 addresses are:");
-    for (int i = 0; i < tQtLocalAddresses.size(); i++)
+    foreach(tLocalInterface, tLocalInterfaces)
     {
-    	QString tAddress = tQtLocalAddresses[i].toString().toLower();
-        if ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol) || ((tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv6Protocol) && (!Socket::IsIPv6LinkLocal(tAddress.toStdString()))))
+        if((tLocalInterface.flags().testFlag(QNetworkInterface::IsUp)) && (tLocalInterface.flags().testFlag(QNetworkInterface::IsRunning)) && (!tLocalInterface.flags().testFlag(QNetworkInterface::IsLoopBack)))
         {
-            LOG(LOG_INFO, "...%s", tAddress.toStdString().c_str());
+            QList<QNetworkAddressEntry> tLocalAddressEntries = tLocalInterface.addressEntries();
 
-            if (tAddress == tLastSipListenerAddress)
+            for (int i = 0; i < tLocalAddressEntries.size(); i++)
             {
-                pLocalSourceIp = tLastSipListenerAddress;
-                LOG(LOG_INFO, ">>> last time used as conference address");
-            }
+                QHostAddress tHostAddress = tLocalAddressEntries[i].ip();
+                QHostAddress tHostAddressNetmask = tLocalAddressEntries[i].netmask();
+                if ((tHostAddress.protocol() == QAbstractSocket::IPv4Protocol) || ((tHostAddress.protocol() == QAbstractSocket::IPv6Protocol) && (!Socket::IsIPv6LinkLocal(tHostAddress.toString().toStdString()))))
+                {
+                    LOG(LOG_INFO, "...%s", tHostAddress.toString().toStdString().c_str());
+                    if (tHostAddress.toString() == tLastSipListenerAddress)
+                    {
+                        pLocalGatewayIp = tLastSipListenerAddress;
+                        LOG(LOG_INFO, ">>> last time used as conference address");
+                    }
 
-            if (tQtLocalAddresses[i].protocol() == QAbstractSocket::IPv4Protocol)
-                pLocalAddressesList.push_front(tAddress.toStdString());
-            else
-                pLocalAddressesList.push_back(tAddress.toStdString());
+                    if (tHostAddress.protocol() == QAbstractSocket::IPv4Protocol)
+                    {
+                        pLocalAddressesList.push_front(tHostAddress.toString().toStdString());
+                        pLocalAddressesNetmaskList.push_front(tHostAddressNetmask.toString().toStdString());
+                    }else
+                    {
+                        pLocalAddressesList.push_back(tHostAddress.toString().toStdString());
+                        pLocalAddressesNetmaskList.push_back(tHostAddressNetmask.toString().toStdString());
+                    }
+                }
+            }
         }
     }
 
@@ -831,24 +845,24 @@ bool MainWindow::GetNetworkInfo(LocalAddressesList &pLocalAddressesList, QString
                                                 tAddresses[j].broadcast().toString().toStdString().c_str());
                                         break;
             }
-            if ((pLocalSourceIp == "") && (tInterfaceUsable))
+            if ((pLocalGatewayIp == "") && (tInterfaceUsable))
             {
                 if ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv4Protocol) || ((tAddresses[j].ip().protocol() == QAbstractSocket::IPv6Protocol) && (!Socket::IsIPv6LinkLocal(tAddress.toStdString()))))
                 {
                     LOG(LOG_INFO, ">>> selected as conference address");
-                    pLocalSourceIp = tAddress;
+                    pLocalGatewayIp = tAddress;
                 }
             }
         }
     }
 
-    if ((pLocalSourceIp == "") && (pLocalLoopIp != ""))
+    if ((pLocalGatewayIp == "") && (pLocalLoopIp != ""))
     {
         LOG(LOG_INFO, ">>> using loopback address %s as conference address", pLocalLoopIp.toStdString().c_str());
-        pLocalSourceIp = pLocalLoopIp;
+        pLocalGatewayIp = pLocalLoopIp;
     }
 
-    return (pLocalSourceIp != "");
+    return (pLocalGatewayIp != "");
 }
 
 void MainWindow::GotAnswerForVersionRequest(bool pError)
