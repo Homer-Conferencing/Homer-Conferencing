@@ -94,9 +94,9 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
     }
     connect(toggleViewAction(), SIGNAL(toggled(bool)), mAssignedAction, SLOT(setChecked(bool)));
     connect(mTbAddFile, SIGNAL(clicked()), this, SLOT(AddFileEntryDialog()));
-    connect(mTbAddUrl, SIGNAL(clicked()), this, SLOT(AddUrlEntryDialog()));
-    connect(mTbDel, SIGNAL(clicked()), this, SLOT(DelEntryDialog()));
-    connect(mTbSaveList, SIGNAL(clicked()), this, SLOT(SaveListDialog()));
+    connect(mTbAddUrl, SIGNAL(clicked()), this, SLOT(AddPlaylistUrlsDialog()));
+    connect(mTbDel, SIGNAL(clicked()), this, SLOT(DelPlaylistEntriesDialog()));
+    connect(mTbSaveList, SIGNAL(clicked()), this, SLOT(SavePlaylistDialog()));
     connect(mLwFiles, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(Play()));
     mShortcutDel = new QShortcut(Qt::Key_Delete, mLwFiles);
     mShortcutIns = new QShortcut(Qt::Key_Insert, mLwFiles);
@@ -182,9 +182,14 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Checking for video content in file %s of type %s", pFileName.toStdString().c_str(), tExt.toStdString().c_str());
 
     if (sLoadVideoFilters.indexOf(tExt, 0) != -1)
+    {
+        LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "   ..found video content");
         return true;
-    else
+    }else
+    {
+        LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "   ..no video content");
         return false;
+    }
 }
 
 static QString sAllLoadAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.3gp *.asf *.avi *.divx *.flv *.m2ts *.m2t *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.ogg *.ogv *.pls *.rm *.rmvb *.ts *.vob *.wav *.wmv *.wmx)";
@@ -284,9 +289,14 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Checking for audio content in file %s of type %s", pFileName.toStdString().c_str(), tExt.toStdString().c_str());
 
     if (sLoadAudioFilters.indexOf(tExt, 0) != -1)
+    {
+        LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "   ..found audio content");
         return true;
-    else
+    }else
+    {
+        LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "   ..no audio content");
         return false;
+    }
 }
 
 static QString sAllLoadMediaFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.divx *.dv *.flv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.ts *.vob *.wav *.wmv *.wmx *.3gp)";
@@ -312,24 +322,41 @@ static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Windows Bitmap (*.bmp);;"\
                     "Windows Media Video Format (*.wmv);;"\
                     "Windows Media Redirector File (*.wmx)";
-QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles)
+QStringList OverviewPlaylistWidget::LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles, bool pOnlyDirectories)
 {
     QStringList tResult;
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Current data directory is \"%s\"", CONF.GetDataDirectory().toStdString().c_str());
 
     if (pMultipleFiles)
-        tResult = QFileDialog::getOpenFileNames(pParent,  pDescription,
-                                                                CONF.GetDataDirectory(),
-                                                                sLoadMediaFilters,
-                                                                &sAllLoadMediaFilter,
-                                                                CONF_NATIVE_DIALOGS);
-    else
     {
-    	tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
-                                                                CONF.GetDataDirectory(),
-                                                                sLoadMediaFilters,
-                                                                &sAllLoadMediaFilter,
-                                                                CONF_NATIVE_DIALOGS));
+        if(pOnlyDirectories)
+        {
+            tResult = QStringList(QFileDialog::getExistingDirectory(pParent,  pDescription,
+                                                                    CONF.GetDataDirectory(),
+                                                                    CONF_NATIVE_DIALOGS));
+        }else
+        {
+            tResult = QFileDialog::getOpenFileNames(pParent,  pDescription,
+                                                                    CONF.GetDataDirectory(),
+                                                                    sLoadMediaFilters,
+                                                                    &sAllLoadMediaFilter,
+                                                                    CONF_NATIVE_DIALOGS);
+        }
+    }else
+    {
+        if(pOnlyDirectories)
+        {
+            tResult = QStringList(QFileDialog::getExistingDirectory(pParent,  pDescription,
+                                                                    CONF.GetDataDirectory(),
+                                                                    CONF_NATIVE_DIALOGS));
+        }else
+        {
+            tResult = QStringList(QFileDialog::getOpenFileName(pParent,  pDescription,
+                                                                    CONF.GetDataDirectory(),
+                                                                    sLoadMediaFilters,
+                                                                    &sAllLoadMediaFilter,
+                                                                    CONF_NATIVE_DIALOGS));
+        }
 
         // use the file parser to avoid playlists and resolve them to one single entry
         if (!tResult.isEmpty())
@@ -375,7 +402,7 @@ void OverviewPlaylistWidget::SetVisible(bool pVisible)
     }
 }
 
-void OverviewPlaylistWidget::StartPlaylist()
+void OverviewPlaylistWidget::StartPlaylist(bool pAddDirectories)
 {
     if (GetListSize() == 0)
         LOG(LOG_VERBOSE, "Playlist start triggered but we don't have entries in the list");
@@ -383,7 +410,7 @@ void OverviewPlaylistWidget::StartPlaylist()
         LOG(LOG_VERBOSE, "Playlist start triggered and we already have entries in the list");
 
     int tFirstAddedPlaylistEntry = GetListSize();
-    if (AddFileEntryDialog())
+    if (AddPlaylistFilesDirsDialog(pAddDirectories))
     {
         Play(tFirstAddedPlaylistEntry);
 
@@ -448,12 +475,12 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
         }
         if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Add file(s)")) == 0)
         {
-            AddFileEntryDialog();
+            AddPlaylistFilesDirsDialog();
             return;
         }
         if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Add url")) == 0)
         {
-            AddUrlEntryDialog();
+            AddPlaylistUrlsDialog();
             return;
         }
         if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Rename selected")) == 0)
@@ -463,7 +490,7 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
         }
         if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Delete selected")) == 0)
         {
-            DelEntryDialog();
+            DelPlaylistEntriesDialog();
             return;
         }
         if (tPopupRes->text().compare(Homer::Gui::OverviewPlaylistWidget::tr("Reset playlist")) == 0)
@@ -480,7 +507,7 @@ void OverviewPlaylistWidget::contextMenuEvent(QContextMenuEvent *pContextMenuEve
     }
 }
 
-void OverviewPlaylistWidget::DelEntryDialog()
+void OverviewPlaylistWidget::DelPlaylistEntriesDialog()
 {
     if (mLwFiles->count() < 1)
         return;
@@ -491,7 +518,7 @@ void OverviewPlaylistWidget::DelEntryDialog()
         DeletePlaylistEntry(GetPlaylistIndexFromGuiRow(tSelection[i].row()));
 }
 
-bool OverviewPlaylistWidget::AddFileEntryDialog()
+bool OverviewPlaylistWidget::AddPlaylistFilesDirsDialog(bool pAddDirectories)
 {
     LOG(LOG_VERBOSE, "User wants to add a file entry to playlist");
 
@@ -499,7 +526,10 @@ bool OverviewPlaylistWidget::AddFileEntryDialog()
 
 	QStringList tFileNames;
 
-    tFileNames = LetUserSelectMediaFile(this, Homer::Gui::OverviewPlaylistWidget::tr("Add file(s) to playlist"));
+    if(pAddDirectories)
+        tFileNames = LetUserSelectMediaFile(this, Homer::Gui::OverviewPlaylistWidget::tr("Add directory to playlist"), true, true);
+    else
+        tFileNames = LetUserSelectMediaFile(this, Homer::Gui::OverviewPlaylistWidget::tr("Add file(s) to playlist"), true, false);
 
     if (tFileNames.isEmpty())
         return false;
@@ -507,6 +537,7 @@ bool OverviewPlaylistWidget::AddFileEntryDialog()
     QString tFile;
     foreach(tFile, tFileNames)
     {
+        LOG(LOG_VERBOSE, "Adding selected playlist entry: %s", tFile.toStdString().c_str());
         AddEntry(tFile);
     }
 
@@ -522,7 +553,7 @@ bool OverviewPlaylistWidget::AddFileEntryDialog()
     return true;
 }
 
-bool OverviewPlaylistWidget::AddUrlEntryDialog()
+bool OverviewPlaylistWidget::AddPlaylistUrlsDialog()
 {
     LOG(LOG_VERBOSE, "User wants to add an url entry to playlist");
 
@@ -554,16 +585,16 @@ bool OverviewPlaylistWidget::AddUrlEntryDialog()
 void OverviewPlaylistWidget::AddEntryDialogSc()
 {
     if (mLwFiles->hasFocus())
-        AddFileEntryDialog();
+        AddPlaylistFilesDirsDialog();
 }
 
 void OverviewPlaylistWidget::DelEntryDialogSc()
 {
     if (mLwFiles->hasFocus())
-        DelEntryDialog();
+        DelPlaylistEntriesDialog();
 }
 
-void OverviewPlaylistWidget::SaveListDialog()
+void OverviewPlaylistWidget::SavePlaylistDialog()
 {
     if (GetListSize() < 1)
         return;
@@ -817,6 +848,7 @@ void OverviewPlaylistWidget::CheckAndRemoveFilePrefix(QString &pEntry)
 }
 void OverviewPlaylistWidget::AddEntry(QString pLocation, bool pStartPlayback)
 {
+    LOG(LOG_VERBOSE, "Adding playlist entry: %s", pLocation.toStdString().c_str());
     CheckAndRemoveFilePrefix(pLocation);
 
 	Playlist tPlaylist = Parse(pLocation);
@@ -859,7 +891,10 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 
 		LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing %s", pLocation.toStdString().c_str());
 
-		if (pLocation.endsWith(".m3u"))
+        if ((!tIsWebUrl) && (QDir(pLocation).exists()))
+        {// a directory
+            tResult += ParseDIR(pLocation, pAcceptVideo, pAcceptAudio);
+        }else if (pLocation.endsWith(".m3u"))
 		{// an M3U playlist file
 			tResult += ParseM3U(pLocation, pAcceptVideo, pAcceptAudio);
 		}else if (pLocation.endsWith(".pls"))
@@ -868,9 +903,6 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 		}else if (pLocation.endsWith(".wmx"))
 		{// a WMX shortcut file
 			tResult += ParseWMX(pLocation, pAcceptVideo, pAcceptAudio);
-		}else if ((!tIsWebUrl) && (QDir(pLocation).exists()))
-		{// a directory
-			tResult += ParseDIR(pLocation, pAcceptVideo, pAcceptAudio);
 		}else
 		{// an url or a local file
 			// set the location
@@ -1184,7 +1216,13 @@ Playlist OverviewPlaylistWidget::ParseDIR(QString pDirLocation, bool pAcceptVide
     QString tDirEntry;
     foreach(tDirEntry, tDirEntries)
     {
-    	tResult += Parse(pDirLocation + '/' + tDirEntry, "", pAcceptVideo, pAcceptAudio);
+        Playlist tAddPlaylist = Parse(pDirLocation + '/' + tDirEntry, "", pAcceptVideo, pAcceptAudio);
+        PlaylistEntry tEntry;
+        foreach(tEntry , tAddPlaylist)
+        {
+            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..adding directory entry: %s", tEntry.Location.toStdString().c_str());
+        }
+        tResult += tAddPlaylist;
     }
 
     return tResult;

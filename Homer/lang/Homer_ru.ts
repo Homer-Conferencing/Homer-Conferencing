@@ -1847,6 +1847,10 @@ Homer Conferencing will be stopped afterwards!</source>
         <source>Channel list</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Add directory to playlist</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Homer::Gui::OverviewThreadsWidget</name>
@@ -2632,10 +2636,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Alt+W</translation>
     </message>
     <message>
-        <source>Alt+X</source>
-        <translation>Alt+X</translation>
-    </message>
-    <message>
         <source>Own Video</source>
         <translation>Ваше Видео</translation>
     </message>
@@ -2881,6 +2881,22 @@ Homer Conferencing will be stopped afterwards!</source>
     </message>
     <message>
         <source>Reset program settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Play file(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Play directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl+Q</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl+O</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

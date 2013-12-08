@@ -79,12 +79,12 @@ public:
     static QStringList LetUserSelectAudioFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
     static QString LetUserSelectAudioSaveFile(QWidget *pParent, QString pDescription);
     static bool IsAudioFile(QString pFileName);
-    static QStringList LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true);
+    static QStringList LetUserSelectMediaFile(QWidget *pParent, QString pDescription, bool pMultipleFiles = true, bool pOnlyDirectories = false);
 
     /* add playlist entries */
     void AddEntry(QString pLocation, bool pStartPlayback = false);
 
-    void StartPlaylist();
+    void StartPlaylist(bool pAddDirectories = false);
     void StopPlaylist();
     void PlayNext();
     void PlayPrevious();
@@ -97,12 +97,12 @@ public slots:
     void SetVisible(bool pVisible);
 
 private slots:
-    bool AddFileEntryDialog();
-    bool AddUrlEntryDialog();
+    bool AddPlaylistFilesDirsDialog(bool pAddDirectories = false);
+    bool AddPlaylistUrlsDialog();
     void AddEntryDialogSc();
-    void DelEntryDialog();
+    void DelPlaylistEntriesDialog();
     void DelEntryDialogSc();
-    void SaveListDialog();
+    void SavePlaylistDialog();
     void Play(int pIndex = -1);
     void ActionPlay();
     void ActionPause();

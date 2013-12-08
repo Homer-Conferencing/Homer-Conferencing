@@ -1695,174 +1695,174 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="878"/>
+        <location filename="../src/MainWindow.cpp" line="880"/>
         <source>Update available</source>
         <translation>Aktualisierung verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="878"/>
+        <location filename="../src/MainWindow.cpp" line="880"/>
         <source>An updated version of Homer Conferencing is available. The new version is</source>
         <translation>Eine aktualisierte Version von Homer Conferencing ist verfügbar. Die neue Version ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="878"/>
+        <location filename="../src/MainWindow.cpp" line="880"/>
         <source>You can download the version via &quot;update check&quot; in the main menu.</source>
         <translation>Sie können die Version via &quot;Aktualisierung überprüfen&quot; im Hauptmenü herunterladen.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1312"/>
+        <location filename="../src/MainWindow.cpp" line="1314"/>
         <source>NAT detection failed</source>
         <translation>NAT Erkennung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1312"/>
+        <location filename="../src/MainWindow.cpp" line="1314"/>
         <source>Could not detect NAT address and type via STUN server. The failure reason is</source>
         <translation>Konnte die NAT-Adresse und -Typ nicht via STUN-Server erkennen. Die Fehlerursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1718"/>
-        <location filename="../src/MainWindow.cpp" line="1722"/>
+        <location filename="../src/MainWindow.cpp" line="1720"/>
+        <location filename="../src/MainWindow.cpp" line="1724"/>
         <source>Registration failed</source>
         <translation>Registrierung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1718"/>
-        <location filename="../src/MainWindow.cpp" line="1722"/>
+        <location filename="../src/MainWindow.cpp" line="1720"/>
+        <location filename="../src/MainWindow.cpp" line="1724"/>
         <source>Could not register</source>
         <translation>Registerung fehlgeschlagen für</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1718"/>
-        <location filename="../src/MainWindow.cpp" line="1722"/>
+        <location filename="../src/MainWindow.cpp" line="1720"/>
+        <location filename="../src/MainWindow.cpp" line="1724"/>
         <source>at the SIP server</source>
         <translation>am SIP-Server</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1718"/>
-        <location filename="../src/MainWindow.cpp" line="1738"/>
+        <location filename="../src/MainWindow.cpp" line="1720"/>
+        <location filename="../src/MainWindow.cpp" line="1740"/>
         <source>The reason is</source>
         <translation>Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1719"/>
-        <location filename="../src/MainWindow.cpp" line="1723"/>
-        <location filename="../src/MainWindow.cpp" line="1739"/>
+        <location filename="../src/MainWindow.cpp" line="1721"/>
+        <location filename="../src/MainWindow.cpp" line="1725"/>
+        <location filename="../src/MainWindow.cpp" line="1741"/>
         <source>SIP server runs software</source>
         <translation>Der SIP-Server nutzt die Software</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1722"/>
+        <location filename="../src/MainWindow.cpp" line="1724"/>
         <source>The login name or password is wrong. Check configuration!
 </source>
         <translation>Der Loginname oder das Passwort sind falsch. Bitte die Konfiguration prüfen!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1738"/>
+        <location filename="../src/MainWindow.cpp" line="1740"/>
         <source>Presence publication failed</source>
         <translation>Verfügbarkeitsstatus nicht aktualisiert</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1738"/>
+        <location filename="../src/MainWindow.cpp" line="1740"/>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1816"/>
+        <location filename="../src/MainWindow.cpp" line="1818"/>
         <source>Participant already called</source>
         <translation>Teilnehmer bereits angerufen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1816"/>
+        <location filename="../src/MainWindow.cpp" line="1818"/>
         <source>The participant</source>
         <translation>Der Teilnehmer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1816"/>
+        <location filename="../src/MainWindow.cpp" line="1818"/>
         <source>is already called!
 The participant is known as</source>
         <translation>ist bereits angerufen!
 Der Teilnehmer ist bekannt unter</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1843"/>
+        <location filename="../src/MainWindow.cpp" line="1845"/>
         <source>Loop detected</source>
         <translation>Schleife erkannt</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1843"/>
+        <location filename="../src/MainWindow.cpp" line="1845"/>
         <source>You tried to contact yourself!</source>
         <translation>Sie versuchten sich selbst zu kontaktieren!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1974"/>
+        <location filename="../src/MainWindow.cpp" line="1902"/>
         <source>Acknowledge configuration reset</source>
         <translation>Bestätigung der Rücksetzung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1974"/>
+        <location filename="../src/MainWindow.cpp" line="1902"/>
         <source>Do you want to reset the program settings?
 Homer Conferencing will be stopped afterwards!</source>
         <translation>Wollen Sie die Programmeinstellungen zurücksetzen?
 Homer Conferencing wird danach gestoppt!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2252"/>
-        <location filename="../src/MainWindow.cpp" line="2351"/>
+        <location filename="../src/MainWindow.cpp" line="2264"/>
+        <location filename="../src/MainWindow.cpp" line="2363"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2255"/>
-        <location filename="../src/MainWindow.cpp" line="2354"/>
+        <location filename="../src/MainWindow.cpp" line="2267"/>
+        <location filename="../src/MainWindow.cpp" line="2366"/>
         <source>Hide window</source>
         <translation>Fenster minimieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2261"/>
+        <location filename="../src/MainWindow.cpp" line="2273"/>
         <source>Main menu</source>
         <translation>Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2274"/>
+        <location filename="../src/MainWindow.cpp" line="2286"/>
         <source>Mosaic mode</source>
         <translation>Mosaikmodus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2291"/>
-        <location filename="../src/MainWindow.cpp" line="2364"/>
+        <location filename="../src/MainWindow.cpp" line="2303"/>
+        <location filename="../src/MainWindow.cpp" line="2376"/>
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2295"/>
-        <location filename="../src/MainWindow.cpp" line="2368"/>
+        <location filename="../src/MainWindow.cpp" line="2307"/>
+        <location filename="../src/MainWindow.cpp" line="2380"/>
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2301"/>
-        <location filename="../src/MainWindow.cpp" line="2374"/>
+        <location filename="../src/MainWindow.cpp" line="2313"/>
+        <location filename="../src/MainWindow.cpp" line="2386"/>
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2310"/>
-        <location filename="../src/MainWindow.cpp" line="2383"/>
+        <location filename="../src/MainWindow.cpp" line="2322"/>
+        <location filename="../src/MainWindow.cpp" line="2395"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2317"/>
+        <location filename="../src/MainWindow.cpp" line="2329"/>
         <source>Configuration</source>
         <translation>Konfiguration</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2327"/>
+        <location filename="../src/MainWindow.cpp" line="2339"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2335"/>
+        <location filename="../src/MainWindow.cpp" line="2347"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -2381,9 +2381,9 @@ Homer Conferencing wird danach gestoppt!</translation>
     <message>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="126"/>
         <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="148"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="190"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="246"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="292"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="195"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="251"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="302"/>
         <source>All supported formats</source>
         <translation>Alle unterstützten Formate</translation>
     </message>
@@ -2393,80 +2393,85 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>/Homer-Video.avi</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="254"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="259"/>
         <source>/Homer-Audio.mp3</source>
         <translation>/Homer-Audio.mp3</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="408"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="444"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="435"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="471"/>
         <source>Play selected</source>
         <translation>Auswahl abspielen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="414"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="449"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="441"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="476"/>
         <source>Add file(s)</source>
         <translation>Datei(en) hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="417"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="454"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="444"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="481"/>
         <source>Add url</source>
         <translation>Url hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="421"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="459"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="448"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="486"/>
         <source>Rename selected</source>
         <translation>Auswahl umbenennen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="424"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="464"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="451"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="491"/>
         <source>Delete selected</source>
         <translation>Auswahl entfernen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="432"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="469"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="459"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="496"/>
         <source>Reset playlist</source>
         <translation>Playlist zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="437"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="474"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="464"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="501"/>
         <source>Endless loop</source>
         <translation>Endlosschleife</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="502"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="530"/>
+        <source>Add directory to playlist</source>
+        <translation>Verzeichnis zur Playlist hinzufügen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="532"/>
         <source>Add file(s) to playlist</source>
         <translation>Datei(en) zur Playlist hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="532"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="563"/>
         <source>Adding an url to the playlist</source>
         <translation>Hinzufügen einer Url zur Playlist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="573"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="604"/>
         <source>Save playlist</source>
         <translation>Speichern der Playlist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="575"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="576"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="606"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="607"/>
         <source>Playlist File</source>
         <translation>Playlist-Datei</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="608"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="639"/>
         <source>Could not store playlist file</source>
         <translation>Abspeichern der Playlist fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="608"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="639"/>
         <source>Couldn&apos;t write playlist in</source>
         <translation>Abspeichern der Playlist ist fehlgeschlagen in </translation>
     </message>
@@ -3303,7 +3308,7 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Aufgenommen:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="532"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="563"/>
         <source>Adding url:</source>
         <translation>Hinzuzufügende Url:</translation>
     </message>
@@ -3466,257 +3471,267 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>A/V-Steuerung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="149"/>
+        <location filename="../forms/MainWindow.ui" line="152"/>
         <source>Streaming</source>
         <translation>Übertragung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="154"/>
+        <location filename="../forms/MainWindow.ui" line="157"/>
         <source>Conferencing</source>
         <translation>Konferenz</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="158"/>
-        <location filename="../forms/MainWindow.ui" line="186"/>
-        <location filename="../forms/MainWindow.ui" line="496"/>
+        <location filename="../forms/MainWindow.ui" line="161"/>
+        <location filename="../forms/MainWindow.ui" line="189"/>
+        <location filename="../forms/MainWindow.ui" line="499"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="225"/>
+        <location filename="../forms/MainWindow.ui" line="228"/>
         <source>Video/audio source</source>
         <translation>Video-/Audioquelle</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="246"/>
+        <location filename="../forms/MainWindow.ui" line="249"/>
         <source>Add participant</source>
         <translation>Teilnehmer hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="255"/>
+        <location filename="../forms/MainWindow.ui" line="258"/>
         <source>Close sessions</source>
         <translation>Sitzungen schließen</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="264"/>
+        <location filename="../forms/MainWindow.ui" line="267"/>
         <source>Remove participant</source>
         <translation>Teilnehmer entfernen</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="269"/>
+        <location filename="../forms/MainWindow.ui" line="272"/>
         <source>Exit Homer</source>
         <translation>Homer beenden</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="274"/>
-        <location filename="../forms/MainWindow.ui" line="283"/>
+        <location filename="../forms/MainWindow.ui" line="277"/>
+        <location filename="../forms/MainWindow.ui" line="286"/>
         <source>Identity</source>
         <translation>Identität</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="286"/>
+        <location filename="../forms/MainWindow.ui" line="289"/>
         <source>Alt+Q</source>
         <translation>Alt+Q</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="301"/>
+        <location filename="../forms/MainWindow.ui" line="304"/>
         <source>Configuration</source>
         <translation>Konfiguration</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="304"/>
+        <location filename="../forms/MainWindow.ui" line="307"/>
         <source>Alt+C</source>
         <translation>Alt+Q</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="325"/>
+        <location filename="../forms/MainWindow.ui" line="328"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="342"/>
+        <location filename="../forms/MainWindow.ui" line="345"/>
         <source>Instant messages</source>
         <translation>Nachrichten</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="351"/>
+        <location filename="../forms/MainWindow.ui" line="354"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="354"/>
-        <source>Alt+X</source>
-        <translation>Alt+X</translation>
-    </message>
-    <message>
-        <location filename="../forms/MainWindow.ui" line="374"/>
+        <location filename="../forms/MainWindow.ui" line="377"/>
         <source>Own Video</source>
         <translation>Eigenes Video</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="385"/>
+        <location filename="../forms/MainWindow.ui" line="388"/>
         <source>Event history</source>
         <translation>Ereignisverlauf</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="394"/>
+        <location filename="../forms/MainWindow.ui" line="397"/>
         <source>Contact list</source>
         <translation>Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="397"/>
+        <location filename="../forms/MainWindow.ui" line="400"/>
         <source>Alt+L</source>
         <translation>Alt+L</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="416"/>
+        <location filename="../forms/MainWindow.ui" line="419"/>
         <source>Data streams</source>
         <translation>Datenströme</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="441"/>
+        <location filename="../forms/MainWindow.ui" line="444"/>
         <source>System threads</source>
         <translation>Systemthreads</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="447"/>
+        <location filename="../forms/MainWindow.ui" line="450"/>
         <source>Ctrl+T</source>
         <translation>Ctrl+T</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="459"/>
+        <location filename="../forms/MainWindow.ui" line="462"/>
         <source>Save contacts</source>
         <translation>Speichere Kontakte</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="462"/>
+        <location filename="../forms/MainWindow.ui" line="465"/>
         <source>F2</source>
         <translation>F2F2</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="474"/>
+        <location filename="../forms/MainWindow.ui" line="477"/>
         <source>Load contacts</source>
         <translation>Lade Kontakte</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="477"/>
+        <location filename="../forms/MainWindow.ui" line="480"/>
         <source>F3</source>
         <translation>F3</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="515"/>
+        <location filename="../forms/MainWindow.ui" line="518"/>
         <source>Video/Audio source</source>
         <translation>Video-/Audioquelle</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="530"/>
+        <location filename="../forms/MainWindow.ui" line="533"/>
         <source>F5</source>
         <translation>F5F5</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="545"/>
+        <location filename="../forms/MainWindow.ui" line="548"/>
         <source>F1</source>
         <translation>F1F1</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="567"/>
+        <location filename="../forms/MainWindow.ui" line="570"/>
         <source>Contacts</source>
         <translation>Kontakte</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="570"/>
+        <location filename="../forms/MainWindow.ui" line="573"/>
         <source>Show/hide contacts</source>
         <translation>Zeige/verstecke Kontakte</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="592"/>
+        <location filename="../forms/MainWindow.ui" line="595"/>
         <source>File transfers</source>
         <translation>Dateiübertragungen</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="595"/>
+        <location filename="../forms/MainWindow.ui" line="598"/>
         <source>Show/hide file transfers</source>
         <translation>Zeige/verstecke Dateiübertragungen</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="617"/>
+        <location filename="../forms/MainWindow.ui" line="620"/>
         <source>Alt+B</source>
         <translation>Alt+B</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="642"/>
+        <location filename="../forms/MainWindow.ui" line="645"/>
         <source>Error messages</source>
         <translation>Fehlermeldungen</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="645"/>
+        <location filename="../forms/MainWindow.ui" line="648"/>
         <source>Show/hide errors overview</source>
         <translation>Zeige/verstecke Fehlerübersicht</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="695"/>
+        <location filename="../forms/MainWindow.ui" line="698"/>
         <source>Show/hide network streams overview</source>
         <translation>Zeige/verstecke Übersicht über Netzwerkströme</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="707"/>
+        <location filename="../forms/MainWindow.ui" line="710"/>
         <source>Video/audio preview</source>
         <translation>Video-/Audio-Vorschau</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="754"/>
+        <location filename="../forms/MainWindow.ui" line="757"/>
         <source>Ctrl+W</source>
         <translation>Ctrl+W</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="770"/>
+        <location filename="../forms/MainWindow.ui" line="773"/>
         <source>Main menu</source>
         <translation>Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="773"/>
+        <location filename="../forms/MainWindow.ui" line="776"/>
         <source>Show/hide main menu</source>
         <translation>Zeige/verstecke Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="776"/>
+        <location filename="../forms/MainWindow.ui" line="779"/>
         <source>Alt+M</source>
         <translation>Alt+M</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="795"/>
+        <location filename="../forms/MainWindow.ui" line="798"/>
         <source>Status bar</source>
         <translation>Statusanzeige</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="798"/>
+        <location filename="../forms/MainWindow.ui" line="801"/>
         <source>Show/hide status bar</source>
         <translation>Zeige/verstecke Statusanzeige</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="816"/>
+        <location filename="../forms/MainWindow.ui" line="819"/>
         <source>PTT mode</source>
         <translation>PTT-Modus</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="821"/>
+        <location filename="../forms/MainWindow.ui" line="824"/>
         <source>kk</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="829"/>
+        <location filename="../forms/MainWindow.ui" line="832"/>
         <source>Mosaic mode</source>
         <translation>Mosaikmodus</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="832"/>
+        <location filename="../forms/MainWindow.ui" line="835"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="844"/>
+        <location filename="../forms/MainWindow.ui" line="847"/>
         <source>Reset program settings</source>
         <translation>Zurücksetzung der Programmeinstellungen</translation>
+    </message>
+    <message>
+        <location filename="../forms/MainWindow.ui" line="856"/>
+        <source>Play file(s)</source>
+        <translation>Datei(en) abspielen</translation>
+    </message>
+    <message>
+        <location filename="../forms/MainWindow.ui" line="859"/>
+        <source>Ctrl+O</source>
+        <translation>Ctrl+O</translation>
+    </message>
+    <message>
+        <location filename="../forms/MainWindow.ui" line="868"/>
+        <source>Play directory</source>
+        <translation>Verzeichnis abspielen</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="59"/>
@@ -3729,102 +3744,107 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="322"/>
+        <location filename="../forms/MainWindow.ui" line="325"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="419"/>
+        <location filename="../forms/MainWindow.ui" line="357"/>
+        <source>Ctrl+Q</source>
+        <translation>Ctrl+Q</translation>
+    </message>
+    <message>
+        <location filename="../forms/MainWindow.ui" line="422"/>
         <source>Show/hide data streams overview</source>
         <translation>Zeige/verstecke Übersicht über Datenströme</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="422"/>
+        <location filename="../forms/MainWindow.ui" line="425"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="444"/>
+        <location filename="../forms/MainWindow.ui" line="447"/>
         <source>Show/hide system threads overview</source>
         <translation>Zeige/verstecke Übersicht über Systemsthreads</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="527"/>
+        <location filename="../forms/MainWindow.ui" line="530"/>
         <source>Software update</source>
         <translation>Softwareaktualisierung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="542"/>
+        <location filename="../forms/MainWindow.ui" line="545"/>
         <source>User guides / FAQ</source>
         <translation>Benutzeranleitungen / FAQ</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="573"/>
+        <location filename="../forms/MainWindow.ui" line="576"/>
         <source>Ctrl+A</source>
         <translation>Ctrl+A</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="611"/>
+        <location filename="../forms/MainWindow.ui" line="614"/>
         <source>Broadcast data</source>
         <translation>Audio-/Videoverteilung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="614"/>
+        <location filename="../forms/MainWindow.ui" line="617"/>
         <source>Show/hide broadcast data</source>
         <translation>Zeige/verstecke Video-/Audioverteilung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="626"/>
+        <location filename="../forms/MainWindow.ui" line="629"/>
         <source>Start video preview</source>
         <translation>Starte Videovorschau</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="648"/>
+        <location filename="../forms/MainWindow.ui" line="651"/>
         <source>Ctrl+E</source>
         <translation>Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="660"/>
+        <location filename="../forms/MainWindow.ui" line="663"/>
         <source>Start audio preview</source>
         <translation>Starte Audiovorschau</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="676"/>
+        <location filename="../forms/MainWindow.ui" line="679"/>
         <source>Server connection</source>
         <translation>Serververbindung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="692"/>
+        <location filename="../forms/MainWindow.ui" line="695"/>
         <source>Network streams</source>
         <translation>Netzwerkströme</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="698"/>
+        <location filename="../forms/MainWindow.ui" line="701"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="710"/>
+        <location filename="../forms/MainWindow.ui" line="713"/>
         <source>Open a video/audio preview</source>
         <translation>Öffne eine Video-/Audiovorschau</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="713"/>
+        <location filename="../forms/MainWindow.ui" line="716"/>
         <source>Alt+W</source>
         <translation>Alt+W</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="732"/>
+        <location filename="../forms/MainWindow.ui" line="735"/>
         <source>Network simulator</source>
         <translation>NEtzwerksimulator</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="748"/>
+        <location filename="../forms/MainWindow.ui" line="751"/>
         <source>Playlist</source>
         <translation>Playlist</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="751"/>
+        <location filename="../forms/MainWindow.ui" line="754"/>
         <source>Show/hide playlist</source>
         <translation>Zeige/verstecke die Playlist</translation>
     </message>

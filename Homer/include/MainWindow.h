@@ -101,11 +101,13 @@ public slots:
     void actionOpenVideoAudioPreview();
 
 private slots:
+    void actionOpenFiles();
+    void actionOpenDirectory();
+    void actionConfigurationReset();
     void actionExit();
 
     void actionIdentity();
     void actionConfiguration();
-    void actionConfigurationReset();
 
     void actionHelp();
     void actionUpdateCheck();

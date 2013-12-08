@@ -141,6 +141,9 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="mActionOpenFiles"/>
+    <addaction name="mActionOpenDirectory"/>
+    <addaction name="separator"/>
     <addaction name="mActionResetProgram"/>
     <addaction name="mActionExit"/>
    </widget>
@@ -351,7 +354,7 @@
     <string>Exit</string>
    </property>
    <property name="shortcut">
-    <string>Alt+X</string>
+    <string>Ctrl+Q</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -842,6 +845,27 @@
    </property>
    <property name="text">
     <string>Reset program settings</string>
+   </property>
+  </action>
+  <action name="mActionOpenFiles">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/22_22/Configuration_Video.png</normaloff>:/images/22_22/Configuration_Video.png</iconset>
+   </property>
+   <property name="text">
+    <string>Play file(s)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="mActionOpenDirectory">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/22_22/BoxOpen.png</normaloff>:/images/22_22/BoxOpen.png</iconset>
+   </property>
+   <property name="text">
+    <string>Play directory</string>
    </property>
   </action>
  </widget>
