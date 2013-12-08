@@ -307,7 +307,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 	// avoid frame dropping during decoding (mDecoderExpectedMaxOutputPerInputFrame might be wrong otherwise), assume 64 kB as max. input per read cycle
     if ((tIsNetworkStream) && (mCodecContext->codec_id == AV_CODEC_ID_WMAV2))
     {
-    	LOG(LOG_VERBOSE, "Detected WMAV2 codec in hidden network stream, will assume a default frame size of 64kB to prevent frame dropping");
+    	LOG(LOG_VERBOSE, "Detected WMAV2 codec in hidden network stream, will assume a default frame size of 64kB to avoid frame dropping");
     	mCodecContext->frame_size = 64 * 1024;
     }
 
@@ -363,6 +363,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
     float tSeekEnd = GetSeekEnd();
     float tNumberOfFrames = mNumberOfFrames;
+    double tStreamStartFrameIndex = mFormatContext->streams[mMediaStreamIndex]->start_time;
 
     if (IsSeeking())
     {
@@ -405,7 +406,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
     if (pSeconds <= 0)
         tFrameIndex = 0;
     else
-        tFrameIndex = CalculateOutputFrameNumber(mInputStartPts + (double)pSeconds * GetInputFrameRate());
+        tFrameIndex = CalculateOutputFrameNumber(tStreamStartFrameIndex + (double)pSeconds * GetInputFrameRate());
     float tTimeDiff = pSeconds - GetSeekPos();
 
     //LOG(LOG_VERBOSE, "Rel: %"PRId64" Abs: %"PRId64"", tRelativeTimestamp, tAbsoluteTimestamp);
@@ -420,13 +421,13 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
             if ((!mGrabberProvidesRTGrabbing) || ((tTimeDiff > MSF_SEEK_WAIT_THRESHOLD) || (tTimeDiff < -MSF_SEEK_WAIT_THRESHOLD)))
             {
                 float tTargetTimestamp = pSeconds * AV_TIME_BASE;
-                if (mFormatContext->start_time != (int64_t)AV_NOPTS_VALUE)
+                if (tStreamStartFrameIndex != (int64_t)AV_NOPTS_VALUE)
                 {
-                    LOG(LOG_VERBOSE, "Seeking: format context describes an additional start offset of %"PRId64"", mFormatContext->start_time);
-                    tTargetTimestamp += mFormatContext->start_time;
+                    LOG(LOG_VERBOSE, "Seeking: additional start offset of %.2lf", tStreamStartFrameIndex);
+                    tTargetTimestamp += tStreamStartFrameIndex;
                 }
 
-                LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f, ts: %.2f), max. sec.: %.2f (pts %.2f), source start pts: %"PRId64, GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentOutputFrameIndex, pSeconds, tFrameIndex, tTargetTimestamp, tSeekEnd, tNumberOfFrames, mInputStartPts);
+                LOG(LOG_VERBOSE, "%s-SEEKING from %5.2f sec. (pts %.2f) to %5.2f sec. (pts %.2f, ts: %.2f), max. sec.: %.2f (pts %.2f), source start pts: %"PRId64, GetMediaTypeStr().c_str(), GetSeekPos(), mCurrentOutputFrameIndex, pSeconds, tFrameIndex, tTargetTimestamp, tSeekEnd, tNumberOfFrames, tStreamStartFrameIndex);
 
                 int tSeekFlags = (pOnlyKeyFrames ? 0 : AVSEEK_FLAG_ANY) | AVSEEK_FLAG_FRAME | (tFrameIndex < mCurrentOutputFrameIndex ? AVSEEK_FLAG_BACKWARD : 0);
                 mDecoderTargetOutputFrameIndex = rint(tFrameIndex);
@@ -481,7 +482,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
             mDecoderRecalibrateRTGrabbingAfterSeeking = true;
         }
     }else
-        LOG(LOG_ERROR, "Seek position PTS=%.2f(%.2f) is out of range (0 - %.2f) for %s file, fps: %.2f, start offset: %.2f", (float)tFrameIndex, pSeconds, tNumberOfFrames, GetMediaTypeStr().c_str(), GetInputFrameRate(), (float)mInputStartPts);
+        LOG(LOG_ERROR, "Seek position PTS=%.2f(%.2f) is out of range (0 - %.2f) for %s file, fps: %.2f, start offset: %.2f", (float)tFrameIndex, pSeconds, tNumberOfFrames, GetMediaTypeStr().c_str(), GetInputFrameRate(), (float)tStreamStartFrameIndex);
 
     // unlock grabbing
     mGrabMutex.unlock();
@@ -520,35 +521,46 @@ bool MediaSourceFile::TimeShift(int64_t pOffset)
 float MediaSourceFile::GetSeekPos()
 {
     float tResult = 0;
-    float tSeekEnd = GetSeekEnd();
-	double tCurrentFrameIndex = CalculateInputFrameNumber(mCurrentOutputFrameIndex);
+    float tSeekEnd = 0;
+    double tCurrentFrameIndex = 0;
+    double tStreamStartFrameIndex = 0;
 
-	if (!SupportsSeeking())
-		return 0;
-
-	if (mEOFReached)
-	    return tSeekEnd;
-
-	if (tCurrentFrameIndex > 0)
-	{
-        //HINT: we need the corrected PTS values and the one from the file
-        // correcting PTS value by a possible start PTS value (offset)
-        if (mInputStartPts > 0)
+    if((mMediaSourceOpened) && (SupportsSeeking()))
+    {
+        tSeekEnd = GetSeekEnd();
+        if (!mEOFReached)
         {
-            //LOG(LOG_VERBOSE, "Correcting PTS value by offset: %.2f", (float)mSourceStartPts);
-            tCurrentFrameIndex -= mInputStartPts;
-        }
+            tCurrentFrameIndex = CalculateInputFrameNumber(mCurrentOutputFrameIndex);
+            if (tCurrentFrameIndex > 0)
+            {
+                //HINT: we need the corrected PTS values and the one from the file
+                // correcting PTS value by a possible start PTS value (offset)
+                tStreamStartFrameIndex = mFormatContext->streams[mMediaStreamIndex]->start_time;
+                if (tStreamStartFrameIndex > 0)
+                {
+                    //LOG(LOG_VERBOSE, "Correcting PTS value by offset: %.2f", (float)mSourceStartPts);
+                    tCurrentFrameIndex -= tStreamStartFrameIndex;
+                }
 
-        if (mNumberOfFrames > 1)
+                if (mNumberOfFrames > 1)
+                {
+                    //LOG(LOG_VERBOSE, "Rel. progress: %.2f %.2f", tCurrentFrameIndex, mNumberOfFrames);
+                    float tRelProgress = tCurrentFrameIndex / mNumberOfFrames;
+                    if (tRelProgress <= 1.0)
+                        tResult = (tSeekEnd * tRelProgress);
+                    else
+                    {
+                        LOG(LOG_WARN, "Relative %s file progress is beyond 100%% at %.2lf, returning end as seek position", GetMediaTypeStr().c_str(), tCurrentFrameIndex);
+                        tResult = tSeekEnd;
+                    }
+                }
+            }
+        }else
         {
-            //LOG(LOG_VERBOSE, "Rel. progress: %.2f %.2f", tCurrentFrameIndex, mNumberOfFrames);
-            float tRelProgress = tCurrentFrameIndex / mNumberOfFrames;
-            if (tRelProgress <= 1.0)
-                tResult = (tSeekEnd * tRelProgress);
-            else
-                tResult = tSeekEnd;
+            LOG(LOG_WARN, "EOF for %s file already reached, returning end as seek position", GetMediaTypeStr().c_str());
+            return tSeekEnd;
         }
-	}
+    }
 
 	//LOG(LOG_VERBOSE, "Resulting %s file position: %.2f", GetMediaTypeStr().c_str(), tResult);
 
@@ -650,7 +662,7 @@ void MediaSourceFile::StartDecoder()
 	{
 		LOG(LOG_VERBOSE, "Seeking to last %s decoder position: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
 		int tRes;
-		if ((tRes = avformat_seek_file(mFormatContext, -1, INT64_MIN, mFormatContext->start_time + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0)) < 0)
+		if ((tRes = avformat_seek_file(mFormatContext, -1, INT64_MIN, mInputStartPts + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0)) < 0)
 			LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)));
 	}
     MediaSourceMem::StartDecoder();

@@ -3592,22 +3592,24 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
         mFormatContext->streams[mMediaStreamIndex]->start_time = 0;
 
     // set PTS offset
-    if (mFormatContext->start_time > 0)
-    {
-    	mInputStartPts = mFormatContext->start_time;
-    	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the format context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
-    }else
-    {
-        if (mFormatContext->streams[mMediaStreamIndex]->start_time > 0)
-        {
-            mInputStartPts = mFormatContext->streams[mMediaStreamIndex]->start_time;
-            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the stream context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
-        }else
-        {
-            LOG_REMOTE(LOG_WARN, pSource, pLine, "Found start time of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
-            mInputStartPts = 0;
-        }
-    }
+// TODO: remove the following lines and remove "mInputStartPts" from the source
+//
+//    if (mFormatContext->start_time > 0)
+//    {
+//    	mInputStartPts = mFormatContext->start_time;
+//    	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the format context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
+//    }else
+//    {
+//        if (mFormatContext->streams[mMediaStreamIndex]->start_time > 0)
+//        {
+//            mInputStartPts = mFormatContext->streams[mMediaStreamIndex]->start_time;
+//            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the stream context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
+//        }else
+//        {
+//            LOG_REMOTE(LOG_WARN, pSource, pLine, "Found start time of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
+//            mInputStartPts = 0;
+//        }
+//    }
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s decoder successfully opened", GetMediaTypeStr().c_str());
 
