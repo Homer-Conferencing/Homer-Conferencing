@@ -298,6 +298,8 @@ void MainWindow::connectSignalsSlots()
     LOG(LOG_VERBOSE, "Connecting signals and slots of GUI..");
     addAction(mActionExit); // this action will also be available even if the main menu is hidden
     connect(mActionExit, SIGNAL(triggered()), this, SLOT(actionExit()));
+    connect(mActionResetProgram, SIGNAL(triggered()), this, SLOT(actionConfigurationReset()));
+
 
     addAction(mActionIdentity); // this action will also be available even if the main menu is hidden
     connect(mActionIdentity, SIGNAL(triggered()), this, SLOT(actionIdentity()));
@@ -1965,6 +1967,17 @@ void MainWindow::actionConfiguration()
         /* language */
     	SetLanguage(CONF.GetLanguage());
     }
+}
+
+void MainWindow::actionConfigurationReset()
+{
+    QMessageBox tMB(QMessageBox::Question, Homer::Gui::MainWindow::tr("Acknowledge configuration reset"), Homer::Gui::MainWindow::tr("Do you want to reset the program settings?\nHomer Conferencing will be stopped afterwards!"), QMessageBox::Yes | QMessageBox::No);
+    tMB.setDefaultButton(QMessageBox::No);
+    if (tMB.exec() != QMessageBox::Yes)
+        return;
+
+    CONF.SetDefaults();
+    exit(0);
 }
 
 void MainWindow::actionHelp()

@@ -1396,6 +1396,15 @@ The participant is known as</source>
         <source>You can download the version via &quot;update check&quot; in the main menu.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Acknowledge configuration reset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you want to reset the program settings?
+Homer Conferencing will be stopped afterwards!</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Homer::Gui::MessageHistory</name>
@@ -2868,6 +2877,10 @@ The participant is known as</source>
     </message>
     <message>
         <source>Mosaic mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset program settings</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

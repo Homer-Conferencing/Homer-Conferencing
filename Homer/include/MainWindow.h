@@ -105,6 +105,7 @@ private slots:
 
     void actionIdentity();
     void actionConfiguration();
+    void actionConfigurationReset();
 
     void actionHelp();
     void actionUpdateCheck();

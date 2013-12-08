@@ -141,6 +141,7 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="mActionResetProgram"/>
     <addaction name="mActionExit"/>
    </widget>
    <widget class="QMenu" name="mMenuStreaming">
@@ -832,6 +833,15 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
+   </property>
+  </action>
+  <action name="mActionResetProgram">
+   <property name="icon">
+    <iconset resource="../resources/Icons.qrc">
+     <normaloff>:/images/22_22/Reload.png</normaloff>:/images/22_22/Reload.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reset program settings</string>
    </property>
   </action>
  </widget>
