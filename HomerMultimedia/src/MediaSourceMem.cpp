@@ -1665,7 +1665,7 @@ void* MediaSourceMem::Run(void* pArgs)
                     {
                         LOG(LOG_VERBOSE, "New %s packet..", GetMediaTypeStr().c_str());
                         LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64", normalized pts: %lld", tPacket->pts, tPacket->pts - mFormatContext->streams[mMediaStreamIndex]->start_time);
+                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64", normalized pts: %lld, start time: %"PRId64, tPacket->pts, tPacket->pts - mFormatContext->streams[mMediaStreamIndex]->start_time, mFormatContext->streams[mMediaStreamIndex]->start_time);
                         LOG(LOG_VERBOSE, "      ..stream: %"PRId64, tPacket->stream_index);
                         LOG(LOG_VERBOSE, "      ..dts: %"PRId64, tPacket->dts);
                         LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
@@ -2483,8 +2483,10 @@ bool MediaSourceMem::WaitForRTGrabbing()
     // return immediately if RT-grabbing is not possible
     if (tNormalizedFrameIndexFromGrabber < 0)
     {
-        LOG(LOG_WARN, "Normalized frame index is invalid");
+        LOG(LOG_WARN, "Normalized %s frame index %.2f is invalid, current output frame index: %.2lf, output start PTS: %.2lf, output fps: %.2f, input fps: %.2f, input start PTS: %.2lf, frame duration: %d", GetMediaTypeStr().c_str(), tNormalizedFrameIndexFromGrabber, mCurrentOutputFrameIndex, CalculateOutputFrameNumber(mInputStartPts), GetOutputFrameRate(), GetInputFrameRate(), mInputStartPts, mFrameDuration);
         return true;
+    }else{
+        //LOG(LOG_VERBOSE, "Normalized %s frame index %.2f is okay, current output frame index: %.2lf, output start PTS: %.2lf, output fps: %.2f, input fps: %.2f, input start PTS: %.2lf, frame duration: %d", GetMediaTypeStr().c_str(), tNormalizedFrameIndexFromGrabber, mCurrentOutputFrameIndex, CalculateOutputFrameNumber(mInputStartPts), GetOutputFrameRate(), GetInputFrameRate(), mInputStartPts, mFrameDuration);
     }
 
 	#ifdef MSMEM_DEBUG_WAITING_TIMING
