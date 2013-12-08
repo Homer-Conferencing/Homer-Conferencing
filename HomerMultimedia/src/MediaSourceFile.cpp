@@ -557,7 +557,7 @@ float MediaSourceFile::GetSeekPos()
             }
         }else
         {
-            LOG(LOG_WARN, "EOF for %s file already reached, returning end as seek position", GetMediaTypeStr().c_str());
+            //LOG(LOG_WARN, "EOF for %s file already reached, returning end as seek position", GetMediaTypeStr().c_str());
             return tSeekEnd;
         }
     }
