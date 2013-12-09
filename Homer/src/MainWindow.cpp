@@ -225,7 +225,7 @@ void MainWindow::initializeGUI()
 {
     LOG(LOG_VERBOSE, "Initialization of GUI..");
     setupUi(this);
-    setWindowTitle("Homer Conferencing "HOMER_VERSION);
+    setWindowTitle("Homer Conferencing");
     move(CONF.GetMainWindowPosition());
     resize(CONF.GetMainWindowSize());
     if (CONF.GetMainWindowMinimized())
