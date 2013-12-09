@@ -202,14 +202,14 @@ void MediaSource::FfmpegInit()
 
         avcodec_register_all();
 
-        // register all supported input and output devices
-        avdevice_register_all();
-
-        // register all supported media filters
-        //avfilter_register_all();
-
         // register all formats and codecs
         av_register_all();
+
+        // register all supported media filters
+        avfilter_register_all();
+
+        // register all supported input and output devices
+        avdevice_register_all();
 
         #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 32, 100)
             // init network support once instead for every stream
@@ -1383,6 +1383,82 @@ bool MediaSource::UnregisterMediaSink(string pTarget, Requirements *pTransportRe
     return tResult;
 }
 
+void MediaSource::RegisterMediaFilter(MediaFilter *pMediaFilter)
+{
+    MediaFilters::iterator tIt;
+    bool tFound = false;
+    string tId = pMediaFilter->GetId();
+
+    if (tId == "")
+    {
+        LOG(LOG_ERROR, "Filter is ignored because its id is undefined");
+//        return NULL;
+    }
+
+    LOG(LOG_VERBOSE, "Registering media filter: %s", tId.c_str());
+
+    // lock
+    mMediaFiltersMutex.lock();
+
+    for (tIt = mMediaFilters.begin(); tIt != mMediaFilters.end(); tIt++)
+    {
+        if ((*tIt)->GetId() == tId)
+        {
+            LOG(LOG_WARN, "Filter already registered");
+            tFound = true;
+            break;
+        }
+    }
+
+    if (!tFound)
+        mMediaFilters.push_back(pMediaFilter);
+
+    // unlock
+    mMediaFiltersMutex.unlock();
+
+//    return pMediaFilter;
+}
+
+bool MediaSource::UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete)
+{
+    bool tResult = false;
+    MediaFilters::iterator tIt;
+    string tId = pMediaFilter->GetId();
+
+    if (tId == "")
+        return false;
+
+    LOG(LOG_VERBOSE, "Unregistering media filter: %s", tId.c_str());
+
+    // lock
+    mMediaFiltersMutex.lock();
+
+    for (tIt = mMediaFilters.begin(); tIt != mMediaFilters.end(); tIt++)
+    {
+        if ((*tIt)->GetId() == tId)
+        {
+            LOG(LOG_VERBOSE, "Found registered sink");
+
+            tResult = true;
+            // free memory of media sink object
+            if (pAutoDelete)
+            {
+                delete (*tIt);
+                LOG(LOG_VERBOSE, "..deleted");
+            }
+            // remove registration of media sink object
+            mMediaFilters.erase(tIt);
+            LOG(LOG_VERBOSE, "..unregistered");
+            break;
+        }
+    }
+
+    // unlock
+    mMediaFiltersMutex.unlock();
+
+    return tResult;
+}
+
 MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pTargetPort, Socket* pSocket, bool pRtpActivation, int pMaxFps)
 {
     MediaSinks::iterator tIt;
@@ -1731,6 +1807,29 @@ bool MediaSource::SupportsRelaying()
 int MediaSource::GetEncoderBufferedFrames()
 {
 	return 0;
+}
+
+void MediaSource::RelayChunkToMediaFilters(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame)
+{
+    MediaFilters::iterator tIt;
+
+    // lock
+    mMediaFiltersMutex.lock();
+
+    #ifdef MS_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Relaying chunk for %s %s media source to %d media filters", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), mMediaFilters.size());
+    #endif
+
+    if (mMediaFilters.size() > 0)
+    {
+        for (tIt = mMediaFilters.begin(); tIt != mMediaFilters.end(); tIt++)
+        {
+            (*tIt)->FilterChunk(pPacketData, pPacketSize, pPacketTimestamp, mFormatContext->streams[0], pIsKeyFrame);
+        }
+    }
+
+    // unlock
+    mMediaFiltersMutex.unlock();
 }
 
 void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame)

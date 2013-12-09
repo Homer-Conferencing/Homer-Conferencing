@@ -76,6 +76,7 @@ ENDIF (NOT APPLE)
 # SOURCES
 SET (SOURCES
 	../src/MediaFifo
+	../src/MediaFilter
 	../src/MediaSink
 	../src/MediaSinkFile
 	../src/MediaSinkMem
