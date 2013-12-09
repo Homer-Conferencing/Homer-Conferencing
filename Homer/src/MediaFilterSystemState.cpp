@@ -58,7 +58,7 @@ void MediaFilterSystemState::FilterChunk(char* pChunkBuffer, unsigned int pChunk
 {
     int tResX;
     int tResY;
-    mMediaSource->GetVideoSourceResolution(tResX, tResY);
+    mMediaSource->GetVideoGrabResolution(tResX, tResY);
 
     //LOG(LOG_VERBOSE, "Got %d bytes of %s video chunk %"PRId64" with resolution %dx%d", pChunkBufferSize, mMediaSource->GetSourceTypeStr().c_str(), pChunkbufferNumber, tResX, tResY);
     QImage tImage = QImage((unsigned char*)pChunkBuffer, tResX, tResY, QImage::Format_RGB32);

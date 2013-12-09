@@ -509,7 +509,13 @@ void MediaSourceDesktop::CreateScreenshot()
 		// lock screenshot buffer
 		mMutexScreenshot.lock();
 		if (mOutputScreenshot == NULL)
+		{
 		    LOG(LOG_ERROR, "Invalid screenshot buffer: %p  %d*%d", mOutputScreenshot, mTargetResX, mTargetResY);
+
+		    mMutexScreenshot.unlock();
+		    mMutexGrabberActive.unlock();
+		    return;
+		}
 		int tTargetResX = mTargetResX;
 		if (tTargetResX > MAX_WIDTH)
 		    tTargetResX = MAX_WIDTH;
@@ -521,6 +527,9 @@ void MediaSourceDesktop::CreateScreenshot()
 		QPixmap tScaledSourcePixmap = tSourcePixmap.scaled(tTargetResX, tTargetResY);
 		tTargetPainter->drawPixmap(0, 0, tScaledSourcePixmap);
 		delete tTargetPainter;
+
+	    RelayChunkToMediaFilters((char*)mOutputScreenshot, tTargetResX * tTargetResY * MSD_BYTES_PER_PIXEL, 1);
+
 		mScreenshotUpdated = true;
 		// notify consumer about new screenshot
 		mWaitConditionScreenshotUpdated.wakeAll();

@@ -2539,7 +2539,7 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
     }else
     	LOG(LOG_WARN, "No basic %s source registered until now. Device selection not possible", GetMediaTypeStr().c_str());
 
-    if(pIsNewDevice)
+    if(mMediaSource != tOldMediaSource)
     {
         mMediaSource->mMediaFilters = tOldMediaSource->mMediaFilters;
         tOldMediaSource->mMediaFilters.clear();
