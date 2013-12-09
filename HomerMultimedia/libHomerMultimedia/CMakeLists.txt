@@ -3,6 +3,7 @@
 # Since:   2011-02-19
 ###############################################################################
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeConfig.txt)
+INCLUDE(CheckLibraryExists)
 
 ##############################################################
 # Configuration
@@ -34,7 +35,11 @@ ENDIF (LINUX)
 
 ##############################################################
 # find package "swresample"
-CHECK_LIBRARY_EXISTS(swresample swresample_version "" HAVE_SWRESAMPLE) 
+IF(WINDOWS)
+	SET(HAVE_SWRESAMPLE true)	
+ELSE()
+	CHECK_LIBRARY_EXISTS(swresample swresample_version "" HAVE_SWRESAMPLE)
+ENDIF() 
 
 ##############################################################
 # include dirs
