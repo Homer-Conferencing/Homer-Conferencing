@@ -150,7 +150,8 @@ bool MediaSourceLogo::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mSourceResY = pResY;
 	mInputFrameRate = pFps;
     mOutputFrameRate = pFps;
-    mLogoRawPicture = malloc(mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL * sizeof(char));
+    int tLogoSize = mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL * sizeof(char);
+    mLogoRawPicture = malloc(tLogoSize);
     if (mLogoRawPicture == NULL)
     {
         LOG(LOG_ERROR, "Buffer allocation failed");
@@ -285,6 +286,8 @@ int MediaSourceLogo::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
     // copy the logo to the destination buffer
     memcpy(pChunkBuffer, mLogoRawPicture, mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL);
+
+    RelayChunkToMediaFilters((char*)pChunkBuffer, mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL, 1);
 
     // return size of decoded frame
     pChunkSize = mTargetResX * mTargetResY * MSD_BYTES_PER_PIXEL;

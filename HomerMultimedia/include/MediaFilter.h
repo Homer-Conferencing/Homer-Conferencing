@@ -40,14 +40,13 @@ class MediaSource;
 
 class MediaFilter
 {
-
 public:
     MediaFilter(MediaSource *pMediaSource);
 
     virtual ~MediaFilter();
 
     // filter a chunk: either an RGB32 picture or a raw audio chunk
-    virtual void FilterChunk(char* pFrameData, unsigned int pFrameSize, int64_t pPacketTimestamp, AVStream *pStream, bool pIsKeyFrame) = 0;
+    virtual void FilterChunk(char* pChunkBuffer, unsigned int pChunkBufferSize, int64_t pChunkbufferNumber, AVStream *pStream, bool pIsKeyFrame) = 0;
 
     std::string GetId();
 

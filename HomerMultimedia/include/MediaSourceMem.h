@@ -118,6 +118,10 @@ public:
     /* recording */
     virtual bool SupportsRecording();
 
+    /* filtering */
+    virtual void RegisterMediaFilter(MediaFilter *pMediaFilter);
+    virtual bool UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete = true);
+
     /* relaying */
     virtual bool SupportsRelaying();
 
@@ -158,6 +162,7 @@ protected:
     double CalculateOutputFrameNumber(double pFrameNumber);
     double CalculateInputFrameNumber(double pFrameNumber);
     void CalculateExpectedOutputPerInputFrame();
+    void ResetPreCalculatedData();
     void ResetDecoderBuffers();
     void WriteOutputChunk(char* pChunkBuffer, int pChunkBufferSize, int64_t pChunkNumber);
     void ReadOutputChunk(char *pChunkBuffer, int &pChunkBufferSize, int64_t &pChunkNumber);

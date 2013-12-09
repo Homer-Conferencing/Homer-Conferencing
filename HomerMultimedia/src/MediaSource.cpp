@@ -180,6 +180,7 @@ MediaSource::MediaSource(string pName):
 MediaSource::~MediaSource()
 {
     DeleteAllRegisteredMediaSinks();
+    DeleteAllRegisteredMediaFilters();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1393,9 +1394,10 @@ void MediaSource::RegisterMediaFilter(MediaFilter *pMediaFilter)
     {
         LOG(LOG_ERROR, "Filter is ignored because its id is undefined");
 //        return NULL;
+        return;
     }
 
-    LOG(LOG_VERBOSE, "Registering media filter: %s", tId.c_str());
+    LOG(LOG_VERBOSE, "Registering %s %s media filter: %s", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tId.c_str());
 
     // lock
     mMediaFiltersMutex.lock();
@@ -1428,7 +1430,7 @@ bool MediaSource::UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDel
     if (tId == "")
         return false;
 
-    LOG(LOG_VERBOSE, "Unregistering media filter: %s", tId.c_str());
+    LOG(LOG_VERBOSE, "Unregistering %s %s media filter: %s", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), tId.c_str());
 
     // lock
     mMediaFiltersMutex.lock();
@@ -1457,6 +1459,34 @@ bool MediaSource::UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDel
     mMediaFiltersMutex.unlock();
 
     return tResult;
+}
+
+void MediaSource::DeleteAllRegisteredMediaFilters()
+{
+    MediaFilters::iterator tIt;
+
+    // lock
+    mMediaFiltersMutex.lock();
+
+    while(mMediaFilters.size())
+    {
+        for (tIt = mMediaFilters.begin(); tIt != mMediaFilters.end(); tIt++)
+        {
+            LOG(LOG_VERBOSE, "Deleting registered sink %s", (*tIt)->GetId().c_str());
+
+            // free memory of media sink object
+            delete (*tIt);
+            LOG(LOG_VERBOSE, "..deleted");
+
+            // remove registration of media sink object
+            mMediaFilters.erase(tIt);
+            LOG(LOG_VERBOSE, "..unregistered");
+            break;
+        }
+    }
+
+    // unlock
+    mMediaFiltersMutex.unlock();
 }
 
 MediaSinkNet* MediaSource::RegisterMediaSink(string pTargetHost, unsigned int pTargetPort, Socket* pSocket, bool pRtpActivation, int pMaxFps)
@@ -1824,7 +1854,7 @@ void MediaSource::RelayChunkToMediaFilters(char* pPacketData, unsigned int pPack
     {
         for (tIt = mMediaFilters.begin(); tIt != mMediaFilters.end(); tIt++)
         {
-            (*tIt)->FilterChunk(pPacketData, pPacketSize, pPacketTimestamp, mFormatContext->streams[0], pIsKeyFrame);
+            (*tIt)->FilterChunk(pPacketData, pPacketSize, pPacketTimestamp, (mFormatContext != NULL ? mFormatContext->streams[0] : NULL), pIsKeyFrame);
         }
     }
 
@@ -1847,7 +1877,7 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
     {
         for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
         {
-            (*tIt)->ProcessPacket(pPacketData, pPacketSize, pPacketTimestamp, mFormatContext->streams[0], pIsKeyFrame);
+            (*tIt)->ProcessPacket(pPacketData, pPacketSize, pPacketTimestamp, (mFormatContext != NULL ? mFormatContext->streams[0] : NULL), pIsKeyFrame);
         }
     }
 

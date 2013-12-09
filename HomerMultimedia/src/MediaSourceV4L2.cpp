@@ -688,6 +688,8 @@ int MediaSourceV4L2::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
     // return size of decoded frame
     pChunkSize = avpicture_get_size(PIX_FMT_RGB32, mTargetResX, mTargetResY) * sizeof(uint8_t);
 
+    RelayChunkToMediaFilters((char*)pChunkBuffer, pChunkSize, mSourceFrame->pts);
+
     // unlock grabbing
     mGrabMutex.unlock();
 

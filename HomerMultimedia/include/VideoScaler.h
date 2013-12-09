@@ -47,11 +47,13 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class MediaSource;
+
 class VideoScaler:
     public Thread, public MediaFifo
 {
 public:
-    VideoScaler(std::string pName);
+    VideoScaler(MediaSource *pMediaSource, std::string pName);
 
     virtual ~VideoScaler();
 
@@ -91,6 +93,7 @@ private:
     int                 mQueueSize;
     int                 mChunkNumber;
     SwsContext          *mVideoScalerContext;
+    MediaSource         *mMediaSource;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

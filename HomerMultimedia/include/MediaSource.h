@@ -300,8 +300,9 @@ public:
     virtual int GetDecoderOutputFrameDelay();
 
     /* filtering */
-    void RegisterMediaFilter(MediaFilter *pMediaFilter);
-    bool UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete = true);
+    virtual void RegisterMediaFilter(MediaFilter *pMediaFilter);
+    virtual bool UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete = true);
+    void DeleteAllRegisteredMediaFilters();
 
     /* simple relaying WITHOUT any reencoding functionality but WITH rtp support*/
 	// register/unregister: Berkeley sockets based media sinks
@@ -401,6 +402,7 @@ protected:
 
     /* filtering */
     virtual void RelayChunkToMediaFilters(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame = false);
+    friend class VideoScaler; // for access to "RelayChunkToMediaFilters()"
 
     /* internal interface for packet relaying */
     virtual void RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame = false);
@@ -527,6 +529,8 @@ protected:
     /* filtering */
     MediaFilters        mMediaFilters;
     Mutex               mMediaFiltersMutex;
+    friend class MediaSourceMuxer; // for access to "mMediaFilters"
+
     /* recording */
     HM_SwrContext       *mRecorderAudioResampleContext;
     AVFifoBuffer        *mRecorderResampleFifo[MEDIA_SOURCE_MAX_AUDIO_CHANNELS];

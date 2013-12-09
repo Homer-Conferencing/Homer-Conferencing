@@ -1421,7 +1421,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
             // create video scaler
             LOG(LOG_VERBOSE, "..encoder thread starts scaler thread..");
-            tVideoScaler = new VideoScaler("Video-Encoder(" + GetFormatName(mStreamCodecId) + ")");
+            tVideoScaler = new VideoScaler(this, "Video-Encoder(" + GetFormatName(mStreamCodecId) + ")");
             if(tVideoScaler == NULL)
                 LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
 
@@ -2539,6 +2539,12 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
     }else
     	LOG(LOG_WARN, "No basic %s source registered until now. Device selection not possible", GetMediaTypeStr().c_str());
 
+    if(pIsNewDevice)
+    {
+        mMediaSource->mMediaFilters = tOldMediaSource->mMediaFilters;
+        tOldMediaSource->mMediaFilters.clear();
+    }
+
     // unlock
     mMediaSourcesMutex.unlock();
 
@@ -2560,6 +2566,20 @@ string MediaSourceMuxer::GetCurrentDevicePeerName()
         return mMediaSource->GetCurrentDevicePeerName();
     else
         return "";
+}
+
+void MediaSourceMuxer::RegisterMediaFilter(MediaFilter *pMediaFilter)
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->RegisterMediaFilter(pMediaFilter);
+}
+
+bool MediaSourceMuxer::UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete)
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->UnregisterMediaFilter(pMediaFilter, pAutoDelete);
+    else
+        return false;
 }
 
 bool MediaSourceMuxer::RegisterMediaSource(MediaSource* pMediaSource)

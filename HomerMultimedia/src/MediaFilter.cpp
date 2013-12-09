@@ -46,11 +46,9 @@ MediaFilter::~MediaFilter()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
 string MediaFilter::GetId()
 {
 	return mMediaId;
 }
-
 
 }} //namespace

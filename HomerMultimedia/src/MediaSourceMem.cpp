@@ -466,6 +466,21 @@ bool MediaSourceMem::SupportsRecording()
 	return true;
 }
 
+void MediaSourceMem::RegisterMediaFilter(MediaFilter *pMediaFilter)
+{
+    MediaSource::RegisterMediaFilter(pMediaFilter);
+    ResetPreCalculatedData();
+}
+
+bool MediaSourceMem::UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete)
+{
+    bool tResult = MediaSource::UnregisterMediaFilter(pMediaFilter, pAutoDelete);
+
+    ResetPreCalculatedData();
+
+    return tResult;
+}
+
 bool MediaSourceMem::SupportsRelaying()
 {
     return true;
@@ -1258,7 +1273,7 @@ VideoScaler* MediaSourceMem::CreateVideoScaler()
     VideoScaler *tResult;
 
     LOG(LOG_VERBOSE, "Starting video scaler thread..");
-    tResult = new VideoScaler("Video-Decoder(" + GetSourceTypeStr() + ")");
+    tResult = new VideoScaler(this, "Video-Decoder(" + GetSourceTypeStr() + ")");
     if(tResult == NULL)
         LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
     tResult->StartScaler(CalculateFrameBufferSize(), mSourceResX, mSourceResY, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32);
@@ -2264,6 +2279,19 @@ void* MediaSourceMem::Run(void* pArgs)
     return NULL;
 }
 
+void MediaSourceMem::ResetPreCalculatedData()
+{
+    mDecoderResetBuffersMutex.lock();
+
+    // reset the library internal frame FIFO
+    LOG(LOG_VERBOSE, "Reseting %s decoder internal FIFO after UnregisterMediaFilter()", GetMediaTypeStr().c_str());
+    mDecoderFifo->ClearFifo();
+
+    mDecoderResetBuffersMutex.unlock();
+
+    mDecoderNeedWorkCondition.Signal();
+}
+
 void MediaSourceMem::ResetDecoderBuffers()
 {
     mDecoderResetBuffersMutex.lock();
@@ -2328,8 +2356,6 @@ void MediaSourceMem::WriteOutputChunk(char* pChunkBuffer, int pChunkBufferSize, 
 
     if (pChunkNumber != 0)
         mLastBufferedOutputFrameIndex = pChunkNumber;
-
-    RelayChunkToMediaFilters(pChunkBuffer, pChunkBufferSize, pChunkNumber);
 
     // write A/V data to output FIFO
     mDecoderFifo->WriteFifo(pChunkBuffer, pChunkBufferSize, pChunkNumber);
