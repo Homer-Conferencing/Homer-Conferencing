@@ -2954,9 +2954,9 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::VideoWidget</name>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="373"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="587"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1431"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="378"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="608"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1485"/>
         <source>Save picture</source>
         <translation>Bild speichern</translation>
     </message>
@@ -2966,344 +2966,365 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Fenster</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="382"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="592"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="387"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="613"/>
         <source>Stop recording</source>
         <translation>Aufnahme stoppen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="384"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="597"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="389"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="618"/>
         <source>Start recording</source>
         <translation>Aufnahme starten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="393"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="627"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="398"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="648"/>
         <source>Hide stream info</source>
         <translation>Verstecke Strominfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="395"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="622"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="400"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="643"/>
         <source>Show stream info</source>
         <translation>Zeige Strominfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="410"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="664"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="440"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="690"/>
         <source>Window mode</source>
         <translation>Fenstermodus</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="413"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="664"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="443"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="690"/>
         <source>Full screen</source>
         <translation>Vollbild</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="435"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="465"/>
         <source>Aspect ratio</source>
         <translation>Bildformat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="454"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="484"/>
         <source>Resolution</source>
         <translation>Auflösung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="403"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="433"/>
         <source>Playback</source>
         <translation>Wiedergabe</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="425"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="659"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="455"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="685"/>
         <source>Fast display</source>
         <translation>Schnelle Anzeige</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="428"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="659"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="458"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="685"/>
         <source>Smooth display</source>
         <translation>Geglättete Anzeige</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="492"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="607"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="522"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="628"/>
         <source>Unmirror horizontally</source>
         <translation>Horizontal entspiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="497"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="602"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="527"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="623"/>
         <source>Mirror horizontally</source>
         <translation>Horizontal spiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="504"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="617"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="534"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="638"/>
         <source>Unmirror vertically</source>
         <translation>Vertikal entspiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="519"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="549"/>
         <source>Relay stream</source>
         <translation>Strom verteilen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="520"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="644"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="550"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="665"/>
         <source>Add network sink</source>
         <translation>Netzwerksenke hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="521"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="551"/>
         <source>Registered sinks</source>
         <translation>Registrierte Senken</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="536"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="649"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="424"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="670"/>
         <source>Live marker</source>
         <translation>Live-Markierung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="550"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="638"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="408"/>
+        <source>Video overlay</source>
+        <translation>Einblendungen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="412"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="680"/>
+        <source>System state</source>
+        <translation>Systemstatus</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="571"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="659"/>
         <source>Continue stream</source>
         <translation>Strom fortsetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="552"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="632"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="573"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="653"/>
         <source>Drop stream</source>
         <translation>Strom verwerfen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="560"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="582"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="581"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="603"/>
         <source>Reset source</source>
         <translation>Quelle zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="572"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="593"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="577"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="598"/>
         <source>Close window</source>
         <translation>Fenster schließen </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="736"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="762"/>
         <source>Target for video streaming</source>
         <translation>Ziel für Videoverteilung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="788"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="814"/>
         <source>% loss</source>
         <translation>% Verlust</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="801"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="827"/>
         <source>pre-buffer</source>
         <translation>Vorpuffer</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="813"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="861"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="839"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="887"/>
         <source>unknown</source>
         <translation>unbekannt</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="822"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="848"/>
         <source>Playback:</source>
         <translation>Wiedergabe:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="822"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="848"/>
         <source>[smoothed]</source>
         <translation>[geglättet]</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="824"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="826"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="850"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="852"/>
         <source>A/V drift:</source>
         <translation>A/V-Drift:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="850"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="876"/>
         <source>Time index:</source>
         <translation>Zeitindex:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="816"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1413"/>
+        <source>system state activated</source>
+        <translation>Systemstatus aktiviert</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1422"/>
+        <source>system state deactivated</source>
+        <translation>Systemstatus deaktiviert</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1431"/>
+        <source>filtering activated</source>
+        <translation>Filterung aktiviert</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1434"/>
+        <source>filtering deactivated</source>
+        <translation>Filterung deaktiviert</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="842"/>
         <source>frames delay</source>
         <translation>Frames Verzögerung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="862"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="888"/>
         <source>frames buffered</source>
         <translation>Frames gepuffert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="995"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1021"/>
         <source>System too busy</source>
         <translation>System zu beschäftigt</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="995"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1021"/>
         <source>Your system is too busy to do smooth transformation. Fast transformation will be used from now.</source>
         <translation>Das System ist zu beschäftigt, um eine Glättungstransformation durchzuführen. Schnelle Transformation wird ab jetzt verwendet.</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1256"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1282"/>
         <source>Recording active</source>
         <translation>Aufnahme aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1256"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1282"/>
         <source>The settings for video playback cannot be changed if the recording is active!</source>
         <translation>Die Einstellungen für Videowiedergabe können nicht verändert werden, wenn die Aufnahme aktiv ist!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1379"/>
-        <source>Bilinear filtering activated</source>
-        <translation>Bilineare Filterung aktiviert</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1381"/>
-        <source>Bilinear filtering deactivated</source>
-        <translation>Bilineare Filterung deaktiviert</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1455"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1509"/>
         <source>Save recorded video</source>
         <translation>Speichern des aufgezeichneten Videos</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1465"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1519"/>
         <source>Select recording quality</source>
         <translation>Auswahl der Aufzeichnungsqualität</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1465"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1519"/>
         <source>Record with quality:</source>
         <translation>Aufzeichnen mit Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1664"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1724"/>
         <source>Audio muted</source>
         <translation>Audio stumm geschaltet</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1666"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1726"/>
         <source>Audio output active</source>
         <translation>Audiowiedergabe aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1675"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1735"/>
         <source>Playing..</source>
         <translation>Abspielend..</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1681"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1741"/>
         <source>Pausing..</source>
         <translation>Pausierend..</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1736"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1746"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1796"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1806"/>
         <source>Volume:</source>
         <translation>Lautstärke:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2041"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2043"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2101"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2103"/>
         <source>Video source not available</source>
         <translation>Videoquelle nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2041"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2101"/>
         <source>The selected video source &quot;</source>
         <translation>Die ausgewählte Videoquelle &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2041"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2101"/>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot; ist nicht verfügbar. Bitte eine andere auswählen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2043"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2103"/>
         <source>The selected video source auto detection was not successful. Please, connect an additional video device to your hardware!</source>
         <translation>Die ausgewählte automatische Erkennung der Videoquelle war nicht erfolgreich. Bitte ein zusätzliches Gerät anschließen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="509"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="612"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="539"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="633"/>
         <source>Mirror vertically</source>
         <translation>Vertikal spiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="474"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="504"/>
         <source>Scaling</source>
         <translation>Skalierung</translation>
     </message>
     <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="514"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="764"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="790"/>
         <source>Source:</source>
         <translation>Quelle:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="787"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="813"/>
         <source>lost packets</source>
         <translation>verlorene Pakete</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="790"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="816"/>
         <source>buffered packets</source>
         <translation>gepufferte Pakete</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="798"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="824"/>
         <source>buffered</source>
         <translation>gepuffert</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="813"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="839"/>
         <source>Source codec:</source>
         <translation>Quellcodec:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="861"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="887"/>
         <source>Streaming codec:</source>
         <translation>Verteilercodec:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="863"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="889"/>
         <source>buffered frames</source>
         <translation>gepufferte Frames</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="871"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="897"/>
         <source>Sender:</source>
         <translation>Sender:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="875"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="901"/>
         <source>synch. packets</source>
         <translation>synch. Pakete</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="878"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="904"/>
         <source>delay</source>
         <translation>Verzögerung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="894"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="920"/>
         <source>Recorded:</source>
         <translation>Aufgenommen:</translation>
     </message>
@@ -3316,7 +3337,7 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::VideoWorkerThread</name>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2127"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2187"/>
         <source>Waiting for data..</source>
         <translation>Warte auf Daten..</translation>
     </message>

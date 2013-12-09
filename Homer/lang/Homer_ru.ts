@@ -2220,10 +2220,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Система перегружена</translation>
     </message>
     <message>
-        <source>Bilinear filtering deactivated</source>
-        <translation>Билинейная фильтрация отключена</translation>
-    </message>
-    <message>
         <source>Unmirror vertically</source>
         <translation>Unmirror вертикально</translation>
     </message>
@@ -2452,10 +2448,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Гладкий дисплей</translation>
     </message>
     <message>
-        <source>Bilinear filtering activated</source>
-        <translation>Билинейная фильтрация активированна</translation>
-    </message>
-    <message>
         <source>Add network sink</source>
         <translation>Добавить сеть sink</translation>
     </message>
@@ -2469,6 +2461,30 @@ Homer Conferencing will be stopped afterwards!</source>
     </message>
     <message>
         <source>Close window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>filtering activated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>filtering deactivated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>system state activated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>system state deactivated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Video overlay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>System state</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
