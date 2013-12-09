@@ -130,6 +130,7 @@ SET (SOURCES
 	../src/FileTransfersManager
 	../src/HomerApplication
 	../src/MainWindow
+	../src/MediaFilterSystemState
 	../src/MediaSourceDesktop
 	../src/MediaSourceLogo
 	../src/MediaSourceGrabberThread

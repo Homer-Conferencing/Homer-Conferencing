@@ -48,6 +48,7 @@
 
 #include <MediaSource.h>
 #include <MeetingEvents.h>
+#include <MediaFilterSystemState.h>
 
 #include <MediaSourceGrabberThread.h>
 
@@ -128,6 +129,7 @@ private:
     void SetScaling(float pVideoScaleFactor);
     bool IsCurrentScaleFactor(float pScaleFactor);
     void SetResolutionFormat(VideoFormat pFormat);
+    void ToggleInVideoSystemState();
     void ToggleSmoothPresentationMode();
     void SavePicture();
     void StartRecorder();
@@ -176,6 +178,7 @@ private:
     QTimer              *mHourGlassTimer;
     qreal               mHourGlassAngle;
     int                 mHourGlassOffset;
+    bool                mSystemStatePresentation;
     bool                mSmoothPresentation;
     bool                mRecorderStarted;
     bool                mInsideDockWidget;
@@ -209,6 +212,8 @@ private:
     QTime				mTimeLastWidgetUpdate;
     /* Mosaic mode */
     bool				mMosaicMode;
+    /* in-video system state */
+    MediaFilterSystemState *mMediaFilterSystemState;
 };
 
 
