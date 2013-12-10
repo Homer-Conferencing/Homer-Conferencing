@@ -1147,18 +1147,6 @@
         <translation>Aufnahme starten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="255"/>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="385"/>
-        <source>Hide stream info</source>
-        <translation>Verstecke Strominfo</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="257"/>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="380"/>
-        <source>Show stream info</source>
-        <translation>Zeige Strominfo</translation>
-    </message>
-    <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="267"/>
         <source>Audio tracks</source>
         <translation>Audiospuren</translation>
@@ -1167,34 +1155,6 @@
         <location filename="../src/Widgets/AudioWidget.cpp" line="285"/>
         <source>Playback</source>
         <translation>Wiedergabe</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="306"/>
-        <source>Relay stream</source>
-        <translation>Strom verteilen</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="307"/>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="375"/>
-        <source>Add network sink</source>
-        <translation>Netzwerksenke hinzufügen</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="308"/>
-        <source>Registered sinks</source>
-        <translation>Registrierte Senken</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="328"/>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="396"/>
-        <source>Continue stream</source>
-        <translation>Strom fortsetzen</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="330"/>
-        <location filename="../src/Widgets/AudioWidget.cpp" line="390"/>
-        <source>Drop stream</source>
-        <translation>Strom verwerfen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="338"/>
@@ -1290,6 +1250,46 @@
         <location filename="../src/Widgets/AudioWidget.cpp" line="549"/>
         <source>frames delay</source>
         <translation>Frames Verzögerung</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="255"/>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="385"/>
+        <source>Hide source info</source>
+        <translation>Verstecke Quellinformation</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="257"/>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="380"/>
+        <source>Show source info</source>
+        <translation>Zeige Quellinformation</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="306"/>
+        <source>Streaming</source>
+        <translation>Übertragung</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="307"/>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="375"/>
+        <source>Add stream</source>
+        <translation>Übertragung hinzufügen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="308"/>
+        <source>Running streams</source>
+        <translation>Laufende Übertragungen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="328"/>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="396"/>
+        <source>Play source</source>
+        <translation>Quelle abspielen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="330"/>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="390"/>
+        <source>Pause source</source>
+        <translation>Quelle pausieren</translation>
     </message>
     <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="350"/>
@@ -2978,18 +2978,6 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Aufnahme starten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="398"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="648"/>
-        <source>Hide stream info</source>
-        <translation>Verstecke Strominfo</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="400"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="643"/>
-        <source>Show stream info</source>
-        <translation>Zeige Strominfo</translation>
-    </message>
-    <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="440"/>
         <location filename="../src/Widgets/VideoWidget.cpp" line="690"/>
         <source>Window mode</source>
@@ -3047,26 +3035,22 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Vertikal entspiegeln</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="549"/>
-        <source>Relay stream</source>
-        <translation>Strom verteilen</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="550"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="665"/>
-        <source>Add network sink</source>
-        <translation>Netzwerksenke hinzufügen</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="551"/>
-        <source>Registered sinks</source>
-        <translation>Registrierte Senken</translation>
-    </message>
-    <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="424"/>
         <location filename="../src/Widgets/VideoWidget.cpp" line="670"/>
         <source>Live marker</source>
         <translation>Live-Markierung</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="398"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="648"/>
+        <source>Hide source info</source>
+        <translation>Verstecke Quellinformation</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="400"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="643"/>
+        <source>Show source info</source>
+        <translation>Zeige Quellinformation</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="408"/>
@@ -3080,16 +3064,20 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Systemstatus</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="571"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="659"/>
-        <source>Continue stream</source>
-        <translation>Strom fortsetzen</translation>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="549"/>
+        <source>Streaming</source>
+        <translation>Übertragung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="573"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="653"/>
-        <source>Drop stream</source>
-        <translation>Strom verwerfen</translation>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="550"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="665"/>
+        <source>Add stream</source>
+        <translation>Übertragung hinzufügen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="551"/>
+        <source>Running streams</source>
+        <translation>Laufende Übertragungen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="581"/>
@@ -3173,6 +3161,18 @@ Homer Conferencing wird danach gestoppt!</translation>
         <location filename="../src/Widgets/VideoWidget.cpp" line="842"/>
         <source>frames delay</source>
         <translation>Frames Verzögerung</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="571"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="659"/>
+        <source>Play source</source>
+        <translation>Quelle abspielen</translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="573"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="653"/>
+        <source>Pause source</source>
+        <translation>Quelle pausieren</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="888"/>

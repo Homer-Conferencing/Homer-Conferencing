@@ -252,9 +252,9 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     //### STREAM INFO
     //###############################################################################
     if (mShowLiveStats)
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::AudioWidget::tr("Hide stream info"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::AudioWidget::tr("Hide source info"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::AudioWidget::tr("Show stream info"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::AudioWidget::tr("Show source info"));
     tAction->setCheckable(true);
     tAction->setChecked(mShowLiveStats);
 
@@ -303,9 +303,9 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     //###############################################################################
     if(mAudioSource->SupportsRelaying())
     {
-        QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::AudioWidget::tr("Relay stream"));
-        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::AudioWidget::tr("Add network sink"));
-        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::AudioWidget::tr("Registered sinks"));
+        QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::AudioWidget::tr("Streaming"));
+        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::AudioWidget::tr("Add stream"));
+        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::AudioWidget::tr("Running streams"));
 
         if (tRegisteredAudioSinks.size())
         {
@@ -325,9 +325,9 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
         //###############################################################################
         QIcon tIcon10;
         if (mAudioPaused)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::AudioWidget::tr("Continue stream"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::AudioWidget::tr("Play source"));
         else
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::AudioWidget::tr("Drop stream"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::AudioWidget::tr("Pause source"));
     }
 
     pMenu->addSeparator();
@@ -372,28 +372,28 @@ void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)
             StartRecorder();
             return;
         }
-        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Add network sink")) == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Add stream")) == 0)
         {
             DialogAddNetworkSink();
             return;
         }
-        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Show stream info")) == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Show source info")) == 0)
         {
             mShowLiveStats = true;
             return;
         }
-        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Hide stream info")) == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Hide source info")) == 0)
         {
             mShowLiveStats = false;
             return;
         }
-        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Drop stream")) == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Pause source")) == 0)
         {
             mAudioPaused = true;
             mAudioWorker->SetSampleDropping(true);
             return;
         }
-        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Continue stream")) == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Play source")) == 0)
         {
             mAudioPaused = false;
             mAudioWorker->SetSampleDropping(false);

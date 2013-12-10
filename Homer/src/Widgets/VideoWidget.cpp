@@ -395,9 +395,9 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
     //### STREAM INFO
     //###############################################################################
     if (mShowLiveStats)
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::VideoWidget::tr("Hide stream info"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::VideoWidget::tr("Hide source info"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::VideoWidget::tr("Show stream info"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::VideoWidget::tr("Show source info"));
     tAction->setCheckable(true);
     tAction->setChecked(mShowLiveStats);
     tAction->setShortcut(Qt::Key_I);
@@ -546,9 +546,9 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
     //###############################################################################
     if(mVideoSource->SupportsRelaying())
     {
-        QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::VideoWidget::tr("Relay stream"));
-        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::VideoWidget::tr("Add network sink"));
-        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::VideoWidget::tr("Registered sinks"));
+        QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::VideoWidget::tr("Streaming"));
+        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::VideoWidget::tr("Add stream"));
+        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::VideoWidget::tr("Running streams"));
 
         if (tRegisteredVideoSinks.size())
         {
@@ -568,9 +568,9 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
         //###############################################################################
         QIcon tIcon10;
         if (mVideoPaused)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::VideoWidget::tr("Continue stream"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::VideoWidget::tr("Play source"));
         else
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::VideoWidget::tr("Drop stream"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::VideoWidget::tr("Pause source"));
     }
 
     pMenu->addSeparator();
@@ -640,29 +640,29 @@ void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
             mVideoMirroredVertical = false;
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Show stream info")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Show source info")) == 0)
         {
             mShowLiveStats = true;
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Hide stream info")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Hide source info")) == 0)
         {
             mShowLiveStats = false;
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Drop stream")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Pause source")) == 0)
         {
             mVideoPaused = true;
             mVideoWorker->SetFrameDropping(true);
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Continue stream")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Play source")) == 0)
         {
             mVideoPaused = false;
             mVideoWorker->SetFrameDropping(false);
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Add network sink")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Add stream")) == 0)
         {
             DialogAddNetworkSink();
             return;

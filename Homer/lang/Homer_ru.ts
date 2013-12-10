@@ -859,10 +859,6 @@
         <translation>задержка</translation>
     </message>
     <message>
-        <source>Hide stream info</source>
-        <translation>Скрыть stream info</translation>
-    </message>
-    <message>
         <source>The selected audio source &quot;</source>
         <translation>Выбранный источник звука &quot;</translation>
     </message>
@@ -873,14 +869,6 @@
     <message>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot; не доступно. Пожалуйста, выберите другой!</translation>
-    </message>
-    <message>
-        <source>Continue stream</source>
-        <translation>Продолжить поток</translation>
-    </message>
-    <message>
-        <source>Relay stream</source>
-        <translation>Strom verteilen</translation>
     </message>
     <message>
         <source>Reset source</source>
@@ -939,16 +927,8 @@
         <translation>synch. Pakete</translation>
     </message>
     <message>
-        <source>Registered sinks</source>
-        <translation>Registrierte Senken</translation>
-    </message>
-    <message>
         <source>Target for audio streaming</source>
         <translation>Цель для потокового аудио</translation>
-    </message>
-    <message>
-        <source>Drop stream</source>
-        <translation>падение потока</translation>
     </message>
     <message>
         <source>Sender:</source>
@@ -995,19 +975,39 @@
         <translation>Каналы</translation>
     </message>
     <message>
-        <source>Show stream info</source>
-        <translation>Показать stream info</translation>
-    </message>
-    <message>
-        <source>Add network sink</source>
-        <translation>Добавить network sink</translation>
-    </message>
-    <message>
         <source>Show window</source>
         <translation type="unfinished">Показать окно</translation>
     </message>
     <message>
         <source>Close window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streaming</source>
+        <translation type="unfinished">Потоковая передача</translation>
+    </message>
+    <message>
+        <source>Add stream</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Running streams</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Play source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pause source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hide source info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show source info</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2212,10 +2212,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>задержка</translation>
     </message>
     <message>
-        <source>Hide stream info</source>
-        <translation>Скрыть информацию о потоке</translation>
-    </message>
-    <message>
         <source>System too busy</source>
         <translation>Система перегружена</translation>
     </message>
@@ -2238,14 +2234,6 @@ Homer Conferencing will be stopped afterwards!</source>
     <message>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot;не доступно. Пожалуйста, выберите другой!</translation>
-    </message>
-    <message>
-        <source>Continue stream</source>
-        <translation>Продолжить поток</translation>
-    </message>
-    <message>
-        <source>Relay stream</source>
-        <translation>реле потока</translation>
     </message>
     <message>
         <source>Reset source</source>
@@ -2340,20 +2328,12 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Window mode</translation>
     </message>
     <message>
-        <source>Registered sinks</source>
-        <translation>зарегистрированный sinks</translation>
-    </message>
-    <message>
         <source>Live marker</source>
         <translation>Живой маркер</translation>
     </message>
     <message>
         <source>Full screen</source>
         <translation>Полный экран</translation>
-    </message>
-    <message>
-        <source>Drop stream</source>
-        <translation>Поток снижения</translation>
     </message>
     <message>
         <source>Target for video streaming</source>
@@ -2440,16 +2420,8 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Объем:</translation>
     </message>
     <message>
-        <source>Show stream info</source>
-        <translation>Показать информацию о потоке</translation>
-    </message>
-    <message>
         <source>Smooth display</source>
         <translation>Гладкий дисплей</translation>
-    </message>
-    <message>
-        <source>Add network sink</source>
-        <translation>Добавить сеть sink</translation>
     </message>
     <message>
         <source>Fast display</source>
@@ -2485,6 +2457,34 @@ Homer Conferencing will be stopped afterwards!</source>
     </message>
     <message>
         <source>System state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streaming</source>
+        <translation type="unfinished">Потоковая передача</translation>
+    </message>
+    <message>
+        <source>Add stream</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Running streams</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Play source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pause source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hide source info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show source info</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
