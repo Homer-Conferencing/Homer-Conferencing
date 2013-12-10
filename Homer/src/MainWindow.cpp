@@ -2056,7 +2056,7 @@ void MainWindow::actionToggleWindowState()
     LOG(LOG_VERBOSE, "Toggling window state");
     if (isMinimized())
     {
-        LOG(LOG_VERBOSE, "Found window minized");
+        LOG(LOG_VERBOSE, "Found window minimized");
         activateWindow();
         if (sWasFullScreen)
         {
@@ -2066,7 +2066,7 @@ void MainWindow::actionToggleWindowState()
         {
             if (sWasMaximized)
             {
-                LOG(LOG_VERBOSE, "Mayiming the main window");
+                LOG(LOG_VERBOSE, "Minimizing the main window");
                 showMaximized();
             }else
             {
