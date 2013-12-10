@@ -142,7 +142,7 @@ bool WaveOut::IsPlaying()
     bool tResult = false;
 
     // we are still playing some sound?
-    if ((!mPlaybackStopped) && (mPlaybackFifo->GetUsage() > 0))
+    if (!mPlaybackStopped)
         tResult = true;
 
     mOpenNewFile.lock();
