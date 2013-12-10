@@ -2349,7 +2349,7 @@ void MainWindow::UpdateSysTrayContextMenu()
         tIcon = new QIcon(":/images/22_22/Exit.png");
         tAction->setIcon(*tIcon);
         QList<QKeySequence> tXKeys;
-        tXKeys.push_back(Qt::ALT + Qt::Key_X);
+        tXKeys.push_back(Qt::CTRL + Qt::Key_Q);
         tAction->setShortcuts(tXKeys);
         connect(tAction, SIGNAL(triggered()), this, SLOT(actionExit()));
     }

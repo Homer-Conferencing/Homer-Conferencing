@@ -83,8 +83,8 @@ class MainWindow:
         public Ui_MainWindow,
         public MeetingObserver
 {
-Q_OBJECT
-    ;
+Q_OBJECT;
+
 public:
     /// The default constructor
     MainWindow(QStringList pArguments, QString pAbsBinPath);
