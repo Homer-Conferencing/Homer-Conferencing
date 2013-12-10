@@ -94,7 +94,7 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow):
-    QDockWidget(pMainWindow), AudioPlayback()
+    QDockWidget(pMainWindow), AudioPlayback("Events")
 {
     hide();
     mPlayPauseButtonIsPaused = -1;
@@ -199,7 +199,7 @@ ParticipantWidget::~ParticipantWidget()
     }
 
 	LOG(LOG_VERBOSE, "..closing playback device");
-    ClosePlaybackDevice();
+	ClosePlaybackDevice();
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
@@ -537,7 +537,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
 
     LOG(LOG_VERBOSE, "Initiating sound object for acoustic notifications..");
-    OpenPlaybackDevice(mSessionName + "-Events");
+    OpenPlaybackDevice("", mSessionName + "-Events");
 }
 
 QMenu* ParticipantWidget::GetMenuSettings()

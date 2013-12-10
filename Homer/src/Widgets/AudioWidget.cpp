@@ -28,6 +28,7 @@
 #include <MediaSourceMuxer.h>
 #include <WaveOutPortAudio.h>
 #include <WaveOutSdl.h>
+#include <MediaSource.h>
 #include <ProcessStatisticService.h>
 #include <Widgets/AudioWidget.h>
 #include <Widgets/OverviewPlaylistWidget.h>
@@ -259,43 +260,59 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     tAction->setChecked(mShowLiveStats);
 
     //###############################################################################
-    //### TRACKS
+    //### AUDIO PLABACK
     //###############################################################################
-    vector<string> tInputStreams = mAudioSource->GetInputStreams();
-    if (mAudioSource->SupportsMultipleInputStreams())
-    {
-        QMenu *tStreamMenu = pMenu->addMenu(QPixmap(":/images/22_22/SpeakerLoud.png"), Homer::Gui::AudioWidget::tr("Audio tracks"));
-
-        string tCurrentStream = mAudioSource->CurrentInputStream();
-        QAction *tStreamAction;
-        for (tIt = tInputStreams.begin(); tIt != tInputStreams.end(); tIt++)
-        {
-            tStreamAction = tStreamMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), QString(tIt->c_str()));
-            tStreamAction->setCheckable(true);
-            if ((*tIt) == tCurrentStream)
-                tStreamAction->setChecked(true);
-            else
-                tStreamAction->setChecked(false);
-        }
-    }
-
-    //###############################################################################
-    //### AUDIO SETTINGS
-    //###############################################################################
-    QMenu *tAudioMenu = pMenu->addMenu(QPixmap(":/images/22_22/SpeakerLoud.png"), Homer::Gui::AudioWidget::tr("Playback"));
+    QMenu *tPlaybackMenu = pMenu->addMenu(QPixmap(":/images/22_22/SpeakerLoud.png"), Homer::Gui::AudioWidget::tr("Playback"));
             //###############################################################################
             //### VOLUMES
             //###############################################################################
-            QMenu *tVolMenu = tAudioMenu->addMenu("Volume");
+            QMenu *tVolumesMenu = tPlaybackMenu->addMenu("Volume");
 
             for (int i = 0; i <13; i++)
             {
-                QAction *tVolAction = tVolMenu->addAction(QString("%1 %").arg(i * 25));
+                QAction *tVolAction = tVolumesMenu->addAction(QString("%1 %").arg(i * 25));
                 tVolAction->setCheckable(true);
                 if (i * 25 == mAudioVolume)
                     tVolAction->setChecked(true);
                 else
                     tVolAction->setChecked(false);
+            }
+
+            //###############################################################################
+            //### OUTPUT DEVICE
+            //###############################################################################
+            AudioDevices tAudioOutputDevices = mAudioWorker->GetAudioOutputDevices();
+            if(tAudioOutputDevices.size() > 1)
+            {
+                QMenu *tDevicesMenu = tPlaybackMenu->addMenu("Output device");
+                AudioDevices::iterator tIt;
+                for(tIt = tAudioOutputDevices.begin(); tIt != tAudioOutputDevices.end(); tIt++)
+                {
+                    QAction *tAudioDeviceAction = tDevicesMenu->addAction(QString(tIt->Name.c_str()));
+                    tAudioDeviceAction->setCheckable(true);
+                    //tAudioDeviceAction->setChecked(true);
+                }
+            }
+
+            //###############################################################################
+            //### TRACKS
+            //###############################################################################
+            vector<string> tInputStreams = mAudioSource->GetInputStreams();
+            if (mAudioSource->SupportsMultipleInputStreams())
+            {
+                QMenu *tTracksMenu = tPlaybackMenu->addMenu(QPixmap(":/images/22_22/SpeakerLoud.png"), Homer::Gui::AudioWidget::tr("Audio tracks"));
+
+                string tCurrentStream = mAudioSource->CurrentInputStream();
+                QAction *tStreamAction;
+                for (tIt = tInputStreams.begin(); tIt != tInputStreams.end(); tIt++)
+                {
+                    tStreamAction = tTracksMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), QString(tIt->c_str()));
+                    tStreamAction->setCheckable(true);
+                    if ((*tIt) == tCurrentStream)
+                        tStreamAction->setChecked(true);
+                    else
+                        tStreamAction->setChecked(false);
+                }
             }
 
     //###############################################################################
@@ -415,6 +432,22 @@ void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)
                 return;
             }
         }
+        //###############################################################################
+        //### OUTPUT DEVICE
+        //###############################################################################
+        AudioDevices tAudioOutputDevices = mAudioWorker->GetAudioOutputDevices();
+        if(tAudioOutputDevices.size() > 1)
+        {
+            AudioDevices::iterator tIt;
+            for(tIt = tAudioOutputDevices.begin(); tIt != tAudioOutputDevices.end(); tIt++)
+            {
+                if (tIt->Name == pAction->text().toStdString())
+                {
+                    mAudioWorker->SetAudioOutputDevice(QString(tIt->Name.c_str()));
+                }
+            }
+        }
+
         int tSelectedAudioTrack = 0;
         vector<string> tInputStreams = mAudioSource->GetInputStreams();
         for (tIt = tInputStreams.begin(); tIt != tInputStreams.end(); tIt++)
@@ -850,7 +883,7 @@ void AudioWidget::customEvent(QEvent* pEvent)
 //###################### WORKER ######################################
 //####################################################################
 AudioWorkerThread::AudioWorkerThread(ParticipantWidget* pParticipantWidget, QString pName, MediaSource *pAudioSource, AudioWidget *pAudioWidget):
-    MediaSourceGrabberThread(pName, pAudioSource), AudioPlayback()
+    MediaSourceGrabberThread(pName, pAudioSource), AudioPlayback(pName + "-Data")
 {
     LOG(LOG_VERBOSE, "Created");
     mParticipantWidget = pParticipantWidget;
@@ -892,19 +925,19 @@ void AudioWorkerThread::DeinitFrameBuffers()
     }
 }
 
-void AudioWorkerThread::OpenPlaybackDevice()
+void AudioWorkerThread::OpenAudioPlayback()
 {
     LOG(LOG_VERBOSE, "Allocating audio buffers");
     InitFrameBuffers();
 
-    AudioPlayback::OpenPlaybackDevice(mName + "-Data");
+    AudioPlayback::OpenPlaybackDevice();
 
     mPlaybackAvailable = true;
 }
 
-void AudioWorkerThread::ClosePlaybackDevice()
+void AudioWorkerThread::CloseAudioPlayback()
 {
-    AudioPlayback::ClosePlaybackDevice();
+    ClosePlaybackDevice();
 
     LOG(LOG_VERBOSE, "Releasing audio buffers");
 
@@ -1413,7 +1446,7 @@ void AudioWorkerThread::run()
 
     // open audio playback
     LOG(LOG_VERBOSE, "..open playback device");
-    OpenPlaybackDevice();
+    OpenAudioPlayback();
 
     // assign default thread name
     LOG(LOG_VERBOSE, "..assign thread name");
@@ -1527,7 +1560,7 @@ void AudioWorkerThread::run()
 			            LOG(LOG_VERBOSE, "Writing buffer at index %d and size of %d bytes to audio output FIFO", mSampleGrabIndex, tFrameSize);
 			            LOG(LOG_VERBOSE, "Writing buffer at %p with size of %d bytes to audio output FIFO", mSamples[mSampleGrabIndex], tFrameSize);
 			        #endif
-			        mWaveOut->WriteChunk(mSamples[mSampleGrabIndex], tFrameSize);
+			        PlayAudioChunk(mSamples[mSampleGrabIndex], tFrameSize);
 			        if (AUDIO_MAX_PLAYBACK_QUEUE > 0)
 			            mWaveOut->LimitQueue(AUDIO_MAX_PLAYBACK_QUEUE);
 			    }else
@@ -1614,7 +1647,7 @@ void AudioWorkerThread::run()
     mMediaSource->DeleteAllRegisteredMediaSinks();
 
     // close audio playback
-    ClosePlaybackDevice();
+    CloseAudioPlayback();
 
     LOG(LOG_WARN, "AUDIO WORKER thread finished for media source %s <<<<<<<<<<<<<<<<", mMediaSource->GetStreamName().c_str());
 }

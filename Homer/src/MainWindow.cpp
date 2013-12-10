@@ -92,6 +92,7 @@ bool MainWindow::mStarting = true;
 
 MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     QMainWindow(),
+    AudioPlayback("Start/stop"),
     Ui_MainWindow(),
     MeetingObserver()
 {
@@ -134,7 +135,7 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     // audio playback - start sound
     #ifndef DEBUG_VERSION
         LOG(LOG_VERBOSE, "Playing start sound..");
-        OpenPlaybackDevice("Start/stop");
+        OpenPlaybackDevice();
         if (CONF.GetStartSound())
             StartAudioPlayback(CONF.GetStartSoundFile());
     #endif
@@ -1110,7 +1111,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 			}
         }
         LOG(LOG_VERBOSE, "Playback finished");
-        ClosePlaybackDevice();
+        CloseAudioPlayback();
     #endif
 
     // make sure this main window will be deleted when control returns to Qt event loop (needed especially in case of closeEvent comes from fullscreen video widget)

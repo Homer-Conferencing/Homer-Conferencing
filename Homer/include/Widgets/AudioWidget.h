@@ -135,7 +135,7 @@ private:
 };
 
 class AudioWorkerThread:
-    public MediaSourceGrabberThread, AudioPlayback
+    public MediaSourceGrabberThread, public AudioPlayback
 {
     Q_OBJECT;
 public:
@@ -186,8 +186,8 @@ private:
     virtual void DeinitFrameBuffers();
     /* audio playback */
     void ResetPlayback();
-    virtual void OpenPlaybackDevice();
-    virtual void ClosePlaybackDevice();
+    virtual void OpenAudioPlayback();
+    virtual void CloseAudioPlayback();
 
     virtual void DoPlayNewFile();
     virtual void DoSetCurrentDevice();

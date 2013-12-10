@@ -39,10 +39,13 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-AudioPlayback::AudioPlayback()
+AudioPlayback::AudioPlayback(QString pOutputName)
 {
     LOG(LOG_VERBOSE, "Created");
     mWaveOut = NULL;
+    mCurrentOutputDeviceName = "";
+    mOutputName = pOutputName;
+    mPlayedChunks = 0;
 }
 
 AudioPlayback::~AudioPlayback()
@@ -53,35 +56,84 @@ AudioPlayback::~AudioPlayback()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void AudioPlayback::OpenPlaybackDevice(QString pOutputName)
+AudioDevices AudioPlayback::GetAudioOutputDevices()
+{
+    AudioDevices tResult;
+
+    if(mWaveOut != NULL)
+        mWaveOut->getAudioDevices(tResult);
+
+    return tResult;
+}
+
+void AudioPlayback::SetAudioOutputDevice(QString pDeviceName)
+{
+    LOG(LOG_VERBOSE, "Selecting audio output device \"%s\"", pDeviceName.toStdString().c_str());
+
+    if(mCurrentOutputDeviceName != pDeviceName)
+    {
+        mOutputMutex.lock();
+
+        bool tOldWasPlaying = mWaveOut->IsPlaying();
+        ClosePlaybackDevice();
+
+        OpenPlaybackDevice(pDeviceName);
+        if(tOldWasPlaying)
+            mWaveOut->Play();
+
+        mOutputMutex.unlock();
+    }
+}
+
+void AudioPlayback::PlayAudioChunk(void* pChunkBuffer, int pChunkSize)
+{
+    mOutputMutex.lock();
+
+    if(mWaveOut != NULL)
+    {
+        //LOG(LOG_VERBOSE, "Playing %d bytes of audio buffer %d", pChunkSize, mPlayedChunks);
+        mPlayedChunks++;
+        mWaveOut->WriteChunk(pChunkBuffer, pChunkSize);
+    }
+
+    mOutputMutex.unlock();
+}
+
+void AudioPlayback::OpenPlaybackDevice(QString pDeviceName, QString pOutputName)
 {
     LOG(LOG_VERBOSE, "Going to open playback device");
+
+    if(pOutputName != "")
+        mOutputName = pOutputName;
+
+    if(pDeviceName == "")
+        pDeviceName = CONF.GetLocalAudioSink();
 
     if (CONF.AudioOutputEnabled())
     {
         #if defined(WINDOWS)
             LOG(LOG_VERBOSE, "Opening PortAudio based playback");
-            mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+            mWaveOut = new WaveOutPortAudio("WaveOut-" + mOutputName.toStdString(), pDeviceName.toStdString());
 		#endif
 		#if defined(LINUX)
             #if FEATURE_PULSEAUDIO
                 if (!WaveOutPulseAudio::PulseAudioAvailable())
                 {
                     LOG(LOG_VERBOSE, "Opening PortAudio based playback");
-                    mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+                    mWaveOut = new WaveOutPortAudio("WaveOut-" + mOutputName.toStdString(), pDeviceName.toStdString());
                 }else
                 {
                     LOG(LOG_VERBOSE, "Opening PulseAudio based playback");
-                    mWaveOut = new WaveOutPulseAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+                    mWaveOut = new WaveOutPulseAudio("WaveOut-" + mOutputName.toStdString(), pDeviceName.toStdString());
                 }
             #else
                 LOG(LOG_VERBOSE, "Opening PortAudio based playback");
-                mWaveOut = new WaveOutPortAudio("WaveOut-" + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+                mWaveOut = new WaveOutPortAudio("WaveOut-" + mOutputName.toStdString(), pDeviceName.toStdString());
             #endif
 		#endif
 		#if defined(APPLE)
             LOG(LOG_VERBOSE, "Opening SDL based playback");
-           mWaveOut = new WaveOutSdl("WaveOut: " + pOutputName.toStdString(), CONF.GetLocalAudioSink().toStdString());
+           mWaveOut = new WaveOutSdl("WaveOut: " + mOutputName.toStdString(), pDeviceName.toStdString());
         #endif
         if (mWaveOut != NULL)
         {
@@ -90,6 +142,8 @@ void AudioPlayback::OpenPlaybackDevice(QString pOutputName)
             	LOG(LOG_ERROR, "Couldn't open wave out device");
             	delete mWaveOut;
             	mWaveOut = NULL;
+            }else{
+                mCurrentOutputDeviceName = pDeviceName;
             }
         }else
             LOG(LOG_ERROR, "Couldn't create wave out object");

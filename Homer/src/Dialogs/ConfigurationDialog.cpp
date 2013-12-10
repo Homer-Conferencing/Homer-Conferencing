@@ -66,14 +66,14 @@ QStringList      ConfigurationDialog::mSipServerList;
 ///////////////////////////////////////////////////////////////////////////////
 
 ConfigurationDialog::ConfigurationDialog(QWidget* pParent, list<string>  pLocalAdresses, VideoWorkerThread* pVideoWorker, AudioWorkerThread* pAudioWorker):
-    QDialog(pParent), AudioPlayback()
+    QDialog(pParent), AudioPlayback("ConfigDialog")
 {
     mHttpGetStunServerList = NULL;
     mHttpGetSipServerList = NULL;
     mVideoWorker = pVideoWorker;
     mAudioWorker = pAudioWorker;
     mLocalAdresses = pLocalAdresses;
-    OpenPlaybackDevice("ConfigDialog");
+    OpenPlaybackDevice();
     initializeGUI();
     LoadConfiguration();
     connect(mCbVideoSource, SIGNAL(currentIndexChanged(QString)), this, SLOT(ShowVideoSourceInfo(QString)));
