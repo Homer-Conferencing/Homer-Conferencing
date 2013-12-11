@@ -317,8 +317,8 @@ void MainWindow::connectSignalsSlots()
     connect(mShortcutActivateNetworkSimulationWidgets, SIGNAL(activated()), this, SLOT(actionActivateNetworkSimulationWidgets()));
     connect(mShortcutActivateDebuggingGlobally, SIGNAL(activated()), this, SLOT(actionActivateDebuggingGlobally()));
 
-    connect(mActionToolBarMediaSources, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarMediaSources(bool)));
-    connect(mToolBarMediaSources->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarMediaSources, SLOT(setChecked(bool)));
+    connect(mActionToolBarStreaming, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarMediaSources(bool)));
+    connect(mToolBarStreaming->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarStreaming, SLOT(setChecked(bool)));
 
     connect(mActionStautsBarWidget, SIGNAL(toggled(bool)), this, SLOT(actionActivateStatusBar(bool)));
     addAction(mActionMainMenu); // this action will also be available even if the main menu is hidden
@@ -330,9 +330,9 @@ void MainWindow::connectSignalsSlots()
 
     mActionMonitorBroadcastWidget->setChecked(CONF.GetVisibilityBroadcastWidget());
 
-    mToolBarMediaSources->setVisible(CONF.GetVisibilityToolBarMediaSources());
-    mToolBarMediaSources->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarMediaSources());
-    mActionToolBarMediaSources->setChecked(CONF.GetVisibilityToolBarMediaSources());
+    mToolBarStreaming->setVisible(CONF.GetVisibilityToolBarMediaSources());
+    mToolBarStreaming->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarMediaSources());
+    mActionToolBarStreaming->setChecked(CONF.GetVisibilityToolBarMediaSources());
     mActionStautsBarWidget->setChecked(CONF.GetVisibilityStatusBar());
 
     if ((CONF.ConferencingEnabled()) && (mToolBarOnlineStatus != NULL))
@@ -636,7 +636,7 @@ void MainWindow::initializeColoring()
     // tool bars
     if (mToolBarOnlineStatus != NULL)
         mToolBarOnlineStatus->setStyleSheet("QToolBar#mToolBarOnlineStatus{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
-    mToolBarMediaSources->setStyleSheet("QToolBar#mToolBarMediaSources{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
+    mToolBarStreaming->setStyleSheet("QToolBar#mToolBarStreaming{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
 }
 
 void MainWindow::initializeWidgetsAndMenus()
@@ -694,7 +694,7 @@ void MainWindow::initializeWidgetsAndMenus()
 
     LOG(LOG_VERBOSE, "..streaming control widget");
     mMediaSourcesControlWidget = new StreamingControlWidget(this, mMenuStreaming, mLocalUserParticipantWidget, mMediaSourceDesktop);
-    mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
+    mToolBarStreaming->addWidget(mMediaSourcesControlWidget);
     if (mOwnVideoMuxer->SupportsMultipleInputStreams())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
     else
@@ -1013,7 +1013,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     CONF.SetVisibilityStatusBar(mStatusBar->isVisible());
     CONF.SetMainWindowPosition(pos());
     CONF.SetMainWindowSize(size());
-    CONF.SetVisibilityToolBarMediaSources(mToolBarMediaSources->isVisible());
+    CONF.SetVisibilityToolBarMediaSources(mToolBarStreaming->isVisible());
     if (mToolBarOnlineStatus != NULL)
         CONF.SetVisibilityToolBarOnlineStatus(mToolBarOnlineStatus->isVisible());
 
@@ -2145,8 +2145,8 @@ void MainWindow::actionActivateMosaicMode(bool pActive)
 		mStatusBar->hide();
 		mMenuBar->hide();
 		mMosaicModeToolBarOnlineStatusWasVisible = mToolBarOnlineStatus->isVisible();
-		mMosaicModeToolBarMediaSourcesWasVisible = mToolBarMediaSources->isVisible();
-		mToolBarMediaSources->hide();
+		mMosaicModeToolBarMediaSourcesWasVisible = mToolBarStreaming->isVisible();
+		mToolBarStreaming->hide();
 		mToolBarOnlineStatus->hide();
 		if(mOverviewContactsWidget != NULL)
 		    mOverviewContactsWidget->hide();
@@ -2178,7 +2178,7 @@ void MainWindow::actionActivateMosaicMode(bool pActive)
 		mLocalUserParticipantWidget->ToggleMosaicMode(pActive);
 	    mStatusBar->setVisible(CONF.GetVisibilityStatusBar());
 	    mMenuBar->setVisible(CONF.GetVisibilityMenuBar());
-	    mToolBarMediaSources->setVisible(mMosaicModeToolBarMediaSourcesWasVisible);
+	    mToolBarStreaming->setVisible(mMosaicModeToolBarMediaSourcesWasVisible);
 	    mToolBarOnlineStatus->setVisible(mMosaicModeToolBarOnlineStatusWasVisible);
 	    if(mOverviewContactsWidget != NULL)
 	        mOverviewContactsWidget->setVisible(CONF.GetVisibilityContactsWidget());
@@ -2209,7 +2209,7 @@ void MainWindow::actionActivateToolBarMediaSources(bool pActive)
 {
 	LOG(LOG_VERBOSE, "Setting media sources tool bar visibility to: %d", pActive);
 	CONF.SetVisibilityToolBarMediaSources(pActive);
-	mToolBarMediaSources->setVisible(pActive);
+	mToolBarStreaming->setVisible(pActive);
 }
 
 void MainWindow::actionActivateStatusBar(bool pActive)

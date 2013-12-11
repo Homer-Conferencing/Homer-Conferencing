@@ -67,11 +67,13 @@ private slots:
 private:
     void timerEvent(QTimerEvent *pEvent);
     void initializeGUI();
+    void initActions(QMenu *pMenu);
 
     VideoWorkerThread       *mVideoWorker;
     AudioWorkerThread       *mAudioWorker;
     ParticipantWidget       *mBroadcastParticipantWidget;
     MediaSourceDesktop      *mMediaSourceDesktop;
+    MainWindow              *mMainWindow;
     int 					mTimerId;
     QAction					*mAssignedActionPTTMode;
     QAction					*mAssignedActionAVPreview;

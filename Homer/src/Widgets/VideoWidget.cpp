@@ -547,7 +547,7 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
     if(mVideoSource->SupportsRelaying())
     {
         QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::VideoWidget::tr("Streaming"));
-        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::VideoWidget::tr("Add stream"));
+        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::VideoWidget::tr("Send video"));
         QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::VideoWidget::tr("Running streams"));
 
         if (tRegisteredVideoSinks.size())
@@ -662,7 +662,7 @@ void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
             mVideoWorker->SetFrameDropping(false);
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Add stream")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Send video")) == 0)
         {
             DialogAddNetworkSink();
             return;

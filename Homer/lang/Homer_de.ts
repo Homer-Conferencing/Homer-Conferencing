@@ -1271,8 +1271,8 @@
     <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="324"/>
         <location filename="../src/Widgets/AudioWidget.cpp" line="392"/>
-        <source>Add stream</source>
-        <translation>Übertragung hinzufügen</translation>
+        <source>Send audio</source>
+        <translation>Audio übertragen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="325"/>
@@ -2760,57 +2760,57 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::StreamingControlWidget</name>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="66"/>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="80"/>
         <source>Source</source>
         <translation>Quelle</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="67"/>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="81"/>
         <source>Desktop</source>
         <translation>Desktop</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="69"/>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="83"/>
         <source>Camera</source>
         <translation>Kamera</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="71"/>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="85"/>
         <source>Audio input</source>
         <translation>Audio-Eingang</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="73"/>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="87"/>
         <source>File</source>
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="82"/>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="91"/>
         <source>PTT mode</source>
         <translation>PTT-Modus</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="94"/>
-        <source>Preview</source>
-        <translation>Vorschau</translation>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="101"/>
+        <source>Player</source>
+        <translation>Player</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="180"/>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="175"/>
         <source>Missing camera</source>
         <translation>Fehlende Kamera</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="180"/>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="175"/>
         <source>No camera available. Please, select another source!</source>
         <translation>Keine Kamera verfügbar. Bitte eine andere Quelle auswählen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="211"/>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="206"/>
         <source>Missing microphone</source>
         <translation>Fehlendes Mikrofon</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="211"/>
+        <location filename="../src/Widgets/StreamingControlWidget.cpp" line="206"/>
         <source>No microphone available. Please, select another source!</source>
         <translation>Kein Mikrofon verfügbar. Bitte eine andere Quelle auswählen!</translation>
     </message>
@@ -3071,8 +3071,8 @@ Homer Conferencing wird danach gestoppt!</translation>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="550"/>
         <location filename="../src/Widgets/VideoWidget.cpp" line="665"/>
-        <source>Add stream</source>
-        <translation>Übertragung hinzufügen</translation>
+        <source>Send video</source>
+        <translation>Video übertragen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/VideoWidget.cpp" line="551"/>
@@ -3449,61 +3449,58 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Homer Conferencing</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="52"/>
-        <source>Settings</source>
-        <translation>Einstellungen</translation>
-    </message>
-    <message>
-        <location filename="../forms/MainWindow.ui" line="69"/>
+        <location filename="../forms/MainWindow.ui" line="62"/>
         <source>View</source>
         <translation>Ansicht</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="73"/>
+        <location filename="../forms/MainWindow.ui" line="66"/>
         <source>Tool bars</source>
         <translation>Werkzeugleisten</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="84"/>
+        <location filename="../forms/MainWindow.ui" line="77"/>
         <source>Video windows</source>
         <translation>Videofenster</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="94"/>
+        <location filename="../forms/MainWindow.ui" line="87"/>
         <source>Audio windows</source>
         <translation>Audiofenster</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="103"/>
+        <location filename="../forms/MainWindow.ui" line="96"/>
         <source>Message windows</source>
         <translation>Nachrichtenfenster</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="112"/>
+        <location filename="../forms/MainWindow.ui" line="105"/>
         <source>A/V controls</source>
         <translation>A/V-Steuerung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="152"/>
+        <location filename="../forms/MainWindow.ui" line="145"/>
+        <location filename="../forms/MainWindow.ui" line="228"/>
+        <location filename="../forms/MainWindow.ui" line="518"/>
         <source>Streaming</source>
         <translation>Übertragung</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="157"/>
+        <location filename="../forms/MainWindow.ui" line="150"/>
         <source>Conferencing</source>
         <translation>Konferenz</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="161"/>
+        <location filename="../forms/MainWindow.ui" line="154"/>
         <location filename="../forms/MainWindow.ui" line="189"/>
         <location filename="../forms/MainWindow.ui" line="499"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="228"/>
-        <source>Video/audio source</source>
-        <translation>Video-/Audioquelle</translation>
+        <location filename="../forms/MainWindow.ui" line="161"/>
+        <source>Edit</source>
+        <translation>Bearbeiten</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="249"/>
@@ -3615,11 +3612,6 @@ Homer Conferencing wird danach gestoppt!</translation>
         <location filename="../forms/MainWindow.ui" line="480"/>
         <source>F3</source>
         <translation>F3</translation>
-    </message>
-    <message>
-        <location filename="../forms/MainWindow.ui" line="518"/>
-        <source>Video/Audio source</source>
-        <translation>Video-/Audioquelle</translation>
     </message>
     <message>
         <location filename="../forms/MainWindow.ui" line="533"/>
@@ -3747,12 +3739,12 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Verzeichnis abspielen</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="59"/>
+        <location filename="../forms/MainWindow.ui" line="52"/>
         <source>Help</source>
         <translation>Hilfe</translation>
     </message>
     <message>
-        <location filename="../forms/MainWindow.ui" line="142"/>
+        <location filename="../forms/MainWindow.ui" line="135"/>
         <source>File</source>
         <translation>Datei</translation>
     </message>
@@ -3961,11 +3953,6 @@ p, li { white-space: pre-wrap; }
 </context>
 <context>
     <name>OpenVideoAudioPreviewDialog</name>
-    <message>
-        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="25"/>
-        <source>Open video/audio preview</source>
-        <translation>Öffne Video-/Audiovorschau</translation>
-    </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="246"/>
         <source> Video capture </source>
@@ -4203,6 +4190,11 @@ p, li { white-space: pre-wrap; }
         <source>Hardware devices</source>
         <translation>Hardware-
 geräte</translation>
+    </message>
+    <message>
+        <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="25"/>
+        <source>Open video/audio player</source>
+        <translation>Öffne Video/Audio Player</translation>
     </message>
     <message>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="200"/>
@@ -5034,8 +5026,8 @@ Soll sie überschrieben werden?</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="80"/>
-        <source> Source </source>
-        <translation>Quelle</translation>
+        <source>Sender</source>
+        <translation>Sender</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="118"/>
@@ -5058,14 +5050,19 @@ Soll sie überschrieben werden?</translation>
         <translation>Verteilung einer lokalen Datei</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="425"/>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="389"/>
         <source>push-to-talk mode, activation via key &quot;t&quot;</source>
         <translation>push-to-talk Modus, Aktivierung über die Taste &quot;t&quot;</translation>
     </message>
     <message>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="466"/>
+        <source>Receiver</source>
+        <translation>Empfänger</translation>
+    </message>
+    <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="501"/>
-        <source>Preview</source>
-        <translation>Vorschau</translation>
+        <source>Player</source>
+        <translation>Plaer</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="242"/>
@@ -5073,17 +5070,12 @@ Soll sie überschrieben werden?</translation>
         <translation>Composite 11</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="406"/>
-        <source> Streaming </source>
-        <translation>Übertragung</translation>
-    </message>
-    <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="444"/>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="408"/>
         <source>PTT</source>
         <translation>PTT</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="457"/>
+        <location filename="../forms/Widgets/StreamingControlWidget.ui" line="421"/>
         <source>P</source>
         <translation>P</translation>
     </message>

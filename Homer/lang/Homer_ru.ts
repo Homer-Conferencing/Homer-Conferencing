@@ -987,10 +987,6 @@
         <translation type="unfinished">Потоковая передача</translation>
     </message>
     <message>
-        <source>Add stream</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Running streams</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1008,6 +1004,10 @@
     </message>
     <message>
         <source>Show source info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send audio</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2078,10 +2078,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Отсутствие камеры</translation>
     </message>
     <message>
-        <source>Preview</source>
-        <translation>предварительный просмотр</translation>
-    </message>
-    <message>
         <source>PTT mode</source>
         <translation>PTT-Modus</translation>
     </message>
@@ -2096,6 +2092,10 @@ Homer Conferencing will be stopped afterwards!</source>
     <message>
         <source>No microphone available. Please, select another source!</source>
         <translation>Микрофон не обнаружен. Укажите другой источник!</translation>
+    </message>
+    <message>
+        <source>Player</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2464,10 +2464,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation type="unfinished">Потоковая передача</translation>
     </message>
     <message>
-        <source>Add stream</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Running streams</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2485,6 +2481,10 @@ Homer Conferencing will be stopped afterwards!</source>
     </message>
     <message>
         <source>Show source info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send video</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2661,10 +2661,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Начать просмотр видео</translation>
     </message>
     <message>
-        <source>Video/Audio source</source>
-        <translation>Видео / аудио источник</translation>
-    </message>
-    <message>
         <source>Online status</source>
         <translation>Онлайн статус</translation>
     </message>
@@ -2781,10 +2777,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Окно сообщений</translation>
     </message>
     <message>
-        <source>Video/audio source</source>
-        <translation>Видео-/Аудио источник</translation>
-    </message>
-    <message>
         <source>File transfers</source>
         <translation>Передача файла</translation>
     </message>
@@ -2839,10 +2831,6 @@ Homer Conferencing will be stopped afterwards!</source>
     <message>
         <source>Conferencing</source>
         <translation>Конференц-связь</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Настройки</translation>
     </message>
     <message>
         <source>Version</source>
@@ -2906,6 +2894,10 @@ Homer Conferencing will be stopped afterwards!</source>
     </message>
     <message>
         <source>Ctrl+O</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3118,10 +3110,6 @@ p, li { white-space: pre-wrap; }
         <translation>Воспроизведение аудио включено</translation>
     </message>
     <message>
-        <source>Open video/audio preview</source>
-        <translation>Откройте видео / аудио для просмотра</translation>
-    </message>
-    <message>
         <source>/dev/video0</source>
         <translation>/dev/vide0</translation>
     </message>
@@ -3196,6 +3184,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Network access interface:</source>
         <translation>Интерфейс доступа к сети: </translation>
+    </message>
+    <message>
+        <source>Open video/audio player</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3844,10 +3836,6 @@ Do you want to replace it?</source>
         <translation>Трансляция локальный файл</translation>
     </message>
     <message>
-        <source>Preview</source>
-        <translation>Просмотр</translation>
-    </message>
-    <message>
         <source>GeneralControlWidget</source>
         <translation>Общий виджет контроль</translation>
     </message>
@@ -3856,20 +3844,24 @@ Do you want to replace it?</source>
         <translation>Трансляция внут. камеры</translation>
     </message>
     <message>
-        <source> Source </source>
-        <translation>Источник</translation>
-    </message>
-    <message>
-        <source> Streaming </source>
-        <translation>Передача</translation>
-    </message>
-    <message>
         <source>broadcast local audio input</source>
         <translation>Трансляция звуковой вход</translation>
     </message>
     <message>
         <source>Composite 11</source>
         <translation>Композит 11</translation>
+    </message>
+    <message>
+        <source>Player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sender</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Receiver</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

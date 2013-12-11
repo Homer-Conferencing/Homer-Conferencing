@@ -321,7 +321,7 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
     if(mAudioSource->SupportsRelaying())
     {
         QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::AudioWidget::tr("Streaming"));
-        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::AudioWidget::tr("Add stream"));
+        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::AudioWidget::tr("Send audio"));
         QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::AudioWidget::tr("Running streams"));
 
         if (tRegisteredAudioSinks.size())
@@ -389,7 +389,7 @@ void AudioWidget::SelectedMenuAudioSettings(QAction *pAction)
             StartRecorder();
             return;
         }
-        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Add stream")) == 0)
+        if (pAction->text().compare(Homer::Gui::AudioWidget::tr("Send audio")) == 0)
         {
             DialogAddNetworkSink();
             return;

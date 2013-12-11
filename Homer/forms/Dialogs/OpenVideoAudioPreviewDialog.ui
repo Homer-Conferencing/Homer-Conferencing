@@ -22,7 +22,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Open video/audio preview</string>
+   <string>Open video/audio player</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../../resources/Icons.qrc">
