@@ -577,7 +577,7 @@ bool OverviewPlaylistWidget::AddPlaylistUrlsDialog()
     if (tUrl.isEmpty())
         return false;
 
-    AddEntry(tUrl);
+    AddEntry(tUrl, true);
 
     if((tListWasEmpty) && (mLwFiles->count() > 0))
     {
