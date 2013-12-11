@@ -247,7 +247,7 @@ public:
     VideoWidget *GetVideoWidget();
 
 private:
-    virtual void InitFrameBuffers();
+    virtual void InitFrameBuffers(QString pMessage);
     virtual void DeinitFrameBuffers();
     void InitFrameBuffer(int pBufferId);
     void DoSetGrabResolution();

@@ -2489,13 +2489,6 @@ Homer Conferencing will be stopped afterwards!</source>
     </message>
 </context>
 <context>
-    <name>Homer::Gui::VideoWorkerThread</name>
-    <message>
-        <source>Waiting for data..</source>
-        <translation>Ожидание данных ..</translation>
-    </message>
-</context>
-<context>
     <name>IdentityDialog</name>
     <message>
         <source>ID</source>

@@ -908,7 +908,7 @@ AudioWorkerThread::~AudioWorkerThread()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void AudioWorkerThread::InitFrameBuffers()
+void AudioWorkerThread::InitFrameBuffers(QString pMessage)
 {
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
     {
@@ -928,7 +928,7 @@ void AudioWorkerThread::DeinitFrameBuffers()
 void AudioWorkerThread::OpenAudioPlayback()
 {
     LOG(LOG_VERBOSE, "Allocating audio buffers");
-    InitFrameBuffers();
+    InitFrameBuffers(Homer::Gui::AudioWorkerThread::tr(MESSAGE_WAITING_FOR_FIRST_DATA));
 
     AudioPlayback::OpenPlaybackDevice();
 

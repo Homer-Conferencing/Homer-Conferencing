@@ -54,6 +54,12 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define MESSAGE_WAITING_FOR_FIRST_DATA              "Waiting for data.."
+#define MESSAGE_WAITING_FOR_DATA_AFTER_RESET        "Waiting for data after reset.."
+#define MESSAGE_WAITING_FOR_DATA_AFTER_RESOLUTION   "Waiting for data with new resolution.."
+
+///////////////////////////////////////////////////////////////////////////////
+
 // de/activate frame handling
 //#define GRABBER_THREAD_DEBUG_FRAMES
 
@@ -124,7 +130,7 @@ protected:
     /* multi-input */
     virtual void DoSelectInputStream();
     /* buffering */
-    virtual void InitFrameBuffers() = 0;
+    virtual void InitFrameBuffers(QString pMessage)= 0;
     virtual void DeinitFrameBuffers() = 0;
     /* general purpose */
     virtual void DoPlayNewFile() = 0;

@@ -182,7 +182,7 @@ public slots:
 
 private:
     /* buffering */
-    virtual void InitFrameBuffers();
+    virtual void InitFrameBuffers(QString pMessage);
     virtual void DeinitFrameBuffers();
     /* audio playback */
     void ResetPlayback();

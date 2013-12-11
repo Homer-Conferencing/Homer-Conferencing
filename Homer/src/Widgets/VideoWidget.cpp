@@ -1155,7 +1155,7 @@ void VideoWidget::ShowHourGlass()
 
     //printf("Res: %d %d\n", mResX, mResY);
     mCurrentFrame = QImage(tWidth, tHeight, QImage::Format_RGB32);
-    mCurrentFrame.fill(QColor(Qt::darkGray).rgb());
+    mCurrentFrame.fill(QColor(Qt::black).rgb());
 
     QPixmap tPixmap = QPixmap(":/images/Sandglass.png");
     if (!tPixmap.isNull())
@@ -2158,7 +2158,7 @@ VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, V
     mDropFrames = false;
     mSetFullScreenDisplayAsap = false;
     mCurrentFrameRefTaken = false;
-    InitFrameBuffers();
+    InitFrameBuffers(Homer::Gui::VideoWorkerThread::tr(MESSAGE_WAITING_FOR_FIRST_DATA));
 }
 
 VideoWorkerThread::~VideoWorkerThread()
@@ -2167,7 +2167,7 @@ VideoWorkerThread::~VideoWorkerThread()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void VideoWorkerThread::InitFrameBuffers()
+void VideoWorkerThread::InitFrameBuffers(QString pMessage)
 {
     mPendingNewFrames = 0;
     for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
@@ -2179,12 +2179,11 @@ void VideoWorkerThread::InitFrameBuffers()
         LOG(LOG_VERBOSE, "Initiating frame buffer %d with resolution %d*%d", i, mResX, mResY);
         QImage tFrameImage = QImage((uchar*)mFrame[i], mResX, mResY, QImage::Format_RGB32);
         QPainter *tPainter = new QPainter(&tFrameImage);
-        tPainter->setRenderHint(QPainter::TextAntialiasing, true);
-
-        tPainter->fillRect(0, 0, mResX, mResY, QColor(Qt::darkGray));
-        tPainter->setFont(QFont("Tahoma", 16));
-        tPainter->setPen(QColor(Qt::black));
-        tPainter->drawText(5, 70, Homer::Gui::VideoWorkerThread::tr("Waiting for data.."));
+        tPainter->setRenderHint(QPainter::TextAntialiasing, false);
+        tPainter->fillRect(0, 0, mResX, mResY, QColor(Qt::black));
+        tPainter->setFont(QFont("Arial", 16));
+        tPainter->setPen(QColor(Qt::white));
+        tPainter->drawText(5, 70, pMessage);
 
         delete tPainter;
     }
@@ -2306,7 +2305,7 @@ void VideoWorkerThread::DoSetGrabResolution()
 	mResY = tGotResY;
 
     // create new frame buffers
-    InitFrameBuffers();
+    InitFrameBuffers(Homer::Gui::VideoWorkerThread::tr(MESSAGE_WAITING_FOR_DATA_AFTER_RESOLUTION));
 
     mVideoWidget->InformAboutNewSourceResolution();
     mSetGrabResolutionAsap = false;
