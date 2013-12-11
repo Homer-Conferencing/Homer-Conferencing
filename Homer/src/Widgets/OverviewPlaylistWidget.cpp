@@ -55,7 +55,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IS_SUPPORTED_WEB_LINK(x)						((x.toLower().startsWith("http://")) || (x.toLower().startsWith("mms://")) || (x.toLower().startsWith("mmst://")))
+#define IS_SUPPORTED_WEB_LINK(x)						((x.toLower().startsWith("http://")) || (x.toLower().startsWith("mms://")) || (x.toLower().startsWith("mmst://")) || (x.toLower().startsWith("icyx://")))
 #define IS_SUPPORTED_PLAYLIST(x)                        ((x.toLower().endsWith(".m3u")) || (x.toLower().endsWith(".wmx")) || (x.toLower().endsWith(".pls")))
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -902,7 +902,7 @@ void OverviewPlaylistWidget::ParseAndAppendDownloadedFile(QString pWebLocation)
 void OverviewPlaylistWidget::ReceivedFileFromServer(QNetworkReply *pServerAnswer)
 {
     QByteArray tFileData = pServerAnswer->readAll();
-    LOG(LOG_VERBOSE, "Received a file from server: %s", tFileData.data());
+    LOG(LOG_VERBOSE, "Received a file from server:\n%s", tFileData.data());
 
     // write to a temporary file
     QTemporaryFile tTmpFile;
@@ -914,16 +914,21 @@ void OverviewPlaylistWidget::ReceivedFileFromServer(QNetworkReply *pServerAnswer
         QString tReceivedFileName = pServerAnswer->request().url().toString();
         QString tTmpFileName = tTmpFile.fileName();
 
+        LOG(LOG_VERBOSE, " ..belongs to web source: %s", tReceivedFileName.toStdString().c_str());
+
         // add the received content to the playlist
         Playlist tPlaylist;
         if (tReceivedFileName.endsWith(".m3u"))
         {// an M3U playlist file
+            LOG(LOG_VERBOSE, " ..identified as M3U playlist");
             tPlaylist = ParseM3U(tTmpFileName, true, true);
         }else if (tReceivedFileName.endsWith(".pls"))
         {// a PLS playlist file
+            LOG(LOG_VERBOSE, " ..identified as PLS playlist");
             tPlaylist = ParsePLS(tTmpFileName, true, true);
         }else if (tReceivedFileName.endsWith(".wmx"))
         {
+            LOG(LOG_VERBOSE, " ..identified as WMX playlist");
             tPlaylist = ParseWMX(tTmpFileName, true, true);
         }else{
             LOG(LOG_ERROR, "Unsupported web content from: %s", tReceivedFileName.toStdString().c_str());
@@ -1226,7 +1231,6 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
     {
         QByteArray tLine;
         tLine = tPlaylistFile.readLine();
-        bool tPlaylistEntryParsed = false;
         tPlaylistEntry.Location = "";
         tPlaylistEntry.Name = "";
 
@@ -1244,6 +1248,19 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
                 QString tKey = tLineSplit[0].toLower();
                 QString tValue = tLineSplit[1];
                 LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found key \"%s\" with value \"%s\"", tKey.toStdString().c_str(), tValue.toStdString().c_str());
+
+                /*
+                 * Add an entry to the result
+                 */
+                if((tKey.startsWith("file")) && (tPlaylistEntry.Location != ""))
+                {
+                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry: \"%s\" at location \"%s\"", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+                     tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
+                     tPlaylistEntry.Location = "";
+                     tPlaylistEntry.Name = "";
+                     tLoadedPlaylistEntries++;
+                }
+
                 // parse the playlist line
                 if (tKey.startsWith("numberofentries"))
                 {// "NumberOfEntries"
@@ -1269,12 +1286,7 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
                 }else if (tKey.startsWith("title"))
                 {// "Title"
                     tPlaylistEntry.Name = tValue;
-                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry: \"%s\" at location \"%s\"", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
-					tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
-                    tPlaylistEntry.Location = "";
-                    tPlaylistEntry.Name = "";
-                    tLoadedPlaylistEntries++;
-                }
+                 }
             }else
             {
                 if (tLineString.startsWith("["))
@@ -1287,9 +1299,12 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
             }
 
             tLine = tPlaylistFile.readLine();
-        }
+        }// while()
     }
 
+    /*
+     * Add the last entry to the result
+     */
     if (tLoadedPlaylistEntries < tPlaylistEntries)
     {
     	LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Loaded %d of %d playlist entries, assuming a pending playlist entry", tLoadedPlaylistEntries, tPlaylistEntries);

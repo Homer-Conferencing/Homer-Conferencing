@@ -212,7 +212,7 @@ void MediaSource::FfmpegInit()
         // register all supported input and output devices
         avdevice_register_all();
 
-        #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 32, 100)
+        #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 21, 1)
             // init network support once instead for every stream
             avformat_network_init();
         #endif
