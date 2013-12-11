@@ -1009,22 +1009,37 @@ Playlist OverviewPlaylistWidget::ParseM3U(QString pFilePlaylist, bool pAcceptVid
         	{
 				if (!tLineString.toLower().startsWith("#ext"))
 				{// we have a location and the entry is complete
-						LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry location: %s", tLineString.toStdString().c_str());
-						if (IS_SUPPORTED_WEB_LINK(tLineString))
-						{// web link
-							tPlaylistEntry.Location = tLineString;
-						}else
-						{// local file
-							if ((!tLineString.startsWith("/")) && (!tLineString.startsWith("\\")) && (!tLineString.indexOf(":\\") == 1))
-								tPlaylistEntry.Location = tDir + tLineString;
-							else
-								tPlaylistEntry.Location = tLineString;
-						}
-						if (tPlaylistEntry.Name == "")
-							tPlaylistEntry.Name = tPlaylistEntry.Location;
-						tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
-						tPlaylistEntry.Location = "";
-						tPlaylistEntry.Name = "";
+                    bool tLocationIsValid = true;
+
+                    if (IS_SUPPORTED_WEB_LINK(tLineString))
+                    {// web link
+                        tPlaylistEntry.Location = tLineString;
+                        LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry web location: %s", tPlaylistEntry.Location.toStdString().c_str());
+                    }else
+                    {// local file
+                        if (QFile::exists(tLineString))
+                        {
+                            tPlaylistEntry.Location = tLineString;
+                            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry local relative location: %s", tPlaylistEntry.Location.toStdString().c_str());
+                        }else if(QFile::exists(tDir + "/" +  tLineString))
+                        {
+                            tPlaylistEntry.Location = tDir + "/" + tLineString;
+                            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Found playlist entry local absolute location: %s", tPlaylistEntry.Location.toStdString().c_str());
+                        }else
+                        {
+                            LOGEX(OverviewPlaylistWidget, LOG_WARN, "Found playlist entry with invalid Invalid location: %s, playlist is located in %s", tLineString.toStdString().c_str(), tDir.toStdString().c_str());
+                            tLocationIsValid = false;
+                        }
+                    }
+
+                    if(tLocationIsValid)
+                    {
+                        if (tPlaylistEntry.Name == "")
+                            tPlaylistEntry.Name = tPlaylistEntry.Location;
+                        tResult += Parse(tPlaylistEntry.Location, tPlaylistEntry.Name, pAcceptVideo, pAcceptAudio);
+                    }
+                    tPlaylistEntry.Location = "";
+                    tPlaylistEntry.Name = "";
 				}else
 				{
 					if (tLineString.toLower().startsWith("#extinf"))
