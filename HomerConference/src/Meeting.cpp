@@ -1179,6 +1179,9 @@ bool Meeting::IsLocalAddress(string pHost, string pPort, enum TransportType pTra
     string      tLocalPort = toString(mSipHostPort);
     AddressesList::iterator tIt;
 
+    if(pPort == "")
+        pPort = "5060";
+
     for (tIt = mLocalAddresses.begin(); tIt != mLocalAddresses.end(); tIt++)
     {
         LOG(LOG_VERBOSE, "CompareForLocalUser: \"%s\" with \"%s\"", (pHost + ":" + pPort).c_str(), ((*tIt) + ":" + tLocalPort).c_str());
