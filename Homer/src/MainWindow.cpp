@@ -1310,6 +1310,7 @@ void MainWindow::customEvent(QEvent* pEvent)
     switch(tEvent->getType())
     {
         case ADD_PARTICIPANT:
+                    LOG(LOG_VERBOSE, "Have to add a new participant..");
                     //####################### PARTICIPANT ADD #############################
                     tAPEvent = (AddParticipantEvent*) tEvent;
                     AddParticipantWidget(tAPEvent->User, tAPEvent->Host, tAPEvent->Port, tAPEvent->Transport, tAPEvent->Ip, tAPEvent->InitState);

@@ -96,6 +96,7 @@ namespace Homer { namespace Gui {
 ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow):
     QDockWidget(pMainWindow), AudioPlayback("Events")
 {
+    LOG(LOG_VERBOSE, "Creating session of type: %d", (int)pSessionType);
     hide();
     mPlayPauseButtonIsPaused = -1;
     mMosaicMode = false;

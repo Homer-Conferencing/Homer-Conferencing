@@ -362,6 +362,8 @@ void OverviewContactsWidget::Contact2Dialog(ContactDescriptor *pContact, Contact
 
 void OverviewContactsWidget::ContactParticipantDelegateToMainWindow(ContactDescriptor *pContact, QString pIp, bool pCallAfterwards)
 {
+    LOG(LOG_VERBOSE, "Delegating to contact participant to the main window (call afterwards: %d)..", pCallAfterwards);
+
     //CONTACTS.FavorizedContact(pContact->User, pContact->Host, pContact->Port);
     if (pCallAfterwards)
         QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddParticipantEvent(pContact->User, pContact->Host, pContact->Port, pContact->Transport, pIp, CALLSTATE_RINGING)));
