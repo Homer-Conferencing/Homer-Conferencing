@@ -858,6 +858,8 @@ void OverviewPlaylistWidget::CheckAndRemoveFilePrefix(QString &pEntry)
 
 void OverviewPlaylistWidget::AddPlaylist(Playlist pList, bool pStartPlayback)
 {
+	LOG(LOG_VERBOSE, "Adding playlist with %d entries", pList.size());
+
     if(pList.size() > 0)
     {
         mPlaylistMutex.lock();
@@ -887,7 +889,7 @@ void OverviewPlaylistWidget::AddEntry(QString pLocation, bool pStartPlayback)
     CheckAndRemoveFilePrefix(pLocation);
 
 	Playlist tPlaylist = Parse(pLocation);
-	LOG(LOG_VERBOSE, "Parsed %d new playlist entries", tPlaylist.size());
+	LOG(LOG_VERBOSE, "Found %d new playlist entries", tPlaylist.size());
 
 	AddPlaylist(tPlaylist, pStartPlayback);
 }
@@ -960,11 +962,12 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 	{
 		bool tIsWebUrl = IS_SUPPORTED_WEB_LINK(pLocation);
 		bool tIsSupportedPlaylist = IS_SUPPORTED_PLAYLIST(pLocation);
+		bool tIsNormalFile = true;
 
 		LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing %s", pLocation.toStdString().c_str());
 
         if (!tIsWebUrl)
-        {// local file
+        {// something locally stored
             LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found local data: %s", pLocation.toStdString().c_str());
             if (QDir(pLocation).exists())
             {// a directory
@@ -979,15 +982,17 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
             {// a WMX shortcut file
                 tResult += ParseWMX(pLocation, pAcceptVideo, pAcceptAudio);
             }
-		}else
-		{// an url
+		}
+
+        if(tResult.size() == 0)
+		{// an url or a local file?
             LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found web data: %s", pLocation.toStdString().c_str());
-		    if(tIsSupportedPlaylist)
+		    if((tIsWebUrl) && (tIsSupportedPlaylist))
 		    {// download the file and access its contents
 	            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found web playlist: %s", pLocation.toStdString().c_str());
 		        PLAYLISTWIDGET.ParseAndAppendDownloadedFile(pLocation);
 		    }else
-		    {// direct URL access
+		    {// direct file/URL access
                 LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found web stream: %s", pLocation.toStdString().c_str());
 
                 // set the location
