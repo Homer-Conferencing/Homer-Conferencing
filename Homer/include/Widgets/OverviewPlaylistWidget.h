@@ -40,6 +40,8 @@
 #include <QMutex>
 #include <QIcon>
 #include <QListWidget>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
 
 #include <ui_OverviewPlaylistWidget.h>
 
@@ -83,6 +85,7 @@ public:
 
     /* add playlist entries */
     void AddEntry(QString pLocation, bool pStartPlayback = false);
+    void AddPlaylist(Playlist pList, bool pStartPlayback = false);
 
     void StartPlaylist(bool pAddDirectories = false);
     void StopPlaylist();
@@ -108,6 +111,9 @@ private slots:
     void ActionPause();
     void ActionStop();
 
+    void ReceivedFileFromServer(QNetworkReply *pServerAnswer);
+    void ReceivedFileFromServerNeedAuthenication(QNetworkReply *pReply, QAuthenticator *pAuthenticator);
+
 private:
     virtual void customEvent(QEvent* pEvent);
     virtual void closeEvent(QCloseEvent* pEvent);
@@ -129,6 +135,9 @@ private:
     static Playlist ParsePLS(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
     static Playlist ParseWMX(QString pFilePlaylist, bool pAcceptVideo, bool pAcceptAudio);
     static Playlist ParseDIR(QString pDirLocation, bool pAcceptVideo, bool pAcceptAudio);
+
+    /* download and append a file from an http server */
+    void ParseAndAppendDownloadedFile(QString pWebLocation);
 
     /* save playlist entries */
     void SaveM3U(QString pFileName);
@@ -157,6 +166,9 @@ private:
     Playlist            mPlaylist;
     QMutex              mPlaylistMutex;
     static int			sParseRecursionCount;
+
+    /* for downloading playlists */
+    QNetworkAccessManager *mNetworkAccessManager;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

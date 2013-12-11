@@ -38,7 +38,9 @@
 #include <QSizePolicy>
 #include <QMenu>
 #include <QUrl>
+#include <QNetworkReply>
 #include <QContextMenuEvent>
+#include <QTemporaryFile>
 
 namespace Homer { namespace Gui {
 
@@ -54,6 +56,7 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 #define IS_SUPPORTED_WEB_LINK(x)						((x.toLower().startsWith("http://")) || (x.toLower().startsWith("mms://")) || (x.toLower().startsWith("mmst://")))
+#define IS_SUPPORTED_PLAYLIST(x)                        ((x.toLower().endsWith(".m3u")) || (x.toLower().endsWith(".wmx")) || (x.toLower().endsWith(".pls")))
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -109,12 +112,18 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
     mTimerId = startTimer(PLAYLIST_UPDATE_DELAY);
     SetVisible(CONF.GetVisibilityPlaylistWidgetMovie());
     mAssignedAction->setChecked(CONF.GetVisibilityPlaylistWidgetMovie());
+
+    mNetworkAccessManager = new QNetworkAccessManager();
+    connect(mNetworkAccessManager, SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)), SLOT(ReceivedFileFromServerNeedAuthenication(QNetworkReply*, QAuthenticator*)));
+    connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(ReceivedFileFromServer(QNetworkReply*)));
 }
 
 OverviewPlaylistWidget::~OverviewPlaylistWidget()
 {
 	if (mTimerId != -1)
 		killTimer(mTimerId);
+
+	delete mNetworkAccessManager;
 
     CONF.SetVisibilityPlaylistWidgetMovie(isVisible());
 }
@@ -846,6 +855,32 @@ void OverviewPlaylistWidget::CheckAndRemoveFilePrefix(QString &pEntry)
     #endif
 
 }
+
+void OverviewPlaylistWidget::AddPlaylist(Playlist pList, bool pStartPlayback)
+{
+    if(pList.size() > 0)
+    {
+        mPlaylistMutex.lock();
+
+        int tInsertionPosition = mPlaylist.size();
+
+        PlaylistEntry tPlaylistEntry;
+        foreach(tPlaylistEntry, pList)
+        {
+            LOG(LOG_VERBOSE, "Adding to playist: %s(%s)", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+            mPlaylist.push_back(tPlaylistEntry);
+        }
+
+        mPlaylistMutex.unlock();
+
+        // trigger GUI update
+        QApplication::postEvent(this, new QEvent(QEvent::User));
+
+        if (pStartPlayback)
+            Play(tInsertionPosition);
+    }
+}
+
 void OverviewPlaylistWidget::AddEntry(QString pLocation, bool pStartPlayback)
 {
     LOG(LOG_VERBOSE, "Adding playlist entry: %s", pLocation.toStdString().c_str());
@@ -854,24 +889,55 @@ void OverviewPlaylistWidget::AddEntry(QString pLocation, bool pStartPlayback)
 	Playlist tPlaylist = Parse(pLocation);
 	LOG(LOG_VERBOSE, "Parsed %d new playlist entries", tPlaylist.size());
 
-	mPlaylistMutex.lock();
+	AddPlaylist(tPlaylist, pStartPlayback);
+}
 
-	int tInsertionPosition = mPlaylist.size();
+void OverviewPlaylistWidget::ParseAndAppendDownloadedFile(QString pWebLocation)
+{
+    LOG(LOG_VERBOSE, "Requesting for web data from: %s", pWebLocation.toStdString().c_str());
+    QNetworkRequest tRequest(QUrl::fromEncoded(pWebLocation.toLocal8Bit()));
+    mNetworkAccessManager->get(tRequest);
+}
 
-	PlaylistEntry tPlaylistEntry;
-	foreach(tPlaylistEntry, tPlaylist)
-	{
-		LOG(LOG_VERBOSE, "Adding to playist: %s(%s)", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
-		mPlaylist.push_back(tPlaylistEntry);
-	}
+void OverviewPlaylistWidget::ReceivedFileFromServer(QNetworkReply *pServerAnswer)
+{
+    QByteArray tFileData = pServerAnswer->readAll();
+    LOG(LOG_VERBOSE, "Received a file from server: %s", tFileData.data());
 
-	mPlaylistMutex.unlock();
+    // write to a temporary file
+    QTemporaryFile tTmpFile;
+    if(tTmpFile.open())
+    {
+        tTmpFile.write(tFileData);
+        tTmpFile.close();
 
-    // trigger GUI update
-    QApplication::postEvent(this, new QEvent(QEvent::User));
+        QString tReceivedFileName = pServerAnswer->request().url().toString();
+        QString tTmpFileName = tTmpFile.fileName();
 
-    if (pStartPlayback)
-    	Play(tInsertionPosition);
+        // add the received content to the playlist
+        Playlist tPlaylist;
+        if (tReceivedFileName.endsWith(".m3u"))
+        {// an M3U playlist file
+            tPlaylist = ParseM3U(tTmpFileName, true, true);
+        }else if (tReceivedFileName.endsWith(".pls"))
+        {// a PLS playlist file
+            tPlaylist = ParsePLS(tTmpFileName, true, true);
+        }else if (tReceivedFileName.endsWith(".wmx"))
+        {
+            tPlaylist = ParseWMX(tTmpFileName, true, true);
+        }else{
+            LOG(LOG_ERROR, "Unsupported web content from: %s", tReceivedFileName.toStdString().c_str());
+        }
+        if(tPlaylist.size() > 0)
+            AddPlaylist(tPlaylist, true);
+    }else{
+        LOG(LOG_ERROR, "Could not create a temporary file for storing the download web data");
+    }
+}
+
+void OverviewPlaylistWidget::ReceivedFileFromServerNeedAuthenication(QNetworkReply *pReply, QAuthenticator *pAuthenticator)
+{
+    LOG(LOG_WARN, "Authentication required");
 }
 
 Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pAcceptVideo, bool pAcceptAudio)
@@ -887,75 +953,92 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
     sParseRecursionCount ++;
 	if (sParseRecursionCount < MAX_PARSER_RECURSIONS)
 	{
-		bool tIsWebUrl = (IS_SUPPORTED_WEB_LINK(pLocation));
+		bool tIsWebUrl = IS_SUPPORTED_WEB_LINK(pLocation);
+		bool tIsSupportedPlaylist = IS_SUPPORTED_PLAYLIST(pLocation);
 
 		LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing %s", pLocation.toStdString().c_str());
 
-        if ((!tIsWebUrl) && (QDir(pLocation).exists()))
-        {// a directory
-            tResult += ParseDIR(pLocation, pAcceptVideo, pAcceptAudio);
-        }else if (pLocation.endsWith(".m3u"))
-		{// an M3U playlist file
-			tResult += ParseM3U(pLocation, pAcceptVideo, pAcceptAudio);
-		}else if (pLocation.endsWith(".pls"))
-		{// a PLS playlist file
-			tResult += ParsePLS(pLocation, pAcceptVideo, pAcceptAudio);
-		}else if (pLocation.endsWith(".wmx"))
-		{// a WMX shortcut file
-			tResult += ParseWMX(pLocation, pAcceptVideo, pAcceptAudio);
+        if (!tIsWebUrl)
+        {// local file
+            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found local data: %s", pLocation.toStdString().c_str());
+            if (QDir(pLocation).exists())
+            {// a directory
+                tResult += ParseDIR(pLocation, pAcceptVideo, pAcceptAudio);
+            }else if (pLocation.endsWith(".m3u"))
+            {// an M3U playlist file
+                tResult += ParseM3U(pLocation, pAcceptVideo, pAcceptAudio);
+            }else if (pLocation.endsWith(".pls"))
+            {// a PLS playlist file
+                tResult += ParsePLS(pLocation, pAcceptVideo, pAcceptAudio);
+            }else if (pLocation.endsWith(".wmx"))
+            {// a WMX shortcut file
+                tResult += ParseWMX(pLocation, pAcceptVideo, pAcceptAudio);
+            }
 		}else
-		{// an url or a local file
-			// set the location
-			tPlaylistEntry.Location = pLocation;
+		{// an url
+            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found web data: %s", pLocation.toStdString().c_str());
+		    if(tIsSupportedPlaylist)
+		    {// download the file and access its contents
+	            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found web playlist: %s", pLocation.toStdString().c_str());
+		        PLAYLISTWIDGET.ParseAndAppendDownloadedFile(pLocation);
+		    }else
+		    {// direct URL access
+                LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found web stream: %s", pLocation.toStdString().c_str());
 
-			if (pName == "")
-			{
-				// set the name
-				if (!tIsWebUrl)
-				{// derive a descriptive name from the location
-					int tPos = tPlaylistEntry.Location.lastIndexOf('\\');
-					if (tPos == -1)
-						tPos = tPlaylistEntry.Location.lastIndexOf('/');
-					if (tPos != -1)
-					{
-						tPos += 1;
-						tPlaylistEntry.Name = tPlaylistEntry.Location.mid(tPos, pLocation.size() - tPos);
-					}else
-					{
-						tPlaylistEntry.Name = tPlaylistEntry.Location;
-					}
-				}else
-				{// we have a web url
-					tPlaylistEntry.Name = tPlaylistEntry.Location;
-				}
-			}else
-				tPlaylistEntry.Name = pName;
+                // set the location
+                tPlaylistEntry.Location = pLocation;
 
-			bool tIsAudioFile = IsAudioFile(tPlaylistEntry.Location);
-			bool tIsVideoFile = IsVideoFile(tPlaylistEntry.Location);
+                if (pName == "")
+                {
+                    // set the name
+                    if (!tIsWebUrl)
+                    {// derive a descriptive name from the location
+                        int tPos = tPlaylistEntry.Location.lastIndexOf('\\');
+                        if (tPos == -1)
+                            tPos = tPlaylistEntry.Location.lastIndexOf('/');
+                        if (tPos != -1)
+                        {
+                            tPos += 1;
+                            tPlaylistEntry.Name = tPlaylistEntry.Location.mid(tPos, pLocation.size() - tPos);
+                        }else
+                        {
+                            tPlaylistEntry.Name = tPlaylistEntry.Location;
+                        }
+                    }else
+                    {// we have a web url
+                        tPlaylistEntry.Name = tPlaylistEntry.Location;
+                    }
+                }else
+                    tPlaylistEntry.Name = pName;
 
-			// check file for A/V content
-			if ((pAcceptVideo && tIsVideoFile) || (pAcceptAudio && (tIsAudioFile || tIsWebUrl)))
-			{
-				LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Adding to parsed playlist: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+                bool tIsAudioFile = IsAudioFile(tPlaylistEntry.Location);
+                bool tIsVideoFile = IsVideoFile(tPlaylistEntry.Location);
 
-				// create playlist entry
-				if (tIsWebUrl)
-					tPlaylistEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
-				else
-				{
-					if (tIsVideoFile && !tIsAudioFile) // video file
-						tPlaylistEntry.Icon = QIcon(":/images/46_46/VideoReel.png");
-					else if (!tIsVideoFile && tIsAudioFile) // audio file
-						tPlaylistEntry.Icon = QIcon(":/images/46_46/Speaker.png");
-					else // audio/video file
-						tPlaylistEntry.Icon = QIcon(":/images/22_22/AV_Play.png");
-				}
+                // check file for A/V content
+                if ((pAcceptVideo && tIsVideoFile) || (pAcceptAudio && (tIsAudioFile || tIsWebUrl)))
+                {
+                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Adding to parsed playlist: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
 
-				// save playlist entry
-				tResult.push_back(tPlaylistEntry);
-			}else
-				LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Ignoring entry: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+                    // create playlist entry
+                    if (tIsWebUrl)
+                        tPlaylistEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
+                    else
+                    {
+                        if (tIsVideoFile && !tIsAudioFile) // video file
+                            tPlaylistEntry.Icon = QIcon(":/images/46_46/VideoReel.png");
+                        else if (!tIsVideoFile && tIsAudioFile) // audio file
+                            tPlaylistEntry.Icon = QIcon(":/images/46_46/Speaker.png");
+                        else // audio/video file
+                            tPlaylistEntry.Icon = QIcon(":/images/22_22/AV_Play.png");
+                    }
+
+                    // save playlist entry
+                    tResult.push_back(tPlaylistEntry);
+                }else
+                {
+                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Ignoring entry: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+                }
+		    }
 		}
 	}else
 	{

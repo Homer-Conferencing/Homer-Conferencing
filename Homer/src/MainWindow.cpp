@@ -1111,7 +1111,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
 			}
         }
         LOG(LOG_VERBOSE, "Playback finished");
-        CloseAudioPlayback();
+        ClosePlaybackDevice();
     #endif
 
     // make sure this main window will be deleted when control returns to Qt event loop (needed especially in case of closeEvent comes from fullscreen video widget)

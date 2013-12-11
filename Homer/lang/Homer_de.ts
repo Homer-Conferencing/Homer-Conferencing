@@ -2379,99 +2379,99 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::OverviewPlaylistWidget</name>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="126"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="148"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="195"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="251"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="302"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="135"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="157"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="204"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="260"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="311"/>
         <source>All supported formats</source>
         <translation>Alle unterstützten Formate</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="156"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="165"/>
         <source>/Homer-Video.avi</source>
         <translation>/Homer-Video.avi</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="259"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="268"/>
         <source>/Homer-Audio.mp3</source>
         <translation>/Homer-Audio.mp3</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="435"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="471"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="444"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="480"/>
         <source>Play selected</source>
         <translation>Auswahl abspielen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="441"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="476"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="450"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="485"/>
         <source>Add file(s)</source>
         <translation>Datei(en) hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="444"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="481"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="453"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="490"/>
         <source>Add url</source>
         <translation>Url hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="448"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="486"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="457"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="495"/>
         <source>Rename selected</source>
         <translation>Auswahl umbenennen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="451"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="491"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="460"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="500"/>
         <source>Delete selected</source>
         <translation>Auswahl entfernen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="459"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="496"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="468"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="505"/>
         <source>Reset playlist</source>
         <translation>Playlist zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="464"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="501"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="473"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="510"/>
         <source>Endless loop</source>
         <translation>Endlosschleife</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="530"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="539"/>
         <source>Add directory to playlist</source>
         <translation>Verzeichnis zur Playlist hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="532"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="541"/>
         <source>Add file(s) to playlist</source>
         <translation>Datei(en) zur Playlist hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="563"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="572"/>
         <source>Adding an url to the playlist</source>
         <translation>Hinzufügen einer Url zur Playlist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="604"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="613"/>
         <source>Save playlist</source>
         <translation>Speichern der Playlist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="606"/>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="607"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="615"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="616"/>
         <source>Playlist File</source>
         <translation>Playlist-Datei</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="639"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="648"/>
         <source>Could not store playlist file</source>
         <translation>Abspeichern der Playlist fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="639"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="648"/>
         <source>Couldn&apos;t write playlist in</source>
         <translation>Abspeichern der Playlist ist fehlgeschlagen in </translation>
     </message>
@@ -3335,7 +3335,7 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Aufgenommen:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="563"/>
+        <location filename="../src/Widgets/OverviewPlaylistWidget.cpp" line="572"/>
         <source>Adding url:</source>
         <translation>Hinzuzufügende Url:</translation>
     </message>
