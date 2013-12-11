@@ -363,6 +363,8 @@ bool ContactsManager::SplitAddress(QString pAddr, QString &pUser, QString &pHost
         pHost = pAddr.section(':', 0, 0);
         pPort = pAddr.section(':', 1, 1);
     }
+    if(pPort == "")
+        pPort = "5060";
 
     return true;
 }
