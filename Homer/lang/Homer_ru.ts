@@ -2487,6 +2487,10 @@ Homer Conferencing will be stopped afterwards!</source>
         <source>Send video</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Quick recording</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>IdentityDialog</name>

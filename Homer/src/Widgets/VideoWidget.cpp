@@ -382,11 +382,17 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
     //###############################################################################
     if (mVideoSource->SupportsRecording())
     {
-        QIcon tIcon5;
         if (mVideoSource->IsRecording())
+        {
             tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Stop.png"), Homer::Gui::VideoWidget::tr("Stop recording"));
-        else
+            tAction->setShortcut(Qt::Key_E);
+        }else
             tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Record.png"), Homer::Gui::VideoWidget::tr("Start recording"));
+        if (!mVideoSource->IsRecording())
+        {
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Record.png"), Homer::Gui::VideoWidget::tr("Quick recording"));
+            tAction->setShortcut(Qt::Key_R);
+        }
     }
 
     pMenu->addSeparator();
@@ -618,6 +624,11 @@ void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
         if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Start recording")) == 0)
         {
             StartRecorder();
+            return;
+        }
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Quick recording")) == 0)
+        {
+            StartRecorder(true);
             return;
         }
         if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Mirror horizontally")) == 0)
@@ -1504,34 +1515,41 @@ void VideoWidget::SavePicture()
     mCurrentFrame.save(tFileName);
 }
 
-void VideoWidget::StartRecorder()
+void VideoWidget::StartRecorder(bool pQuickRecording)
 {
-    QString tFileName = OverviewPlaylistWidget::LetUserSelectVideoSaveFile(this, Homer::Gui::VideoWidget::tr("Save recorded video"));
+    QString tFileName;
+    if(!pQuickRecording)
+        tFileName = OverviewPlaylistWidget::LetUserSelectVideoSaveFile(this, Homer::Gui::VideoWidget::tr("Save recorded video"));
+    else
+        tFileName = QDir::homePath() + "/Homer-" + QDate::currentDate().toString("yyyy-MM-dd") + "_" + QTime::currentTime().toString("hh-mm-ss") + ".avi";
 
     if (tFileName.isEmpty())
         return;
 
     // get the quality value from the user
-    bool tAck = false;
-    QStringList tPosQuals;
-    for (int i = 1; i < 11; i++)
-        tPosQuals.append(QString("%1").arg(i * 10));
-    QString tQualityStr = QInputDialog::getItem(this, Homer::Gui::VideoWidget::tr("Select recording quality"), Homer::Gui::VideoWidget::tr("Record with quality:") + "                                      ", tPosQuals, 0, false, &tAck);
-
-    if (!tAck)
-        return;
-
-    // convert QString to int
-    bool tConvOkay = false;
-    int tQuality = tQualityStr.toInt(&tConvOkay, 10);
-    if (!tConvOkay)
+    int tQuality = 100;
+    if(!pQuickRecording)
     {
-        LOG(LOG_ERROR, "Error while converting QString to int");
-        return;
-    }
+        bool tAck = false;
+        QStringList tPosQuals;
+        for (int i = 1; i < 11; i++)
+            tPosQuals.append(QString("%1").arg(i * 10));
+        QString tQualityStr = QInputDialog::getItem(this, Homer::Gui::VideoWidget::tr("Select recording quality"), Homer::Gui::VideoWidget::tr("Record with quality:") + "                                      ", tPosQuals, 0, false, &tAck);
+        if(tQualityStr.isEmpty())
+            return;
 
-    if(tQualityStr.isEmpty())
-        return;
+        if (!tAck)
+            return;
+
+        // convert QString to int
+        bool tConvOkay = false;
+        int tQuality = tQualityStr.toInt(&tConvOkay, 10);
+        if (!tConvOkay)
+        {
+            LOG(LOG_ERROR, "Error while converting QString to int");
+            return;
+        }
+    }
 
     // finally start the recording
     mVideoWorker->StartRecorder(tFileName.toStdString(), tQuality);
@@ -1705,6 +1723,23 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         ToggleSmoothPresentationMode();
         pEvent->accept();
         return;
+    }
+    if ((pEvent->key() == Qt::Key_E) && (pEvent->modifiers() == 0))
+    {
+        if (mVideoSource->IsRecording())
+        {
+            StopRecorder();
+        }
+    }
+    if ((pEvent->key() == Qt::Key_R) && (pEvent->modifiers() == 0))
+    {
+        if(mVideoSource->SupportsRecording())
+        {
+            if (!mVideoSource->IsRecording())
+            {
+                StartRecorder(true);
+            }
+        }
     }
     if ((pEvent->key() == Qt::Key_I) && (pEvent->modifiers() == 0))
     {

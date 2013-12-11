@@ -2253,8 +2253,8 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRecorderEncoderStream->time_base.num, mRecorderEncoderStream->time_base.den);
     LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRecorderEncoderStream->codec->time_base.num, mRecorderEncoderStream->codec->time_base.den);
     LOG(LOG_INFO, "    ..bit rate: %d", mRecorderCodecContext->bit_rate);
-    LOG(LOG_INFO, "    ..desired device: %s", mDesiredDevice.c_str());
-    LOG(LOG_INFO, "    ..current device: %s", mCurrentDevice.c_str());
+    LOG(LOG_INFO, "    ..recorded input: %s", mCurrentDevice.c_str());
+    LOG(LOG_INFO, "    ..recorder output: %s", pSaveFileName.c_str());
     LOG(LOG_INFO, "    ..qmin: %d", mRecorderCodecContext->qmin);
     LOG(LOG_INFO, "    ..qmax: %d", mRecorderCodecContext->qmax);
     LOG(LOG_INFO, "    ..codec caps: 0x%x", mRecorderCodecContext->codec->capabilities);

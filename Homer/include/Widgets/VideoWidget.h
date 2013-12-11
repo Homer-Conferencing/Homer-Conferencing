@@ -132,7 +132,7 @@ private:
     void ToggleInVideoSystemState();
     void ToggleSmoothPresentationMode();
     void SavePicture();
-    void StartRecorder();
+    void StartRecorder(bool pQuickRecording = false);
     void StopRecorder();
     void ShowFullScreen(int &pPosX, int &pPosY); // returns the upper left corner where fullscreen starts
     bool SetOriginalResolution();
