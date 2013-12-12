@@ -57,6 +57,7 @@ namespace Homer { namespace Gui {
 
 #define IS_SUPPORTED_WEB_LINK(x)						((x.toLower().startsWith("http://")) || (x.toLower().startsWith("mms://")) || (x.toLower().startsWith("mmst://")) || (x.toLower().startsWith("icyx://")))
 #define IS_SUPPORTED_PLAYLIST(x)                        ((x.toLower().endsWith(".m3u")) || (x.toLower().endsWith(".wmx")) || (x.toLower().endsWith(".pls")))
+#define IS_DOT_DIRECTORY(x)                             (x.toLower().endsWith("."))
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -190,7 +191,7 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
     QString tExt = pFileName.right(pFileName.size() - tPos).toLower();
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Checking for video content in file %s of type %s", pFileName.toStdString().c_str(), tExt.toStdString().c_str());
 
-    if (sLoadVideoFilters.indexOf(tExt, 0) != -1)
+    if ((tExt != ".") && (tExt != "..") && (sLoadVideoFilters.indexOf(tExt, 0) != -1))
     {
         LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "   ..found video content");
         return true;
@@ -297,7 +298,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
     QString tExt = pFileName.right(pFileName.size() - tPos).toLower();
     LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Checking for audio content in file %s of type %s", pFileName.toStdString().c_str(), tExt.toStdString().c_str());
 
-    if (sLoadAudioFilters.indexOf(tExt, 0) != -1)
+    if ((tExt != ".") && (tExt != "..") && (sLoadAudioFilters.indexOf(tExt, 0) != -1))
     {
         LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "   ..found audio content");
         return true;
@@ -966,89 +967,94 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 
 		LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Parsing %s", pLocation.toStdString().c_str());
 
-        if (!tIsWebUrl)
-        {// something locally stored
-            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found local data: %s", pLocation.toStdString().c_str());
-            if (QDir(pLocation).exists())
-            {// a directory
-                tResult += ParseDIR(pLocation, pAcceptVideo, pAcceptAudio);
-            }else if (pLocation.endsWith(".m3u"))
-            {// an M3U playlist file
-                tResult += ParseM3U(pLocation, pAcceptVideo, pAcceptAudio);
-            }else if (pLocation.endsWith(".pls"))
-            {// a PLS playlist file
-                tResult += ParsePLS(pLocation, pAcceptVideo, pAcceptAudio);
-            }else if (pLocation.endsWith(".wmx"))
-            {// a WMX shortcut file
-                tResult += ParseWMX(pLocation, pAcceptVideo, pAcceptAudio);
+		if(!IS_DOT_DIRECTORY(pLocation))
+		{
+            if (!tIsWebUrl)
+            {// something locally stored
+                LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found local data: %s", pLocation.toStdString().c_str());
+                if (QDir(pLocation).exists())
+                {// a directory
+                    tResult += ParseDIR(pLocation, pAcceptVideo, pAcceptAudio);
+                }else if (pLocation.endsWith(".m3u"))
+                {// an M3U playlist file
+                    tResult += ParseM3U(pLocation, pAcceptVideo, pAcceptAudio);
+                }else if (pLocation.endsWith(".pls"))
+                {// a PLS playlist file
+                    tResult += ParsePLS(pLocation, pAcceptVideo, pAcceptAudio);
+                }else if (pLocation.endsWith(".wmx"))
+                {// a WMX shortcut file
+                    tResult += ParseWMX(pLocation, pAcceptVideo, pAcceptAudio);
+                }
             }
-		}
 
-        if(tResult.size() == 0)
-		{// an url or a local file?
-            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found web data: %s", pLocation.toStdString().c_str());
-		    if((tIsWebUrl) && (tIsSupportedPlaylist))
-		    {// download the file and access its contents
-	            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found web playlist: %s", pLocation.toStdString().c_str());
-		        PLAYLISTWIDGET.ParseAndAppendDownloadedFile(pLocation);
-		    }else
-		    {// direct file/URL access
-                LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found web stream: %s", pLocation.toStdString().c_str());
+            if(tResult.size() == 0)
+            {// an url or a local file?
+                LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found url/file: %s", pLocation.toStdString().c_str());
+                if((tIsWebUrl) && (tIsSupportedPlaylist))
+                {// download the file and access its contents
+                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found web playlist: %s", pLocation.toStdString().c_str());
+                    PLAYLISTWIDGET.ParseAndAppendDownloadedFile(pLocation);
+                }else
+                {// direct file/URL access
+                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..found directly accesible url/file: %s", pLocation.toStdString().c_str());
 
-                // set the location
-                tPlaylistEntry.Location = pLocation;
+                    // set the location
+                    tPlaylistEntry.Location = pLocation;
 
-                if (pName == "")
-                {
-                    // set the name
-                    if (!tIsWebUrl)
-                    {// derive a descriptive name from the location
-                        int tPos = tPlaylistEntry.Location.lastIndexOf('\\');
-                        if (tPos == -1)
-                            tPos = tPlaylistEntry.Location.lastIndexOf('/');
-                        if (tPos != -1)
-                        {
-                            tPos += 1;
-                            tPlaylistEntry.Name = tPlaylistEntry.Location.mid(tPos, pLocation.size() - tPos);
+                    if (pName == "")
+                    {
+                        // set the name
+                        if (!tIsWebUrl)
+                        {// derive a descriptive name from the location
+                            int tPos = tPlaylistEntry.Location.lastIndexOf('\\');
+                            if (tPos == -1)
+                                tPos = tPlaylistEntry.Location.lastIndexOf('/');
+                            if (tPos != -1)
+                            {
+                                tPos += 1;
+                                tPlaylistEntry.Name = tPlaylistEntry.Location.mid(tPos, pLocation.size() - tPos);
+                            }else
+                            {
+                                tPlaylistEntry.Name = tPlaylistEntry.Location;
+                            }
                         }else
-                        {
+                        {// we have a web url
                             tPlaylistEntry.Name = tPlaylistEntry.Location;
                         }
                     }else
-                    {// we have a web url
-                        tPlaylistEntry.Name = tPlaylistEntry.Location;
-                    }
-                }else
-                    tPlaylistEntry.Name = pName;
+                        tPlaylistEntry.Name = pName;
 
-                bool tIsAudioFile = IsAudioFile(tPlaylistEntry.Location);
-                bool tIsVideoFile = IsVideoFile(tPlaylistEntry.Location);
+                    bool tIsAudioFile = IsAudioFile(tPlaylistEntry.Location);
+                    bool tIsVideoFile = IsVideoFile(tPlaylistEntry.Location);
 
-                // check file for A/V content
-                if ((pAcceptVideo && tIsVideoFile) || (pAcceptAudio && (tIsAudioFile || tIsWebUrl)))
-                {
-                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Adding to parsed playlist: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
-
-                    // create playlist entry
-                    if (tIsWebUrl)
-                        tPlaylistEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
-                    else
+                    // check file for A/V content
+                    if ((pAcceptVideo && tIsVideoFile) || (pAcceptAudio && (tIsAudioFile || tIsWebUrl)))
                     {
-                        if (tIsVideoFile && !tIsAudioFile) // video file
-                            tPlaylistEntry.Icon = QIcon(":/images/46_46/VideoReel.png");
-                        else if (!tIsVideoFile && tIsAudioFile) // audio file
-                            tPlaylistEntry.Icon = QIcon(":/images/46_46/Speaker.png");
-                        else // audio/video file
-                            tPlaylistEntry.Icon = QIcon(":/images/22_22/AV_Play.png");
-                    }
+                        LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Adding to parsed playlist: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
 
-                    // save playlist entry
-                    tResult.push_back(tPlaylistEntry);
-                }else
-                {
-                    LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Ignoring entry: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+                        // create playlist entry
+                        if (tIsWebUrl)
+                            tPlaylistEntry.Icon = QIcon(":/images/22_22/NetworkConnection.png");
+                        else
+                        {
+                            if (tIsVideoFile && !tIsAudioFile) // video file
+                                tPlaylistEntry.Icon = QIcon(":/images/46_46/VideoReel.png");
+                            else if (!tIsVideoFile && tIsAudioFile) // audio file
+                                tPlaylistEntry.Icon = QIcon(":/images/46_46/Speaker.png");
+                            else // audio/video file
+                                tPlaylistEntry.Icon = QIcon(":/images/22_22/AV_Play.png");
+                        }
+
+                        // save playlist entry
+                        tResult.push_back(tPlaylistEntry);
+                    }else
+                    {
+                        LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "Ignoring entry: %s at location %s", tPlaylistEntry.Name.toStdString().c_str(), tPlaylistEntry.Location.toStdString().c_str());
+                    }
                 }
-		    }
+            }
+        }else{
+            LOGEX(OverviewPlaylistWidget, LOG_VERBOSE, "  ..ignoring directory: %s", pLocation.toStdString().c_str());
 		}
 	}else
 	{
