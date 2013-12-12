@@ -118,9 +118,10 @@ private slots:
     void actionMuteOthers();
 
     void actionActivateToolBarOnlineStatus(bool pActive);
-    void actionActivateToolBarMediaSources(bool pActive);
+    void actionActivateToolBarStreaming(bool pActive);
     void actionActivateStatusBar(bool pActive);
     void actionActivateMenuBar(bool pActive);
+    void actionActivateBroadcastWidget(bool pActive);
     void toggleMainMenu();
     void actionActivateDebuggingWidgets();
     void actionActivateDebuggingGlobally();

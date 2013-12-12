@@ -1405,6 +1405,18 @@ The participant is known as</source>
 Homer Conferencing will be stopped afterwards!</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Broadcast data</source>
+        <translation type="unfinished">Аудио/Видео трансляция</translation>
+    </message>
+    <message>
+        <source>Tool bars</source>
+        <translation type="unfinished">Панель инструментов</translation>
+    </message>
+    <message>
+        <source>Streaming</source>
+        <translation type="unfinished">Потоковая передача</translation>
+    </message>
 </context>
 <context>
     <name>Homer::Gui::MessageHistory</name>

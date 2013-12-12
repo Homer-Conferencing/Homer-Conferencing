@@ -317,14 +317,14 @@ void MainWindow::connectSignalsSlots()
     connect(mShortcutActivateNetworkSimulationWidgets, SIGNAL(activated()), this, SLOT(actionActivateNetworkSimulationWidgets()));
     connect(mShortcutActivateDebuggingGlobally, SIGNAL(activated()), this, SLOT(actionActivateDebuggingGlobally()));
 
-    connect(mActionToolBarStreaming, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarMediaSources(bool)));
+    connect(mActionToolBarStreaming, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarStreaming(bool)));
     connect(mToolBarStreaming->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarStreaming, SLOT(setChecked(bool)));
 
     connect(mActionStautsBarWidget, SIGNAL(toggled(bool)), this, SLOT(actionActivateStatusBar(bool)));
     addAction(mActionMainMenu); // this action will also be available even if the main menu is hidden
     connect(mActionMainMenu, SIGNAL(toggled(bool)), this, SLOT(actionActivateMenuBar(bool)));
     addAction(mActionMonitorBroadcastWidget); // this action will also be available even if the main menu is hidden
-    connect(mActionMonitorBroadcastWidget, SIGNAL(toggled(bool)), mLocalUserParticipantWidget, SLOT(setVisible(bool)));
+    connect(mActionMonitorBroadcastWidget, SIGNAL(toggled(bool)), this, SLOT(actionActivateBroadcastWidget(bool)));
     addAction(mActionMosaicMode); // this action will also be available even if the main menu is hidden
     connect(mActionMosaicMode, SIGNAL(toggled(bool)), this, SLOT(actionActivateMosaicMode(bool)));
 
@@ -2142,13 +2142,17 @@ void MainWindow::actionActivateToolBarOnlineStatus(bool pActive)
 	LOG(LOG_VERBOSE, "Setting online status tool bar visibility to: %d", pActive);
 	CONF.SetVisibilityToolBarOnlineStatus(pActive);
 	mToolBarOnlineStatus->setVisible(pActive);
+    if(mActionToolBarOnlineStatus->isChecked() != pActive)
+        mActionToolBarOnlineStatus->setChecked(pActive);
 }
 
-void MainWindow::actionActivateToolBarMediaSources(bool pActive)
+void MainWindow::actionActivateToolBarStreaming(bool pActive)
 {
-	LOG(LOG_VERBOSE, "Setting media sources tool bar visibility to: %d", pActive);
+	LOG(LOG_VERBOSE, "Setting streaming tool bar visibility to: %d", pActive);
 	CONF.SetVisibilityToolBarMediaSources(pActive);
 	mToolBarStreaming->setVisible(pActive);
+    if(mActionToolBarStreaming->isChecked() != pActive)
+        mActionToolBarStreaming->setChecked(pActive);
 }
 
 void MainWindow::actionActivateStatusBar(bool pActive)
@@ -2156,6 +2160,8 @@ void MainWindow::actionActivateStatusBar(bool pActive)
 	LOG(LOG_VERBOSE, "Setting status bar visibility to: %d", pActive);
 	CONF.SetVisibilityStatusBar(pActive);
 	mStatusBar->setVisible(pActive);
+    if(mActionStautsBarWidget->isChecked() != pActive)
+        mActionStautsBarWidget->setChecked(pActive);
 }
 
 void MainWindow::actionActivateMenuBar(bool pActive)
@@ -2163,6 +2169,17 @@ void MainWindow::actionActivateMenuBar(bool pActive)
 	LOG(LOG_VERBOSE, "Setting menu bar visibility to: %d", pActive);
 	CONF.SetVisibilityMenuBar(pActive);
 	mMenuBar->setVisible(pActive);
+    if(mActionMainMenu->isChecked() != pActive)
+        mActionMainMenu->setChecked(pActive);
+}
+
+void MainWindow::actionActivateBroadcastWidget(bool pActive)
+{
+    LOG(LOG_VERBOSE, "Setting broadcast widget visibility to: %d", pActive);
+    CONF.SetVisibilityBroadcastWidget(pActive);
+    mLocalUserParticipantWidget->setVisible(pActive);
+    if(mActionMonitorBroadcastWidget->isChecked() != pActive)
+        mActionMonitorBroadcastWidget->setChecked(pActive);
 }
 
 void MainWindow::toggleMainMenu()
@@ -2222,6 +2239,42 @@ void MainWindow::UpdateSysTrayContextMenu()
         tMBKeys.push_back(Qt::ALT + Qt::Key_M);
         tAction->setShortcuts(tMBKeys);
         connect(tAction, SIGNAL(triggered()), this, SLOT(toggleMainMenu()));
+
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Tool bars"));
+        tMenu = new QMenu(this);
+        tAction->setMenu(tMenu);
+        tAction = tMenu->addAction(Homer::Gui::MainWindow::tr("Online status"));
+        tAction->setCheckable(true);
+        if(CONF.GetVisibilityToolBarOnlineStatus())
+        {
+            tAction->setChecked(true);
+        }else{
+            tAction->setChecked(false);
+        }
+        connect(tAction, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarOnlineStatus(bool)));
+        tAction = tMenu->addAction(Homer::Gui::MainWindow::tr("Streaming"));
+        tAction->setCheckable(true);
+        if(CONF.GetVisibilityToolBarMediaSources())
+        {
+            tAction->setChecked(true);
+        }else{
+            tAction->setChecked(false);
+        }
+        connect(tAction, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarStreaming(bool)));
+
+
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Broadcast data"));
+        tAction->setCheckable(true);
+        if(CONF.GetVisibilityBroadcastWidget())
+        {
+            tAction->setChecked(true);
+        }else{
+            tAction->setChecked(false);
+        }
+        QList<QKeySequence> tBDKeys;
+        tBDKeys.push_back(Qt::ALT + Qt::Key_B);
+        tAction->setShortcuts(tBDKeys);
+        connect(tAction, SIGNAL(toggled(bool)), this, SLOT(actionActivateBroadcastWidget(bool)));
 
         tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Mosaic mode"));
         tAction->setCheckable(true);
