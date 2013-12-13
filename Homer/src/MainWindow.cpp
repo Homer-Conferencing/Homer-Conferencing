@@ -1126,9 +1126,8 @@ void MainWindow::handleMeetingEvent(GeneralEvent *pEvent)
 void MainWindow::GetEventSource(GeneralEvent *pEvent, QString &pSender, QString &pSenderApp)
 {
     pSender = (pEvent->SenderName != "") ? QString(pEvent->SenderName.c_str()) : QString(pEvent->Sender.c_str());
-    pSenderApp = (pEvent->SenderApplication != "") ? QString(pEvent->SenderApplication.c_str()) : "";
-    if (pSenderApp.startsWith(USER_AGENT_SIGNATURE_PREFIX))
-        pSenderApp = "Homer-Conferencing";
+    QString tSipSoftware = (pEvent->SenderApplication != "") ? QString(pEvent->SenderApplication.c_str()) : "";
+    pSenderApp = CONTACTSWIDGET.GetSoftwareStr(tSipSoftware);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *pEvent)

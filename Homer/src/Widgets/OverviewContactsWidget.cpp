@@ -919,6 +919,28 @@ void ContactListModel::sort (int pColumn, Qt::SortOrder pOrder)
     }
 }
 
+QString OverviewContactsWidget::GetSoftwareStr(QString pSipSoftware)
+{
+    QString tResult = "";
+
+    if(pSipSoftware.startsWith(USER_AGENT_SIGNATURE_PREFIX))
+    {
+        int tPos = pSipSoftware.indexOf("/");
+        if(tPos != -1)
+        {
+            tResult = "Homer Conferencing " + pSipSoftware.right(pSipSoftware.size() - tPos -1);
+        }else
+        {
+            tResult = "Homer Conferencing";
+        }
+    }else{
+        tResult = pSipSoftware;
+        tResult.replace("/", " ");
+    }
+
+    return tResult;
+}
+
 QString ContactListModel::GetContactSoftware(const QModelIndex &pIndex) const
 {
     QString tResult = "";
@@ -927,20 +949,7 @@ QString ContactListModel::GetContactSoftware(const QModelIndex &pIndex) const
     if (pIndex.internalPointer() != NULL)
         tSoftware = ((ContactDescriptor*)pIndex.internalPointer())->GetSoftwareName();
 
-    if(tSoftware.startsWith(USER_AGENT_SIGNATURE_PREFIX))
-    {
-        int tPos = tSoftware.indexOf("/");
-        if(tPos != -1)
-        {
-            tResult = "Homer Conferencing " + tSoftware.right(tSoftware.size() - tPos -1);
-        }else
-        {
-            tResult = "Homer Conferencing";
-        }
-    }else{
-        tResult = tSoftware;
-        tResult.replace("/", " ");
-    }
+    tResult = CONTACTSWIDGET.GetSoftwareStr(tSoftware);
 
     return tResult;
 }
