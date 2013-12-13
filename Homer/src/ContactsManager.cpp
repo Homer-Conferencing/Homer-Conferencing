@@ -176,6 +176,7 @@ void ContactsManager::LoadPool(string pContactsFile)
 		LOG(LOG_ERROR, "Unable to assign XML file because of \"%s\"", tErrBuffer.toStdString().c_str());
 		return;
 	}
+    tFile.close();
 
 	//###################################################
 	//### get root element
@@ -183,7 +184,6 @@ void ContactsManager::LoadPool(string pContactsFile)
 	QDomElement tRoot = tXml.documentElement();
 	if (tRoot.tagName() != "contacts")
 	{
-		tFile.close();
 		LOG(LOG_ERROR, "Name of root element doesn't match the database identifier");
 		return;
 	}
@@ -463,7 +463,10 @@ void ContactsManager::ProbeAvailabilityForAll()
 
     for (tIt = mContacts.begin(); tIt != tItEnd; tIt++)
     {
-        MEETING.SendProbe(tIt->GetHostStdStr(), tIt->GetPortStdStr(), tIt->Transport);
+        if (!MEETING.IsLocalAddress(tIt->GetHostStdStr(), tIt->GetPortStdStr(), tIt->Transport))
+        {
+            MEETING.SendProbe(tIt->GetHostStdStr(), tIt->GetPortStdStr(), tIt->Transport);
+        }
     }
 
     mContactsMutex.unlock();
@@ -518,7 +521,10 @@ void ContactsManager::ProbeAvailabilityForAll()
                                 {
                                     tFoundAddresses++;
                                     LOG(LOG_INFO, "   ..probing: %s (%u)", tCurrentProbeAddress.toString().toStdString().c_str(), tIPv4AddrCurrentNumber);
-                                    MEETING.SendProbe(tCurrentProbeAddress.toString().toStdString(), "5060", SOCKET_UDP);
+                                    if (!MEETING.IsLocalAddress(tCurrentProbeAddress.toString().toStdString(), "5060", SOCKET_UDP))
+                                    {
+                                        MEETING.SendProbe(tCurrentProbeAddress.toString().toStdString(), "5060", SOCKET_UDP);
+                                    }
                                 }else{
                                     LOG(LOG_INFO, "   ..stopping at: %s [%s != %s]", tCurrentProbeAddress.toString().toStdString().c_str(), tCurrentProbeAddressNetwork.toString().toStdString().c_str(), tHostAddressNetwork.toString().toStdString().c_str());
                                     break;
