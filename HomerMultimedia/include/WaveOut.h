@@ -60,6 +60,7 @@ public:
     virtual bool IsPlaying();
     virtual bool PlayFile(std::string pFileName, int pLoops = 1);
     virtual std::string CurrentFile();
+    virtual std::string CurrentDeviceName();
 
     /* playback queue */
     virtual int GetQueueUsage();
@@ -110,6 +111,7 @@ protected:
     /* device handling */
     std::string         mDesiredDevice;
     std::string         mCurrentDevice;
+    std::string         mCurrentDeviceName;
     /* playback */
     AVFifoBuffer        *mSampleFifo; // needed to create audio buffers of fixed size (4096 bytes)
     MediaFifo           *mPlaybackFifo; // needed as FIFO buffer with prepared audio buffers for playback, avoid expensive operations like malloc/free (used when using AVFifoBuffer)

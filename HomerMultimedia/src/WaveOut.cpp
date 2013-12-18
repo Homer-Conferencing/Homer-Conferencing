@@ -43,6 +43,7 @@ WaveOut::WaveOut(string pName):
     mThreadNameAssigned = false;
     mDesiredDevice = "";
     mCurrentDevice = "";
+    mCurrentDeviceName = "";
     mAudioChannels = 2;
     mVolume = 100;
     mFilePlaybackSource = NULL;
@@ -98,6 +99,7 @@ bool WaveOut::SelectDevice(string pDeviceName)
         if ((pDeviceName == tAIt->Name) || (tAutoSelect))
         {
             mDesiredDevice = tAIt->Card;
+            mCurrentDeviceName = tAIt->Name;
             if (mDesiredDevice != mCurrentDevice)
                 LOG(LOG_INFO, "..audio device selected: %s", mDesiredDevice.c_str());
             else
@@ -207,6 +209,14 @@ bool WaveOut::PlayFile(string pFileName, int pLoops)
 string WaveOut::CurrentFile()
 {
 	return mFilePlaybackFileName;
+}
+
+string WaveOut::CurrentDeviceName()
+{
+    if(mCurrentDevice != "")
+        return mCurrentDeviceName;
+    else
+        return "auto";
 }
 
 int WaveOut::GetQueueUsage()
