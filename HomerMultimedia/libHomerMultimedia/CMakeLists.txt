@@ -245,8 +245,8 @@ ELSE ()
 	SET (LIBS_LINUX_STATIC
 		avdevice
 		avformat
-		avcodec
 		avfilter
+		avcodec
 		swresample
 		swscale
 		avutil
