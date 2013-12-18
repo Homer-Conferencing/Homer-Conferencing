@@ -114,7 +114,7 @@ public:
     void GetOwnContactAddress(std::string pParticipant, enum TransportType pParticipantTransport, std::string &pIp, unsigned int &pPort);
 
     /* session management */
-    bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort, enum TransportType pTransport = SOCKET_UDP);
+    bool OpenParticipantSession(std::string pUser, std::string pHost, std::string pPort, enum TransportType pTransport = SOCKET_UDP, std::string pIPLocalInterface = "");
     bool CloseParticipantSession(std::string pParticipant, enum TransportType pParticipantTransport);
     int CountParticipantSessions();
 

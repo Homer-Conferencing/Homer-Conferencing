@@ -282,7 +282,7 @@ string Meeting::GetLocalUserMailAdr()
     return mOwnMail;
 }
 
-bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, enum TransportType pTransport)
+bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, enum TransportType pTransport, string pIPLocalInterface)
 {
     bool        tFound = false;
     ParticipantDescriptor tParticipantDescriptor;
@@ -308,12 +308,13 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, e
     if (!tFound)
     {
         LOG(LOG_VERBOSE, "Open session to: %s", SipCreateId(pUser, pHost, pPort).c_str());
+        string tIPFromBestLocalInterface = (pIPLocalInterface == "" ? GetLocalSource(pHost) : pIPLocalInterface);
 
         tParticipantDescriptor.User = pUser;
         tParticipantDescriptor.Host = pHost;
         tParticipantDescriptor.Port = pPort;
         tParticipantDescriptor.Transport = pTransport;
-        tParticipantDescriptor.OwnIp = GetLocalSource(pHost);
+        tParticipantDescriptor.OwnIp = tIPFromBestLocalInterface;
         tParticipantDescriptor.OwnPort = (unsigned int)GetHostPort();
         tParticipantDescriptor.RemoteVideoHost = "0.0.0.0";
         tParticipantDescriptor.RemoteVideoPort = 0;
