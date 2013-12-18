@@ -1233,6 +1233,8 @@ void ParticipantWidget::HandleCallTermination(bool pIncoming)
 
 void ParticipantWidget::SessionEstablished(bool pIncoming)
 {
+    LOG(LOG_VERBOSE, "Session was established: %s", mSessionName.toStdString().c_str());
+
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
     {
@@ -1255,7 +1257,7 @@ void ParticipantWidget::SessionEstablished(bool pIncoming)
         LOG(LOG_VERBOSE, "Setting video sink activation to: %d", mParticipantVideoSinkActivation);
         mParticipantVideoSink->SetActivation(mParticipantVideoSinkActivation);
     }else{
-        LOG(LOG_WARN, "Cannot set the activation of invalid video sink to: %d", mParticipantAudioSinkActivation);
+        LOG(LOG_WARN, "Cannot set the activation of invalid video sink to: %d", mParticipantVideoSinkActivation);
     }
 
     if (mMessageWidget != NULL)
@@ -1419,6 +1421,8 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
 
 void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAdr, unsigned int pRemoteAudioPort, QString pRemoteAudioCodec, QString pRemoteVideoAdr, unsigned int pRemoteVideoPort, QString pRemoteVideoCodec)
 {
+    LOG(LOG_VERBOSE, "Media update");
+
     // return immediately if we are a preview only
     if (mSessionType == PREVIEW)
     {
@@ -1442,15 +1446,31 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
         LOG(LOG_VERBOSE, "Audio sink set to %s:%u", pRemoteAudioAdr.toStdString().c_str(), pRemoteAudioPort);
         LOG(LOG_VERBOSE, "Audio sink uses codec: \"%s\"", pRemoteAudioCodec.toStdString().c_str());
 
-        if (pRemoteVideoPort != 0)
+        if ((pRemoteVideoPort != 0) && (mParticipantVideoSink == NULL))
             mParticipantVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, mVideoSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
-        if (pRemoteAudioPort != 0)
+        if ((pRemoteAudioPort != 0) && (mParticipantAudioSink == NULL))
             mParticipantAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, mAudioSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
 
-        if (mParticipantVideoSink != NULL)
-            mParticipantVideoSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
-        if (mParticipantAudioSink != NULL)
-            mParticipantAudioSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
+        // activate the A/V media sinks
+        if(mSessionIsRunning)
+        {
+            if(mParticipantAudioSink != NULL)
+            {
+                LOG(LOG_VERBOSE, "Setting audio sink activation to: %d", mParticipantAudioSinkActivation);
+                mParticipantAudioSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
+                mParticipantAudioSink->SetActivation(mParticipantAudioSinkActivation);
+            }else{
+                LOG(LOG_WARN, "Cannot set the activation of invalid audio sink to: %d", mParticipantAudioSinkActivation);
+            }
+            if(mParticipantVideoSink != NULL)
+            {
+                LOG(LOG_VERBOSE, "Setting video sink activation to: %d", mParticipantVideoSinkActivation);
+                mParticipantVideoSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());
+                mParticipantVideoSink->SetActivation(mParticipantVideoSinkActivation);
+            }else{
+                LOG(LOG_WARN, "Cannot set the activation of invalid video sink to: %d", mParticipantAudioSinkActivation);
+            }
+        }
 
         if (mVideoWidget != NULL)
             mVideoWidget->GetWorker()->SetStreamName("CONF-IN: " + mSessionName);
