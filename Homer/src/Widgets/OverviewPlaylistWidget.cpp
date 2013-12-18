@@ -97,7 +97,7 @@ OverviewPlaylistWidget::OverviewPlaylistWidget(QAction *pAssignedAction, QMainWi
         mAssignedAction->setChecked(false);
     }
     connect(toggleViewAction(), SIGNAL(toggled(bool)), mAssignedAction, SLOT(setChecked(bool)));
-    connect(mTbAddFile, SIGNAL(clicked()), this, SLOT(AddFileEntryDialog()));
+    connect(mTbAddFile, SIGNAL(clicked()), this, SLOT(AddPlaylistFilesDirsDialog()));
     connect(mTbAddUrl, SIGNAL(clicked()), this, SLOT(AddPlaylistUrlsDialog()));
     connect(mTbDel, SIGNAL(clicked()), this, SLOT(DelPlaylistEntriesDialog()));
     connect(mTbSaveList, SIGNAL(clicked()), this, SLOT(SavePlaylistDialog()));
