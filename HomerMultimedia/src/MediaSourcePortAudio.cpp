@@ -124,7 +124,7 @@ void MediaSourcePortAudio::getAudioDevices(AudioDevices &pAList)
     for (int i = 0; i < tDevCount; i++)
     {
         const PaDeviceInfo *tDeviceInfo = Pa_GetDeviceInfo(i);
-        tDevice.Name = string(tDeviceInfo->name);
+        tDevice.Name = string(tDeviceInfo->name) + " [" + toString(i) + "]";
         tDevice.Card = char(i + 48);
         if(tDeviceInfo->maxInputChannels)
             tDevice.IoType = "Input";
