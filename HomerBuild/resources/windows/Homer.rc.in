@@ -10,6 +10,7 @@ BEGIN
     BLOCK "040904E4"
     BEGIN
       VALUE "ProductName", "Homer Conferencing"
+      VALUE "ProductVersion", "@HOMER_VERSION@" 
       VALUE "CompanyName", "http://www.homer-conferencing.com"
       VALUE "FileDescription", "Homer Conferencing"
       VALUE "FileVersion", "@HOMER_VERSION@.0"
