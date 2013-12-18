@@ -118,6 +118,10 @@ public:
     /* recording */
     virtual bool SupportsRecording();
 
+    /* filtering */
+    virtual void RegisterMediaFilter(MediaFilter *pMediaFilter);
+    virtual bool UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete = true);
+
     /* relaying */
     virtual bool SupportsRelaying();
 
@@ -158,9 +162,10 @@ protected:
     double CalculateOutputFrameNumber(double pFrameNumber);
     double CalculateInputFrameNumber(double pFrameNumber);
     void CalculateExpectedOutputPerInputFrame();
+    void ResetPreCalculatedData();
     void ResetDecoderBuffers();
-    void WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputFrameNumber);
-    void ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pOutputFrameNumber);
+    void WriteOutputChunk(char* pChunkBuffer, int pChunkBufferSize, int64_t pChunkNumber);
+    void ReadOutputChunk(char *pChunkBuffer, int &pChunkBufferSize, int64_t &pChunkNumber);
     bool DecoderFifoFull();
 
     /* RTP based frame numbering */
@@ -184,7 +189,7 @@ protected:
     double              mLastBufferedOutputFrameIndex; // we use this for calibrating RT grabbing
     bool                mGrabberProvidesRTGrabbing;
     int64_t				mLastTimeWaitForRTGrabbing;
-    int64_t				mLastWriteFrameOutputBuffer;
+    int64_t				mTimeLastWrittenOutputChunk;
     /* decoder thread */
     bool				mDecoderThreadAcountsPackets; //do we use custom I/O context? -> packet account is done there and should be done within decoder thread
     double 				mFirstReceivedFrameTimestampFromRTP; //if multiple frames are delivered from the packet reciever towards the A/V frame decoder

@@ -28,7 +28,11 @@
 #define _AUDIO_PLAYBACK_
 
 #include <WaveOut.h>
+
 #include <QString>
+#include <QMutex>
+
+#include <string>
 
 namespace Homer { namespace Gui {
 
@@ -37,15 +41,26 @@ namespace Homer { namespace Gui {
 class AudioPlayback
 {
 public:
-    AudioPlayback();
+    AudioPlayback(QString pOutputName);
 
     virtual ~AudioPlayback();
 
+    Homer::Multimedia::AudioDevices GetAudioOutputDevices();
+    QString CurrentAudioOutputDevice();
+    void SetAudioOutputDevice(QString pDeviceName);
+
+    void PlayAudioChunk(void* pChunkBuffer, int pChunkSize = 4096);
+
 protected:
-    virtual void OpenPlaybackDevice(QString pOutputName);
+    virtual void OpenPlaybackDevice(QString pDeviceName = "", QString pOutputName = "");
     virtual void ClosePlaybackDevice();
 
     bool StartAudioPlayback(QString pFileName, int pLoops = 1);
+
+    QString                     mOutputName;
+    QString                     mCurrentOutputDeviceName;
+    QMutex                      mOutputMutex;
+    int                         mPlayedChunks;
 
     /* playback */
     Homer::Multimedia::WaveOut *mWaveOut;

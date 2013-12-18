@@ -362,6 +362,8 @@ void OverviewContactsWidget::Contact2Dialog(ContactDescriptor *pContact, Contact
 
 void OverviewContactsWidget::ContactParticipantDelegateToMainWindow(ContactDescriptor *pContact, QString pIp, bool pCallAfterwards)
 {
+    LOG(LOG_VERBOSE, "Delegating to contact participant to the main window (call afterwards: %d)..", pCallAfterwards);
+
     //CONTACTS.FavorizedContact(pContact->User, pContact->Host, pContact->Port);
     if (pCallAfterwards)
         QCoreApplication::postEvent(mMainWindow, (QEvent*) new QMeetingEvent(new AddParticipantEvent(pContact->User, pContact->Host, pContact->Port, pContact->Transport, pIp, CALLSTATE_RINGING)));
@@ -917,6 +919,28 @@ void ContactListModel::sort (int pColumn, Qt::SortOrder pOrder)
     }
 }
 
+QString OverviewContactsWidget::GetSoftwareStr(QString pSipSoftware)
+{
+    QString tResult = "";
+
+    if(pSipSoftware.startsWith(USER_AGENT_SIGNATURE_PREFIX))
+    {
+        int tPos = pSipSoftware.indexOf("/");
+        if(tPos != -1)
+        {
+            tResult = "Homer Conferencing " + pSipSoftware.right(pSipSoftware.size() - tPos -1);
+        }else
+        {
+            tResult = "Homer Conferencing";
+        }
+    }else{
+        tResult = pSipSoftware;
+        tResult.replace("/", " ");
+    }
+
+    return tResult;
+}
+
 QString ContactListModel::GetContactSoftware(const QModelIndex &pIndex) const
 {
     QString tResult = "";
@@ -925,20 +949,7 @@ QString ContactListModel::GetContactSoftware(const QModelIndex &pIndex) const
     if (pIndex.internalPointer() != NULL)
         tSoftware = ((ContactDescriptor*)pIndex.internalPointer())->GetSoftwareName();
 
-    if(tSoftware.startsWith(USER_AGENT_SIGNATURE_PREFIX))
-    {
-        int tPos = tSoftware.indexOf("/");
-        if(tPos != -1)
-        {
-            tResult = "Homer Conferencing " + tSoftware.right(tSoftware.size() - tPos -1);
-        }else
-        {
-            tResult = "Homer Conferencing";
-        }
-    }else{
-        tResult = tSoftware;
-        tResult.replace("/", " ");
-    }
+    tResult = CONTACTSWIDGET.GetSoftwareStr(tSoftware);
 
     return tResult;
 }

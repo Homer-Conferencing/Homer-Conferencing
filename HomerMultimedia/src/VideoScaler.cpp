@@ -42,9 +42,10 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-VideoScaler::VideoScaler(string pName):
+VideoScaler::VideoScaler(MediaSource *pMediaSource, string pName):
     MediaFifo("VideoScaler")
 {
+    mMediaSource = pMediaSource;
 	mName = pName;
     mScalerNeeded = false;
     mInputFifo = NULL;
@@ -390,6 +391,9 @@ void* VideoScaler::Run(void* pArgs)
                         #endif
                         if (tCurrentChunkSize <= mOutputFifo->GetEntrySize())
                         {
+                            if(mMediaSource != NULL)
+                                mMediaSource->RelayChunkToMediaFilters((char*)tOutputBuffer, tCurrentChunkSize, tInputFrameTimestamp);
+
                             mOutputFifo->WriteFifo((char*)tOutputBuffer, tCurrentChunkSize, tInputFrameTimestamp);
                             #ifdef VS_DEBUG_PACKETS
                                 LOG(LOG_VERBOSE, "SCALER-successful scaler loop");

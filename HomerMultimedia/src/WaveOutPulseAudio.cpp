@@ -108,7 +108,7 @@ void WaveOutPulseAudio::getAudioDevices(AudioDevices &pAList)
         if (!tOutputDevicesList[i].Initialized)
             break;
 
-        tDevice.Name = string(tOutputDevicesList[i].Description);
+        tDevice.Name = string(tOutputDevicesList[i].Description) + " [" + toString(i) + "]";
         tDevice.Card = string(tOutputDevicesList[i].Name);
         tDevice.Desc = "PulseAudio based audio device";
         tDevice.IoType = "Output";

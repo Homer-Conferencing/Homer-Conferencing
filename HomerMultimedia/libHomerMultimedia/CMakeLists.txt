@@ -81,6 +81,7 @@ ENDIF (NOT APPLE)
 # SOURCES
 SET (SOURCES
 	../src/MediaFifo
+	../src/MediaFilter
 	../src/MediaSink
 	../src/MediaSinkFile
 	../src/MediaSinkMem
@@ -244,8 +245,8 @@ ELSE ()
 	SET (LIBS_LINUX_STATIC
 		avdevice
 		avformat
-		avcodec
 		avfilter
+		avcodec
 		swresample
 		swscale
 		avutil

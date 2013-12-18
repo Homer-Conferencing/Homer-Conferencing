@@ -529,7 +529,7 @@ void MediaSourceGrabberThread::DoResetMediaSource()
     mFrameTimestamps.clear();
 
     // create new frame buffers
-    InitFrameBuffers();
+    InitFrameBuffers(Homer::Gui::MediaSourceGrabberThread::tr(MESSAGE_WAITING_FOR_DATA_AFTER_RESET));
 
     // unlock
     mDeliverMutex.unlock();

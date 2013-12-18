@@ -265,6 +265,9 @@ bool SIP::IsThisParticipant(string pParticipant, enum TransportType pParticipant
         return false;
     }
 
+    if(pPort == "")
+        pPort = "5060";
+
     return IsThisParticipant(tUser, tHost, tPort, pParticipantTransport, pUser, pHost, pPort, pTransport);
 }
 

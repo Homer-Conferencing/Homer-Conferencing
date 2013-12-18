@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2009 Thomas Volkert <thomas@homer-conferencing.com>
+ * Copyright (C) 2013 Thomas Volkert <thomas@homer-conferencing.com>
  *
  * This software is free software.
  * Your are allowed to redistribute it and/or modify it under the terms of
@@ -20,64 +20,42 @@
  *****************************************************************************/
 
 /*
- * Purpose: abstract media sink
- * Since:   2009-01-06
+ * Purpose: abstract media filter
+ * Since:   2013-12-09
  */
 
-#ifndef _MULTIMEDIA_MEDIA_SINK_
-#define _MULTIMEDIA_MEDIA_SINK_
+#ifndef _MULTIMEDIA_MEDIA_FILTER_
+#define _MULTIMEDIA_MEDIA_FILTER_
 
-#include <PacketStatistic.h>
 #include <Header_Ffmpeg.h>
 
 #include <string>
+#include <vector>
 
 namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-enum MediaSinkType
-{
-    MEDIA_SINK_UNKNOWN = -1,
-    MEDIA_SINK_VIDEO,
-    MEDIA_SINK_AUDIO
-};
+class MediaSource;
 
-class MediaSink:
-    public Homer::Monitor::PacketStatistic
+class MediaFilter
 {
-
 public:
-    MediaSink(enum MediaSinkType pType= MEDIA_SINK_UNKNOWN);
+    MediaFilter(MediaSource *pMediaSource);
 
-    virtual ~MediaSink();
+    virtual ~MediaFilter();
 
-    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream, bool pIsKeyFrame) = 0;
-    virtual void UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp);
-    virtual void SetActivation(bool pState);
+    // filter a chunk: either an RGB32 picture or a raw audio chunk
+    virtual void FilterChunk(char* pChunkBuffer, unsigned int pChunkBufferSize, int64_t pChunkbufferNumber, AVStream *pStream, bool pIsKeyFrame) = 0;
 
     std::string GetId();
 
-    /* FPS limitation */
-    void SetMaxFps(int pMaxFps);
-    int GetMaxFps();
-
 protected:
-    bool BelowMaxFps(int pFrameNumber);
-
-    bool                mMediaSinkOpened;
-    bool                mSinkIsActive;
-    std::string         mCodec;
-    unsigned long       mPacketNumber;
     std::string         mMediaId;
-
-    /* video */
-    int					mMaxFps;
-    int 				mMaxFpsFrameNumberLastFragment;
-    int64_t				mMaxFpsTimestampLastFragment;
+    MediaSource         *mMediaSource;
 };
 
-typedef std::vector<MediaSink*>        MediaSinks;
+typedef std::vector<MediaFilter*>        MediaFilters;
 
 ///////////////////////////////////////////////////////////////////////////////
 

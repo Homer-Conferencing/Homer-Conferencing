@@ -859,10 +859,6 @@
         <translation>задержка</translation>
     </message>
     <message>
-        <source>Hide stream info</source>
-        <translation>Скрыть stream info</translation>
-    </message>
-    <message>
         <source>The selected audio source &quot;</source>
         <translation>Выбранный источник звука &quot;</translation>
     </message>
@@ -873,14 +869,6 @@
     <message>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot; не доступно. Пожалуйста, выберите другой!</translation>
-    </message>
-    <message>
-        <source>Continue stream</source>
-        <translation>Продолжить поток</translation>
-    </message>
-    <message>
-        <source>Relay stream</source>
-        <translation>Strom verteilen</translation>
     </message>
     <message>
         <source>Reset source</source>
@@ -939,16 +927,8 @@
         <translation>synch. Pakete</translation>
     </message>
     <message>
-        <source>Registered sinks</source>
-        <translation>Registrierte Senken</translation>
-    </message>
-    <message>
         <source>Target for audio streaming</source>
         <translation>Цель для потокового аудио</translation>
-    </message>
-    <message>
-        <source>Drop stream</source>
-        <translation>падение потока</translation>
     </message>
     <message>
         <source>Sender:</source>
@@ -995,19 +975,39 @@
         <translation>Каналы</translation>
     </message>
     <message>
-        <source>Show stream info</source>
-        <translation>Показать stream info</translation>
-    </message>
-    <message>
-        <source>Add network sink</source>
-        <translation>Добавить network sink</translation>
-    </message>
-    <message>
         <source>Show window</source>
         <translation type="unfinished">Показать окно</translation>
     </message>
     <message>
         <source>Close window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streaming</source>
+        <translation type="unfinished">Потоковая передача</translation>
+    </message>
+    <message>
+        <source>Running streams</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Play source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pause source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hide source info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show source info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send audio</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1404,6 +1404,18 @@ The participant is known as</source>
         <source>Do you want to reset the program settings?
 Homer Conferencing will be stopped afterwards!</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Broadcast data</source>
+        <translation type="unfinished">Аудио/Видео трансляция</translation>
+    </message>
+    <message>
+        <source>Tool bars</source>
+        <translation type="unfinished">Панель инструментов</translation>
+    </message>
+    <message>
+        <source>Streaming</source>
+        <translation type="unfinished">Потоковая передача</translation>
     </message>
 </context>
 <context>
@@ -2078,10 +2090,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Отсутствие камеры</translation>
     </message>
     <message>
-        <source>Preview</source>
-        <translation>предварительный просмотр</translation>
-    </message>
-    <message>
         <source>PTT mode</source>
         <translation>PTT-Modus</translation>
     </message>
@@ -2096,6 +2104,10 @@ Homer Conferencing will be stopped afterwards!</source>
     <message>
         <source>No microphone available. Please, select another source!</source>
         <translation>Микрофон не обнаружен. Укажите другой источник!</translation>
+    </message>
+    <message>
+        <source>Player</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2212,16 +2224,8 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>задержка</translation>
     </message>
     <message>
-        <source>Hide stream info</source>
-        <translation>Скрыть информацию о потоке</translation>
-    </message>
-    <message>
         <source>System too busy</source>
         <translation>Система перегружена</translation>
-    </message>
-    <message>
-        <source>Bilinear filtering deactivated</source>
-        <translation>Билинейная фильтрация отключена</translation>
     </message>
     <message>
         <source>Unmirror vertically</source>
@@ -2242,14 +2246,6 @@ Homer Conferencing will be stopped afterwards!</source>
     <message>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot;не доступно. Пожалуйста, выберите другой!</translation>
-    </message>
-    <message>
-        <source>Continue stream</source>
-        <translation>Продолжить поток</translation>
-    </message>
-    <message>
-        <source>Relay stream</source>
-        <translation>реле потока</translation>
     </message>
     <message>
         <source>Reset source</source>
@@ -2344,20 +2340,12 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Window mode</translation>
     </message>
     <message>
-        <source>Registered sinks</source>
-        <translation>зарегистрированный sinks</translation>
-    </message>
-    <message>
         <source>Live marker</source>
         <translation>Живой маркер</translation>
     </message>
     <message>
         <source>Full screen</source>
         <translation>Полный экран</translation>
-    </message>
-    <message>
-        <source>Drop stream</source>
-        <translation>Поток снижения</translation>
     </message>
     <message>
         <source>Target for video streaming</source>
@@ -2444,20 +2432,8 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Объем:</translation>
     </message>
     <message>
-        <source>Show stream info</source>
-        <translation>Показать информацию о потоке</translation>
-    </message>
-    <message>
         <source>Smooth display</source>
         <translation>Гладкий дисплей</translation>
-    </message>
-    <message>
-        <source>Bilinear filtering activated</source>
-        <translation>Билинейная фильтрация активированна</translation>
-    </message>
-    <message>
-        <source>Add network sink</source>
-        <translation>Добавить сеть sink</translation>
     </message>
     <message>
         <source>Fast display</source>
@@ -2471,12 +2447,61 @@ Homer Conferencing will be stopped afterwards!</source>
         <source>Close window</source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>Homer::Gui::VideoWorkerThread</name>
     <message>
-        <source>Waiting for data..</source>
-        <translation>Ожидание данных ..</translation>
+        <source>filtering activated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>filtering deactivated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>system state activated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>system state deactivated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Video overlay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>System state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Streaming</source>
+        <translation type="unfinished">Потоковая передача</translation>
+    </message>
+    <message>
+        <source>Running streams</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Play source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pause source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hide source info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show source info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send video</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quick recording</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2652,10 +2677,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Начать просмотр видео</translation>
     </message>
     <message>
-        <source>Video/Audio source</source>
-        <translation>Видео / аудио источник</translation>
-    </message>
-    <message>
         <source>Online status</source>
         <translation>Онлайн статус</translation>
     </message>
@@ -2772,10 +2793,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Окно сообщений</translation>
     </message>
     <message>
-        <source>Video/audio source</source>
-        <translation>Видео-/Аудио источник</translation>
-    </message>
-    <message>
         <source>File transfers</source>
         <translation>Передача файла</translation>
     </message>
@@ -2830,10 +2847,6 @@ Homer Conferencing will be stopped afterwards!</source>
     <message>
         <source>Conferencing</source>
         <translation>Конференц-связь</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Настройки</translation>
     </message>
     <message>
         <source>Version</source>
@@ -2897,6 +2910,10 @@ Homer Conferencing will be stopped afterwards!</source>
     </message>
     <message>
         <source>Ctrl+O</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3109,10 +3126,6 @@ p, li { white-space: pre-wrap; }
         <translation>Воспроизведение аудио включено</translation>
     </message>
     <message>
-        <source>Open video/audio preview</source>
-        <translation>Откройте видео / аудио для просмотра</translation>
-    </message>
-    <message>
         <source>/dev/video0</source>
         <translation>/dev/vide0</translation>
     </message>
@@ -3187,6 +3200,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Network access interface:</source>
         <translation>Интерфейс доступа к сети: </translation>
+    </message>
+    <message>
+        <source>Open video/audio player</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3835,10 +3852,6 @@ Do you want to replace it?</source>
         <translation>Трансляция локальный файл</translation>
     </message>
     <message>
-        <source>Preview</source>
-        <translation>Просмотр</translation>
-    </message>
-    <message>
         <source>GeneralControlWidget</source>
         <translation>Общий виджет контроль</translation>
     </message>
@@ -3847,20 +3860,24 @@ Do you want to replace it?</source>
         <translation>Трансляция внут. камеры</translation>
     </message>
     <message>
-        <source> Source </source>
-        <translation>Источник</translation>
-    </message>
-    <message>
-        <source> Streaming </source>
-        <translation>Передача</translation>
-    </message>
-    <message>
         <source>broadcast local audio input</source>
         <translation>Трансляция звуковой вход</translation>
     </message>
     <message>
         <source>Composite 11</source>
         <translation>Композит 11</translation>
+    </message>
+    <message>
+        <source>Player</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sender</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Receiver</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

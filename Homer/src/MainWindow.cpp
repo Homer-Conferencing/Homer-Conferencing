@@ -92,6 +92,7 @@ bool MainWindow::mStarting = true;
 
 MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     QMainWindow(),
+    AudioPlayback("Start/stop"),
     Ui_MainWindow(),
     MeetingObserver()
 {
@@ -134,7 +135,7 @@ MainWindow::MainWindow(QStringList pArguments, QString pAbsBinPath) :
     // audio playback - start sound
     #ifndef DEBUG_VERSION
         LOG(LOG_VERBOSE, "Playing start sound..");
-        OpenPlaybackDevice("Start/stop");
+        OpenPlaybackDevice();
         if (CONF.GetStartSound())
             StartAudioPlayback(CONF.GetStartSoundFile());
     #endif
@@ -225,7 +226,7 @@ void MainWindow::initializeGUI()
 {
     LOG(LOG_VERBOSE, "Initialization of GUI..");
     setupUi(this);
-    setWindowTitle("Homer Conferencing "HOMER_VERSION);
+    setWindowTitle("Homer Conferencing");
     move(CONF.GetMainWindowPosition());
     resize(CONF.GetMainWindowSize());
     if (CONF.GetMainWindowMinimized())
@@ -316,22 +317,22 @@ void MainWindow::connectSignalsSlots()
     connect(mShortcutActivateNetworkSimulationWidgets, SIGNAL(activated()), this, SLOT(actionActivateNetworkSimulationWidgets()));
     connect(mShortcutActivateDebuggingGlobally, SIGNAL(activated()), this, SLOT(actionActivateDebuggingGlobally()));
 
-    connect(mActionToolBarMediaSources, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarMediaSources(bool)));
-    connect(mToolBarMediaSources->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarMediaSources, SLOT(setChecked(bool)));
+    connect(mActionToolBarStreaming, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarStreaming(bool)));
+    connect(mToolBarStreaming->toggleViewAction(), SIGNAL(toggled(bool)), mActionToolBarStreaming, SLOT(setChecked(bool)));
 
     connect(mActionStautsBarWidget, SIGNAL(toggled(bool)), this, SLOT(actionActivateStatusBar(bool)));
     addAction(mActionMainMenu); // this action will also be available even if the main menu is hidden
     connect(mActionMainMenu, SIGNAL(toggled(bool)), this, SLOT(actionActivateMenuBar(bool)));
     addAction(mActionMonitorBroadcastWidget); // this action will also be available even if the main menu is hidden
-    connect(mActionMonitorBroadcastWidget, SIGNAL(toggled(bool)), mLocalUserParticipantWidget, SLOT(setVisible(bool)));
+    connect(mActionMonitorBroadcastWidget, SIGNAL(toggled(bool)), this, SLOT(actionActivateBroadcastWidget(bool)));
     addAction(mActionMosaicMode); // this action will also be available even if the main menu is hidden
     connect(mActionMosaicMode, SIGNAL(toggled(bool)), this, SLOT(actionActivateMosaicMode(bool)));
 
     mActionMonitorBroadcastWidget->setChecked(CONF.GetVisibilityBroadcastWidget());
 
-    mToolBarMediaSources->setVisible(CONF.GetVisibilityToolBarMediaSources());
-    mToolBarMediaSources->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarMediaSources());
-    mActionToolBarMediaSources->setChecked(CONF.GetVisibilityToolBarMediaSources());
+    mToolBarStreaming->setVisible(CONF.GetVisibilityToolBarMediaSources());
+    mToolBarStreaming->toggleViewAction()->setChecked(CONF.GetVisibilityToolBarMediaSources());
+    mActionToolBarStreaming->setChecked(CONF.GetVisibilityToolBarMediaSources());
     mActionStautsBarWidget->setChecked(CONF.GetVisibilityStatusBar());
 
     if ((CONF.ConferencingEnabled()) && (mToolBarOnlineStatus != NULL))
@@ -635,7 +636,7 @@ void MainWindow::initializeColoring()
     // tool bars
     if (mToolBarOnlineStatus != NULL)
         mToolBarOnlineStatus->setStyleSheet("QToolBar#mToolBarOnlineStatus{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
-    mToolBarMediaSources->setStyleSheet("QToolBar#mToolBarMediaSources{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
+    mToolBarStreaming->setStyleSheet("QToolBar#mToolBarStreaming{ background-color: qlineargradient(x1:0, y1:1, x2:0, y2:0, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255)); border: 0px solid black }");
 }
 
 void MainWindow::initializeWidgetsAndMenus()
@@ -693,7 +694,7 @@ void MainWindow::initializeWidgetsAndMenus()
 
     LOG(LOG_VERBOSE, "..streaming control widget");
     mMediaSourcesControlWidget = new StreamingControlWidget(this, mMenuStreaming, mLocalUserParticipantWidget, mMediaSourceDesktop);
-    mToolBarMediaSources->addWidget(mMediaSourcesControlWidget);
+    mToolBarStreaming->addWidget(mMediaSourcesControlWidget);
     if (mOwnVideoMuxer->SupportsMultipleInputStreams())
         mMediaSourcesControlWidget->SetVideoInputSelectionVisible();
     else
@@ -1012,7 +1013,7 @@ void MainWindow::closeEvent(QCloseEvent* pEvent)
     CONF.SetVisibilityStatusBar(mStatusBar->isVisible());
     CONF.SetMainWindowPosition(pos());
     CONF.SetMainWindowSize(size());
-    CONF.SetVisibilityToolBarMediaSources(mToolBarMediaSources->isVisible());
+    CONF.SetVisibilityToolBarMediaSources(mToolBarStreaming->isVisible());
     if (mToolBarOnlineStatus != NULL)
         CONF.SetVisibilityToolBarOnlineStatus(mToolBarOnlineStatus->isVisible());
 
@@ -1125,9 +1126,8 @@ void MainWindow::handleMeetingEvent(GeneralEvent *pEvent)
 void MainWindow::GetEventSource(GeneralEvent *pEvent, QString &pSender, QString &pSenderApp)
 {
     pSender = (pEvent->SenderName != "") ? QString(pEvent->SenderName.c_str()) : QString(pEvent->Sender.c_str());
-    pSenderApp = (pEvent->SenderApplication != "") ? QString(pEvent->SenderApplication.c_str()) : "";
-    if (pSenderApp.startsWith(USER_AGENT_SIGNATURE_PREFIX))
-        pSenderApp = "Homer-Conferencing";
+    QString tSipSoftware = (pEvent->SenderApplication != "") ? QString(pEvent->SenderApplication.c_str()) : "";
+    pSenderApp = CONTACTSWIDGET.GetSoftwareStr(tSipSoftware);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *pEvent)
@@ -1215,6 +1215,28 @@ void MainWindow::changeEvent (QEvent *pEvent)
     QMainWindow::changeEvent(pEvent);
 }
 
+ParticipantWidget* MainWindow::GetParticipantWidget(QString pParticipant, enum TransportType pTransport)
+{
+    ParticipantWidget *tResult = NULL;
+    ParticipantWidgetList::iterator tIt;
+
+    // inform participant widget about new state
+    if (mParticipantWidgets.size())
+    {
+        // search for corresponding participant widget
+        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+        {
+            if ((*tIt)->IsThisParticipant(pParticipant, pTransport))
+            {
+                tResult = *tIt;
+                break;
+            }
+        }
+    }
+
+    return tResult;
+}
+
 void MainWindow::customEvent(QEvent* pEvent)
 {
     // make sure we have our user defined QEvent
@@ -1249,7 +1271,7 @@ void MainWindow::customEvent(QEvent* pEvent)
     OptionsAcceptEvent *tOAEvent;
     OptionsUnavailableEvent *tOUAEvent;
     GeneralEvent *tEvent = ((QMeetingEvent*) pEvent)->getEvent();
-    ParticipantWidget *tParticipantWidget;
+    ParticipantWidget *tParticipantWidget = NULL;
     AddNetworkSinkDialog *tANSDialog =  NULL;
     QString tEventSender, tEventSenderApp;
 
@@ -1287,9 +1309,10 @@ void MainWindow::customEvent(QEvent* pEvent)
     switch(tEvent->getType())
     {
         case ADD_PARTICIPANT:
+                    LOG(LOG_VERBOSE, "Have to add a new participant..");
                     //####################### PARTICIPANT ADD #############################
                     tAPEvent = (AddParticipantEvent*) tEvent;
-                    AddParticipantSession(tAPEvent->User, tAPEvent->Host, tAPEvent->Port, tAPEvent->Transport, tAPEvent->Ip, tAPEvent->InitState);
+                    AddParticipantWidget(tAPEvent->User, tAPEvent->Host, tAPEvent->Port, tAPEvent->Transport, tAPEvent->Ip, tAPEvent->InitState);
                     break;
         case DELETE_SESSION:
                     //####################### PARTICIPANT DELETE #############################
@@ -1324,21 +1347,13 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // inform contacts pool about online state
                     CONTACTS.UpdateContact(QString::fromLocal8Bit(tOEvent->Sender.c_str()), tOEvent->Transport, CONTACT_AVAILABLE, QString(tOEvent->SenderApplication.c_str()));
 
+                    tParticipantWidget = GetParticipantWidget(QString(tOEvent->Sender.c_str()), tOEvent->Transport);
                     // inform participant widget about new state
-                    if (mParticipantWidgets.size())
+                    if(tParticipantWidget != NULL)
                     {
-                        // search for corresponding participant widget
-                        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
-                        {
-                            if ((*tIt)->IsThisParticipant(QString(tOEvent->Sender.c_str()), tOEvent->Transport))
-                            {
-                                tKnownParticipant = true;
-                                (*tIt)->UpdateParticipantState(CONTACT_AVAILABLE);
-                                break;
-                            }
-                        }
+                        tKnownParticipant = true;
+                        tParticipantWidget->UpdateParticipantState(CONTACT_AVAILABLE);
                     }
-
                     break;
         case OPTIONS_ACCEPT:
                     //######################## OPTIONS ACCEPT ##########################
@@ -1347,21 +1362,13 @@ void MainWindow::customEvent(QEvent* pEvent)
                     // inform contacts pool about online state
                     CONTACTS.UpdateContact(QString::fromLocal8Bit(tOAEvent->Sender.c_str()), tOAEvent->Transport, CONTACT_AVAILABLE, QString(tOAEvent->SenderApplication.c_str()));
 
+                    tParticipantWidget = GetParticipantWidget(QString(tOAEvent->Sender.c_str()), tOAEvent->Transport);
                     // inform participant widget about new state
-                    if (mParticipantWidgets.size())
+                    if(tParticipantWidget != NULL)
                     {
-                        // search for corresponding participant widget
-                        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
-                        {
-                            if ((*tIt)->IsThisParticipant(QString(tOAEvent->Sender.c_str()), tOAEvent->Transport))
-                            {
-                                tKnownParticipant = true;
-                                (*tIt)->UpdateParticipantState(CONTACT_AVAILABLE);
-                                break;
-                            }
-                        }
+                        tKnownParticipant = true;
+                        tParticipantWidget->UpdateParticipantState(CONTACT_AVAILABLE);
                     }
-
                     break;
         case OPTIONS_UNAVAILABLE:
                     //######################## OPTIONS UNAVAILABLE ##########################
@@ -1372,35 +1379,23 @@ void MainWindow::customEvent(QEvent* pEvent)
 
                     LOG(LOG_WARN, "Contact unavailable, reason is \"%s\"(%d).", tOUAEvent->Description.c_str(), tOUAEvent->StatusCode);
 
+                    tParticipantWidget = GetParticipantWidget(QString(tOUAEvent->Sender.c_str()), tOUAEvent->Transport);
                     // inform participant widget about new state
-                    if (mParticipantWidgets.size())
+                    if(tParticipantWidget != NULL)
                     {
-                        // search for corresponding participant widget
-                        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
-                        {
-                            if ((*tIt)->IsThisParticipant(QString(tOUAEvent->Sender.c_str()), tOUAEvent->Transport))
-                            {
-                                tKnownParticipant = true;
-                                (*tIt)->UpdateParticipantState(CONTACT_UNAVAILABLE);
-                                break;
-                            }
-                        }
+                        tKnownParticipant = true;
+                        tParticipantWidget->UpdateParticipantState(CONTACT_UNAVAILABLE);
                     }
-
                     break;
         case GENERAL_ERROR:
                     //############################ GENERAL_ERROR #############################
                     tEEvent = (ErrorEvent*) tEvent;
 
-                    // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tEEvent->Sender.c_str()), tEEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tEEvent->Sender.c_str()), tEEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            (*tIt)->HandleGeneralError(tEEvent->IsIncomingEvent, tEEvent->StatusCode, QString(tEEvent->Description.c_str()));
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        tParticipantWidget->HandleGeneralError(tEEvent->IsIncomingEvent, tEEvent->StatusCode, QString(tEEvent->Description.c_str()));
                     }
                     break;
         case MESSAGE:
@@ -1421,35 +1416,23 @@ void MainWindow::customEvent(QEvent* pEvent)
                     if (tMEvent->SenderComment != "Broadcast")
                     {//unicast message
 
-                        if (mParticipantWidgets.size())
-                        {
-                            // search for corresponding participant widget
-                            for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
-                            {
-                                if ((*tIt)->IsThisParticipant(QString(tMEvent->Sender.c_str()), tMEvent->Transport))
-                                {
-                                    tKnownParticipant = true;
-                                    if (tMEvent->SenderName.size())
-                                        (*tIt)->UpdateParticipantName(QString(tMEvent->SenderName.c_str()));
-                                    (*tIt)->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!tKnownParticipant)
+                        tParticipantWidget = GetParticipantWidget(QString(tMEvent->Sender.c_str()), tMEvent->Transport);
+                        if(tParticipantWidget == NULL)
                         {
                             // add without any OpenSession-check, the session is always added automatically by the meeting-layer
                             tParticipantWidget = ParticipantWidget::CreateParticipant(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()), tMEvent->Transport);
-
                             if (tParticipantWidget != NULL)
                             {
                                 mParticipantWidgets.push_back(tParticipantWidget);
-                                if (tMEvent->SenderName.size())
-                                    tParticipantWidget->UpdateParticipantName(QString(tMEvent->SenderName.c_str()));
-                                tParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
                             } else
                                 LOG(LOG_ERROR, "ParticipantWidget creation failed");
+                        }
+                        if(tParticipantWidget != NULL)
+                        {
+                            tKnownParticipant = true;
+                            if (tMEvent->SenderName.size())
+                                tParticipantWidget->UpdateParticipantName(QString(tMEvent->SenderName.c_str()));
+                            tParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
                         }
                         break;
                     } else
@@ -1465,14 +1448,11 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tMAEvent = (MessageAcceptEvent*) tEvent;
 
                     // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tMAEvent->Sender.c_str()), tMAEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tMAEvent->Sender.c_str()), tMAEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            (*tIt)->HandleMessageAccept(tMAEvent->IsIncomingEvent);
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        tParticipantWidget->HandleMessageAccept(tMAEvent->IsIncomingEvent);
                     }
                     break;
         case MESSAGE_ACCEPT_DELAYED:
@@ -1480,14 +1460,11 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tMADEvent = (MessageAcceptDelayedEvent*) tEvent;
 
                     // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tMADEvent->Sender.c_str()), tMADEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tMADEvent->Sender.c_str()), tMADEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            (*tIt)->HandleMessageAcceptDelayed(tMADEvent->IsIncomingEvent);
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        tParticipantWidget->HandleMessageAcceptDelayed(tMADEvent->IsIncomingEvent);
                     }
                     break;
         case MESSAGE_UNAVAILABLE:
@@ -1495,14 +1472,11 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tMUEvent = (MessageUnavailableEvent*) tEvent;
 
                     // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tMUEvent->Sender.c_str()), tMUEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tMUEvent->Sender.c_str()), tMUEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            (*tIt)->HandleMessageUnavailable(tMUEvent->IsIncomingEvent, tMUEvent->StatusCode, QString(tMUEvent->Description.c_str()));
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        tParticipantWidget->HandleMessageUnavailable(tMUEvent->IsIncomingEvent, tMUEvent->StatusCode, QString(tMUEvent->Description.c_str()));
                     }
                     break;
         case CALL:
@@ -1519,70 +1493,51 @@ void MainWindow::customEvent(QEvent* pEvent)
                         }
                     }
 
-                    if (mParticipantWidgets.size())
-                    {
-                        // search for corresponding participant widget
-                        for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
-                        {
-                            if ((*tIt)->IsThisParticipant(QString(tCEvent->Sender.c_str()), tCEvent->Transport))
-                            {
-                                tKnownParticipant = true;
-                                if (tCEvent->SenderName.size())
-                                    (*tIt)->UpdateParticipantName(QString(tCEvent->SenderName.c_str()));
-
-                                if (!tCEvent->AutoAnswering)
-                                    (*tIt)->HandleCall(tCEvent->IsIncomingEvent, QString(tEvent->SenderApplication.c_str()));
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!tKnownParticipant)
+                    tParticipantWidget = GetParticipantWidget(QString(tCEvent->Sender.c_str()), tCEvent->Transport);
+                    if(tParticipantWidget == NULL)
                     {
                         // add without any OpenSession-check, the session is always added automatically by the meeting-layer
                         tParticipantWidget = ParticipantWidget::CreateParticipant(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()), tCEvent->Transport);
-
                         if (tParticipantWidget != NULL)
                         {
                             mParticipantWidgets.push_back(tParticipantWidget);
-                            if (tCEvent->SenderName.size())
-                                tParticipantWidget->UpdateParticipantName(QString(tCEvent->SenderName.c_str()));
-                            if (!tCEvent->AutoAnswering)
-                                tParticipantWidget->HandleCall(tCEvent->IsIncomingEvent, QString(tCEvent->SenderApplication.c_str()));
                         } else
                             LOG(LOG_ERROR, "ParticipantWidget creation failed");
+                    }
+                    if(tParticipantWidget != NULL)
+                    {
+                        tKnownParticipant = true;
+                        if (tCEvent->SenderName.size())
+                            tParticipantWidget->UpdateParticipantName(QString(tCEvent->SenderName.c_str()));
+                        if (!tCEvent->AutoAnswering)
+                            tParticipantWidget->HandleCall(tCEvent->IsIncomingEvent, QString(tEvent->SenderApplication.c_str()));
+
                     }
                     break;
         case CALL_RINGING:
                     //############################# CALL RINGING ##############################
                     tCREvent = (CallRingingEvent*) tEvent;
                     // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tCREvent->Sender.c_str()), tCREvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCREvent->Sender.c_str()), tCREvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            if (tCREvent->SenderName.size())
-                                (*tIt)->UpdateParticipantName(QString(tCREvent->SenderName.c_str()));
-                            (*tIt)->HandleCallRinging(tCREvent->IsIncomingEvent);
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        if (tCREvent->SenderName.size())
+                            tParticipantWidget->UpdateParticipantName(QString(tCREvent->SenderName.c_str()));
+                        tParticipantWidget->HandleCallRinging(tCREvent->IsIncomingEvent);
                     }
                     break;
         case CALL_ACCEPT:
                     //############################# CALL ACCEPT ##############################
                     tCAEvent = (CallAcceptEvent*) tEvent;
                     // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tCAEvent->Sender.c_str()), tCAEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCAEvent->Sender.c_str()), tCAEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            if (tCAEvent->SenderName.size())
-                                (*tIt)->UpdateParticipantName(QString(tCAEvent->SenderName.c_str()));
-                            (*tIt)->HandleCallAccept(tCAEvent->IsIncomingEvent);
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        if (tCAEvent->SenderName.size())
+                            tParticipantWidget->UpdateParticipantName(QString(tCAEvent->SenderName.c_str()));
+                        tParticipantWidget->HandleCallAccept(tCAEvent->IsIncomingEvent);
                     }
                     break;
         case CALL_CANCEL:
@@ -1598,48 +1553,39 @@ void MainWindow::customEvent(QEvent* pEvent)
                             mSysTrayIcon->showMessage("Call canceled from " + tEventSender, (tEventSenderApp != "") ? "(via \"" + tEventSenderApp + "\")" : "", QSystemTrayIcon::Information, CONF.GetSystrayTimeout());
                         }
                     }
-
-                    // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tCCEvent->Sender.c_str()), tCCEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCCEvent->Sender.c_str()), tCCEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            if (tCCEvent->SenderName.size())
-                                (*tIt)->UpdateParticipantName(QString(tCCEvent->SenderName.c_str()));
-                            (*tIt)->HandleCallCancel(tCCEvent->IsIncomingEvent);
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        if (tCCEvent->SenderName.size())
+                            tParticipantWidget->UpdateParticipantName(QString(tCCEvent->SenderName.c_str()));
+                        tParticipantWidget->HandleCallCancel(tCCEvent->IsIncomingEvent);
                     }
                     break;
         case CALL_DENY:
                     //############################# CALL DENY ##############################
                     tCDEvent = (CallDenyEvent*) tEvent;
                     // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tCDEvent->Sender.c_str()), tCDEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCDEvent->Sender.c_str()), tCDEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            if (tCDEvent->SenderName.size())
-                                (*tIt)->UpdateParticipantName(QString(tCDEvent->SenderName.c_str()));
-                            (*tIt)->HandleCallDenied(tCDEvent->IsIncomingEvent);
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        if (tCDEvent->SenderName.size())
+                            tParticipantWidget->UpdateParticipantName(QString(tCDEvent->SenderName.c_str()));
+                        tParticipantWidget->HandleCallDenied(tCDEvent->IsIncomingEvent);
                     }
                     break;
         case CALL_UNAVAILABLE:
                     //########################### CALL UNAVAILABLE ###########################
                     tCUEvent = (CallUnavailableEvent*) tEvent;
                     // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tCUEvent->Sender.c_str()), tCUEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCUEvent->Sender.c_str()), tCUEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            (*tIt)->HandleCallUnavailable(tCUEvent->IsIncomingEvent, tCUEvent->StatusCode, QString(tCUEvent->Description.c_str()));
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        if (tCUEvent->SenderName.size())
+                            tParticipantWidget->UpdateParticipantName(QString(tCUEvent->SenderName.c_str()));
+                        tParticipantWidget->HandleCallUnavailable(tCUEvent->IsIncomingEvent, tCUEvent->StatusCode, QString(tCUEvent->Description.c_str()));
                     }
                     break;
         case CALL_HANGUP:
@@ -1656,48 +1602,39 @@ void MainWindow::customEvent(QEvent* pEvent)
                     }
 
                     // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tCHUEvent->Sender.c_str()), tCHUEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCHUEvent->Sender.c_str()), tCHUEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            if (tCHUEvent->SenderName.size())
-                                (*tIt)->UpdateParticipantName(QString(tCHUEvent->SenderName.c_str()));
-                            (*tIt)->HandleCallHangup(tCHUEvent->IsIncomingEvent);
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        if (tCHUEvent->SenderName.size())
+                            tParticipantWidget->UpdateParticipantName(QString(tCHUEvent->SenderName.c_str()));
+                        tParticipantWidget->HandleCallHangup(tCHUEvent->IsIncomingEvent);
                     }
                     break;
         case CALL_TERMINATION:
                     //######################### CALL TERMINATION ############################
                     tCTEvent = (CallTerminationEvent*) tEvent;
                     // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tCTEvent->Sender.c_str()), tCTEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCTEvent->Sender.c_str()), tCTEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            if (tCTEvent->SenderName.size())
-                                (*tIt)->UpdateParticipantName(QString(tCTEvent->SenderName.c_str()));
-                            (*tIt)->HandleCallTermination(tCTEvent->IsIncomingEvent);
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        if (tCTEvent->SenderName.size())
+                            tParticipantWidget->UpdateParticipantName(QString(tCTEvent->SenderName.c_str()));
+                        tParticipantWidget->HandleCallTermination(tCTEvent->IsIncomingEvent);
                     }
                     break;
         case CALL_MEDIA_UPDATE:
                     //######################## CALL MEDIA UPDATE ############################
                     tCMUEvent = (CallMediaUpdateEvent*) tEvent;
                     // search for corresponding participant widget
-                    for (tIt = mParticipantWidgets.begin(); tIt != mParticipantWidgets.end(); tIt++)
+                    tParticipantWidget = GetParticipantWidget(QString(tCMUEvent->Sender.c_str()), tCMUEvent->Transport);
+                    if(tParticipantWidget != NULL)
                     {
-                        if ((*tIt)->IsThisParticipant(QString(tCMUEvent->Sender.c_str()), tCMUEvent->Transport))
-                        {
-                            tKnownParticipant = true;
-                            if (tCMUEvent->SenderName.size())
-                                (*tIt)->UpdateParticipantName(QString(tCMUEvent->SenderName.c_str()));
-                            (*tIt)->HandleMediaUpdate(tCMUEvent->IsIncomingEvent, QString(tCMUEvent->RemoteAudioAddress.c_str()), tCMUEvent->RemoteAudioPort, QString(tCMUEvent->RemoteAudioCodec.c_str()), QString(tCMUEvent->RemoteVideoAddress.c_str()), tCMUEvent->RemoteVideoPort, QString(tCMUEvent->RemoteVideoCodec.c_str()));
-                            break;
-                        }
+                        tKnownParticipant = true;
+                        if (tCMUEvent->SenderName.size())
+                            tParticipantWidget->UpdateParticipantName(QString(tCMUEvent->SenderName.c_str()));
+                        tParticipantWidget->HandleMediaUpdate(tCMUEvent->IsIncomingEvent, QString(tCMUEvent->RemoteAudioAddress.c_str()), tCMUEvent->RemoteAudioPort, QString(tCMUEvent->RemoteAudioCodec.c_str()), QString(tCMUEvent->RemoteVideoAddress.c_str()), tCMUEvent->RemoteVideoPort, QString(tCMUEvent->RemoteVideoCodec.c_str()));
                     }
                     break;
         case REGISTRATION:
@@ -1791,7 +1728,7 @@ QString MainWindow::CompleteIpAddress(QString pAddr)
     return tResult;
 }
 
-ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHost, QString pPort, enum TransportType pTransport, QString pIp, int pInitState)
+ParticipantWidget* MainWindow::AddParticipantWidget(QString pUser, QString pHost, QString pPort, enum TransportType pTransport, QString pIp, int pInitState)
 {
     ParticipantWidget *tParticipantWidget = NULL;
 
@@ -1828,18 +1765,20 @@ ParticipantWidget* MainWindow::AddParticipantSession(QString pUser, QString pHos
 
 			pHost = CompleteIpAddress(pHost);
 			MEETING.OpenParticipantSession(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString(), pTransport);
-//          if
-//			{
-				QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
 
+            QString tParticipant = QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str());
+
+			tParticipantWidget = GetParticipantWidget(tParticipant, pTransport);
+            if(tParticipantWidget == NULL)
+            {
 				tParticipantWidget = ParticipantWidget::CreateParticipant(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
 
 				mParticipantWidgets.push_back(tParticipantWidget);
 
 				if (pInitState == CALLSTATE_RINGING)
 					MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()), pTransport);
-//			} else
-//				ShowInfo(Homer::Gui::MainWindow::tr("Participant is already contacted"), Homer::Gui::MainWindow::tr("The participant with the address") + " \"" + QString(MEETING.SipCreateId(pUser.toStdString(), pHost.toStdString(), pPort.toStdString()).c_str()) + "\" " + Homer::Gui::MainWindow::tr("is already contacted and a participant window is currently open!"));
+            }else
+                LOG(LOG_VERBOSE, "Participant widget already exists, open request ignored");
     	}else
     	{
 			ShowInfo(Homer::Gui::MainWindow::tr("Loop detected"), Homer::Gui::MainWindow::tr("You tried to contact yourself!"));
@@ -2055,7 +1994,7 @@ void MainWindow::actionToggleWindowState()
     LOG(LOG_VERBOSE, "Toggling window state");
     if (isMinimized())
     {
-        LOG(LOG_VERBOSE, "Found window minized");
+        LOG(LOG_VERBOSE, "Found window minimized");
         activateWindow();
         if (sWasFullScreen)
         {
@@ -2065,7 +2004,7 @@ void MainWindow::actionToggleWindowState()
         {
             if (sWasMaximized)
             {
-                LOG(LOG_VERBOSE, "Mayiming the main window");
+                LOG(LOG_VERBOSE, "Minimizing the main window");
                 showMaximized();
             }else
             {
@@ -2144,8 +2083,8 @@ void MainWindow::actionActivateMosaicMode(bool pActive)
 		mStatusBar->hide();
 		mMenuBar->hide();
 		mMosaicModeToolBarOnlineStatusWasVisible = mToolBarOnlineStatus->isVisible();
-		mMosaicModeToolBarMediaSourcesWasVisible = mToolBarMediaSources->isVisible();
-		mToolBarMediaSources->hide();
+		mMosaicModeToolBarMediaSourcesWasVisible = mToolBarStreaming->isVisible();
+		mToolBarStreaming->hide();
 		mToolBarOnlineStatus->hide();
 		if(mOverviewContactsWidget != NULL)
 		    mOverviewContactsWidget->hide();
@@ -2177,7 +2116,7 @@ void MainWindow::actionActivateMosaicMode(bool pActive)
 		mLocalUserParticipantWidget->ToggleMosaicMode(pActive);
 	    mStatusBar->setVisible(CONF.GetVisibilityStatusBar());
 	    mMenuBar->setVisible(CONF.GetVisibilityMenuBar());
-	    mToolBarMediaSources->setVisible(mMosaicModeToolBarMediaSourcesWasVisible);
+	    mToolBarStreaming->setVisible(mMosaicModeToolBarMediaSourcesWasVisible);
 	    mToolBarOnlineStatus->setVisible(mMosaicModeToolBarOnlineStatusWasVisible);
 	    if(mOverviewContactsWidget != NULL)
 	        mOverviewContactsWidget->setVisible(CONF.GetVisibilityContactsWidget());
@@ -2202,13 +2141,17 @@ void MainWindow::actionActivateToolBarOnlineStatus(bool pActive)
 	LOG(LOG_VERBOSE, "Setting online status tool bar visibility to: %d", pActive);
 	CONF.SetVisibilityToolBarOnlineStatus(pActive);
 	mToolBarOnlineStatus->setVisible(pActive);
+    if(mActionToolBarOnlineStatus->isChecked() != pActive)
+        mActionToolBarOnlineStatus->setChecked(pActive);
 }
 
-void MainWindow::actionActivateToolBarMediaSources(bool pActive)
+void MainWindow::actionActivateToolBarStreaming(bool pActive)
 {
-	LOG(LOG_VERBOSE, "Setting media sources tool bar visibility to: %d", pActive);
+	LOG(LOG_VERBOSE, "Setting streaming tool bar visibility to: %d", pActive);
 	CONF.SetVisibilityToolBarMediaSources(pActive);
-	mToolBarMediaSources->setVisible(pActive);
+	mToolBarStreaming->setVisible(pActive);
+    if(mActionToolBarStreaming->isChecked() != pActive)
+        mActionToolBarStreaming->setChecked(pActive);
 }
 
 void MainWindow::actionActivateStatusBar(bool pActive)
@@ -2216,6 +2159,8 @@ void MainWindow::actionActivateStatusBar(bool pActive)
 	LOG(LOG_VERBOSE, "Setting status bar visibility to: %d", pActive);
 	CONF.SetVisibilityStatusBar(pActive);
 	mStatusBar->setVisible(pActive);
+    if(mActionStautsBarWidget->isChecked() != pActive)
+        mActionStautsBarWidget->setChecked(pActive);
 }
 
 void MainWindow::actionActivateMenuBar(bool pActive)
@@ -2223,6 +2168,17 @@ void MainWindow::actionActivateMenuBar(bool pActive)
 	LOG(LOG_VERBOSE, "Setting menu bar visibility to: %d", pActive);
 	CONF.SetVisibilityMenuBar(pActive);
 	mMenuBar->setVisible(pActive);
+    if(mActionMainMenu->isChecked() != pActive)
+        mActionMainMenu->setChecked(pActive);
+}
+
+void MainWindow::actionActivateBroadcastWidget(bool pActive)
+{
+    LOG(LOG_VERBOSE, "Setting broadcast widget visibility to: %d", pActive);
+    CONF.SetVisibilityBroadcastWidget(pActive);
+    mLocalUserParticipantWidget->setVisible(pActive);
+    if(mActionMonitorBroadcastWidget->isChecked() != pActive)
+        mActionMonitorBroadcastWidget->setChecked(pActive);
 }
 
 void MainWindow::toggleMainMenu()
@@ -2282,6 +2238,42 @@ void MainWindow::UpdateSysTrayContextMenu()
         tMBKeys.push_back(Qt::ALT + Qt::Key_M);
         tAction->setShortcuts(tMBKeys);
         connect(tAction, SIGNAL(triggered()), this, SLOT(toggleMainMenu()));
+
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Tool bars"));
+        tMenu = new QMenu(this);
+        tAction->setMenu(tMenu);
+        tAction = tMenu->addAction(Homer::Gui::MainWindow::tr("Online status"));
+        tAction->setCheckable(true);
+        if(CONF.GetVisibilityToolBarOnlineStatus())
+        {
+            tAction->setChecked(true);
+        }else{
+            tAction->setChecked(false);
+        }
+        connect(tAction, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarOnlineStatus(bool)));
+        tAction = tMenu->addAction(Homer::Gui::MainWindow::tr("Streaming"));
+        tAction->setCheckable(true);
+        if(CONF.GetVisibilityToolBarMediaSources())
+        {
+            tAction->setChecked(true);
+        }else{
+            tAction->setChecked(false);
+        }
+        connect(tAction, SIGNAL(toggled(bool)), this, SLOT(actionActivateToolBarStreaming(bool)));
+
+
+        tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Broadcast data"));
+        tAction->setCheckable(true);
+        if(CONF.GetVisibilityBroadcastWidget())
+        {
+            tAction->setChecked(true);
+        }else{
+            tAction->setChecked(false);
+        }
+        QList<QKeySequence> tBDKeys;
+        tBDKeys.push_back(Qt::ALT + Qt::Key_B);
+        tAction->setShortcuts(tBDKeys);
+        connect(tAction, SIGNAL(toggled(bool)), this, SLOT(actionActivateBroadcastWidget(bool)));
 
         tAction = mSysTrayMenu->addAction(Homer::Gui::MainWindow::tr("Mosaic mode"));
         tAction->setCheckable(true);
@@ -2348,7 +2340,7 @@ void MainWindow::UpdateSysTrayContextMenu()
         tIcon = new QIcon(":/images/22_22/Exit.png");
         tAction->setIcon(*tIcon);
         QList<QKeySequence> tXKeys;
-        tXKeys.push_back(Qt::ALT + Qt::Key_X);
+        tXKeys.push_back(Qt::CTRL + Qt::Key_Q);
         tAction->setShortcuts(tXKeys);
         connect(tAction, SIGNAL(triggered()), this, SLOT(actionExit()));
     }

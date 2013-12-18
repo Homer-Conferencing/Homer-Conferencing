@@ -59,7 +59,7 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IS_WEB_LINK(x)										((x.substr(0, 7) == "http://") || (x.substr(0, 7) == "mmst://"))
+#define IS_WEB_LINK(x)										((x.substr(0, 7) == "http://") || (x.substr(0, 7) == "mmst://") || (x.substr(0, 7) == "icyx://"))
 
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     MediaSourceMem("FILE: " + pSourceFile)
@@ -183,6 +183,14 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     	LOG(LOG_VERBOSE, "Replacing mms:// by mmst:// in %s", mDesiredDevice.c_str());
 		string tNewDesiredDevice = "mmst://" + mDesiredDevice.substr(6, mDesiredDevice.size() - 6);
 		mDesiredDevice = tNewDesiredDevice;
+    }
+
+    // ffmpeg uses http:// instead of icyx://
+    if (mDesiredDevice.compare(0, string("icyx://").size(), "icyx://") == 0)
+    {
+        LOG(LOG_VERBOSE, "Replacing icyx:// by http:// in %s", mDesiredDevice.c_str());
+        string tNewDesiredDevice = "http://" + mDesiredDevice.substr(7, mDesiredDevice.size() - 6);
+        mDesiredDevice = tNewDesiredDevice;
     }
 
 

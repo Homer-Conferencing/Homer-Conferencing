@@ -83,8 +83,8 @@ class MainWindow:
         public Ui_MainWindow,
         public MeetingObserver
 {
-Q_OBJECT
-    ;
+Q_OBJECT;
+
 public:
     /// The default constructor
     MainWindow(QStringList pArguments, QString pAbsBinPath);
@@ -118,9 +118,10 @@ private slots:
     void actionMuteOthers();
 
     void actionActivateToolBarOnlineStatus(bool pActive);
-    void actionActivateToolBarMediaSources(bool pActive);
+    void actionActivateToolBarStreaming(bool pActive);
     void actionActivateStatusBar(bool pActive);
     void actionActivateMenuBar(bool pActive);
+    void actionActivateBroadcastWidget(bool pActive);
     void toggleMainMenu();
     void actionActivateDebuggingWidgets();
     void actionActivateDebuggingGlobally();
@@ -169,7 +170,8 @@ private:
     void loadSettings();
     bool GetNetworkInfo(AddressesList &pLocalAddressesList, AddressesList &pLocalAddressesNetmaskList,QString &pLocalGatewayIp, QString &pLocalLoopIp);
     QString CompleteIpAddress(QString pAddr);
-    ParticipantWidget* AddParticipantSession(QString pUser, QString pHost, QString pPort, enum TransportType pTransport, QString pIp, int pInitState);
+    ParticipantWidget* GetParticipantWidget(QString pParticipant, enum TransportType pTransport);
+    ParticipantWidget* AddParticipantWidget(QString pUser, QString pHost, QString pPort, enum TransportType pTransport, QString pIp, int pInitState);
     void DeleteParticipantSession(ParticipantWidget *pParticipantWidget);
 
     /* handle incoming Meeting events */

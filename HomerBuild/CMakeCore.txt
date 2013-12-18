@@ -466,12 +466,12 @@ IF (APPLE)
 ENDIF(APPLE)
 
 IF (APPLE)
-	MESSAGE("### Linking dynamic Apple libraries: ${LIBS_APPLE}")
-	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_APPLE})
-
 	MESSAGE("### Linking static Apple libraries: ${LIBS_APPLE_STATIC}")
 	SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-search_paths_first")
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_APPLE_STATIC})
+
+	MESSAGE("### Linking dynamic Apple libraries: ${LIBS_APPLE}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_APPLE})
 
 	MESSAGE("### Linking Apple frameworks: ${FRAMEWORKS_APPLE}")
 	FOREACH(FRAMEWORKS_APPLE_ENTRY ${FRAMEWORKS_APPLE})
@@ -480,18 +480,18 @@ IF (APPLE)
 ENDIF (APPLE)
 
 IF (BSD)
-	MESSAGE("### Linking dynamic BSD libraries: ${LIBS_BSD}")
-	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_BSD})
-
 	MESSAGE("### Linking static BSD libraries: ${LIBS_BSD_STATIC}")
 #	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_BSD_STATIC} )
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_BSD_STATIC} -Wl,-Bdynamic )
+
+	MESSAGE("### Linking dynamic BSD libraries: ${LIBS_BSD}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_BSD})
 ENDIF (BSD)
 
 IF (LINUX)
-	MESSAGE("### Linking dynamic Linux libraries: ${LIBS_LINUX}")
-	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX})
-
 	MESSAGE("### Linking static Linux libraries: ${LIBS_LINUX_STATIC}")
 	TARGET_LINK_LIBRARIES(${TARGET_NAME} -Wl,-Bstatic -Wl,-Bsymbolic ${LIBS_LINUX_STATIC} -Wl,-Bdynamic )
+
+	MESSAGE("### Linking dynamic Linux libraries: ${LIBS_LINUX}")
+	TARGET_LINK_LIBRARIES(${TARGET_NAME} ${LIBS_LINUX})
 ENDIF (LINUX)

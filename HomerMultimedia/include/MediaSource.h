@@ -32,6 +32,7 @@
 #include <MediaSinkNet.h>
 #include <MediaSinkFile.h>
 #include <MediaSink.h>
+#include <MediaFilter.h>
 #include <HBMutex.h>
 
 #include <vector>
@@ -191,10 +192,9 @@ typedef std::vector<MetaDataEntry> MetaData;
 ///////////////////////////////////////////////////////////////////////////////
 
 /* relaying */
-class MediaSource;
-typedef std::vector<MediaSink*>        MediaSinks;
-typedef std::vector<MediaSource*>      MediaSources;
 typedef int (*IOFunction)(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
+
+class MediaFilter;
 
 class MediaSource :
     public Homer::Monitor::PacketStatistic
@@ -299,6 +299,11 @@ public:
     virtual void SetPreBufferingAutoRestartActivation(bool pActive);
     virtual int GetDecoderOutputFrameDelay();
 
+    /* filtering */
+    virtual void RegisterMediaFilter(MediaFilter *pMediaFilter);
+    virtual bool UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete = true);
+    void DeleteAllRegisteredMediaFilters();
+
     /* simple relaying WITHOUT any reencoding functionality but WITH rtp support*/
 	// register/unregister: Berkeley sockets based media sinks
     	MediaSinkNet* RegisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, Socket* pSocket, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
@@ -394,6 +399,10 @@ protected:
 
     /* internal video resolution switch */
     virtual void DoSetVideoGrabResolution(int pResX = 352, int pResY = 288);
+
+    /* filtering */
+    virtual void RelayChunkToMediaFilters(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame = false);
+    friend class VideoScaler; // for access to "RelayChunkToMediaFilters()"
 
     /* internal interface for packet relaying */
     virtual void RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame = false);
@@ -517,6 +526,11 @@ protected:
     MediaSinks          mMediaSinks;
     Mutex               mMediaSinksMutex;
     bool                mRtpActivated;
+    /* filtering */
+    MediaFilters        mMediaFilters;
+    Mutex               mMediaFiltersMutex;
+    friend class MediaSourceMuxer; // for access to "mMediaFilters"
+
     /* recording */
     HM_SwrContext       *mRecorderAudioResampleContext;
     AVFifoBuffer        *mRecorderResampleFifo[MEDIA_SOURCE_MAX_AUDIO_CHANNELS];
@@ -547,6 +561,8 @@ protected:
     static Mutex 		mFfmpegInitMutex;
     static bool 		mFfmpegInitiated;
 };
+
+typedef std::vector<MediaSource*>      MediaSources;
 
 ///////////////////////////////////////////////////////////////////////////////
 

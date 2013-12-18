@@ -94,8 +94,9 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow):
-    QDockWidget(pMainWindow), AudioPlayback()
+    QDockWidget(pMainWindow), AudioPlayback("Events")
 {
+    LOG(LOG_VERBOSE, "Creating session of type: %d", (int)pSessionType);
     hide();
     mPlayPauseButtonIsPaused = -1;
     mMosaicMode = false;
@@ -199,7 +200,7 @@ ParticipantWidget::~ParticipantWidget()
     }
 
 	LOG(LOG_VERBOSE, "..closing playback device");
-    ClosePlaybackDevice();
+	ClosePlaybackDevice();
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
@@ -537,7 +538,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
 
     LOG(LOG_VERBOSE, "Initiating sound object for acoustic notifications..");
-    OpenPlaybackDevice(mSessionName + "-Events");
+    OpenPlaybackDevice("", mSessionName + "-Events");
 }
 
 QMenu* ParticipantWidget::GetMenuSettings()
@@ -1445,27 +1446,6 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
             mParticipantVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, mVideoSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
         if (pRemoteAudioPort != 0)
             mParticipantAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, mAudioSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
-
-        mSessionIsRunning = true;
-
-        // activate the A/V media sinks
-        if(mSessionIsRunning)
-        {
-            if(mParticipantAudioSink != NULL)
-            {
-                LOG(LOG_VERBOSE, "Setting audio sink activation to: %d", mParticipantAudioSinkActivation);
-                mParticipantAudioSink->SetActivation(mParticipantAudioSinkActivation);
-            }else{
-                LOG(LOG_WARN, "Cannot set the activation of invalid audio sink to: %d", mParticipantAudioSinkActivation);
-            }
-            if(mParticipantVideoSink != NULL)
-            {
-                LOG(LOG_VERBOSE, "Setting video sink activation to: %d", mParticipantVideoSinkActivation);
-                mParticipantVideoSink->SetActivation(mParticipantVideoSinkActivation);
-            }else{
-                LOG(LOG_WARN, "Cannot set the activation of invalid video sink to: %d", mParticipantAudioSinkActivation);
-            }
-        }
 
         if (mParticipantVideoSink != NULL)
             mParticipantVideoSink->AssignStreamName("CONF-OUT: " + mSessionName.toStdString());

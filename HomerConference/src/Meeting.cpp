@@ -288,13 +288,16 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, e
     ParticipantDescriptor tParticipantDescriptor;
     ParticipantList::iterator tIt;
 
+    if(pPort == "")
+        pPort = "5060";
+
     // lock
     mParticipantsMutex.lock();
 
     // is this user already involved in the conference?
     for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "CompareForOpen: \"%s\" with \"%s\" and state: %d", (pUser + "@" + pHost + ":" + pPort).c_str(), (tIt->User + "@" + tIt->Host + ":" + tIt->Port).c_str(), tIt->CallState);
+        //LOG(LOG_VERBOSE, "CompareForOpen: \"%s\" with \"%s\" and state: %d", (pUser + "@" + pHost + ":" + pPort).c_str(), (tIt->User + "@" + tIt->Host + ":" + tIt->Port).c_str(), tIt->CallState);
         if (IsThisParticipant(pUser, pHost, pPort, pTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
             LOG(LOG_VERBOSE, "...found");
@@ -543,6 +546,7 @@ bool Meeting::SendMessage(string pParticipant, enum TransportType pParticipantTr
         LOG(LOG_VERBOSE, "Search matching database entry for SendMessage()");
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
+            //LOG(LOG_VERBOSE, "SendMessage() compares participant %s with %s,%s,%s", pParticipant.c_str(), tIt->User.c_str(), tIt->Host.c_str(), tIt->Port.c_str());
             if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
                 LOG(LOG_VERBOSE, "...found");
@@ -1174,6 +1178,9 @@ bool Meeting::IsLocalAddress(string pHost, string pPort, enum TransportType pTra
     bool        tFound = false;
     string      tLocalPort = toString(mSipHostPort);
     AddressesList::iterator tIt;
+
+    if(pPort == "")
+        pPort = "5060";
 
     for (tIt = mLocalAddresses.begin(); tIt != mLocalAddresses.end(); tIt++)
     {

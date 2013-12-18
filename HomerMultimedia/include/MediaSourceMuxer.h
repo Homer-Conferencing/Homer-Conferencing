@@ -168,6 +168,8 @@ public:
     virtual bool SelectDevice(std::string pDesiredDevice, enum MediaType pMediaType, bool &pIsNewDevice); // returns if the new device should be reseted
     virtual std::string GetCurrentDeviceName();
     virtual std::string GetCurrentDevicePeerName();
+    virtual void RegisterMediaFilter(MediaFilter *pMediaFilter);
+    virtual bool UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete = true);
     virtual bool RegisterMediaSource(MediaSource *pMediaSource);
     virtual bool UnregisterMediaSource(MediaSource *pMediaSource, bool pAutoDelete = true);
 

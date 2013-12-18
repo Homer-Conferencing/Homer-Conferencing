@@ -203,8 +203,10 @@ VideoWidget::VideoWidget(QWidget* pParent):
     mMainWindow = NULL;
     mAssignedAction = NULL;
     mSmoothPresentation = CONF.GetSmoothVideoPresentation();
+    mSystemStatePresentation = false;
     parentWidget()->hide();
     hide();
+    mMediaFilterSystemState = NULL;
 }
 
 void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipantWidget, MediaSource *pVideoSource, QMenu *pMenu, QString pName, bool pVisible)
@@ -289,6 +291,9 @@ VideoWidget::~VideoWidget()
     }
     if (mAssignedAction != NULL)
         delete mAssignedAction;
+
+    if(mMediaFilterSystemState != NULL)
+        delete mMediaFilterSystemState;
 
     LOG(LOG_VERBOSE, "Destroyed");
 }
@@ -377,11 +382,17 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
     //###############################################################################
     if (mVideoSource->SupportsRecording())
     {
-        QIcon tIcon5;
         if (mVideoSource->IsRecording())
+        {
             tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Stop.png"), Homer::Gui::VideoWidget::tr("Stop recording"));
-        else
+            tAction->setShortcut(Qt::Key_E);
+        }else
             tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Record.png"), Homer::Gui::VideoWidget::tr("Start recording"));
+        if (!mVideoSource->IsRecording())
+        {
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Record.png"), Homer::Gui::VideoWidget::tr("Quick recording"));
+            tAction->setShortcut(Qt::Key_R);
+        }
     }
 
     pMenu->addSeparator();
@@ -390,27 +401,52 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
     //### STREAM INFO
     //###############################################################################
     if (mShowLiveStats)
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::VideoWidget::tr("Hide stream info"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::VideoWidget::tr("Hide source info"));
     else
-        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::VideoWidget::tr("Show stream info"));
+        tAction = pMenu->addAction(QPixmap(":/images/22_22/Info.png"), Homer::Gui::VideoWidget::tr("Show source info"));
     tAction->setCheckable(true);
     tAction->setChecked(mShowLiveStats);
     tAction->setShortcut(Qt::Key_I);
 
     //###############################################################################
-    //### Video settings
+    //### "Video Overlay"
     //###############################################################################
-    QMenu *tVideoMenu = pMenu->addMenu(QPixmap(":/images/22_22/Configuration_Video.png"), Homer::Gui::VideoWidget::tr("Playback"));
+    QMenu *tOverlayMenu = pMenu->addMenu(Homer::Gui::VideoWidget::tr("Video overlay"));
+        //###############################################################################
+        //### "Smooth presentation"
+        //###############################################################################
+        tAction = tOverlayMenu->addAction(Homer::Gui::VideoWidget::tr("System state"));
+        tAction->setCheckable(true);
+        tAction->setChecked(mSystemStatePresentation);
+        tAction->setShortcut(Qt::Key_O);
+
+        //###############################################################################
+        //### "Live marker"
+        //###############################################################################
+        if (mVideoSource->SupportsMarking())
+        {
+            tOverlayMenu->addSeparator();
+
+            tAction =  tOverlayMenu->addAction(Homer::Gui::VideoWidget::tr("Live marker"));
+            tAction->setCheckable(true);
+            tAction->setChecked(mVideoSource->MarkerActive());
+            tAction->setShortcut(Qt::Key_K);
+        }
+
+    //###############################################################################
+    //### Playback settings
+    //###############################################################################
+    QMenu *tPlaybackMenu = pMenu->addMenu(QPixmap(":/images/22_22/Configuration_Video.png"), Homer::Gui::VideoWidget::tr("Playback"));
 
             //###############################################################################
             //### "Full screen"
             //###############################################################################
             if (IsFullScreen())
             {
-                tAction = tVideoMenu->addAction(Homer::Gui::VideoWidget::tr("Window mode"));
+                tAction = tPlaybackMenu->addAction(Homer::Gui::VideoWidget::tr("Window mode"));
             }else
             {
-                tAction = tVideoMenu->addAction(Homer::Gui::VideoWidget::tr("Full screen"));
+                tAction = tPlaybackMenu->addAction(Homer::Gui::VideoWidget::tr("Full screen"));
             }
             QList<QKeySequence> tFSKeys;
             tFSKeys.push_back(Qt::Key_F);
@@ -422,56 +458,56 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
             //###############################################################################
             if (mSmoothPresentation)
             {
-                tAction = tVideoMenu->addAction(Homer::Gui::VideoWidget::tr("Fast display"));
+                tAction = tPlaybackMenu->addAction(Homer::Gui::VideoWidget::tr("Fast display"));
             }else
             {
-                tAction = tVideoMenu->addAction(Homer::Gui::VideoWidget::tr("Smooth display"));
+                tAction = tPlaybackMenu->addAction(Homer::Gui::VideoWidget::tr("Smooth display"));
             }
             tAction->setShortcut(Qt::Key_S);
 
             //###############################################################################
             //### ASPECT RATION
             //###############################################################################
-            QMenu *tAspectRatioMenu = tVideoMenu->addMenu(Homer::Gui::VideoWidget::tr("Aspect ratio"));
+            QMenu *tAspectRatioMenu = tPlaybackMenu->addMenu(Homer::Gui::VideoWidget::tr("Aspect ratio"));
             tAspectRatioMenu->menuAction()->setShortcut(Qt::Key_A);
-            //###############################################################################
-            //### "Keep aspect ratio"
-            //###############################################################################
+                //###############################################################################
+                //### "Keep aspect ratio"
+                //###############################################################################
 
-            for (int i = 0; i < VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS; i++)
-            {
-                tAction = tAspectRatioMenu->addAction(Homer::Gui::VideoWidget::tr(SupportedAspectRatios[i].name.c_str()));
-                tAction->setCheckable(true);
-                if (mAspectRatio == i)
-                    tAction->setChecked(true);
-                else
-                    tAction->setChecked(false);
-            }
+                for (int i = 0; i < VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS; i++)
+                {
+                    tAction = tAspectRatioMenu->addAction(Homer::Gui::VideoWidget::tr(SupportedAspectRatios[i].name.c_str()));
+                    tAction->setCheckable(true);
+                    if (mAspectRatio == i)
+                        tAction->setChecked(true);
+                    else
+                        tAction->setChecked(false);
+                }
 
             //###############################################################################
             //### RESOLUTIONS
             //###############################################################################
-            QMenu *tResMenu = tVideoMenu->addMenu(Homer::Gui::VideoWidget::tr("Resolution"));
-            //###############################################################################
-            //### add all possible resolutions which are reported by the media source
-            //###############################################################################
-            if (tGrabResolutions.size())
-            {
-                for (tIt = tGrabResolutions.begin(); tIt != tGrabResolutions.end(); tIt++)
+            QMenu *tResMenu = tPlaybackMenu->addMenu(Homer::Gui::VideoWidget::tr("Resolution"));
+                //###############################################################################
+                //### add all possible resolutions which are reported by the media source
+                //###############################################################################
+                if (tGrabResolutions.size())
                 {
-                    QAction *tResAction = tResMenu->addAction(QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX, 4, 10, (const QChar)' ').arg(tIt->ResY, 4, 10, (const QChar)' '));
-                    tResAction->setCheckable(true);
-                    if ((tIt->ResX == tCurResX) && (tIt->ResY == tCurResY))
-                        tResAction->setChecked(true);
-                    else
-                        tResAction->setChecked(false);
+                    for (tIt = tGrabResolutions.begin(); tIt != tGrabResolutions.end(); tIt++)
+                    {
+                        QAction *tResAction = tResMenu->addAction(QString(tIt->Name.c_str()) + QString("  (%1 x %2)").arg(tIt->ResX, 4, 10, (const QChar)' ').arg(tIt->ResY, 4, 10, (const QChar)' '));
+                        tResAction->setCheckable(true);
+                        if ((tIt->ResX == tCurResX) && (tIt->ResY == tCurResY))
+                            tResAction->setChecked(true);
+                        else
+                            tResAction->setChecked(false);
+                    }
                 }
-            }
 
             //###############################################################################
             //### SCALING
             //###############################################################################
-            QMenu *tScaleMenu = tVideoMenu->addMenu(Homer::Gui::VideoWidget::tr("Scaling"));
+            QMenu *tScaleMenu = tPlaybackMenu->addMenu(Homer::Gui::VideoWidget::tr("Scaling"));
             for (int i = 1; i < 5; i++)
             {
                 QAction *tScaleAction = tScaleMenu->addAction(QString(" %1%").arg((int)(i * 50), 3, 10, (const QChar)' '));
@@ -489,24 +525,24 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
             //###############################################################################
             if (mVideoMirroredHorizontal)
             {
-                tAction = tVideoMenu->addAction(Homer::Gui::VideoWidget::tr("Unmirror horizontally"));
+                tAction = tPlaybackMenu->addAction(Homer::Gui::VideoWidget::tr("Unmirror horizontally"));
                 tAction->setCheckable(true);
                 tAction->setChecked(true);
             }else
             {
-                tAction = tVideoMenu->addAction(Homer::Gui::VideoWidget::tr("Mirror horizontally"));
+                tAction = tPlaybackMenu->addAction(Homer::Gui::VideoWidget::tr("Mirror horizontally"));
                 tAction->setCheckable(true);
                 tAction->setChecked(false);
             }
 
             if (mVideoMirroredVertical)
             {
-                tAction = tVideoMenu->addAction(Homer::Gui::VideoWidget::tr("Unmirror vertically"));
+                tAction = tPlaybackMenu->addAction(Homer::Gui::VideoWidget::tr("Unmirror vertically"));
                 tAction->setCheckable(true);
                 tAction->setChecked(true);
             }else
             {
-                tAction = tVideoMenu->addAction(Homer::Gui::VideoWidget::tr("Mirror vertically"));
+                tAction = tPlaybackMenu->addAction(Homer::Gui::VideoWidget::tr("Mirror vertically"));
                 tAction->setCheckable(true);
                 tAction->setChecked(false);
             }
@@ -516,9 +552,9 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
     //###############################################################################
     if(mVideoSource->SupportsRelaying())
     {
-        QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::VideoWidget::tr("Relay stream"));
-        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::VideoWidget::tr("Add network sink"));
-        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::VideoWidget::tr("Registered sinks"));
+        QMenu *tVideoSinksMenu = pMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::VideoWidget::tr("Streaming"));
+        tAction =  tVideoSinksMenu->addAction(QPixmap(":/images/22_22/Plus.png"), Homer::Gui::VideoWidget::tr("Send video"));
+        QMenu *tRegisteredVideoSinksMenu = tVideoSinksMenu->addMenu(QPixmap(":/images/22_22/ArrowRight.png"), Homer::Gui::VideoWidget::tr("Running streams"));
 
         if (tRegisteredVideoSinks.size())
         {
@@ -529,15 +565,6 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
                 tSinkAction->setChecked(true);
             }
         }
-        if (mVideoSource->SupportsMarking())
-        {
-            tVideoSinksMenu->addSeparator();
-
-            tAction =  tVideoSinksMenu->addAction(Homer::Gui::VideoWidget::tr("Live marker"));
-            tAction->setCheckable(true);
-            tAction->setChecked(mVideoSource->MarkerActive());
-            tAction->setShortcut(Qt::Key_K);
-        }
     }
 
     if(CONF.DebuggingEnabled())
@@ -547,9 +574,9 @@ void VideoWidget::InitializeMenuVideoSettings(QMenu *pMenu)
         //###############################################################################
         QIcon tIcon10;
         if (mVideoPaused)
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::VideoWidget::tr("Continue stream"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/AV_Play.png"), Homer::Gui::VideoWidget::tr("Play source"));
         else
-            tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::VideoWidget::tr("Drop stream"));
+            tAction = pMenu->addAction(QPixmap(":/images/22_22/Exit.png"), Homer::Gui::VideoWidget::tr("Pause source"));
     }
 
     pMenu->addSeparator();
@@ -599,6 +626,11 @@ void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
             StartRecorder();
             return;
         }
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Quick recording")) == 0)
+        {
+            StartRecorder(true);
+            return;
+        }
         if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Mirror horizontally")) == 0)
         {
             mVideoMirroredHorizontal = true;
@@ -619,29 +651,29 @@ void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
             mVideoMirroredVertical = false;
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Show stream info")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Show source info")) == 0)
         {
             mShowLiveStats = true;
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Hide stream info")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Hide source info")) == 0)
         {
             mShowLiveStats = false;
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Drop stream")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Pause source")) == 0)
         {
             mVideoPaused = true;
             mVideoWorker->SetFrameDropping(true);
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Continue stream")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Play source")) == 0)
         {
             mVideoPaused = false;
             mVideoWorker->SetFrameDropping(false);
             return;
         }
-        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Add network sink")) == 0)
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("Send video")) == 0)
         {
             DialogAddNetworkSink();
             return;
@@ -654,6 +686,11 @@ void VideoWidget::SelectedMenuVideoSettings(QAction *pAction)
             else
                 setCursor(Qt::ArrowCursor);
             mVideoSource->SetMarker(mLiveMarkerActive);
+            return;
+        }
+        if (pAction->text().compare(Homer::Gui::VideoWidget::tr("System state")) == 0)
+        {
+            ToggleInVideoSystemState();
             return;
         }
         if ((pAction->text().compare(Homer::Gui::VideoWidget::tr("Smooth display")) == 0) || (pAction->text().compare(Homer::Gui::VideoWidget::tr("Fast display")) == 0))
@@ -1129,7 +1166,7 @@ void VideoWidget::ShowHourGlass()
 
     //printf("Res: %d %d\n", mResX, mResY);
     mCurrentFrame = QImage(tWidth, tHeight, QImage::Format_RGB32);
-    mCurrentFrame.fill(QColor(Qt::darkGray).rgb());
+    mCurrentFrame.fill(QColor(Qt::black).rgb());
 
     QPixmap tPixmap = QPixmap(":/images/Sandglass.png");
     if (!tPixmap.isNull())
@@ -1372,13 +1409,41 @@ void VideoWidget::ToggleFullScreenMode(bool pActive)
 	mNeedBackgroundUpdatesUntillNextFrame = true;
 }
 
+void VideoWidget::ToggleInVideoSystemState()
+{
+    mSystemStatePresentation = !mSystemStatePresentation;
+    LOG(LOG_VERBOSE, "Toggling in-video system state to: %d", mSystemStatePresentation);
+    if (mSystemStatePresentation)
+    {
+        if(mMediaFilterSystemState == NULL)
+        {
+            mMediaFilterSystemState = new MediaFilterSystemState(mVideoSource);
+            mVideoSource->RegisterMediaFilter(mMediaFilterSystemState);
+        }
+
+        ShowOsdMessage(Homer::Gui::VideoWidget::tr("system state activated"));
+    }else
+    {
+        if(mMediaFilterSystemState != NULL)
+        {
+            mVideoSource->UnregisterMediaFilter(mMediaFilterSystemState);
+            mMediaFilterSystemState = NULL;
+        }
+
+        ShowOsdMessage(Homer::Gui::VideoWidget::tr("system state deactivated"));
+    }
+}
+
 void VideoWidget::ToggleSmoothPresentationMode()
 {
     mSmoothPresentation = !mSmoothPresentation;
     if (mSmoothPresentation)
-    	ShowOsdMessage(Homer::Gui::VideoWidget::tr("Bilinear filtering activated"));
-    else
-    	ShowOsdMessage(Homer::Gui::VideoWidget::tr("Bilinear filtering deactivated"));
+    {
+    	ShowOsdMessage(Homer::Gui::VideoWidget::tr("filtering activated"));
+    }else
+    {
+    	ShowOsdMessage(Homer::Gui::VideoWidget::tr("filtering deactivated"));
+    }
 }
 
 void VideoWidget::ToggleMosaicMode(bool pActive)
@@ -1450,34 +1515,41 @@ void VideoWidget::SavePicture()
     mCurrentFrame.save(tFileName);
 }
 
-void VideoWidget::StartRecorder()
+void VideoWidget::StartRecorder(bool pQuickRecording)
 {
-    QString tFileName = OverviewPlaylistWidget::LetUserSelectVideoSaveFile(this, Homer::Gui::VideoWidget::tr("Save recorded video"));
+    QString tFileName;
+    if(!pQuickRecording)
+        tFileName = OverviewPlaylistWidget::LetUserSelectVideoSaveFile(this, Homer::Gui::VideoWidget::tr("Save recorded video"));
+    else
+        tFileName = QDir::homePath() + "/Homer-" + QDate::currentDate().toString("yyyy-MM-dd") + "_" + QTime::currentTime().toString("hh-mm-ss") + ".avi";
 
     if (tFileName.isEmpty())
         return;
 
     // get the quality value from the user
-    bool tAck = false;
-    QStringList tPosQuals;
-    for (int i = 1; i < 11; i++)
-        tPosQuals.append(QString("%1").arg(i * 10));
-    QString tQualityStr = QInputDialog::getItem(this, Homer::Gui::VideoWidget::tr("Select recording quality"), Homer::Gui::VideoWidget::tr("Record with quality:") + "                                      ", tPosQuals, 0, false, &tAck);
-
-    if (!tAck)
-        return;
-
-    // convert QString to int
-    bool tConvOkay = false;
-    int tQuality = tQualityStr.toInt(&tConvOkay, 10);
-    if (!tConvOkay)
+    int tQuality = 100;
+    if(!pQuickRecording)
     {
-        LOG(LOG_ERROR, "Error while converting QString to int");
-        return;
-    }
+        bool tAck = false;
+        QStringList tPosQuals;
+        for (int i = 1; i < 11; i++)
+            tPosQuals.append(QString("%1").arg(i * 10));
+        QString tQualityStr = QInputDialog::getItem(this, Homer::Gui::VideoWidget::tr("Select recording quality"), Homer::Gui::VideoWidget::tr("Record with quality:") + "                                      ", tPosQuals, 0, false, &tAck);
+        if(tQualityStr.isEmpty())
+            return;
 
-    if(tQualityStr.isEmpty())
-        return;
+        if (!tAck)
+            return;
+
+        // convert QString to int
+        bool tConvOkay = false;
+        int tQuality = tQualityStr.toInt(&tConvOkay, 10);
+        if (!tConvOkay)
+        {
+            LOG(LOG_ERROR, "Error while converting QString to int");
+            return;
+        }
+    }
 
     // finally start the recording
     mVideoWorker->StartRecorder(tFileName.toStdString(), tQuality);
@@ -1623,6 +1695,12 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         pEvent->accept();
         return;
 	}
+    if ((pEvent->key() == Qt::Key_O) && (pEvent->modifiers() == 0))
+    {
+        ToggleInVideoSystemState();
+        pEvent->accept();
+        return;
+    }
     if ((pEvent->key() == Qt::Key_K) && (pEvent->modifiers() == 0) && (mVideoSource->SupportsMarking()))
     {
         mLiveMarkerActive = !mVideoSource->MarkerActive();
@@ -1645,6 +1723,23 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
         ToggleSmoothPresentationMode();
         pEvent->accept();
         return;
+    }
+    if ((pEvent->key() == Qt::Key_E) && (pEvent->modifiers() == 0))
+    {
+        if (mVideoSource->IsRecording())
+        {
+            StopRecorder();
+        }
+    }
+    if ((pEvent->key() == Qt::Key_R) && (pEvent->modifiers() == 0))
+    {
+        if(mVideoSource->SupportsRecording())
+        {
+            if (!mVideoSource->IsRecording())
+            {
+                StartRecorder(true);
+            }
+        }
     }
     if ((pEvent->key() == Qt::Key_I) && (pEvent->modifiers() == 0))
     {
@@ -2098,7 +2193,7 @@ VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, V
     mDropFrames = false;
     mSetFullScreenDisplayAsap = false;
     mCurrentFrameRefTaken = false;
-    InitFrameBuffers();
+    InitFrameBuffers(Homer::Gui::VideoWorkerThread::tr(MESSAGE_WAITING_FOR_FIRST_DATA));
 }
 
 VideoWorkerThread::~VideoWorkerThread()
@@ -2107,7 +2202,7 @@ VideoWorkerThread::~VideoWorkerThread()
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
-void VideoWorkerThread::InitFrameBuffers()
+void VideoWorkerThread::InitFrameBuffers(QString pMessage)
 {
     mPendingNewFrames = 0;
     for (int i = 0; i < FRAME_BUFFER_SIZE; i++)
@@ -2119,12 +2214,11 @@ void VideoWorkerThread::InitFrameBuffers()
         LOG(LOG_VERBOSE, "Initiating frame buffer %d with resolution %d*%d", i, mResX, mResY);
         QImage tFrameImage = QImage((uchar*)mFrame[i], mResX, mResY, QImage::Format_RGB32);
         QPainter *tPainter = new QPainter(&tFrameImage);
-        tPainter->setRenderHint(QPainter::TextAntialiasing, true);
-
-        tPainter->fillRect(0, 0, mResX, mResY, QColor(Qt::darkGray));
-        tPainter->setFont(QFont("Tahoma", 16));
-        tPainter->setPen(QColor(Qt::black));
-        tPainter->drawText(5, 70, Homer::Gui::VideoWorkerThread::tr("Waiting for data.."));
+        tPainter->setRenderHint(QPainter::TextAntialiasing, false);
+        tPainter->fillRect(0, 0, mResX, mResY, QColor(Qt::black));
+        tPainter->setFont(QFont("Arial", 16));
+        tPainter->setPen(QColor(Qt::white));
+        tPainter->drawText(5, 70, pMessage);
 
         delete tPainter;
     }
@@ -2246,7 +2340,7 @@ void VideoWorkerThread::DoSetGrabResolution()
 	mResY = tGotResY;
 
     // create new frame buffers
-    InitFrameBuffers();
+    InitFrameBuffers(Homer::Gui::VideoWorkerThread::tr(MESSAGE_WAITING_FOR_DATA_AFTER_RESOLUTION));
 
     mVideoWidget->InformAboutNewSourceResolution();
     mSetGrabResolutionAsap = false;

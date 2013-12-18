@@ -48,6 +48,7 @@
 
 #include <MediaSource.h>
 #include <MeetingEvents.h>
+#include <MediaFilterSystemState.h>
 
 #include <MediaSourceGrabberThread.h>
 
@@ -128,9 +129,10 @@ private:
     void SetScaling(float pVideoScaleFactor);
     bool IsCurrentScaleFactor(float pScaleFactor);
     void SetResolutionFormat(VideoFormat pFormat);
+    void ToggleInVideoSystemState();
     void ToggleSmoothPresentationMode();
     void SavePicture();
-    void StartRecorder();
+    void StartRecorder(bool pQuickRecording = false);
     void StopRecorder();
     void ShowFullScreen(int &pPosX, int &pPosY); // returns the upper left corner where fullscreen starts
     bool SetOriginalResolution();
@@ -176,6 +178,7 @@ private:
     QTimer              *mHourGlassTimer;
     qreal               mHourGlassAngle;
     int                 mHourGlassOffset;
+    bool                mSystemStatePresentation;
     bool                mSmoothPresentation;
     bool                mRecorderStarted;
     bool                mInsideDockWidget;
@@ -209,6 +212,8 @@ private:
     QTime				mTimeLastWidgetUpdate;
     /* Mosaic mode */
     bool				mMosaicMode;
+    /* in-video system state */
+    MediaFilterSystemState *mMediaFilterSystemState;
 };
 
 
@@ -242,7 +247,7 @@ public:
     VideoWidget *GetVideoWidget();
 
 private:
-    virtual void InitFrameBuffers();
+    virtual void InitFrameBuffers(QString pMessage);
     virtual void DeinitFrameBuffers();
     void InitFrameBuffer(int pBufferId);
     void DoSetGrabResolution();

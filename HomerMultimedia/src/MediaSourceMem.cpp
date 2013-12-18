@@ -91,7 +91,7 @@ MediaSourceMem::MediaSourceMem(string pName):
     mCurrentOutputFrameIndex = -1;
     mLastBufferedOutputFrameIndex = 0;
     mLastTimeWaitForRTGrabbing = 0;
-    mLastWriteFrameOutputBuffer = 0;
+    mTimeLastWrittenOutputChunk = 0;
 	mWrappingHeaderSize= 0;
     mGrabberProvidesRTGrabbing = true;
     mSourceType = SOURCE_MEMORY;
@@ -466,6 +466,21 @@ bool MediaSourceMem::SupportsRecording()
 	return true;
 }
 
+void MediaSourceMem::RegisterMediaFilter(MediaFilter *pMediaFilter)
+{
+    MediaSource::RegisterMediaFilter(pMediaFilter);
+    ResetPreCalculatedData();
+}
+
+bool MediaSourceMem::UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete)
+{
+    bool tResult = MediaSource::UnregisterMediaFilter(pMediaFilter, pAutoDelete);
+
+    ResetPreCalculatedData();
+
+    return tResult;
+}
+
 bool MediaSourceMem::SupportsRelaying()
 {
     return true;
@@ -570,7 +585,7 @@ void MediaSourceMem::StopGrabbing()
             LOG(LOG_VERBOSE, "Attempt %d to stop %s %s grabbing", tLoop, GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
         tLoop++;
 
-        WriteFrameOutputBuffer(NULL, 0, 0);
+        WriteOutputChunk(NULL, 0, 0);
     }while(!mGrabMutex.lock(250));
 
     // now, the grabber returned and the lock was correctly acquired -> unlock again
@@ -932,7 +947,7 @@ bool MediaSourceMem::CloseGrabDevice()
     mCurrentOutputFrameIndex = -1;
     mLastBufferedOutputFrameIndex = 0;
     mLastTimeWaitForRTGrabbing = 0;
-    mLastWriteFrameOutputBuffer = 0;
+    mTimeLastWrittenOutputChunk = 0;
     mSourceTimeShiftForRTGrabbing = 0;
     mDecoderSinglePictureGrabbed = false;
     mEOFReached = false;
@@ -1075,7 +1090,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 #endif
             }
 
-            ReadFrameOutputBuffer((char*)pChunkBuffer, pChunkSize, tCurrentFramePts);
+            ReadOutputChunk((char*)pChunkBuffer, pChunkSize, tCurrentFramePts);
 			#ifdef MSMEM_DEBUG_PACKETS
             	LOG(LOG_VERBOSE, "Setting current frame index to %"PRId64, tCurrentFramePts);
                 LOG(LOG_VERBOSE, "Remaining buffered frames in decoder FIFO: %d", tAvailableFrames);
@@ -1258,7 +1273,7 @@ VideoScaler* MediaSourceMem::CreateVideoScaler()
     VideoScaler *tResult;
 
     LOG(LOG_VERBOSE, "Starting video scaler thread..");
-    tResult = new VideoScaler("Video-Decoder(" + GetSourceTypeStr() + ")");
+    tResult = new VideoScaler(this, "Video-Decoder(" + GetSourceTypeStr() + ")");
     if(tResult == NULL)
         LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
     tResult->StartScaler(CalculateFrameBufferSize(), mSourceResX, mSourceResY, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32);
@@ -1604,7 +1619,7 @@ void* MediaSourceMem::Run(void* pArgs)
     mCurrentOutputFrameIndex = -1;
     mLastBufferedOutputFrameIndex = 0;
     mLastTimeWaitForRTGrabbing = 0;
-    mLastWriteFrameOutputBuffer = 0;
+    mTimeLastWrittenOutputChunk = 0;
 
     // signal that decoder thread has finished init.
     mDecoderThreadNeeded = true;
@@ -1989,7 +2004,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                             #ifdef MSMEM_DEBUG_PACKETS
                                                 LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to FIFO with frame nr.%.2lf", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurrentOutputFrameTimestamp);
                                             #endif
-                                            WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, (int64_t)rint(tCurrentOutputFrameTimestamp));
+                                            WriteOutputChunk((char*)tChunkBuffer, tCurrentChunkSize, (int64_t)rint(tCurrentOutputFrameTimestamp));
 
                                             // prepare frame number for next loop
                                             tCurrentOutputFrameTimestamp += 1;
@@ -2142,7 +2157,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                                 #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
                                                     LOG(LOG_VERBOSE, "Writing %d %s bytes at %p to output FIFO with frame nr. %.2lf, remaining audio data: %d bytes", tCurrentChunkSize, GetMediaTypeStr().c_str(), tChunkBuffer, tCurrentOutputFrameTimestamp, av_fifo_size(mResampleFifo[0]));
                                                 #endif
-                                                WriteFrameOutputBuffer((char*)tChunkBuffer, tCurrentChunkSize, (int64_t)rint(tCurrentOutputFrameTimestamp));
+                                                WriteOutputChunk((char*)tChunkBuffer, tCurrentChunkSize, (int64_t)rint(tCurrentOutputFrameTimestamp));
 
                                                 // prepare frame number for next loop
                                                 tCurrentOutputFrameTimestamp += 1;
@@ -2193,7 +2208,7 @@ void* MediaSourceMem::Run(void* pArgs)
                 #endif
 
 				// make sure that the grabber isn't infinitely blocked
-				WriteFrameOutputBuffer(NULL, 0, 0);
+				WriteOutputChunk(NULL, 0, 0);
 
 				mDecoderNeedWorkCondition.Wait(&mDecoderNeedWorkConditionMutex);
                 mDecoderLastReadPts = 0;
@@ -2264,6 +2279,19 @@ void* MediaSourceMem::Run(void* pArgs)
     return NULL;
 }
 
+void MediaSourceMem::ResetPreCalculatedData()
+{
+    mDecoderResetBuffersMutex.lock();
+
+    // reset the library internal frame FIFO
+    LOG(LOG_VERBOSE, "Reseting %s decoder internal FIFO after UnregisterMediaFilter()", GetMediaTypeStr().c_str());
+    mDecoderFifo->ClearFifo();
+
+    mDecoderResetBuffersMutex.unlock();
+
+    mDecoderNeedWorkCondition.Signal();
+}
+
 void MediaSourceMem::ResetDecoderBuffers()
 {
     mDecoderResetBuffersMutex.lock();
@@ -2293,19 +2321,19 @@ void MediaSourceMem::ResetDecoderBuffers()
     mDecoderResetBuffersMutex.unlock();
 }
 
-void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int64_t pOutputFrameNumber)
+void MediaSourceMem::WriteOutputChunk(char* pChunkBuffer, int pChunkBufferSize, int64_t pChunkNumber)
 {
 	#ifdef MSMEM_DEBUG_WAITING_TIMING
 		// calculate passed time since last call
 		int64_t tTimeToLastcall = 0;
 		int64_t tTime = Time::GetTimeStamp();
-		if (mLastWriteFrameOutputBuffer == 0)
+		if (mTimeLastWrittenOutputChunk == 0)
 		{// first call
-			mLastWriteFrameOutputBuffer = tTime;
+			mTimeLastWrittenOutputChunk = tTime;
 		}else
 		{// 1+ call
-			tTimeToLastcall = tTime - mLastWriteFrameOutputBuffer;
-			mLastWriteFrameOutputBuffer = tTime;
+			tTimeToLastcall = tTime - mTimeLastWrittenOutputChunk;
+			mTimeLastWrittenOutputChunk = tTime;
 		}
 		LOG(LOG_VERBOSE, "Time since last call of %s WriteFrameOutputBuffer(): %"PRId64" ms", GetMediaTypeStr().c_str(), tTimeToLastcall / 1000);
 	#endif
@@ -2323,20 +2351,20 @@ void MediaSourceMem::WriteFrameOutputBuffer(char* pBuffer, int pBufferSize, int6
     }
 
     #ifdef MSMEM_DEBUG_FRAME_QUEUE
-        LOG(LOG_VERBOSE, ">>> Writing %s frame of %d bytes and pts %"PRId64", FIFOs: %d", GetMediaTypeStr().c_str(), pBufferSize, pOutputFrameNumber, mDecoderFifo->GetUsage());
+        LOG(LOG_VERBOSE, ">>> Writing %s frame of %d bytes and pts %"PRId64", FIFOs: %d", GetMediaTypeStr().c_str(), pChunkBufferSize, pChunkNumber, mDecoderFifo->GetUsage());
 	#endif
 
-    if (pOutputFrameNumber != 0)
-        mLastBufferedOutputFrameIndex = pOutputFrameNumber;
+    if (pChunkNumber != 0)
+        mLastBufferedOutputFrameIndex = pChunkNumber;
 
     // write A/V data to output FIFO
-    mDecoderFifo->WriteFifo(pBuffer, pBufferSize, pOutputFrameNumber);
+    mDecoderFifo->WriteFifo(pChunkBuffer, pChunkBufferSize, pChunkNumber);
 
     // update pre-buffer time value
     UpdateBufferTime();
 }
 
-void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int64_t &pOutputFrameNumber)
+void MediaSourceMem::ReadOutputChunk(char *pChunkBuffer, int &pChunkBufferSize, int64_t &pChunkNumber)
 {
     if (mDecoderFifo == NULL)
     {
@@ -2345,10 +2373,10 @@ void MediaSourceMem::ReadFrameOutputBuffer(char *pBuffer, int &pBufferSize, int6
     }
 
     // read A/V data from output FIFO
-    mDecoderFifo->ReadFifo(pBuffer, pBufferSize, pOutputFrameNumber);
+    mDecoderFifo->ReadFifo(pChunkBuffer, pChunkBufferSize, pChunkNumber);
 
     #ifdef MSMEM_DEBUG_FRAME_QUEUE
-        LOG(LOG_VERBOSE, "Returning from decoder FIFO the %s frame (PTS = %"PRId64"), remaining frames in FIFO: %d", GetMediaTypeStr().c_str(), pOutputFrameNumber, mDecoderFifo->GetUsage());
+        LOG(LOG_VERBOSE, "Returning from decoder FIFO the %s frame (PTS = %"PRId64"), remaining frames in FIFO: %d", GetMediaTypeStr().c_str(), pChunkNumber, mDecoderFifo->GetUsage());
     #endif
 
     // update pre-buffer time value

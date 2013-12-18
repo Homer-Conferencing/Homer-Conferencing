@@ -84,6 +84,8 @@ public:
 
     bool InsertNew(QString pParticipant);
 
+    static QString GetSoftwareStr(QString pSipSoftware);
+
 public slots:
     void SetVisible(bool pVisible);
 
