@@ -282,6 +282,8 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
             //### OUTPUT DEVICE
             //###############################################################################
             AudioDevices tAudioOutputDevices = mAudioWorker->GetAudioOutputDevices();
+            QString tCurDevice = mAudioWorker->CurrentAudioOutputDevice();
+            LOG(LOG_VERBOSE, "Found current audio output device: %s", tCurDevice.toStdString().c_str());
             if(tAudioOutputDevices.size() > 1)
             {
                 QMenu *tDevicesMenu = tPlaybackMenu->addMenu("Output device");
@@ -290,7 +292,8 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
                 {
                     QAction *tAudioDeviceAction = tDevicesMenu->addAction(QString(tIt->Name.c_str()));
                     tAudioDeviceAction->setCheckable(true);
-                    //tAudioDeviceAction->setChecked(true);
+                    if(QString(tIt->Name.c_str()) == tCurDevice)
+                        tAudioDeviceAction->setChecked(true);
                 }
             }
 

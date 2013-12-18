@@ -66,6 +66,16 @@ AudioDevices AudioPlayback::GetAudioOutputDevices()
     return tResult;
 }
 
+QString AudioPlayback::CurrentAudioOutputDevice()
+{
+    QString tResult = "";
+
+    if (mWaveOut != NULL)
+        tResult = QString(mWaveOut->CurrentDeviceName().c_str());
+
+    return tResult;
+}
+
 void AudioPlayback::SetAudioOutputDevice(QString pDeviceName)
 {
     LOG(LOG_VERBOSE, "Selecting audio output device \"%s\"", pDeviceName.toStdString().c_str());

@@ -46,6 +46,7 @@ public:
     virtual ~AudioPlayback();
 
     Homer::Multimedia::AudioDevices GetAudioOutputDevices();
+    QString CurrentAudioOutputDevice();
     void SetAudioOutputDevice(QString pDeviceName);
 
     void PlayAudioChunk(void* pChunkBuffer, int pChunkSize = 4096);
