@@ -1825,17 +1825,17 @@ Homer Conferencing wird danach gestoppt!</translation>
     <message>
         <location filename="../src/MainWindow.cpp" line="2242"/>
         <source>Tool bars</source>
-        <translation type="unfinished">Werkzeugleisten</translation>
+        <translation>Werkzeugleisten</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2254"/>
         <source>Streaming</source>
-        <translation type="unfinished">Übertragung</translation>
+        <translation>Übertragung</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2265"/>
         <source>Broadcast data</source>
-        <translation type="unfinished">Audio-/Videoverteilung</translation>
+        <translation>Audio-/Videoverteilung</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2278"/>
@@ -5084,7 +5084,7 @@ Soll sie überschrieben werden?</translation>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="501"/>
         <source>Player</source>
-        <translation>Plaer</translation>
+        <translation type="unfinished">Player</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="242"/>
