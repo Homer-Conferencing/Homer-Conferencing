@@ -26,8 +26,8 @@
 
 /*
          Concept:
-                1.) draw hour glas via the palette's backgroundRole
-                2.) stop hour glas when first frame is received
+                1.) draw hour glass via the palette's backgroundRole
+                2.) stop hour glass when first frame is received
                 3.) deactivate background drawing and auto. update via Qt
                         -> setAutoFillBackground(false);
                         -> setAttribute(Qt::WA_NoSystemBackground, true);
