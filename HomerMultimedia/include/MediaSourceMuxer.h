@@ -107,7 +107,7 @@ public:
 
     /* streaming control */
     static bool IsOutputCodecSupported(std::string pStreamCodec);
-    bool SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pBitRate, int pMaxPacketSize = 1300 /* works only with RTP packetizing */, bool pDoReset = false, int pResX = 352, int pResY = 288, bool pRtpActivated = true, int pMaxFps = 0);
+    bool SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pBitRate, int pMaxPacketSize = 1300 /* works only with RTP packetizing */, bool pDoReset = false, int pResX = 352, int pResY = 288, int pMaxFps = 0);
     enum AVCodecID GetStreamCodecId() { return mStreamCodecId; } // used in RTSPListenerMediaSession
 
     /* frame stats */

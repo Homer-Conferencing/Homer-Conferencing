@@ -84,7 +84,6 @@ MediaSource::MediaSource(string pName):
     mDecoderFramePreBufferingAutoRestart = false;
     mGrabbingStopped = false;
     mRecording = false;
-    SetRtpActivation(true);
     mCodecContext = NULL;
     mResampleBuffer = NULL;
     mRecorderFinalFrame = NULL;
@@ -1571,7 +1570,7 @@ bool MediaSource::UnregisterMediaSink(string pTargetHost, unsigned int pTargetPo
     return tResult;
 }
 
-MediaSinkFile* MediaSource::RegisterMediaSink(string pTargetFile)
+MediaSinkFile* MediaSource::RegisterMediaSink(string pTargetFile, bool pRtpActivation)
 {
     MediaSinks::iterator tIt;
     bool tFound = false;
@@ -1601,7 +1600,7 @@ MediaSinkFile* MediaSource::RegisterMediaSink(string pTargetFile)
 
     if (!tFound)
     {
-        MediaSinkFile *tMediaSinkFile = new MediaSinkFile(pTargetFile, (mMediaType == MEDIA_VIDEO)?MEDIA_SINK_VIDEO:MEDIA_SINK_AUDIO, mRtpActivated);
+        MediaSinkFile *tMediaSinkFile = new MediaSinkFile(pTargetFile, (mMediaType == MEDIA_VIDEO)?MEDIA_SINK_VIDEO:MEDIA_SINK_AUDIO, pRtpActivation);
         mMediaSinks.push_back(tMediaSinkFile);
         tResult = tMediaSinkFile;
     }
@@ -1817,16 +1816,6 @@ void MediaSource::DeleteAllRegisteredMediaSinks()
 
     // unlock
     mMediaSinksMutex.unlock();
-}
-
-void MediaSource::SetRtpActivation(bool pState)
-{
-    mRtpActivated = pState;
-}
-
-bool MediaSource::GetRtpActivation()
-{
-    return mRtpActivated;
 }
 
 bool MediaSource::SupportsRelaying()

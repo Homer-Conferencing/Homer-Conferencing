@@ -206,7 +206,7 @@ bool MediaSourceMuxer::IsOutputCodecSupported(std::string pStreamCodec)
 }
 
 // return if something has changed
-bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pBitRate, int pMaxPacketSize, bool pDoReset, int pResX, int pResY, bool pRtpActivated, int pMaxFps)
+bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int pMediaStreamQuality, int pBitRate, int pMaxPacketSize, bool pDoReset, int pResX, int pResY, int pMaxFps)
 {
     // HINT: returns if something has changed
     bool tResult = false;
@@ -249,7 +249,6 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
 
     if ((mStreamCodecId != tStreamCodecId) ||
    		(mStreamMaxFps != pMaxFps) ||
-        (GetRtpActivation() != pRtpActivated) ||
         (mStreamQuality != pMediaStreamQuality) ||
         (mStreamBitRate != pBitRate) ||
         (mStreamMaxPacketSize != pMaxPacketSize) ||
@@ -283,10 +282,6 @@ bool MediaSourceMuxer::SetOutputStreamPreferences(std::string pStreamCodec, int 
         // set new bit rate
         LOG(LOG_VERBOSE, "    ..stream bit rate: %d => %d", mStreamBitRate, pBitRate);
         mStreamBitRate = pBitRate;
-
-        // set RTP encapsulation state
-        LOG(LOG_VERBOSE, "    ..stream rtp encapsulation: %d => %d", GetRtpActivation(), pRtpActivated);
-        SetRtpActivation(pRtpActivated);
 
         // set new streaming resolution
         LOG(LOG_VERBOSE, "    ..stream resolution: %d*%d => %d*%d", mRequestedStreamingResX, mRequestedStreamingResY, pResX, pResY);
@@ -664,10 +659,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     LOG(LOG_INFO, "    ..AV stream codec is: %s(%d)", mEncoderStream->codec->codec->name, mEncoderStream->codec->codec_id);
     LOG(LOG_INFO, "    ..AV stream codec context at: 0x%p", mEncoderStream->codec);
     LOG(LOG_INFO, "    ..AV stream codec codec context at: 0x%p", mEncoderStream->codec->codec);
-    if (mRtpActivated)
-        LOG(LOG_INFO, "    ..rtp encapsulation: yes");
-    else
-        LOG(LOG_INFO, "    ..rtp encapsulation: no");
     LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
 
     return true;
@@ -895,10 +886,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mFormatContext->pb->max_packet_size);
     LOG(LOG_INFO, "  stream...");
-    if (mRtpActivated)
-        LOG(LOG_INFO, "    ..rtp encapsulation: yes");
-    else
-        LOG(LOG_INFO, "    ..rtp encapsulation: no");
     LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
 
     return true;

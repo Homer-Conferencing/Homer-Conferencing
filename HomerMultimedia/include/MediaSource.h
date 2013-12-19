@@ -312,7 +312,7 @@ public:
     	MediaSinkNet* RegisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
     	bool UnregisterMediaSink(std::string pTarget, Requirements *pTransportRequirements, bool pAutoDelete = true);
 	// register/unregister: file based media sinks
-    	MediaSinkFile* RegisterMediaSink(std::string pTargetFile);
+    	MediaSinkFile* RegisterMediaSink(std::string pTargetFile, bool pRtpActivation);
     	bool UnregisterMediaSink(std::string pTargetFile, bool pAutoDelete = true);
 	// register/unregister: already allocated media sinks
     	MediaSink* RegisterMediaSink(MediaSink *pMediaSink);
@@ -525,7 +525,6 @@ protected:
     /* relaying */
     MediaSinks          mMediaSinks;
     Mutex               mMediaSinksMutex;
-    bool                mRtpActivated;
     /* filtering */
     MediaFilters        mMediaFilters;
     Mutex               mMediaFiltersMutex;

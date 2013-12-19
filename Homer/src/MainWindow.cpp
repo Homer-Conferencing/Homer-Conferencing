@@ -937,7 +937,7 @@ void MainWindow::loadSettings()
     MediaSource::VideoString2Resolution(tVideoStreamResolution.toStdString(), tX, tY);
 
     // init video muxer
-    mOwnVideoMuxer->SetOutputStreamPreferences(tVideoStreamCodec.toStdString(), CONF.GetVideoQuality(), CONF.GetVideoBitRate(), CONF.GetVideoMaxPacketSize(), false, tX, tY, CONF.GetVideoRtp(), CONF.GetVideoFps());
+    mOwnVideoMuxer->SetOutputStreamPreferences(tVideoStreamCodec.toStdString(), CONF.GetVideoQuality(), CONF.GetVideoBitRate(), CONF.GetVideoMaxPacketSize(), false, tX, tY, CONF.GetVideoFps());
     mOwnVideoMuxer->SetRelayActivation(CONF.GetVideoActivation());
     bool tNewDeviceSelected = false;
     QString tLastVideoSource = CONF.GetLocalVideoSource();
@@ -954,7 +954,7 @@ void MainWindow::loadSettings()
     mOwnVideoMuxer->SetVideoFlipping(CONF.GetLocalVideoSourceHFlip(), CONF.GetLocalVideoSourceVFlip());
 
     // init audio muxer
-    mOwnAudioMuxer->SetOutputStreamPreferences(tAudioStreamCodec.toStdString(), 100, CONF.GetAudioBitRate(), CONF.GetAudioMaxPacketSize(), false, 0, 0, CONF.GetAudioRtp());
+    mOwnAudioMuxer->SetOutputStreamPreferences(tAudioStreamCodec.toStdString(), 100, CONF.GetAudioBitRate(), CONF.GetAudioMaxPacketSize(), false, 0, 0);
     mOwnAudioMuxer->SetRelayActivation(CONF.GetAudioActivation() && !CONF.GetAudioActivationPushToTalk());
     mOwnAudioMuxer->SetRelaySkipSilence(CONF.GetAudioSkipSilence());
     mOwnAudioMuxer->SetRelaySkipSilenceThreshold(CONF.GetAudioSkipSilenceThreshold());
@@ -1881,7 +1881,7 @@ void MainWindow::actionConfiguration()
         string tAudioCodec = CONF.GetAudioCodec().toStdString();
 
         /* video */
-        tNeedUpdate = mOwnVideoMuxer->SetOutputStreamPreferences(tVideoCodec, CONF.GetVideoQuality(), CONF.GetVideoBitRate(), CONF.GetVideoMaxPacketSize(), false, tX, tY, CONF.GetVideoRtp(), CONF.GetVideoFps());
+        tNeedUpdate = mOwnVideoMuxer->SetOutputStreamPreferences(tVideoCodec, CONF.GetVideoQuality(), CONF.GetVideoBitRate(), CONF.GetVideoMaxPacketSize(), false, tX, tY, CONF.GetVideoFps());
         mOwnVideoMuxer->SetRelayActivation(CONF.GetVideoActivation());
         if (tNeedUpdate)
             mLocalUserParticipantWidget->GetVideoWorker()->ResetSource();
@@ -1896,7 +1896,7 @@ void MainWindow::actionConfiguration()
         }
 
         /* audio */
-        tNeedUpdate = mOwnAudioMuxer->SetOutputStreamPreferences(tAudioCodec, 100, CONF.GetAudioBitRate(), CONF.GetAudioMaxPacketSize(), false, 0, 0, CONF.GetAudioRtp());
+        tNeedUpdate = mOwnAudioMuxer->SetOutputStreamPreferences(tAudioCodec, 100, CONF.GetAudioBitRate(), CONF.GetAudioMaxPacketSize(), false, 0, 0);
         mOwnAudioMuxer->SetRelayActivation(CONF.GetAudioActivation() && !CONF.GetAudioActivationPushToTalk());
         mOwnAudioMuxer->SetRelaySkipSilence(CONF.GetAudioSkipSilence());
         if (tNeedUpdate)
