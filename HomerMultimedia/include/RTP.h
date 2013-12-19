@@ -155,7 +155,7 @@ public:
     bool ReceivedCorrectPayload(unsigned int pType);
     bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum RtcpType &pRtcpType, enum AVCodecID pCodecId, bool pLoggingOnly);
     bool ResetRrtpParser();
-    bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream);
+    bool OpenRtpEncoder(std::string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream, std::string pStreamName);
     bool CloseRtpEncoder();
 
     void RTPRegisterPacketStatistic(Homer::Monitor::PacketStatistic *pStatistic);
@@ -258,6 +258,8 @@ private:
     Mutex               mSyncDataMutex;
     uint64_t            mSyncNTPTime;
     uint64_t            mSyncPTS;
+    /* stream naming */
+    std::string         mStreamName;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

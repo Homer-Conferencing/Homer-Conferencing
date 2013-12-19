@@ -52,7 +52,7 @@ public:
 
     virtual ~MediaSink();
 
-    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream, bool pIsKeyFrame) = 0;
+    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream, std::string pStreamName, bool pIsKeyFrame) = 0;
     virtual void UpdateSynchronization(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp);
     virtual void SetActivation(bool pState);
 

@@ -1877,7 +1877,7 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
     {
         for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
         {
-            (*tIt)->ProcessPacket(pPacketData, pPacketSize, pPacketTimestamp, (mFormatContext != NULL ? mFormatContext->streams[0] : NULL), pIsKeyFrame);
+            (*tIt)->ProcessPacket(pPacketData, pPacketSize, pPacketTimestamp, (mFormatContext != NULL ? mFormatContext->streams[0] : NULL), GetCurrentDeviceName(), pIsKeyFrame);
         }
     }
 

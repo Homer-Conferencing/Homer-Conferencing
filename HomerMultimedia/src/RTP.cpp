@@ -411,6 +411,7 @@ RTP::RTP()
 {
     LOG(LOG_VERBOSE, "Created");
     mH261LocalSequenceNumber = 0;
+    mStreamName = "";
     mIntermediateFragment = 0;
     mPacketStatistic = NULL;
     mRtpFormatContext = NULL;
@@ -529,7 +530,7 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
     return true;
 }
 
-bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
+bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream, std::string pStreamName)
 {
     AVDictionary        *tOptions = NULL;
     int					tRes;
@@ -555,6 +556,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
     mStreamCodecID = pInnerStream->codec->codec_id;
+    mStreamName = pStreamName;
 
     Init();
 
@@ -621,8 +623,13 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     mRtpFormatContext->start_time_realtime = av_gettime();
 
-//    if ((tRes = av_dict_set(&tOptions, "cname", "www.homer-conferencing.com", 0)) < 0)
-//    	LOG(LOG_ERROR, "Failed to set A/V option \"cname\" because %s(0x%x) [option not found = 0x%x]", strerror(AVUNERROR(tRes)), tRes, AVERROR_OPTION_NOT_FOUND);
+    if(mStreamName != "")
+    {
+        if ((tRes = av_dict_set(&tOptions, "cname", mStreamName.c_str(), 0)) < 0)
+        {
+            LOG(LOG_ERROR, "Failed to set A/V option \"cname\" because %s(0x%x) [option not found = 0x%x]", strerror(AVUNERROR(tRes)), tRes, AVERROR_OPTION_NOT_FOUND);
+        }
+    }
 //
 //    if ((tRes = av_dict_set(&tOptions, "ssrc", toString(mLocalSourceIdentifier).c_str(), 0)) < 0)
 //        LOG(LOG_ERROR, "Failed to set A/V option \"ssrc\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);

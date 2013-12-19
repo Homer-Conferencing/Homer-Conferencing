@@ -86,7 +86,7 @@ MediaSinkMem::~MediaSinkMem()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream, bool pIsKeyFrame)
+void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream, string pStreamName, bool pIsKeyFrame)
 {
     bool tResetNeeded = false;
 
@@ -172,7 +172,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
                 return;
             }
 
-            if(!OpenStreamer(pStream))
+            if(!OpenStreamer(pStream, pStreamName))
             {
                 LOG(LOG_ERROR, "Couldn't open %s packetizer, skipping packet processing", GetDataTypeStr().c_str());
                 return;
@@ -185,7 +185,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         {
             LOG(LOG_VERBOSE, "Restarting RTP encoder");
             CloseStreamer();
-            if(!OpenStreamer(pStream))
+            if(!OpenStreamer(pStream, pStreamName))
             {
                 LOG(LOG_ERROR, "Couldn't reset %s packetizer, skipping packet processing", GetDataTypeStr().c_str());
                 return;
@@ -371,7 +371,7 @@ void MediaSinkMem::WriteFragment(char* pData, unsigned int pSize, int64_t pFragm
         LOG(LOG_ERROR, "Packet for %s media sink of %u bytes is too big for FIFO with entries of %d bytes", GetDataTypeStr().c_str(), pSize, mSinkFifo->GetEntrySize());
 }
 
-bool MediaSinkMem::OpenStreamer(AVStream *pStream)
+bool MediaSinkMem::OpenStreamer(AVStream *pStream, string pStreamName)
 {
     if (mMediaSinkOpened)
     {
@@ -382,7 +382,7 @@ bool MediaSinkMem::OpenStreamer(AVStream *pStream)
     mCodec = pStream->codec->codec->name;
     if (mRtpActivated)
     {
-        if (!OpenRtpEncoder(mTargetHost, mTargetPort, pStream))
+        if (!OpenRtpEncoder(mTargetHost, mTargetPort, pStream, pStreamName))
         {
             LOG(LOG_ERROR, "Couldn't open the %s RTP packetizer", GetDataTypeStr().c_str());
 
