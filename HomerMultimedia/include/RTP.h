@@ -65,6 +65,18 @@ enum RtcpType{
 ///////////////////////////////////////////////////////////////////////////////
 
 // ########################## RTCP ###########################################
+enum SDESItemTyp{
+    SDES_undefined = 0,
+    SDES_CNAME,
+    SDES_NAME,
+    SDES_EMAIL,
+    SDES_PHONE,
+    SDES_LOC,
+    SDES_TOOL,
+    SDES_NOTE,
+    SDES_PRIV
+};
+
 union RtcpHeader{
     struct{ // send via separate port
         unsigned int Length:16;             /* length of report */
@@ -75,6 +87,15 @@ union RtcpHeader{
         unsigned int Ssrc;                  /* synchronization source */
         unsigned int Data[5];               /*  */
     }General;
+    struct{ // send within media stream as intermediate packets
+        unsigned int Length:16;             /* length of report */
+        unsigned int Type:8;                /* Payload type (PT) */
+        unsigned int Fmt:5;                 /* Feedback message type (FMT) */
+        unsigned int Padding:1;             /* padding flag */
+        unsigned int Version:2;             /* protocol version */
+        unsigned int Ssrc;                  /* synchronization source */
+        unsigned char Data[4 * 5];          /* 8 bit SDES item type, 8 bit length, data.. */
+    }Description;
     struct{ // send within media stream as intermediate packets
         unsigned int Length:16;             /* length of report */
         unsigned int Type:8;                /* Payload type (PT) */
@@ -165,7 +186,8 @@ public:
 
     /* RTCP packetizing/parsing */
     static void LogRtcpHeader(RtcpHeader *pRtcpHeader, uint64_t pTimestampOffset = 0);
-    bool RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay /* in micro seconds */, unsigned int &pPackets, unsigned int &pOctets, float &pRelativeLoss);
+    bool RtcpParseSenderDescription(char *&pData, int &pDataSize);
+    bool RtcpParseSenderReport(char *&pData, int &pDataSize, unsigned int &pPackets, unsigned int &pOctets);
 
 protected:
     uint64_t GetCurrentPtsFromRTP(); // returns the timestamp of the last received RTP packet
@@ -203,7 +225,6 @@ private:
     std::string         mTargetHost;
     unsigned int        mTargetPort;
     uint64_t	        mLostPackets;
-    float               mRelativeLostPackets;
     unsigned int        mLocalSourceIdentifier;
     enum AVCodecID      mStreamCodecID;
     uint64_t			mRemoteSequenceNumber; // without overflows
@@ -260,6 +281,14 @@ private:
     uint64_t            mSyncPTS;
     /* stream naming */
     std::string         mStreamName;
+
+protected:
+    /* derived stats based on RTCP */
+    float               mRtcpRelativeLoss;
+    int64_t             mRtcpEndToEndDelay; // in us
+    int64_t             mRtcpSenderReportsReceived;
+    std::string         mRtcpSenderDescription;
+    int64_t             mRtcpSenderDescriptionsReceived;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

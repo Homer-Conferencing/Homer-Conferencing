@@ -62,9 +62,6 @@ MediaSource::MediaSource(string pName):
 {
     mFrameDuration = 1;
     mSourceTimeShiftForRTGrabbing = 0;
-    mRelativeLoss = 0;
-    mDecoderSynchPoints = 0;
-    mEndToEndDelay = 0;
     mDecodedIFrames = 0;
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
@@ -1016,7 +1013,7 @@ int64_t MediaSource::DecodedBIFrames()
 
 int64_t MediaSource::GetEndToEndDelay()
 {
-    return mEndToEndDelay;
+    return 0;
 }
 
 float MediaSource::GetFrameBufferPreBufferingTime()
@@ -2929,6 +2926,11 @@ std::string MediaSource::GetCurrentDevicePeerName()
 	return "";
 }
 
+std::string MediaSource::GetPeerDeviceName()
+{
+    return "";
+}
+
 std::string MediaSource::GetCurrentDeviceName()
 {
 	return mCurrentDeviceName;
@@ -2974,7 +2976,7 @@ int64_t MediaSource::GetSynchronizationTimestamp()
 
 int MediaSource::GetSynchronizationPoints()
 {
-    return mDecoderSynchPoints;
+    return 0;
 }
 
 bool MediaSource::TimeShift(int64_t pOffset)
@@ -2985,7 +2987,7 @@ bool MediaSource::TimeShift(int64_t pOffset)
 
 float MediaSource::GetRelativeLoss()
 {
-    return mRelativeLoss;
+    return 0;
 }
 
 void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType)

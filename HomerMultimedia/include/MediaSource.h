@@ -253,6 +253,9 @@ public:
     virtual int64_t GetSynchronizationTimestamp(); // in us
     virtual int GetSynchronizationPoints(); // how many synchronization points for deriving synchronization timestamp were included in the input stream till now?
     virtual bool TimeShift(int64_t pOffset); // in us, a value of "0" leads to a re-calibration of RT grabbing
+
+    /* transmission quality */
+    virtual int64_t GetEndToEndDelay(); // in us
     virtual float GetRelativeLoss();
 
     /* frame statistics */
@@ -264,9 +267,6 @@ public:
     virtual int64_t DecodedSIFrames();
     virtual int64_t DecodedSPFrames();
     virtual int64_t DecodedBIFrames();
-
-    /* end-to-end delay */
-    virtual int64_t GetEndToEndDelay(); // in us
 
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pResX = 352, int pResY = 288);
@@ -343,6 +343,7 @@ public:
     virtual void getVideoDevices(VideoDevices &pVList);
     virtual void getAudioDevices(AudioDevices &pAList);
     virtual bool SelectDevice(std::string pDeviceName, enum MediaType pMediaType, bool &pIsNewDevice);
+    virtual std::string GetPeerDeviceName();
     virtual std::string GetCurrentDeviceName();
     virtual std::string GetCurrentDevicePeerName();
     virtual bool RegisterMediaSource(MediaSource *pMediaSource);
@@ -507,16 +508,12 @@ protected:
     int64_t             mDecodedSIFrames;
     int64_t             mDecodedSPFrames;
     int64_t             mDecodedBIFrames;
-    /* delay stats */
-    int64_t             mEndToEndDelay;
     /* frame pre-buffering */
     float				mDecoderFrameBufferTime; // current pre-buffer length
     float               mDecoderFrameBufferTimeMax; // max. pre-buffer length
     float               mDecoderFramePreBufferTime;
     bool                mDecoderFramePreBufferingAutoRestart;
     /* A/V synch. */
-    int                 mDecoderSynchPoints; // mostly derived from RTCP(RTP) data
-    float               mRelativeLoss;
     int                 mDecoderOutputFrameDelay;
     /* live OSD marking */
     float               mMarkerRelX;

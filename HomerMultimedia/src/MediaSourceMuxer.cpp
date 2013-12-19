@@ -1941,7 +1941,15 @@ int64_t MediaSourceMuxer::GetEndToEndDelay()
     if (mMediaSource != NULL)
         return mMediaSource->GetEndToEndDelay();
     else
-        return mEndToEndDelay;
+        return 0;
+}
+
+float MediaSourceMuxer::GetRelativeLoss()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetRelativeLoss();
+    else
+        return 0;
 }
 
 float MediaSourceMuxer::GetFrameBufferPreBufferingTime()

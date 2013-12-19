@@ -152,14 +152,14 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
         char *tFragmentData;
         int tFragmentBufferSize;
         int tFragmentDataSize;
-        bool tLastFragment;
+        bool tLastFragmentOfAVPacket;
         bool tFragmenHasAVData;
         enum RtcpType tFragmentRtcpType;
 
         tBufferSize = 0;
 
         do{
-            tLastFragment = false;
+            tLastFragmentOfAVPacket = false;
             tFragmenHasAVData = false;
             tFragmentData = &tMediaSourceMemInstance->mFragmentBuffer[0];
             tFragmentBufferSize = MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE; // maximum size of one single fragment of a frame packet
@@ -189,7 +189,7 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
             {
                 tFragmentDataSize = tFragmentBufferSize;
                 // parse and remove the RTP header, extract the encapsulated frame fragment
-                tFragmenHasAVData = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragment, tFragmentRtcpType, tMediaSourceMemInstance->mSourceCodecId, false);
+                tFragmenHasAVData = tMediaSourceMemInstance->RtpParse(tFragmentData, tFragmentDataSize, tLastFragmentOfAVPacket, tFragmentRtcpType, tMediaSourceMemInstance->mSourceCodecId, false);
                 #ifdef MSMEM_DEBUG_PACKETS
                     LOGEX(MediaSourceMem, LOG_VERBOSE, "Got %d bytes %s payload from %d bytes RTP packet", tFragmentDataSize, GetGuiNameFromCodecID(tMediaSourceMemInstance->mSourceCodecId).c_str(), tFragmentBufferSize);
                 #endif
@@ -211,7 +211,7 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
                         #endif
                     }else
                     {
-                        tLastFragment = false;
+                        tLastFragmentOfAVPacket = false;
                         tBuffer = (char*)pBuffer;
                         tBufferSize = pBufferSize;
                         LOGEX(MediaSourceMem, LOG_ERROR, "Stream buffer of %d bytes too small for input, dropping received stream", pBufferSize);
@@ -219,29 +219,10 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
                 }else
                 {// fragment has no valid A/V data
                     if (tFragmentRtcpType > 0)
-                    {// we have received a sender report
-                        switch(tFragmentRtcpType)
-                        {
-                        	case RTCP_SENDER_REPORT:
-									{
-										unsigned int tPacketCountReportedBySender = 0;
-										unsigned int tOctetCountReportedBySender = 0;
-										if (tMediaSourceMemInstance->RtcpParseSenderReport(tFragmentData, tFragmentDataSize, tMediaSourceMemInstance->mEndToEndDelay, tPacketCountReportedBySender, tOctetCountReportedBySender, tMediaSourceMemInstance->mRelativeLoss))
-										{
-											tMediaSourceMemInstance->mDecoderSynchPoints++;
-											#ifdef MSMEM_DEBUG_SENDER_REPORTS
-												LOGEX(MediaSourceMem, LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
-											#endif
-										}else
-											LOGEX(MediaSourceMem, LOG_ERROR, "Unable to parse sender report in received RTCP packet");
-									}
-									break;
-                        	default:
-									LOGEX(MediaSourceMem, LOG_WARN, "Unsupported RTCP packet type: %d", (int)tFragmentRtcpType);
-									break;
-                        }
+                    {// we have received a sender report or a sender description
+                        // nothing to do here
                     }else
-                    {// we have a received an unsupported RTCP packet/RTP payload or something went completely wrong
+                    {// we have received an unsupported RTCP packet/RTP payload or something went completely wrong
                         if (tMediaSourceMemInstance->HasInputStreamChanged())
                         {// we have to reset the source
                             LOGEX(MediaSourceMem, LOG_WARN, "Detected source change at remote side, signaling EOF and returning immediately");
@@ -265,7 +246,7 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
                 }else
                     LOGEX(MediaSourceMem, LOG_WARN, "Detected empty signaling fragment, ignoring it");
             }
-        }while(!tLastFragment);
+        }while(!tLastFragmentOfAVPacket);
     }else
     {// rtp is inactive
         tMediaSourceMemInstance->ReadFragment(tBuffer, tBufferSize, tFragmentNumber);
@@ -301,6 +282,16 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
 		tMediaSourceMemInstance->mFirstReceivedFrameTimestampFromRTP = (double)tMediaSourceMemInstance->GetCurrentPtsFromRTP();
 
 	return tBufferSize;
+}
+
+int64_t MediaSourceMem::GetEndToEndDelay()
+{
+    return mRtcpEndToEndDelay;
+}
+
+float MediaSourceMem::GetRelativeLoss()
+{
+    return mRtcpRelativeLoss;
 }
 
 void MediaSourceMem::WriteFragment(char *pBuffer, int pBufferSize, int64_t pFragmentNumber)
@@ -358,6 +349,16 @@ void MediaSourceMem::ReadFragment(char *pBuffer, int &pBufferSize, int64_t &pFra
         // delete all stored frames: it is a better for the decoding!
         mDecoderFragmentFifo->ClearFifo();
     }
+}
+
+std::string MediaSourceMem::GetPeerDeviceName()
+{
+    return mRtcpSenderDescription;
+}
+
+std::string MediaSourceMem::GetCurrentDeviceName()
+{
+    return MediaSource::GetCurrentDeviceName() + (mRtcpSenderDescription != "" ? + " (" + mRtcpSenderDescription + ")" : "");
 }
 
 bool MediaSourceMem::SupportsDecoderFrameStatistics()
@@ -954,7 +955,6 @@ bool MediaSourceMem::CloseGrabDevice()
     mDecoderRecalibrateRTGrabbingAfterSeeking = true;
     mResXLastGrabbedFrame = 0;
     mResYLastGrabbedFrame = 0;
-    mDecoderSynchPoints = 0;
     mMetaData.clear();
 
     // reinit. RTP parser
@@ -2625,6 +2625,11 @@ bool MediaSourceMem::WaitForRTGrabbing()
     }
 
     return true;
+}
+
+int MediaSourceMem::GetSynchronizationPoints()
+{
+    return mRtcpSenderReportsReceived;
 }
 
 int64_t MediaSourceMem::GetSynchronizationTimestamp()

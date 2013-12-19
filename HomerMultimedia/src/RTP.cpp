@@ -451,6 +451,8 @@ void RTP::Init()
     mRemoteSourceChangedLastPayload = -1;
     mRemoteSourceChangedResetScore = 0;
     mRtcpLastReceivedPackets = 0;
+    mRtcpSenderDescriptionsReceived = 0;
+    mRtcpSenderReportsReceived = 0;
     mReceivedPackets = 0;
     mRtcpLastRemotePackets = 0;
     mRtcpLastRemoteOctets = 0;
@@ -468,6 +470,8 @@ void RTP::Init()
     mRemoteTimestampOverflowShift = 0;
     mRemoteTimestampConsecutiveOverflows = 0;
     mRemoteTimestamp = 0;
+    mRtcpRelativeLoss = 0;
+    mRtcpEndToEndDelay = 0;
     mLastTimestampFromRTPHeader = 0;
     mLastSequenceNumberFromRTPHeader = 0;
     mLostPackets = 0;
@@ -1384,11 +1388,6 @@ unsigned int RTP::GetLostPacketsFromRTP()
     return mLostPackets;
 }
 
-float RTP::GetRelativeLostPacketsFromRTP()
-{
-    return mRelativeLostPackets;
-}
-
 void RTP::AnnounceLostPackets(uint64_t pCount)
 {
     LOG(LOG_VERBOSE, "Got %"PRIu64" lost packets", pCount);
@@ -1620,47 +1619,13 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
         mReceivedPackets++;
 
     // #############################################################
-    // HEADER: parse rtp header
+    // HEADER: prepare rtp header for parsing
     // #############################################################
     RtpHeader* tRtpHeader = (RtpHeader*)pData;
 
     // convert from network to host byte order
     for (int i = 0; i < 3; i++)
         tRtpHeader->Data[i] = ntohl(tRtpHeader->Data[i]);
-
-    unsigned int tCsrcCount = tRtpHeader->CsrcCount;
-    if (tCsrcCount > 0)
-        LOG(LOG_ERROR, "Found unsupported usage of multimedia stream mixing at remote side");
-
-    if (tCsrcCount > 4)
-    {
-        LOG(LOG_ERROR, "Found invalid CSRC value %u in RTP header", tCsrcCount);
-
-        pIsLastFragment = false;
-
-        // convert from host to network byte order again
-        for (int i = 0; i < 3; i++)
-            tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
-
-		#ifdef RTP_DEBUG_PACKET_DECODER
-
-			// print some verbose outputs
-			LogRtpHeader(tRtpHeader);
-
-		#endif
-
-        return false;
-    }
-
-    // HINT: header size = standard header size + amount of CSRCs * size of one CSRC
-    // go to the start of the codec header
-    pData += RTP_HEADER_SIZE;
-    for (unsigned int j = 1; j < tCsrcCount; j++)
-        pData += sizeof(unsigned int);
-
-    // do we have old h263 style rtp packets?
-    if (tRtpHeader->PayloadType == 34)
-        tOldH263PayloadDetected = true;
 
     // #############################################################
     // HEADER: rtcp => parse and return immediately
@@ -1673,12 +1638,11 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     		mRTCPPacketCounter++;
 
     	// RTCP in-stream feedback starts at the beginning of RTP header
-        RtcpHeader* tRtcpHeader = (RtcpHeader*)tRtpPacketStart;
+        RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
 
         pIsLastFragment = false;
         pRtcpType = (enum RtcpType)tRtcpHeader->General.Type;
-        pData = (char*)tRtcpHeader;
-        pDataSize = (tRtcpHeader->Feedback.Length + 1) * 4;
+        enum RtcpType tCurrentRtcpType = pRtcpType;
 
         // convert from host to network byte order again
         for (int i = 0; i < 3; i++)
@@ -1687,6 +1651,66 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
         #ifdef RTCP_DEBUG_PACKETS_DECODER
             LogRtcpHeader(tRtcpHeader, mRemoteStartTimestamp);
         #endif
+
+        int tFoundNestedPackets = 0;
+        do{
+            tFoundNestedPackets++;
+            switch(tCurrentRtcpType)
+            {
+                case RTCP_SENDER_REPORT:
+                        {
+                            unsigned int tPacketCountReportedBySender = 0;
+                            unsigned int tOctetCountReportedBySender = 0;
+                            if (RtcpParseSenderReport(pData, pDataSize, tPacketCountReportedBySender, tOctetCountReportedBySender))
+                            {
+                                #ifdef RTCP_DEBUG_PACKETS_DECODER
+                                    LOG(LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
+                                #endif
+                            }else
+                                LOG(LOG_ERROR, "Unable to parse sender report in received RTCP packet");
+                        }
+                        break;
+                case RTCP_SOURCE_DESCRIPTION:
+                        {
+                            if (RtcpParseSenderDescription(pData, pDataSize))
+                            {
+                                #ifdef RTCP_DEBUG_PACKETS_DECODER
+                                    LOG(LOG_VERBOSE, "Sender description: %s", mRtcpSenderDescription.c_str());
+                                #endif
+                            }
+                        }
+                        break;
+                default:
+                        LOG(LOG_WARN, "Unsupported RTCP packet type: %d (nested packet nr. %d)", (int)tCurrentRtcpType, tFoundNestedPackets);
+                        break;
+            }
+
+            if(tFoundNestedPackets >= 4)
+                break;
+
+            if(pDataSize > 0)
+            {
+                // #############################################################
+                // HEADER: prepare rtp header for parsing
+                // #############################################################
+                tRtcpHeader = (RtcpHeader*)pData;
+
+                // convert from network to host byte order
+                for (int i = 0; i < 3; i++)
+                    tRtcpHeader->Data[i] = ntohl(tRtcpHeader->Data[i]);
+
+                tCurrentRtcpType = (enum RtcpType)tRtcpHeader->General.Type;
+
+                // convert from host to network byte order again
+                for (int i = 0; i < 3; i++)
+                    tRtcpHeader->Data[i] = htonl(tRtcpHeader->Data[i]);
+
+            }
+        }while(pDataSize >= (int)RTCP_HEADER_SIZE);
+        if(pDataSize > 0)
+        {
+            LOG(LOG_WARN, "Detected %d bytes of remaining RTCP data", pDataSize);
+        }
 
         // inform that is not a fragment which includes data for an audio/video decoder, this RTCP packet belongs to the RTP abstraction level
         return false;
@@ -1712,6 +1736,40 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     // #############################################################
     // HEADER: rtp => parse and update internal state information
     // #############################################################
+    unsigned int tCsrcCount = tRtpHeader->CsrcCount;
+    if (tCsrcCount > 0)
+        LOG(LOG_ERROR, "Found unsupported usage of multimedia stream mixing at remote side");
+
+    if (tCsrcCount > 4)
+    {
+        LOG(LOG_ERROR, "Found invalid CSRC value %u in RTP header", tCsrcCount);
+
+        pIsLastFragment = false;
+
+        // convert from host to network byte order again
+        for (int i = 0; i < 3; i++)
+            tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
+
+        #ifdef RTP_DEBUG_PACKET_DECODER
+
+            // print some verbose outputs
+            LogRtpHeader(tRtpHeader);
+
+        #endif
+
+        return false;
+    }
+
+    // HINT: header size = standard header size + amount of CSRCs * size of one CSRC
+    // go to the start of the codec header
+    pData += RTP_HEADER_SIZE;
+    for (unsigned int j = 1; j < tCsrcCount; j++)
+        pData += sizeof(unsigned int);
+
+    // do we have old h263 style rtp packets?
+    if (tRtpHeader->PayloadType == 34)
+        tOldH263PayloadDetected = true;
+
     if (!pLoggingOnly)
     {
         // ###################################################
@@ -2727,20 +2785,79 @@ void RTP::LogRtcpHeader(RtcpHeader *pRtcpHeader, uint64_t pTimestampOffset)
     for (int i = 0; i < tRtcpHeaderLength; i++)
         pRtcpHeader->Data[i] = htonl(pRtcpHeader->Data[i]);
 }
-
-bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEndDelay, unsigned int &pPackets, unsigned int &pOctets, float &pRelativeLoss)
+bool RTP::RtcpParseSenderDescription(char *&pData, int &pDataSize)
 {
     //HINT: assumes network byte order!
 
     bool tResult = false;
     RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
 
+    mRtcpSenderDescriptionsReceived++;
+
     // convert from network to host byte order
     for (int i = 0; i < 7; i++)
         tRtcpHeader->Data[i] = ntohl(tRtcpHeader->Data[i]);
-    int tRtcpHeaderLength = tRtcpHeader->Feedback.Length + 1;
+    int tRtcpHeaderLength = (tRtcpHeader->General.Length + 1) * 4 /* 32 bit words */;
 
-    if (tRtcpHeaderLength == 7 /* need 28 byte sender report */)
+    // correct the remaining data size
+    pDataSize -= tRtcpHeaderLength;
+    // move the data pointer beyond this sender report
+    pData += tRtcpHeaderLength;
+
+    // convert from host to network byte order
+    for (int i = 0; i < 7; i++)
+        tRtcpHeader->Data[i] = htonl(tRtcpHeader->Data[i]);
+
+    #ifdef RTCP_DEBUG_PACKETS_DECODER
+        LOG(LOG_VERBOSE, "Received %d bytes of sender description", tRtcpHeaderLength);
+    #endif
+
+    //TODO: support more than one entry here
+    enum SDESItemTyp tSDESType = (enum SDESItemTyp)tRtcpHeader->Description.Data[0];
+    int tSDESLength = tRtcpHeader->Description.Data[1];
+    #ifdef RTCP_DEBUG_PACKETS_DECODER
+        LOG(LOG_VERBOSE, "   ..SDES type: %d -> length: %d", (int)tSDESType, tSDESLength);
+    #endif
+    //TODO: support other SDES types here
+    switch(tSDESType)
+    {
+        case SDES_CNAME:
+                if(tSDESLength <= 255)
+                {
+                    #ifdef RTCP_DEBUG_PACKETS_DECODER
+                        LOG(LOG_VERBOSE, "      ..SDES CNAME: %s", (const char*)&tRtcpHeader->Description.Data[2]);
+                    #endif
+                    mRtcpSenderDescription = string((const char*)&tRtcpHeader->Description.Data[2]);
+                }
+                break;
+        default:
+                LOG(LOG_WARN, "Received unsupported RTCP SDES type: %d", (int)tSDESType);
+                break;
+    }
+
+    return tResult;
+}
+
+bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, unsigned int &pPackets, unsigned int &pOctets)
+{
+    //HINT: assumes network byte order!
+
+    bool tResult = false;
+    RtcpHeader* tRtcpHeader = (RtcpHeader*)pData;
+
+    mRtcpSenderReportsReceived++;
+
+    // convert from network to host byte order
+    for (int i = 0; i < 7; i++)
+        tRtcpHeader->Data[i] = ntohl(tRtcpHeader->Data[i]);
+    int tRtcpHeaderLength = (tRtcpHeader->General.Length + 1) * 4 /* 32 bit words */;
+
+    // correct the remaining data size
+    pDataSize -= tRtcpHeaderLength;
+    // move the data pointer beyond this sender report
+    pData += tRtcpHeaderLength;
+
+    if (tRtcpHeaderLength == 28 /* need 28 byte sender report */)
     {// update values
         uint64_t tRemoteNtpTimestampHigh = (uint64_t)tRtcpHeader->Feedback.TimestampHigh * 1000 * 1000;
         uint64_t tRemoteNtpTimestampLow = ((uint64_t)tRtcpHeader->Feedback.TimestampLow * 1000 * 1000) >> 32;
@@ -2759,7 +2876,7 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
 
         //HINT: the START SEQUENCE NUMBER: cannot be updated because this data is nopt included in the RTCP header
 
-        pEndToEndDelay = tLocalNtpTimestamp - tRemoteNtpTimestamp;
+        mRtcpEndToEndDelay = tLocalNtpTimestamp - tRemoteNtpTimestamp;
         pPackets = tRtcpHeader->Feedback.Packets;
         pOctets = tRtcpHeader->Feedback.Octets;
 
@@ -2769,8 +2886,7 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
             uint64_t tLocallyReceivedPackets = mReceivedPackets - mRtcpLastReceivedPackets;
             uint64_t tRemotelyReportedSentPackets = pPackets - mRtcpLastRemotePackets + 1;
             double tRelativeLoss = 100 - 100 * (double)tLocallyReceivedPackets / tRemotelyReportedSentPackets;
-            mRelativeLostPackets = (float)tRelativeLoss;
-            pRelativeLoss = mRelativeLostPackets;
+            mRtcpRelativeLoss = (float)tRelativeLoss;
 
             #ifdef RTCP_DEBUG_PACKETS_DECODER
                 LOG(LOG_VERBOSE, "Received NTP time: US %lu, high %u, low %u, DE %lu/%lu (diff: %lu)", tRemoteNtpUsTimestamp, tRtcpHeader->Feedback.TimestampHigh, tRtcpHeader->Feedback.TimestampLow, tRemoteNtpTimestamp, av_gettime(), tLocalNtpTimestamp- tRemoteNtpTimestamp);
@@ -2787,11 +2903,12 @@ bool RTP::RtcpParseSenderReport(char *&pData, int &pDataSize, int64_t &pEndToEnd
         tResult = true;
     }else
     {// set fall back values
+        LOG(LOG_ERROR, "Expected 28 bytes and got %d bytes as RTCP sender report", tRtcpHeaderLength);
         pPackets = 0;
         pOctets = 0;
         tResult = false;
     }
-    // convert from host to network byte order, HACK: exceed array boundaries
+    // convert from host to network byte order
     for (int i = 0; i < 7; i++)
         tRtcpHeader->Data[i] = htonl(tRtcpHeader->Data[i]);
 

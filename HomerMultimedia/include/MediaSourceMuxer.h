@@ -120,8 +120,9 @@ public:
     virtual int64_t DecodedSPFrames();
     virtual int64_t DecodedBIFrames();
 
-    /* end-to-end delay */
-    virtual int64_t GetEndToEndDelay();
+    /* transmission quality */
+    virtual int64_t GetEndToEndDelay(); // in us
+    virtual float GetRelativeLoss();
 
     /* video grabbing control */
     virtual void SetVideoGrabResolution(int pTargetResX, int pTargetResY);

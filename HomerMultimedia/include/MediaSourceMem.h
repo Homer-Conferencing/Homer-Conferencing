@@ -101,12 +101,21 @@ public:
     virtual int GetFrameBufferSize(); // returns current frame queue size
     virtual void SetFrameBufferPreBufferingTime(float pTime);
 
+    /* device control */
+    virtual std::string GetPeerDeviceName();
+    virtual std::string GetCurrentDeviceName();
+
     /* frame stats */
     virtual bool SupportsDecoderFrameStatistics();
 
     /* A/V sync. */
+    virtual int GetSynchronizationPoints();
     virtual int64_t GetSynchronizationTimestamp(); // in us
     virtual bool TimeShift(int64_t pOffset); // in us
+
+    /* transmission quality */
+    virtual int64_t GetEndToEndDelay(); // in us
+    virtual float GetRelativeLoss();
 
     /* video grabbing control */
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
