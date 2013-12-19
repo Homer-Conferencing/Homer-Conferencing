@@ -59,7 +59,10 @@ namespace Homer { namespace Multimedia {
 enum RtcpType{
 	RTCP_NOT_FOUND = 0,
 	RTCP_SENDER_REPORT = 200,
-	RTCP_SOURCE_DESCRIPTION = 202
+	RTCP_RECEIVER_REPORT = 201,
+	RTCP_SOURCE_DESCRIPTION = 202,
+    RTCP_BYE = 203,
+    RTCP_APP = 204
 };
 
 ///////////////////////////////////////////////////////////////////////////////

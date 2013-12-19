@@ -1664,10 +1664,16 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             if (RtcpParseSenderReport(pData, pDataSize, tPacketCountReportedBySender, tOctetCountReportedBySender))
                             {
                                 #ifdef RTCP_DEBUG_PACKETS_DECODER
-                                    LOG(LOG_VERBOSE, "Sender reports: %d packets and %d bytes transmitted", tPacketCountReportedBySender, tOctetCountReportedBySender);
+                                    LOG(LOG_VERBOSE, "SENDER REPORT: sender sent %d packets with %d bytes data", tPacketCountReportedBySender, tOctetCountReportedBySender);
                                 #endif
                             }else
                                 LOG(LOG_ERROR, "Unable to parse sender report in received RTCP packet");
+                        }
+                        break;
+                case RTCP_RECEIVER_REPORT:
+                        {
+                            LOG(LOG_WARN, "Got a RECEIVER REPORT packet, this packet type isn't supported yet");
+                            pDataSize = 0;
                         }
                         break;
                 case RTCP_SOURCE_DESCRIPTION:
@@ -1675,13 +1681,26 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             if (RtcpParseSenderDescription(pData, pDataSize))
                             {
                                 #ifdef RTCP_DEBUG_PACKETS_DECODER
-                                    LOG(LOG_VERBOSE, "Sender description: %s", mRtcpSenderDescription.c_str());
+                                    LOG(LOG_VERBOSE, "SENDER DESCRIPTION: sender source described with \"%s\"", mRtcpSenderDescription.c_str());
                                 #endif
                             }
                         }
                         break;
+                case RTCP_BYE:
+                        {
+                            LOG(LOG_WARN, "Got a BYE packet, this packet type isn't supported yet");
+                            pDataSize = 0;
+                        }
+                        break;
+                case RTCP_APP:
+                        {
+                            LOG(LOG_WARN, "Got a custom APP packet, this packet type isn't supported yet");
+                            pDataSize = 0;
+                        }
+                        break;
                 default:
-                        LOG(LOG_WARN, "Unsupported RTCP packet type: %d (nested packet nr. %d)", (int)tCurrentRtcpType, tFoundNestedPackets);
+                        LOG(LOG_ERROR, "Unsupported RTCP packet type: %d (nested packet nr. %d)", (int)tCurrentRtcpType, tFoundNestedPackets);
+                        pDataSize = 0;
                         break;
             }
 
