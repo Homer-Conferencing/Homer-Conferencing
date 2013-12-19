@@ -374,13 +374,14 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     //##################################################################################
     LOG(LOG_INFO, "Selected input channel: %d", mDesiredInputChannel);
     av_dict_set(&tOptions, "channel", toString(mDesiredInputChannel).c_str(), 0);
-    if(tAnalogVideo){
+    if(tAnalogVideo)
+    {
 //    	if(((pResX != 352) || (pResY != 288)) && ((pResX != 720) || (pResY != 576)))
 //    	{
     		pResX = 720;
     		pResY = 576;
-    	}
-//    }
+//    	}
+    }
     LOG(LOG_INFO, "Selected input resolution: %d x %d", pResX, pResY);
     av_dict_set(&tOptions, "video_size", (toString(pResX) + "x" + toString(pResY)).c_str(), 0);
     if (tSelectedInputSupportsFps)
