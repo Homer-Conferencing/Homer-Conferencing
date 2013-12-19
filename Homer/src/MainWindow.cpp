@@ -1426,10 +1426,11 @@ void MainWindow::customEvent(QEvent* pEvent)
                                 mParticipantWidgets.push_back(tParticipantWidget);
                             } else
                                 LOG(LOG_ERROR, "ParticipantWidget creation failed");
-                        }
+                        }else
+                            tKnownParticipant = true;
+
                         if(tParticipantWidget != NULL)
                         {
-                            tKnownParticipant = true;
                             if (tMEvent->SenderName.size())
                                 tParticipantWidget->UpdateParticipantName(QString(tMEvent->SenderName.c_str()));
                             tParticipantWidget->HandleMessage(tMEvent->IsIncomingEvent, QString(tMEvent->SenderName.c_str()), QString(tMEvent->Text.c_str()));
@@ -1503,10 +1504,11 @@ void MainWindow::customEvent(QEvent* pEvent)
                             mParticipantWidgets.push_back(tParticipantWidget);
                         } else
                             LOG(LOG_ERROR, "ParticipantWidget creation failed");
-                    }
+                    }else
+                        tKnownParticipant = true;
+
                     if(tParticipantWidget != NULL)
                     {
-                        tKnownParticipant = true;
                         if (tCEvent->SenderName.size())
                             tParticipantWidget->UpdateParticipantName(QString(tCEvent->SenderName.c_str()));
                         if (!tCEvent->AutoAnswering)
@@ -1682,7 +1684,11 @@ void MainWindow::customEvent(QEvent* pEvent)
                     break;
     }
 
-    LOG(LOG_VERBOSE, "Event was related to an already known participant");
+    if(tKnownParticipant)
+    {
+        LOG(LOG_VERBOSE, "Event was related to an already existing participant widget");
+    }
+
     // free memory of event
     delete tEvent;
 }
