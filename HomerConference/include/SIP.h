@@ -173,6 +173,8 @@ protected:
         void SipReceivedOptionsResponseAccept(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
         void SipReceivedOptionsResponseUnavailable(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
         /* */
+
+        void SipReceivedSubscriptionResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, char const *pPhrase, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
     void SipReceivedShutdownResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, sip_t const *pSip, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
     void SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
     void SipReceivedPublishResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, const char* pPhrase, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
@@ -185,6 +187,7 @@ protected:
     void SipSendCallDeny(CallDenyEvent *pCDEvent);
     void SipSendCallHangUp(CallHangUpEvent *pCHUEvent);
     void SipSendOptions(OptionsEvent *pOEvent);
+    void SipSendAvailabilitySubscription(SubscriptionPresenceEvent *pSPEvent);
     void SipProcessOutgoingEvents();
 
     /* auth support */

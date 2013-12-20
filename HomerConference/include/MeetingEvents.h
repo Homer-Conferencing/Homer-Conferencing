@@ -61,6 +61,7 @@ namespace Homer { namespace Conference {
 #define OPTIONS                                 500 // receive options from SIP server
 #define OPTIONS_ACCEPT                          510 // options from SIP server available
 #define OPTIONS_UNAVAILABLE                     520 // options from SIP server unavailable (server unavailable!)
+#define SUBSCRIPTION_PRESENCE                   600 // presence subscription
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -131,6 +132,8 @@ public:
                 return "Publication succeeded";
             case PUBLICATION_FAILED:
                 return "Publication failed";
+            case SUBSCRIPTION_PRESENCE:
+                return "Subscription for presence";
             default:
                 "User defined event";
         }
@@ -312,6 +315,10 @@ class PublicationFailedEvent:
 public:
     int     StatusCode;
     string  Description;
+};
+class SubscriptionPresenceEvent:
+    public TEvent<SubscriptionPresenceEvent, SUBSCRIPTION_PRESENCE>
+{
 };
 
 ///////////////////////////////////////////////////////////////////////////////

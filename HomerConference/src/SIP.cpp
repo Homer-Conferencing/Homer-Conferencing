@@ -925,6 +925,7 @@ void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t
 
         case 100: // successful based on cache
             LOG(LOG_VERBOSE, "Registration update at SIP server based on cache succeeded");
+            mSipRegisteredAtServer = 1;
             break;
 
         case SIP_STATE_OKAY: // successful
@@ -953,6 +954,15 @@ void SIP::SipReceivedRegisterResponse(const sip_to_t *pSipRemote, const sip_to_t
             mSipRegisterHandle = NULL;
             break;
     }
+
+    /*
+     * SUBSCRIBE to delay instant messages
+     */
+    if(mSipRegisteredAtServer)
+    {
+        nua_subscribe(mSipRegisterHandle, SIPTAG_ACCEPT_STR("application/simple-message-summary"), SIPTAG_EVENT_STR("message-summary"), TAG_END());
+
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -969,8 +979,11 @@ void SIP::SetAvailabilityState(enum AvailabilityState pState, string pStateText)
 
     mAvailabilityState = pState;
 
-    if ((mSipRegisteredAtServer <= 0) || (mAvailabilityState == pState))
+    if (mSipRegisteredAtServer <= 0)
+    {
+        LOG(LOG_VERBOSE, "Registration at SIP server incomplete, availability cannot be told to SIP server");
         return;
+    }
 
     // publish presence state
     switch(mAvailabilityState)
@@ -1028,7 +1041,7 @@ void SIP::SetAvailabilityState(enum AvailabilityState pState, string pStateText)
         return;
     }
 
-    nua_publish(mSipPublishHandle, SIPTAG_PAYLOAD(mPresenceDesription), TAG_IF(mPresenceDesription, SIPTAG_CONTENT_TYPE_STR(GetMimeFormatPidf().c_str())), TAG_END());
+    nua_publish(mSipPublishHandle, SIPTAG_PAYLOAD(mPresenceDesription), TAG_IF(mPresenceDesription, SIPTAG_CONTENT_TYPE_STR(GetMimeFormatPidf().c_str())), SIPTAG_EVENT_STR("presence"), TAG_END());
 }
 
 int SIP::GetAvailabilityState()
@@ -2146,7 +2159,11 @@ void SIP::SipCallBack(int pEvent, int pStatus, char const *pPhrase, nua_t *pNua,
                                 error (status code is in status and descriptive
                                 message in phrase parameters)
                         tags    NUTAG_SUBSTATE()
-            //################################################################
+            */
+            case nua_r_subscribe:
+                SipReceivedSubscriptionResponse(tRemote, tLocal, pNuaHandle, pStatus, pPhrase, pSip, tSourceIp, tSourcePort, tSourcePortTransport);
+                break;
+            /*################################################################
                 nua_r_unsubscribe       Answer to outgoing un-SUBSCRIBE.
 
                 Parameters:
@@ -2298,8 +2315,22 @@ void SIP::PrintIncomingMessageInfo(const sip_to_t *pRemote, const sip_to_t *pLoc
             LOG(LOG_INFO, "Request of type \"%s\"(ID %d)", pSip->sip_request->rq_method_name, (int)pSip->sip_request->rq_method);
             LOG(LOG_INFO, "Request protocol version: %s", pSip->sip_request->rq_version);
         }
+        if (pSip->sip_cseq)
+        {
+            LOG(LOG_INFO, "CSeq. numer: %u", pSip->sip_cseq->cs_seq);
+            LOG(LOG_INFO, "CSeq. method: %s", pSip->sip_cseq->cs_method_name);
+        }
         if (pSip->sip_status)
             LOG(LOG_INFO, "Status: \"%s\"(%d)", pSip->sip_status->st_phrase, pSip->sip_status->st_status);
+        if (pSip->sip_allow)
+        {
+            LOG(LOG_INFO, "Allowed items: %s", pSip->sip_allow->k_items);
+        }
+        if (pSip->sip_event)
+        {
+            LOG(LOG_INFO, "Event: %s", pSip->sip_event->o_type);
+            LOG(LOG_INFO, "EventParams: %s", pSip->sip_event->o_params);
+        }
         if (pSip->sip_server)
         {
             LOG(LOG_INFO, "Remote server: \"%s\"", pSip->sip_server->g_string);
@@ -2592,6 +2623,7 @@ void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t 
         case SIP_STATE_OKAY_DELAYED_DELIVERY: // message delivery is delay but okay
             SipReceivedMessageAcceptDelayed(pSipRemote, pSipLocal, pNuaHandle, pSip, pSourceIp, pSourcePort, pSourcePortTransport);
             break;
+        case SIP_STATE_AUTH_REQUIRED:
         case SIP_STATE_PROXY_AUTH_REQUIRED:
             if ((pNuaHandle != NULL) && (GetServerRegistrationState()))
             {
@@ -3212,6 +3244,35 @@ void SIP::SipReceivedOptionsResponseUnavailable(const sip_to_t *pSipRemote, cons
     MEETING.notifyObservers(tOUAEvent);
 }
 
+void SIP::SipReceivedSubscriptionResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, char const *pPhrase, sip_t const *pSip, string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport)
+{
+    switch(pStatus)
+    {
+        case SIP_STATE_OKAY: // the other side accepted the subscription
+        case SIP_STATE_OKAY_DELAYED_DELIVERY:
+            // nothing to do
+            break;
+        case SIP_STATE_AUTH_REQUIRED:
+        case SIP_STATE_PROXY_AUTH_REQUIRED:
+            if ((pNuaHandle != NULL) && (GetServerRegistrationState()))
+            {
+                string tAuthInfo = "Digest:\"" + mSipRegisterServerAddress + "\":" + mSipRegisterServerUsername + ":" + mSipRegisterServerPassword;
+
+                LOG(LOG_VERBOSE, "Authentication information for message: %s", tAuthInfo.c_str());
+
+                // set auth. information
+                nua_authenticate(pNuaHandle, NUTAG_AUTH(tAuthInfo.c_str()), TAG_END());
+            }else
+            {
+                // registration not finished yet, nothing to do
+            }
+            break;
+        default:
+            LOG(LOG_WARN, "Unsupported status code %d(%s)", pStatus, pPhrase);
+            break;
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////// SENDING //////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -3469,6 +3530,81 @@ void SIP::SipSendCallHangUp(CallHangUpEvent *pCHUEvent)
         MEETING.notifyObservers(tCHUEvent);
 }
 
+void SIP::SipSendAvailabilitySubscription(SubscriptionPresenceEvent *pSPEvent)
+{
+    if (mSipRegisteredAtServer <= 0)
+    {
+        LOG(LOG_VERBOSE, "Registration at SIP server incomplete, PRESENCE subscription aborted");
+        return;
+    }
+
+    string tToTransport = pSPEvent->Receiver + ";transport=" + Socket::TransportType2String(pSPEvent->Transport);
+
+    string tOwnContactIp;
+    unsigned int tOwnContactPort;
+    string tUser = "";
+    string tHost = "";
+    string tPort = "";
+    SplitParticipantName(pSPEvent->Receiver.substr(4), tUser, tHost, tPort);
+
+    LOG(LOG_VERBOSE, "..TO header: sip:%s", SipCreateId(tUser, tHost).c_str());
+    sip_to_t *tTo = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(tUser, tHost)).c_str());
+    if (tTo == NULL)
+    {
+        LOG(LOG_ERROR, "Can not create \"to\" handle for function \"SipSendAvailabilitySubscription\" and receiver \"%s\"", pSPEvent->Receiver.c_str());
+        return;
+    }
+
+    LOG(LOG_VERBOSE, "..FROM header: sip:%s", SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress).c_str());
+    sip_from_t *tFrom = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress)).c_str());
+    if (tFrom == NULL)
+    {
+        LOG(LOG_ERROR, "Can not create \"from\" handle for function \"SipSendAvailabilitySubscription\" and sender \"%s\"", pSPEvent->Sender.c_str());
+        return;
+    }
+
+    // get participant from "receiver" string by removing "sip:"
+    string tParticipant = pSPEvent->Receiver.substr(4);
+
+    string tOwnIp = MEETING.GetHostAdr();
+    if (mStunOutmostAdr != "")
+        tOwnIp = mStunOutmostAdr;
+
+    // create CONTACT header, structure of this header is defined in "20.10 Contact" of RFC 3261
+    // NAT traversal: explicit CONTACT header necessary
+    //                otherwise acknowledge and session activation from the answering host will be lost because of routing problems
+    // hint: SIP usually uses the sender's CONTACT header for routing responses
+    MEETING.GetOwnContactAddress(tParticipant, pSPEvent->Transport, tOwnContactIp, tOwnContactPort);
+    LOG(LOG_VERBOSE, "..CONTACT header: %s", SipCreateId(mSipRegisterServerUsername, tOwnIp, toString(MEETING.GetHostPort())).c_str());
+    sip_contact_t *tContact = sip_contact_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterServerUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
+
+    tFrom->a_display = pSPEvent->SenderName.c_str();
+    if (pSPEvent->SenderComment.size())
+        tFrom->a_url->url_password = pSPEvent->SenderComment.c_str();
+
+    // create operation handle
+    nua_handle_t *tHandle = *pSPEvent->HandlePtr;
+    if(tHandle != NULL)
+    {
+        LOG(LOG_VERBOSE, "SipSendAvailabilitySubscription() uses previously created handle: %p", tHandle);
+    }else
+    {
+        tHandle = nua_handle(mSipContext->SipListener[GetSipListener(pSPEvent->Sender)].Nua, NULL, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), SOATAG_ADDRESS(tOwnContactIp.c_str()), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), NUTAG_URL(URL_STRING_MAKE(tToTransport.c_str())), SIPTAG_FROM(tFrom), TAG_END());
+        LOG(LOG_VERBOSE, "SipSendAvailabilitySubscription() uses new handle: %p", tHandle);
+    }
+
+    if (tHandle == NULL)
+    {
+        LOG(LOG_ERROR, "Can not create operation handle");
+        return;
+    }
+
+    // set the created handle within ParticipantDescriptor
+    *pSPEvent->HandlePtr = tHandle;
+
+    nua_subscribe(tHandle, SIPTAG_EXPIRES_STR("3600"), SIPTAG_ACCEPT_STR(GetMimeFormatPidf().c_str()), SIPTAG_EVENT_STR("presence"), TAG_END());
+}
+
 void SIP::SipSendOptions(OptionsEvent *pOEvent)
 {
     string tToTransport = pOEvent->Receiver + ";transport=" + Socket::TransportType2String(pOEvent->Transport);
@@ -3549,6 +3685,10 @@ void SIP::SipProcessOutgoingEvents()
         if (tEvent->getType() == OptionsEvent::type())
         {
             SipSendOptions((OptionsEvent*) tEvent);
+        }
+        if (tEvent->getType() == SubscriptionPresenceEvent::type())
+        {
+            SipSendAvailabilitySubscription((SubscriptionPresenceEvent*) tEvent);
         }
         if (tEvent->getType() == InternalNatDetectionEvent::type())
         {

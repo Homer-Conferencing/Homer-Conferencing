@@ -62,6 +62,7 @@ struct ParticipantDescriptor
     nua_handle_t   *SipNuaHandleForCalls;
     nua_handle_t   *SipNuaHandleForMsgs;
     nua_handle_t   *SipNuaHandleForOptions;
+    nua_handle_t   *SipNuaHandleForPresenceSubscription;
     Socket         *VideoReceiveSocket;
     Socket         *AudioReceiveSocket;
     Socket         *VideoSendSocket;
@@ -131,6 +132,8 @@ void Meeting::Init(string pLocalGatewayAddress, AddressesList pLocalAddresses, A
     tParticipantDescriptor.Port = toString(mSipHostPort);
     tParticipantDescriptor.SipNuaHandleForCalls = NULL;
     tParticipantDescriptor.SipNuaHandleForMsgs = NULL;
+    tParticipantDescriptor.SipNuaHandleForOptions = NULL;
+    tParticipantDescriptor.SipNuaHandleForPresenceSubscription = NULL;
     tParticipantDescriptor.CallState = CALLSTATE_STANDBY;
     tParticipantDescriptor.VideoReceiveSocket = NULL;
     tParticipantDescriptor.AudioReceiveSocket = NULL;
@@ -300,14 +303,14 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, e
         //LOG(LOG_VERBOSE, "CompareForOpen: \"%s\" with \"%s\" and state: %d", (pUser + "@" + pHost + ":" + pPort).c_str(), (tIt->User + "@" + tIt->Host + ":" + tIt->Port).c_str(), tIt->CallState);
         if (IsThisParticipant(pUser, pHost, pPort, pTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            LOG(LOG_VERBOSE, "...found");
+            LOG(LOG_VERBOSE, "...session found");
             tFound = true;
         }
     }
 
     if (!tFound)
     {
-        LOG(LOG_VERBOSE, "Open session to: %s", SipCreateId(pUser, pHost, pPort).c_str());
+        LOG(LOG_VERBOSE, "Opening session to: %s", SipCreateId(pUser, pHost, pPort).c_str());
         string tIPFromBestLocalInterface = (pIPLocalInterface == "" ? GetLocalSource(pHost) : pIPLocalInterface);
 
         tParticipantDescriptor.User = pUser;
@@ -322,6 +325,10 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, e
         tParticipantDescriptor.RemoteAudioHost = "0.0.0.0";
         tParticipantDescriptor.RemoteAudioPort = 0;
         tParticipantDescriptor.RemoteAudioCodec = "";
+        tParticipantDescriptor.SipNuaHandleForCalls = NULL;
+        tParticipantDescriptor.SipNuaHandleForMsgs = NULL;
+        tParticipantDescriptor.SipNuaHandleForOptions = NULL;
+        tParticipantDescriptor.SipNuaHandleForPresenceSubscription = NULL;
         tParticipantDescriptor.CallState = CALLSTATE_STANDBY;
 
         bool tUseBirectionalMediaSockets = false;
@@ -538,46 +545,43 @@ bool Meeting::SendMessage(string pParticipant, enum TransportType pParticipantTr
 
     LOG(LOG_VERBOSE, "Sending message to: %s[%s]", pParticipant.c_str(), Socket::TransportType2String(pParticipantTransport).c_str());
 
+    LOG(LOG_VERBOSE, "Search matching database entry for SendMessage()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for SendMessage()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        //LOG(LOG_VERBOSE, "SendMessage() compares participant %s with %s,%s,%s", pParticipant.c_str(), tIt->User.c_str(), tIt->Host.c_str(), tIt->Port.c_str());
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            //LOG(LOG_VERBOSE, "SendMessage() compares participant %s with %s,%s,%s", pParticipant.c_str(), tIt->User.c_str(), tIt->Host.c_str(), tIt->Port.c_str());
-            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-            {
-                LOG(LOG_VERBOSE, "...found");
-                tFound = true;
-                tDestinationAddress = tIt->Host;
-                tHandlePtr = &tIt->SipNuaHandleForMsgs;
-                break;
-            }
-        }
-
-        if (tFound)
-        {
-            MessageEvent *tMEvent = new MessageEvent();
-            // is participant user of the registered SIP server then replace sender by our official server login
-            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
-                tMEvent->Sender = "sip:" + GetServerConferenceId();
-            else
-                tMEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
-            tMEvent->SenderName = GetLocalUserName();
-            tMEvent->SenderComment = "";
-            tMEvent->Receiver = "sip:" + pParticipant;
-            tMEvent->Transport = pParticipantTransport;
-            tMEvent->HandlePtr = tHandlePtr;
-            tMEvent->Text = pMessage;
-            mOutgoingEvents.Fire((GeneralEvent*) tMEvent);
+            LOG(LOG_VERBOSE, "...found");
+            tFound = true;
+            tDestinationAddress = tIt->Host;
+            tHandlePtr = &tIt->SipNuaHandleForMsgs;
+            break;
         }
     }
 
     // unlock
     mParticipantsMutex.unlock();
+
+    if (tFound)
+    {
+        MessageEvent *tMEvent = new MessageEvent();
+        // is participant user of the registered SIP server then replace sender by our official server login
+        if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
+            tMEvent->Sender = "sip:" + GetServerConferenceId();
+        else
+            tMEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
+        tMEvent->SenderName = GetLocalUserName();
+        tMEvent->SenderComment = "";
+        tMEvent->Receiver = "sip:" + pParticipant;
+        tMEvent->Transport = pParticipantTransport;
+        tMEvent->HandlePtr = tHandlePtr;
+        tMEvent->Text = pMessage;
+        mOutgoingEvents.Fire((GeneralEvent*) tMEvent);
+    }
 
     return tFound;
 }
@@ -593,41 +597,37 @@ bool Meeting::SendCall(string pParticipant, enum TransportType pParticipantTrans
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    LOG(LOG_VERBOSE, "Search matching database entry for SendCall()");
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for SendCall()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_STANDBY))
         {
-            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_STANDBY))
-            {
-                LOG(LOG_VERBOSE, "...found");
-                tFound = true;
-                tDestinationAddress = tIt->Host;
-                tHandlePtr = &tIt->SipNuaHandleForCalls;
-                break;
-            }
-        }
-
-        if (tFound)
-        {
-            CallEvent *tCEvent = new CallEvent();
-            // is participant user of the registered SIP server then replace sender by our official server login
-            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
-                tCEvent->Sender = "sip:" + GetServerConferenceId();
-            else
-                tCEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
-            tCEvent->SenderName = GetLocalUserName();
-            tCEvent->SenderComment = "";
-            tCEvent->Receiver = "sip:" + pParticipant;
-            tCEvent->Transport = pParticipantTransport;
-            tCEvent->HandlePtr = tHandlePtr;
-            mOutgoingEvents.Fire((GeneralEvent*) tCEvent);
+            LOG(LOG_VERBOSE, "...found");
+            tFound = true;
+            tDestinationAddress = tIt->Host;
+            tHandlePtr = &tIt->SipNuaHandleForCalls;
+            break;
         }
     }
 
     // unlock
     mParticipantsMutex.unlock();
+
+    if (tFound)
+    {
+        CallEvent *tCEvent = new CallEvent();
+        // is participant user of the registered SIP server then replace sender by our official server login
+        if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
+            tCEvent->Sender = "sip:" + GetServerConferenceId();
+        else
+            tCEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
+        tCEvent->SenderName = GetLocalUserName();
+        tCEvent->SenderComment = "";
+        tCEvent->Receiver = "sip:" + pParticipant;
+        tCEvent->Transport = pParticipantTransport;
+        tCEvent->HandlePtr = tHandlePtr;
+        mOutgoingEvents.Fire((GeneralEvent*) tCEvent);
+    }
 
     return tFound;
 }
@@ -639,42 +639,39 @@ bool Meeting::SendCallAcknowledge(string pParticipant, enum TransportType pParti
     ParticipantList::iterator tIt;
     string tDestinationAddress = "";
 
+    LOG(LOG_VERBOSE, "Search matching database entry for SendCallAcknowledge()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for SendCallAcknowledge()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
         {
-            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
-            {
-                tFound = true;
-                tHandlePtr = &tIt->SipNuaHandleForCalls;
-                tDestinationAddress = tIt->Host;
-                LOG(LOG_VERBOSE, "...found");
-                break;
-            }
-        }
-
-        if (tFound)
-        {
-            CallRingingEvent *tCREvent = new CallRingingEvent();
-            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
-                tCREvent->Sender = "sip:" + GetServerConferenceId();
-            else
-                tCREvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
-            tCREvent->SenderName = GetLocalUserName();
-            tCREvent->SenderComment = "";
-            tCREvent->Receiver = "sip:" + pParticipant;
-            tCREvent->HandlePtr = tHandlePtr;
-            mOutgoingEvents.Fire((GeneralEvent*) tCREvent);
+            tFound = true;
+            tHandlePtr = &tIt->SipNuaHandleForCalls;
+            tDestinationAddress = tIt->Host;
+            LOG(LOG_VERBOSE, "...found");
+            break;
         }
     }
 
     // unlock
     mParticipantsMutex.unlock();
+
+    if (tFound)
+    {
+        CallRingingEvent *tCREvent = new CallRingingEvent();
+        if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
+            tCREvent->Sender = "sip:" + GetServerConferenceId();
+        else
+            tCREvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
+        tCREvent->SenderName = GetLocalUserName();
+        tCREvent->SenderComment = "";
+        tCREvent->Receiver = "sip:" + pParticipant;
+        tCREvent->HandlePtr = tHandlePtr;
+        mOutgoingEvents.Fire((GeneralEvent*) tCREvent);
+    }
 
     return tFound;
 }
@@ -689,37 +686,33 @@ bool Meeting::SendCallAccept(string pParticipant, enum TransportType pParticipan
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
         {
-            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
-            {
-                tFound = true;
-                tHandlePtr = &tIt->SipNuaHandleForCalls;
-                tDestinationAddress = tIt->Host;
-                break;
-            }
-        }
-
-        if (tFound)
-        {
-            CallAcceptEvent *tCAEvent = new CallAcceptEvent();
-            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
-                tCAEvent->Sender = "sip:" + GetServerConferenceId();
-            else
-                tCAEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
-            tCAEvent->SenderName = GetLocalUserName();
-            tCAEvent->SenderComment = "";
-            tCAEvent->Receiver = "sip:" + pParticipant;
-            tCAEvent->HandlePtr = tHandlePtr;
-            mOutgoingEvents.Fire((GeneralEvent*) tCAEvent);
+            tFound = true;
+            tHandlePtr = &tIt->SipNuaHandleForCalls;
+            tDestinationAddress = tIt->Host;
+            break;
         }
     }
 
     // unlock
     mParticipantsMutex.unlock();
+
+    if (tFound)
+    {
+        CallAcceptEvent *tCAEvent = new CallAcceptEvent();
+        if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
+            tCAEvent->Sender = "sip:" + GetServerConferenceId();
+        else
+            tCAEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
+        tCAEvent->SenderName = GetLocalUserName();
+        tCAEvent->SenderComment = "";
+        tCAEvent->Receiver = "sip:" + pParticipant;
+        tCAEvent->HandlePtr = tHandlePtr;
+        mOutgoingEvents.Fire((GeneralEvent*) tCAEvent);
+    }
 
     return tFound;
 }
@@ -734,37 +727,33 @@ bool Meeting::SendCallCancel(string pParticipant, enum TransportType pParticipan
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
         {
-            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
-            {
-                tFound = true;
-                tHandlePtr = &tIt->SipNuaHandleForCalls;
-                tDestinationAddress = tIt->Host;
-                break;
-            }
-        }
-
-        if (tFound)
-        {
-            CallCancelEvent *tCCEvent = new CallCancelEvent();
-            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
-                tCCEvent->Sender = "sip:" + GetServerConferenceId();
-            else
-                tCCEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
-            tCCEvent->SenderName = GetLocalUserName();
-            tCCEvent->SenderComment = "";
-            tCCEvent->Receiver = "sip:" + pParticipant;
-            tCCEvent->HandlePtr = tHandlePtr;
-            mOutgoingEvents.Fire((GeneralEvent*) tCCEvent);
+            tFound = true;
+            tHandlePtr = &tIt->SipNuaHandleForCalls;
+            tDestinationAddress = tIt->Host;
+            break;
         }
     }
 
     // unlock
     mParticipantsMutex.unlock();
+
+    if (tFound)
+    {
+        CallCancelEvent *tCCEvent = new CallCancelEvent();
+        if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
+            tCCEvent->Sender = "sip:" + GetServerConferenceId();
+        else
+            tCCEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
+        tCCEvent->SenderName = GetLocalUserName();
+        tCCEvent->SenderComment = "";
+        tCCEvent->Receiver = "sip:" + pParticipant;
+        tCCEvent->HandlePtr = tHandlePtr;
+        mOutgoingEvents.Fire((GeneralEvent*) tCCEvent);
+    }
 
     return tFound;
 }
@@ -779,37 +768,33 @@ bool Meeting::SendCallDeny(string pParticipant, enum TransportType pParticipantT
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
         {
-            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
-            {
-                tFound = true;
-                tHandlePtr = &tIt->SipNuaHandleForCalls;
-                tDestinationAddress = tIt->Host;
-                break;
-            }
-        }
-
-        if (tFound)
-        {
-            CallDenyEvent *tCDEvent = new CallDenyEvent();
-            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
-                tCDEvent->Sender = "sip:" + GetServerConferenceId();
-            else
-                tCDEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
-            tCDEvent->SenderName = GetLocalUserName();
-            tCDEvent->SenderComment = "";
-            tCDEvent->Receiver = "sip:" + pParticipant;
-            tCDEvent->HandlePtr = tHandlePtr;
-            mOutgoingEvents.Fire((GeneralEvent*) tCDEvent);
+            tFound = true;
+            tHandlePtr = &tIt->SipNuaHandleForCalls;
+            tDestinationAddress = tIt->Host;
+            break;
         }
     }
 
     // unlock
     mParticipantsMutex.unlock();
+
+    if (tFound)
+    {
+        CallDenyEvent *tCDEvent = new CallDenyEvent();
+        if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
+            tCDEvent->Sender = "sip:" + GetServerConferenceId();
+        else
+            tCDEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
+        tCDEvent->SenderName = GetLocalUserName();
+        tCDEvent->SenderComment = "";
+        tCDEvent->Receiver = "sip:" + pParticipant;
+        tCDEvent->HandlePtr = tHandlePtr;
+        mOutgoingEvents.Fire((GeneralEvent*) tCDEvent);
+    }
 
     return tFound;
 }
@@ -821,67 +806,92 @@ bool Meeting::SendHangUp(string pParticipant, enum TransportType pParticipantTra
     ParticipantList::iterator tIt;
     string tDestinationAddress = "";
 
+    LOG(LOG_VERBOSE, "Search matching database entry for SendHangUp()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for SendHangUp()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RUNNING))
         {
-            if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RUNNING))
-            {
-                tFound = true;
-                tIt->CallState = CALLSTATE_STANDBY;
-                tHandlePtr = &tIt->SipNuaHandleForCalls;
-                tDestinationAddress = tIt->Host;
-                //LOG(LOG_VERBOSE, "...found");
-                break;
-            }
-        }
-
-        if (tFound)
-        {
-            CallHangUpEvent *tCHUEvent = new CallHangUpEvent();
-            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
-                tCHUEvent->Sender = "sip:" + GetServerConferenceId();
-            else
-                tCHUEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
-            tCHUEvent->SenderName = GetLocalUserName();
-            tCHUEvent->SenderComment = "";
-            tCHUEvent->Receiver = "sip:" + pParticipant;
-            tCHUEvent->HandlePtr = tHandlePtr;
-            mOutgoingEvents.Fire((GeneralEvent*) tCHUEvent);
+            tFound = true;
+            tIt->CallState = CALLSTATE_STANDBY;
+            tHandlePtr = &tIt->SipNuaHandleForCalls;
+            tDestinationAddress = tIt->Host;
+            //LOG(LOG_VERBOSE, "...found");
+            break;
         }
     }
 
     // unlock
     mParticipantsMutex.unlock();
 
+    if (tFound)
+    {
+        CallHangUpEvent *tCHUEvent = new CallHangUpEvent();
+        if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
+            tCHUEvent->Sender = "sip:" + GetServerConferenceId();
+        else
+            tCHUEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
+        tCHUEvent->SenderName = GetLocalUserName();
+        tCHUEvent->SenderComment = "";
+        tCHUEvent->Receiver = "sip:" + pParticipant;
+        tCHUEvent->HandlePtr = tHandlePtr;
+        mOutgoingEvents.Fire((GeneralEvent*) tCHUEvent);
+    }
+
     return tFound;
 }
 
-bool Meeting::SendProbe(std::string pHost, std::string pPort, enum TransportType pParticipantTransport)
+bool Meeting::SendAvailabilityProbe(std::string pUser, std::string pHost, std::string pPort, enum TransportType pParticipantTransport)
 {
-    LOG(LOG_VERBOSE, "Probing: %s:%s[%s]", pHost.c_str(), pPort.c_str(), Socket::TransportType2String(pParticipantTransport).c_str());
+    bool        tFound = false;
+    nua_handle_t **tHandlePtr = NULL;
+    ParticipantList::iterator tIt;
 
-    // lock
-    mParticipantsMutex.lock();
+    LOG(LOG_VERBOSE, "Probing: %s@%s:%s[%s]", pUser.c_str(), pHost.c_str(), pPort.c_str(), Socket::TransportType2String(pParticipantTransport).c_str());
 
     // is participant user of the registered SIP server then acknowledge directly
-    if ((pHost.find(mSipRegisterServerAddress) != string::npos) && (pPort.find(mSipRegisterServerPort) != string::npos) && (GetServerRegistrationState()))
+    if ((pHost == mSipRegisterServerAddress) && (pPort == mSipRegisterServerPort) && (GetServerRegistrationState()))
     {
-        LOG(LOG_VERBOSE, "Probing of %s skipped and participant reported as available because he belongs to the registered SIP server", pHost.c_str());
-        OptionsAcceptEvent *tOAEvent = new OptionsAcceptEvent();
+        LOG(LOG_VERBOSE, "OPTIONS based probing of %s skipped", pHost.c_str());
 
-        tOAEvent->Sender = "sip:" + SipCreateId("", pHost, pPort);
-        tOAEvent->Receiver = GetLocalConferenceId();
+        OpenParticipantSession(pUser, pHost, pPort, pParticipantTransport);
+
+        LOG(LOG_VERBOSE, "Search matching database entry for SendAvailabilityProbe()");
+
+        // lock
+        mParticipantsMutex.lock();
+
+        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        {
+            LOG(LOG_WARN, "Found %s@%s:%s, transport=%d", tIt->User.c_str(), tIt->Host.c_str(), tIt->Port.c_str(), (int)tIt->Transport);
+            if ((pUser == tIt->User) && (pHost == tIt->Host))
+            {
+                LOG(LOG_VERBOSE, "...found");
+                tFound = true;
+                tHandlePtr = &tIt->SipNuaHandleForPresenceSubscription;
+                break;
+            }
+        }
 
         // unlock
         mParticipantsMutex.unlock();
 
-        notifyObservers(tOAEvent);
+        if (tFound)
+        {
+            SubscriptionPresenceEvent *tSPEvent = new SubscriptionPresenceEvent();
+            // is participant user of the registered SIP server then replace sender by our official server login
+            tSPEvent->Sender = "sip:" + GetServerConferenceId();
+            tSPEvent->SenderName = GetLocalUserName();
+            tSPEvent->SenderComment = "";
+            tSPEvent->Receiver = "sip:" + pUser + "@" + pHost;
+            tSPEvent->Transport = pParticipantTransport;
+            tSPEvent->HandlePtr = tHandlePtr;
+            mOutgoingEvents.Fire((GeneralEvent*) tSPEvent);
+        }else
+            LOG(LOG_ERROR, "SendAvailabilityProbe() couldn't find the participant in the internal database");
     }else
     {
 		// probe P2P SIP participants
@@ -893,9 +903,6 @@ bool Meeting::SendProbe(std::string pHost, std::string pPort, enum TransportType
 		tOEvent->HandlePtr = NULL; // done within SIP class
 		tOEvent->Transport = pParticipantTransport;
 		mOutgoingEvents.Fire((GeneralEvent*) tOEvent);
-
-		// unlock
-		mParticipantsMutex.unlock();
     }
 
     return true;
@@ -911,39 +918,36 @@ const char* Meeting::GetSdpData(std::string pParticipant, enum TransportType pPa
 
     LOG(LOG_VERBOSE, "GetSdp for: %s", pParticipant.c_str());
 
+    LOG(LOG_VERBOSE, "Search matching database entry for GetSdpData()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for GetSdpData()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
+            LOG(LOG_VERBOSE, "...found");
+            if (tIt->VideoReceiveSocket == NULL)
             {
-                LOG(LOG_VERBOSE, "...found");
-                if (tIt->VideoReceiveSocket == NULL)
-                {
-                    LOG(LOG_ERROR, "Found video socket reference is NULL");
-                    return tResult;
-                }
-                if (tIt->AudioReceiveSocket == NULL)
-                {
-                    LOG(LOG_ERROR, "Found audio socket reference is NULL");
-                    return tResult;
-                }
-                // ####################### get ports #############################
-                tLocalVideoPort = tIt->VideoReceiveSocket->GetLocalPort();
-                tLocalAudioPort = tIt->AudioReceiveSocket->GetLocalPort();
-
-                // ##################### create SDP string #######################
-                // set sdp string
-                tIt->Sdp = CreateSdpData(tLocalAudioPort, tLocalVideoPort);
-
-                tResult = tIt->Sdp.c_str();
-                LOG(LOG_VERBOSE, "VPort: %d\n APort: %d\n SDP: %s\n", tLocalVideoPort, tLocalAudioPort, tResult);
+                LOG(LOG_ERROR, "Found video socket reference is NULL");
+                return tResult;
             }
+            if (tIt->AudioReceiveSocket == NULL)
+            {
+                LOG(LOG_ERROR, "Found audio socket reference is NULL");
+                return tResult;
+            }
+            // ####################### get ports #############################
+            tLocalVideoPort = tIt->VideoReceiveSocket->GetLocalPort();
+            tLocalAudioPort = tIt->AudioReceiveSocket->GetLocalPort();
+
+            // ##################### create SDP string #######################
+            // set sdp string
+            tIt->Sdp = CreateSdpData(tLocalAudioPort, tLocalVideoPort);
+
+            tResult = tIt->Sdp.c_str();
+            LOG(LOG_VERBOSE, "VPort: %d\n APort: %d\n SDP: %s\n", tLocalVideoPort, tLocalAudioPort, tResult);
         }
     }
 
@@ -958,22 +962,19 @@ bool Meeting::SearchParticipantAndSetState(string pParticipant, enum TransportTy
     bool tFound = false;
     ParticipantList::iterator tIt;
 
+    LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetState()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetState()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-            {
-                tIt->CallState = pState;
-                tFound = true;
-                LOG(LOG_VERBOSE, "...found");
-                break;
-            }
+            tIt->CallState = pState;
+            tFound = true;
+            LOG(LOG_VERBOSE, "...found");
+            break;
         }
     }
 
@@ -989,24 +990,21 @@ bool Meeting::SearchParticipantAndSetOwnContactAddress(string pParticipant, enum
     bool tFound = false;
     ParticipantList::iterator tIt;
 
+    LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetOwnContactAddress()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetOwnContactAddress()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-            {
-                tIt->OwnIp = pOwnNatIp;
-                tIt->OwnPort = pOwnNatPort;
-                tFound = true;
-                LOG(LOG_VERBOSE, "...found");
-                LOG(LOG_VERBOSE, "...set own contact address to: %s:%u", pOwnNatIp.c_str(), pOwnNatPort);
-                break;
-            }
+            tIt->OwnIp = pOwnNatIp;
+            tIt->OwnPort = pOwnNatPort;
+            tFound = true;
+            LOG(LOG_VERBOSE, "...found");
+            LOG(LOG_VERBOSE, "...set own contact address to: %s:%u", pOwnNatIp.c_str(), pOwnNatPort);
+            break;
         }
     }
 
@@ -1021,22 +1019,19 @@ bool Meeting::SearchParticipantAndSetNuaHandleForMsgs(string pParticipant, enum 
     bool tFound = false;
     ParticipantList::iterator tIt;
 
+    LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetNuaHandleForMsgs()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetNuaHandleForMsgs()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-            {
-                tIt->SipNuaHandleForMsgs = pNuaHandle;
-                tFound = true;
-                LOG(LOG_VERBOSE, "...found");
-                break;
-            }
+            tIt->SipNuaHandleForMsgs = pNuaHandle;
+            tFound = true;
+            LOG(LOG_VERBOSE, "...found");
+            break;
         }
     }
 
@@ -1051,22 +1046,19 @@ bool Meeting::SearchParticipantAndSetNuaHandleForCalls(string pParticipant, enum
     bool tFound = false;
     ParticipantList::iterator tIt;
 
+    LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetNuaHandleForCalls()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetNuaHandleForCalls()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-            {
-                tIt->SipNuaHandleForCalls = pNuaHandle;
-                tFound = true;
-                LOG(LOG_VERBOSE, "...found");
-                break;
-            }
+            tIt->SipNuaHandleForCalls = pNuaHandle;
+            tFound = true;
+            LOG(LOG_VERBOSE, "...found");
+            break;
         }
     }
 
@@ -1081,21 +1073,18 @@ nua_handle_t** Meeting::SearchParticipantAndGetNuaHandleForCalls(string pPartici
     nua_handle_t** tResult = NULL;
     ParticipantList::iterator tIt;
 
+    LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndGetNuaHandleForCalls()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndGetNuaHandleForCalls()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-            {
-                tResult = &tIt->SipNuaHandleForCalls;
-                LOG(LOG_VERBOSE, "...found");
-                break;
-            }
+            tResult = &tIt->SipNuaHandleForCalls;
+            LOG(LOG_VERBOSE, "...found");
+            break;
         }
     }
 
@@ -1113,21 +1102,17 @@ bool Meeting::SearchParticipantByNuaHandleOrName(string &pUser, string &pHost, s
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        LOG(LOG_VERBOSE, "CompareForSearchByHandle: candidate \"%s\"", SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
+        if ((tIt->SipNuaHandleForCalls == pNuaHandle) || (tIt->SipNuaHandleForMsgs == pNuaHandle) || ((pUser == tIt->User) && (pHost == tIt->Host) && (pPort == tIt->Port)))
         {
-            LOG(LOG_VERBOSE, "CompareForSearchByHandle: candidate \"%s\"", SipCreateId(tIt->User, tIt->Host, tIt->Port).c_str());
-            if ((tIt->SipNuaHandleForCalls == pNuaHandle) || (tIt->SipNuaHandleForMsgs == pNuaHandle) || ((pUser == tIt->User) && (pHost == tIt->Host) && (pPort == tIt->Port)))
-            {
-                pUser = tIt->User;
-                pHost = tIt->Host;
-                pPort = tIt->Port;
-                tFound = true;
-                LOG(LOG_VERBOSE, "...found");
-                break;
-            }
+            pUser = tIt->User;
+            pHost = tIt->Host;
+            pPort = tIt->Port;
+            tFound = true;
+            LOG(LOG_VERBOSE, "...found");
+            break;
         }
     }
 
@@ -1142,29 +1127,26 @@ bool Meeting::SearchParticipantAndSetRemoteMediaInformation(std::string pPartici
     bool tFound = false;
     ParticipantList::iterator tIt;
 
+    LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetRemoteMediaInformation()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for SearchParticipantAndSetRemoteMediaInformation()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-            {
-                tIt->RemoteVideoHost = pVideoHost;
-                tIt->RemoteVideoPort = pVideoPort;
-                tIt->RemoteVideoCodec = pVideoCodec;
-                tIt->RemoteAudioHost = pAudioHost;
-                tIt->RemoteAudioPort = pAudioPort;
-                tIt->RemoteAudioCodec = pAudioCodec;
-                tFound = true;
-                LOG(LOG_VERBOSE, "...found");
-                LOG(LOG_VERBOSE, "...set remote video information to: %s:%u with codec %s", pVideoHost.c_str(), pVideoPort, pVideoCodec.c_str());
-                LOG(LOG_VERBOSE, "...set remote audio information to: %s:%u with codec %s", pAudioHost.c_str(), pAudioPort, pAudioCodec.c_str());
-                break;
-            }
+            tIt->RemoteVideoHost = pVideoHost;
+            tIt->RemoteVideoPort = pVideoPort;
+            tIt->RemoteVideoCodec = pVideoCodec;
+            tIt->RemoteAudioHost = pAudioHost;
+            tIt->RemoteAudioPort = pAudioPort;
+            tIt->RemoteAudioCodec = pAudioCodec;
+            tFound = true;
+            LOG(LOG_VERBOSE, "...found");
+            LOG(LOG_VERBOSE, "...set remote video information to: %s:%u with codec %s", pVideoHost.c_str(), pVideoPort, pVideoCodec.c_str());
+            LOG(LOG_VERBOSE, "...set remote audio information to: %s:%u with codec %s", pAudioHost.c_str(), pAudioPort, pAudioCodec.c_str());
+            break;
         }
     }
 
@@ -1210,17 +1192,13 @@ Socket* Meeting::GetAudioReceiveSocket(string pParticipant, enum TransportType p
         tResult = mParticipants.begin()->AudioReceiveSocket;
     else
     {
-        // is the recipient already involved in the conference?
-        if (mParticipants.size() > 1)
+        LOG(LOG_VERBOSE, "Search matching database entry for GetAudioReceiveSocket()");
+        for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search matching database entry for GetAudioReceiveSocket()");
-            for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
-                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-                {
-                    tResult = tIt->AudioReceiveSocket;
-                    LOG(LOG_VERBOSE, "...found");
-                }
+                tResult = tIt->AudioReceiveSocket;
+                LOG(LOG_VERBOSE, "...found");
             }
         }
     }
@@ -1248,17 +1226,13 @@ Socket* Meeting::GetVideoReceiveSocket(string pParticipant, enum TransportType p
         tResult = mParticipants.begin()->VideoReceiveSocket;
     else
     {
-        // is the recipient already involved in the conference?
-        if (mParticipants.size() > 1)
+        LOG(LOG_VERBOSE, "Search matching database entry for GetVideoReceiveSocket()");
+        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search matching database entry for GetVideoReceiveSocket()");
-            for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
-                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-                {
-                    tResult = tIt->VideoReceiveSocket;
-                    LOG(LOG_VERBOSE, "...found");
-                }
+                tResult = tIt->VideoReceiveSocket;
+                LOG(LOG_VERBOSE, "...found");
             }
         }
     }
@@ -1286,17 +1260,13 @@ Socket* Meeting::GetAudioSendSocket(string pParticipant, enum TransportType pPar
         tResult = mParticipants.begin()->AudioSendSocket;
     else
     {
-        // is the recipient already involved in the conference?
-        if (mParticipants.size() > 1)
+        LOG(LOG_VERBOSE, "Search matching database entry for GetAudioSendSocket()");
+        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search matching database entry for GetAudioSendSocket()");
-            for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
-                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-                {
-                    tResult = tIt->AudioSendSocket;
-                    LOG(LOG_VERBOSE, "...found");
-                }
+                tResult = tIt->AudioSendSocket;
+                LOG(LOG_VERBOSE, "...found");
             }
         }
     }
@@ -1324,17 +1294,13 @@ Socket* Meeting::GetVideoSendSocket(string pParticipant, enum TransportType pPar
         tResult = mParticipants.begin()->VideoSendSocket;
     else
     {
-        // is the recipient already involved in the conference?
-        if (mParticipants.size() > 1)
+        LOG(LOG_VERBOSE, "Search matching database entry for GetVideoSendSocket()");
+        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search matching database entry for GetVideoSendSocket()");
-            for (tIt = mParticipants.begin()++; tIt != mParticipants.end(); tIt++)
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
-                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-                {
-                    tResult = tIt->VideoSendSocket;
-                    LOG(LOG_VERBOSE, "...found");
-                }
+                tResult = tIt->VideoSendSocket;
+                LOG(LOG_VERBOSE, "...found");
             }
         }
     }
@@ -1362,17 +1328,13 @@ int Meeting::GetCallState(string pParticipant, enum TransportType pParticipantTr
         tResult = CALLSTATE_INVALID;
     else
     {
-        // is the recipient already involved in the conference?
-        if (mParticipants.size() > 1)
+        LOG(LOG_VERBOSE, "Search matching database entry for GetCallState()");
+        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_VERBOSE, "Search matching database entry for GetCallState()");
-            for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
-                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-                {
-                    tResult = tIt->CallState;
-                    LOG(LOG_VERBOSE, "...found");
-                }
+                tResult = tIt->CallState;
+                LOG(LOG_VERBOSE, "...found");
             }
         }
     }
@@ -1389,9 +1351,6 @@ bool Meeting::GetSessionInfo(string pParticipant, enum TransportType pParticipan
     ParticipantList::iterator tIt;
 
     //LOG(LOG_VERBOSE, "GetSessionInfo for: %s", pParticipant.c_str());
-
-    // lock
-    mParticipantsMutex.lock();
 
     if (pParticipant == mBroadcastIdentifier)
     {
@@ -1413,38 +1372,37 @@ bool Meeting::GetSessionInfo(string pParticipant, enum TransportType pParticipan
         pInfo->CallState = "multiple";
     }else
     {
-        // is the recipient already involved in the conference?
-        if (mParticipants.size() > 1)
+        // lock
+        mParticipantsMutex.lock();
+
+        //LOG(LOG_VERBOSE, "Search matching database entry for GetSessionInfo()");
+        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            //LOG(LOG_VERBOSE, "Search matching database entry for GetSessionInfo()");
-            for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
             {
-                if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-                {
-                    tResult = true;
-                    pInfo->User = tIt->User;
-                    pInfo->Host = tIt->Host;
-                    pInfo->Port = tIt->Port;
-                    pInfo->Transport = Socket::TransportType2String(tIt->Transport);
-                    pInfo->OwnIp = tIt->OwnIp;
-                    pInfo->OwnPort = toString(tIt->OwnPort);
-                    pInfo->RemoteVideoHost = tIt->RemoteVideoHost;
-                    pInfo->RemoteVideoPort = toString(tIt->RemoteVideoPort);
-                    pInfo->RemoteVideoCodec = tIt->RemoteVideoCodec;
-                    pInfo->RemoteAudioHost = tIt->RemoteAudioHost;
-                    pInfo->RemoteAudioPort = toString(tIt->RemoteAudioPort);
-                    pInfo->RemoteAudioCodec = tIt->RemoteAudioCodec;
-                    pInfo->LocalVideoPort = toString(tIt->VideoReceiveSocket->GetLocalPort());
-                    pInfo->LocalAudioPort = toString(tIt->AudioReceiveSocket->GetLocalPort());
-                    pInfo->CallState = CallStateAsString(tIt->CallState);
-                    //LOG(LOG_VERBOSE, "...found");
-                }
+                tResult = true;
+                pInfo->User = tIt->User;
+                pInfo->Host = tIt->Host;
+                pInfo->Port = tIt->Port;
+                pInfo->Transport = Socket::TransportType2String(tIt->Transport);
+                pInfo->OwnIp = tIt->OwnIp;
+                pInfo->OwnPort = toString(tIt->OwnPort);
+                pInfo->RemoteVideoHost = tIt->RemoteVideoHost;
+                pInfo->RemoteVideoPort = toString(tIt->RemoteVideoPort);
+                pInfo->RemoteVideoCodec = tIt->RemoteVideoCodec;
+                pInfo->RemoteAudioHost = tIt->RemoteAudioHost;
+                pInfo->RemoteAudioPort = toString(tIt->RemoteAudioPort);
+                pInfo->RemoteAudioCodec = tIt->RemoteAudioCodec;
+                pInfo->LocalVideoPort = toString(tIt->VideoReceiveSocket->GetLocalPort());
+                pInfo->LocalAudioPort = toString(tIt->AudioReceiveSocket->GetLocalPort());
+                pInfo->CallState = CallStateAsString(tIt->CallState);
+                //LOG(LOG_VERBOSE, "...found");
             }
         }
-    }
 
-    // unlock
-    mParticipantsMutex.unlock();
+        // unlock
+        mParticipantsMutex.unlock();
+    }
 
     return tResult;
 }
@@ -1455,21 +1413,18 @@ void Meeting::GetOwnContactAddress(std::string pParticipant, enum TransportType 
 
     LOG(LOG_VERBOSE, "getOwnContactAddress for: %s", pParticipant.c_str());
 
+    LOG(LOG_VERBOSE, "Search matching database entry for GetOwnContactAddress()");
+
     // lock
     mParticipantsMutex.lock();
 
-    // is the recipient already involved in the conference?
-    if (mParticipants.size() > 1)
+    for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "Search matching database entry for GetOwnContactAddress()");
-        for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
-            {
-                pIp = tIt->OwnIp;
-                pPort = tIt->OwnPort;
-                LOG(LOG_VERBOSE, "...found");
-            }
+            pIp = tIt->OwnIp;
+            pPort = tIt->OwnPort;
+            LOG(LOG_VERBOSE, "...found");
         }
     }
 

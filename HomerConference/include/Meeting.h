@@ -127,7 +127,7 @@ public:
     bool SendCallAccept(std::string pParticipant, enum TransportType pParticipantTransport);
     bool SendCallDeny(std::string pParticipant, enum TransportType pParticipantTransport);
     bool SendHangUp(std::string pParticipant, enum TransportType pParticipantTransport);
-    bool SendProbe(std::string pHost, std::string pPort, enum TransportType pParticipantTransport);
+    bool SendAvailabilityProbe(std::string pUser, std::string pHost, std::string pPort, enum TransportType pParticipantTransport);
 
 private:
     friend class SIP;
