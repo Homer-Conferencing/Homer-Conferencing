@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>510</width>
-    <height>209</height>
+    <width>552</width>
+    <height>197</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -227,7 +227,7 @@
          <widget class="QPushButton" name="mPbAdd">
           <property name="minimumSize">
            <size>
-            <width>130</width>
+            <width>150</width>
             <height>30</height>
            </size>
           </property>
@@ -262,7 +262,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>130</width>
+            <width>150</width>
             <height>30</height>
            </size>
           </property>
