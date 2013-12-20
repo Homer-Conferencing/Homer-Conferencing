@@ -125,6 +125,8 @@ private:
     void InitGeneralEvent_FromSipReceivedRequestEvent(const sip_to_t *pRemote, const sip_to_t *pLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, GeneralEvent *pEvent, std::string pEventName, std::string &pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
     std::string InitGeneralEvent_FromSipReceivedResponseEvent(const sip_to_t *pRemote, const sip_to_t *pLocal, nua_handle_t *pNuaHandle, sip_t const *pSip, GeneralEvent *pEvent, std::string pEventName, std::string &pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport);
 
+    bool IsThisInstanceCorrectReceiver(std::string pDestinationUser, std::string pDestinationHost);
+
     nua_t* StartListener(std::string pHostAddress, int &pHostPort, std::string pTransporType);
     void StopListener(nua_t *pHandle);
     int GetSipListener(string pSource);
@@ -200,11 +202,11 @@ protected:
     AddressesList       mLocalAddressesNetmask;
     std::string         mLocalGatewayAddress;
     nua_handle_t        *mSipRegisterHandle, *mSipPublishHandle;
-    std::string         mSipRegisterServer;
+    std::string         mSipRegisterServerAddress;
     std::string         mSipRegisterServerPort;
     std::string         mSipRegisterServerSoftwareId;
-    std::string         mSipRegisterUsername;
-    std::string         mSipRegisterPassword;
+    std::string         mSipRegisterServerUsername;
+    std::string         mSipRegisterServerPassword;
     sip_payload_t       *mPresenceDesription;
     int                 mSipHostPort;
     enum TransportType  mSipHostPortTransport;

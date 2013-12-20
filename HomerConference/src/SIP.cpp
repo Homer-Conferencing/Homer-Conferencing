@@ -115,10 +115,10 @@ SIP::SIP():
     mSipStackOnline = false;
     mSipListenerNeeded = false;
     mSipRegisteredAtServer = false;
-    mSipRegisterServer = "";
+    mSipRegisterServerAddress = "";
     mSipRegisterServerSoftwareId = "";
-    mSipRegisterUsername = "";
-    mSipRegisterPassword = "";
+    mSipRegisterServerUsername = "";
+    mSipRegisterServerPassword = "";
     mSipPublishHandle = NULL;
     mSipRegisterHandle = NULL;
 
@@ -275,7 +275,7 @@ bool SIP::IsThisParticipant(string pParticipantUser, string pParticipantHost, st
 {
     bool tResult = false;
 
-    tResult = (((pParticipantUser == pUser) || (pParticipantHost != mSipRegisterServer)) && (pParticipantHost == pHost) && (pParticipantPort == pPort) && (pParticipantTransport == pTransport));
+    tResult = (((pParticipantUser == pUser) || (pParticipantHost != mSipRegisterServerAddress)) && (pParticipantHost == pHost) && (pParticipantPort == pPort) && (pParticipantTransport == pTransport));
 
     //LOGEX(SIP, LOG_VERBOSE, "Comparing: %s - %s, %s - %s, %s - %s  ==> %s", pParticipantUser.c_str(), pUser.c_str(), pParticipantHost.c_str(), pHost.c_str(), pParticipantPort.c_str(), pPort.c_str(), tResult ? "MATCH" : "different");
 
@@ -341,7 +341,7 @@ string SIP::GetServerConferenceId()
 {
     string tResult = "";
 
-    tResult = SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort);
+    tResult = SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress, mSipRegisterServerPort);
 
     //LOG(LOG_VERBOSE, "Determined server conference ID with \"%s\"", tResult.c_str());
 
@@ -722,19 +722,19 @@ bool SIP::SipLoginAtServer()
         return false;
     }
 
-    LOG(LOG_VERBOSE, "..FROM header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort).c_str());
-    tFrom = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort)).c_str());
+    LOG(LOG_VERBOSE, "..FROM header: sip:%s", SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress, mSipRegisterServerPort).c_str());
+    tFrom = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress, mSipRegisterServerPort)).c_str());
     if (tFrom == NULL)
     {
-        LOG(LOG_ERROR, "Can not create \"from\" handle for function \"SipLoginAtServer\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort)).c_str());
+        LOG(LOG_ERROR, "Can not create \"from\" handle for function \"SipLoginAtServer\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress, mSipRegisterServerPort)).c_str());
         return false;
     }
 
-    LOG(LOG_VERBOSE, "..TO header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort).c_str());
-    tTo = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort)).c_str());
+    LOG(LOG_VERBOSE, "..TO header: sip:%s", SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress, mSipRegisterServerPort).c_str());
+    tTo = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress, mSipRegisterServerPort)).c_str());
     if (tTo == NULL)
     {
-        LOG(LOG_ERROR, "Can not create \"to\" handle for function \"SipLoginAtServer\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer, mSipRegisterServerPort)).c_str());
+        LOG(LOG_ERROR, "Can not create \"to\" handle for function \"SipLoginAtServer\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress, mSipRegisterServerPort)).c_str());
         return false;
     }
 
@@ -742,8 +742,8 @@ bool SIP::SipLoginAtServer()
     if (mStunOutmostAdr != "")
         tOwnIp = mStunOutmostAdr;
 
-    LOG(LOG_VERBOSE, "..CONTACT header: sip:%s", SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort())).c_str());
-    tContact = sip_contact_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
+    LOG(LOG_VERBOSE, "..CONTACT header: sip:%s", SipCreateId(mSipRegisterServerUsername, tOwnIp, toString(MEETING.GetHostPort())).c_str());
+    tContact = sip_contact_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterServerUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
 
     // create operation handle
     mSipRegisterHandle = nua_handle(mSipContext->SipListener[0].Nua, &mSipContext->Home, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
@@ -788,7 +788,7 @@ bool SIP::RegisterAtServer(string pUsername, string pPassword, string pServer, u
         return false;
     }
 
-    if ((mSipRegisterServer != pServer) || (mSipRegisterUsername != pUsername) || (mSipRegisterPassword != pPassword) || (mSipRegisterServerPort != toString(pPort)))
+    if ((mSipRegisterServerAddress != pServer) || (mSipRegisterServerUsername != pUsername) || (mSipRegisterServerPassword != pPassword) || (mSipRegisterServerPort != toString(pPort)))
     {
         LOG(LOG_VERBOSE, "Register at SIP server %s:%u", pServer.c_str(), pPort);
 		#ifdef DEBUG_AUTH_DATA
@@ -796,10 +796,10 @@ bool SIP::RegisterAtServer(string pUsername, string pPassword, string pServer, u
 				LOG(LOG_VERBOSE, "SIP server login %s:%s", pUsername.c_str(), pPassword.c_str());
 		#endif
 
-        mSipRegisterServer = pServer;
+        mSipRegisterServerAddress = pServer;
         mSipRegisterServerPort = toString(pPort);
-        mSipRegisterUsername = pUsername;
-        mSipRegisterPassword = pPassword;
+        mSipRegisterServerUsername = pUsername;
+        mSipRegisterServerPassword = pPassword;
 
         tResult = RegisterAtServer();
 
@@ -812,7 +812,7 @@ bool SIP::RegisterAtServer()
 {
     bool tResult = false;
 
-    if ((mSipRegisterUsername == "") || (mSipRegisterPassword == "") || (mSipRegisterServer == ""))
+    if ((mSipRegisterServerUsername == "") || (mSipRegisterServerPassword == "") || (mSipRegisterServerAddress == ""))
     {
         LOG(LOG_WARN, "Too few parameters to register at SIP server, check given user name and password");
         return false;
@@ -870,13 +870,22 @@ string SIP::CreateAuthInfo(sip_t const *pSip)
 
 	LOG(LOG_VERBOSE, "Generating auth. info..");
 
-	const char* tRealm = msg_params_find(pSip->sip_www_authenticate->au_params, "realm=");
-	const char* tScheme = pSip->sip_www_authenticate->au_scheme;
+	const char* tRealm = NULL;
+    const char* tScheme = NULL;
+	if(pSip->sip_www_authenticate)
+	{
+	    tRealm = msg_params_find(pSip->sip_www_authenticate->au_params, "realm=");
+	    tScheme = pSip->sip_www_authenticate->au_scheme;
+	}else if(pSip->sip_proxy_authenticate)
+    {
+	    tRealm = msg_params_find(pSip->sip_proxy_authenticate->au_params, "realm=");
+        tScheme = pSip->sip_proxy_authenticate->au_scheme;
+    }
 	char tAuthInfo[512];
 
 	LOG(LOG_VERBOSE, "Found realm: \"%s\" in auth. information from SIP server", tRealm);
 	LOG(LOG_VERBOSE, "Found scheme: \"%s\" in auth. information from SIP server", tScheme);
-	sprintf(tAuthInfo, "%s:%s:%s:%s", tScheme, tRealm, mSipRegisterUsername.c_str(), mSipRegisterPassword.c_str());
+	sprintf(tAuthInfo, "%s:%s:%s:%s", tScheme, tRealm, mSipRegisterServerUsername.c_str(), mSipRegisterServerPassword.c_str());
 	#ifdef DEBUG_AUTH_DATA
 		if (LOGGER.GetLogLevel() == LOG_VERBOSE)
 			LOG(LOG_VERBOSE, "Generated auth. info:", tAuthInfo);
@@ -979,7 +988,7 @@ void SIP::SetAvailabilityState(enum AvailabilityState pState, string pStateText)
     }
     if (pStateText != "")
         tStateNote += " - " + pStateText;
-    mPresenceDesription = CreatePresenceInPidf(&mSipContext->Home, mSipRegisterUsername, mSipRegisterServer, tStateNote, true);
+    mPresenceDesription = CreatePresenceInPidf(&mSipContext->Home, mSipRegisterServerUsername, mSipRegisterServerAddress, tStateNote, true);
 
     mSipPresencePublished = false;
 
@@ -987,19 +996,19 @@ void SIP::SetAvailabilityState(enum AvailabilityState pState, string pStateText)
     sip_from_t *tFrom;
     sip_to_t *tTo;
 
-    LOG(LOG_VERBOSE, "..FROM header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer).c_str());
-    tFrom = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+    LOG(LOG_VERBOSE, "..FROM header: sip:%s", SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress).c_str());
+    tFrom = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress)).c_str());
     if (tFrom == NULL)
     {
-        LOG(LOG_ERROR, "Can not create \"from\" handle for function \"setAvailabilityState\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+        LOG(LOG_ERROR, "Can not create \"from\" handle for function \"setAvailabilityState\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress)).c_str());
         return;
     }
 
-    LOG(LOG_VERBOSE, "..TO header: sip:%s", SipCreateId(mSipRegisterUsername, mSipRegisterServer).c_str());
-    tTo = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+    LOG(LOG_VERBOSE, "..TO header: sip:%s", SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress).c_str());
+    tTo = sip_to_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress)).c_str());
     if (tTo == NULL)
     {
-        LOG(LOG_ERROR, "Can not create \"to\" handle for function \"setAvailabilityState\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterUsername, mSipRegisterServer)).c_str());
+        LOG(LOG_ERROR, "Can not create \"to\" handle for function \"setAvailabilityState\" and user id \"%s\"", ("sip:" + SipCreateId(mSipRegisterServerUsername, mSipRegisterServerAddress)).c_str());
         return;
     }
 
@@ -1007,8 +1016,8 @@ void SIP::SetAvailabilityState(enum AvailabilityState pState, string pStateText)
     if (mStunOutmostAdr != "")
         tOwnIp = mStunOutmostAdr;
 
-    LOG(LOG_VERBOSE, "..CONTACT header: sip:%s", SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort())).c_str());
-    tContact = sip_contact_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
+    LOG(LOG_VERBOSE, "..CONTACT header: sip:%s", SipCreateId(mSipRegisterServerUsername, tOwnIp, toString(MEETING.GetHostPort())).c_str());
+    tContact = sip_contact_make(&mSipContext->Home, ("sip:" + SipCreateId(mSipRegisterServerUsername, tOwnIp, toString(MEETING.GetHostPort()))).c_str());
 
     // create operation handle
     mSipPublishHandle = nua_handle(mSipContext->SipListener[0].Nua, &mSipContext->Home, SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_IF(tContact, SIPTAG_CONTACT(tContact)), SIPTAG_TO(tTo), SIPTAG_FROM(tFrom), TAG_END());
@@ -2473,6 +2482,23 @@ string SIP::InitGeneralEvent_FromSipReceivedResponseEvent(const sip_to_t *pRemot
     return tHost;
 }
 
+bool SIP::IsThisInstanceCorrectReceiver(string pDestinationUser, string pDestinationHost)
+{
+    bool tResult = true;
+
+    //TODO: extend to local addresses
+
+    if(pDestinationHost == mSipRegisterServerAddress)
+    {
+        if(pDestinationUser != mSipRegisterServerUsername)
+        {
+            tResult = false;
+        }
+    }
+
+    return tResult;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////// RECEIVING ////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -2542,7 +2568,16 @@ void SIP::SipReceivedMessage(const sip_to_t *pSipRemote, const sip_to_t *pSipLoc
         // additionally we have to store the message text
         tMEvent->Text = pSip->sip_payload->pl_data;
 
-        MEETING.notifyObservers(tMEvent);
+        string tDestinationUser = toString(pSipLocal->a_url->url_user);
+        string tDestinationHost = toString(pSipLocal->a_url->url_host);
+        bool tWeAreCorrectReceiver = IsThisInstanceCorrectReceiver(tDestinationUser, tDestinationHost);
+        if(tWeAreCorrectReceiver)
+        {
+            MEETING.notifyObservers(tMEvent);
+        }else
+        {
+            LOG(LOG_WARN, "Detected echo message from %s to %s, ignoring this message", tMEvent->Sender.c_str(), tMEvent->Receiver.c_str());
+        }
     }else
         LOG(LOG_ERROR, "Message: no message text");
 }
@@ -2560,7 +2595,7 @@ void SIP::SipReceivedMessageResponse(const sip_to_t *pSipRemote, const sip_to_t 
         case SIP_STATE_PROXY_AUTH_REQUIRED:
             if ((pNuaHandle != NULL) && (GetServerRegistrationState()))
             {
-                string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
+                string tAuthInfo = "Digest:\"" + mSipRegisterServerAddress + "\":" + mSipRegisterServerUsername + ":" + mSipRegisterServerPassword;
 
                 LOG(LOG_VERBOSE, "Authentication information for message: %s", tAuthInfo.c_str());
 
@@ -2678,37 +2713,47 @@ void SIP::SipReceivedCall(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal,
 				else
 					MEETING.SearchParticipantAndSetOwnContactAddress(tCEvent->Sender, tCEvent->Transport, string(pSipLocal->a_url->url_host), 5060);
 
-				switch(mAvailabilityState)
-				{
-					case AVAILABILITY_STATE_OFFLINE: // automatically deny this call
+		        string tDestinationUser = toString(pSipLocal->a_url->url_user);
+		        string tDestinationHost = toString(pSipLocal->a_url->url_host);
+		        bool tWeAreCorrectReceiver = IsThisInstanceCorrectReceiver(tDestinationUser, tDestinationHost);
+                if(tWeAreCorrectReceiver)
+		        {
+                    switch(mAvailabilityState)
+                    {
+                        case AVAILABILITY_STATE_OFFLINE: // automatically deny this call
 
-								PrintOutgoingMessageInfo(pNuaHandle, tCEvent, "CallAutoDeny");
-								nua_respond(pNuaHandle, 603, "Decline", SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_END());
-								nua_handle_destroy (pNuaHandle);
-								delete tCEvent;
-								break;
-					case AVAILABILITY_STATE_ONLINE: // ask user if we should accept this call
-								if (MEETING.SearchParticipantAndSetState(tCEvent->Sender, tCEvent->Transport, CALLSTATE_RINGING))
-								{
-									tCEvent->AutoAnswering = false;
+                                    PrintOutgoingMessageInfo(pNuaHandle, tCEvent, "CallAutoDeny");
+                                    nua_respond(pNuaHandle, 603, "Decline", SIPTAG_USER_AGENT_STR(USER_AGENT_SIGNATURE), TAG_END());
+                                    nua_handle_destroy (pNuaHandle);
+                                    delete tCEvent;
+                                    break;
+                        case AVAILABILITY_STATE_ONLINE: // ask user if we should accept this call
+                                    if (MEETING.SearchParticipantAndSetState(tCEvent->Sender, tCEvent->Transport, CALLSTATE_RINGING))
+                                    {
+                                        tCEvent->AutoAnswering = false;
 
-									MEETING.notifyObservers(tCEvent);
-								}
-								break;
-					case AVAILABILITY_STATE_ONLINE_AUTO: // automatically accept this call
-								if (MEETING.SearchParticipantAndSetState(tCEvent->Sender, tCEvent->Transport, CALLSTATE_RINGING))
-								{
-									tCEvent->AutoAnswering = true;
+                                        MEETING.notifyObservers(tCEvent);
+                                    }
+                                    break;
+                        case AVAILABILITY_STATE_ONLINE_AUTO: // automatically accept this call
+                                    if (MEETING.SearchParticipantAndSetState(tCEvent->Sender, tCEvent->Transport, CALLSTATE_RINGING))
+                                    {
+                                        tCEvent->AutoAnswering = true;
 
-									MEETING.notifyObservers(tCEvent);
-								}
-								MEETING.SendCallAccept(tCEvent->Sender, tCEvent->Transport);
-								break;
-					default:
-								LOG(LOG_ERROR, "AvailabilityState unknown");
-								delete tCEvent;
-								break;
-				}
+                                        MEETING.notifyObservers(tCEvent);
+                                    }
+                                    MEETING.SendCallAccept(tCEvent->Sender, tCEvent->Transport);
+                                    break;
+                        default:
+                                    LOG(LOG_ERROR, "AvailabilityState unknown");
+                                    delete tCEvent;
+                                    break;
+                    }
+                }else
+                {
+                    nua_handle_destroy (pNuaHandle);
+                    LOG(LOG_WARN, "Detected echo call from %s to %s, ignoring this call", tCEvent->Sender.c_str(), tCEvent->Receiver.c_str());
+                }
     		}
 			break;
     	case SIP_STATE_OKAY: // the other side accepted the call
@@ -3115,7 +3160,7 @@ void SIP::SipReceivedOptionsResponse(const sip_to_t *pSipRemote, const sip_to_t 
         case SIP_STATE_PROXY_AUTH_REQUIRED:
             if ((pNuaHandle != NULL) && (GetServerRegistrationState()))
             {
-                string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
+                string tAuthInfo = "Digest:\"" + mSipRegisterServerAddress + "\":" + mSipRegisterServerUsername + ":" + mSipRegisterServerPassword;
 
                 LOG(LOG_VERBOSE, "Authentication information for message: %s", tAuthInfo.c_str());
 
@@ -3209,9 +3254,9 @@ void SIP::SipSendMessage(MessageEvent *pMEvent)
     LOG(LOG_INFO, "MessageText: %s", pMEvent->Text.c_str());
 
     // is the receiver located behind the registered SIP server?
-    if ((GetServerRegistrationState()) && (pMEvent->Receiver.find(mSipRegisterServer) != string::npos))
+    if ((GetServerRegistrationState()) && (pMEvent->Receiver.find(mSipRegisterServerAddress) != string::npos))
     {
-        string tAuthInfo = "Digest:\"" + mSipRegisterServer + "\":" + mSipRegisterUsername + ":" + mSipRegisterPassword;
+        string tAuthInfo = "Digest:\"" + mSipRegisterServerAddress + "\":" + mSipRegisterServerUsername + ":" + mSipRegisterServerPassword;
 
         LOG(LOG_VERBOSE, "Authentication information for registration: %s", tAuthInfo.c_str());
 

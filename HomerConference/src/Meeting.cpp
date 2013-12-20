@@ -562,7 +562,7 @@ bool Meeting::SendMessage(string pParticipant, enum TransportType pParticipantTr
         {
             MessageEvent *tMEvent = new MessageEvent();
             // is participant user of the registered SIP server then replace sender by our official server login
-            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
                 tMEvent->Sender = "sip:" + GetServerConferenceId();
             else
                 tMEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
@@ -613,7 +613,7 @@ bool Meeting::SendCall(string pParticipant, enum TransportType pParticipantTrans
         {
             CallEvent *tCEvent = new CallEvent();
             // is participant user of the registered SIP server then replace sender by our official server login
-            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
                 tCEvent->Sender = "sip:" + GetServerConferenceId();
             else
                 tCEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
@@ -661,7 +661,7 @@ bool Meeting::SendCallAcknowledge(string pParticipant, enum TransportType pParti
         if (tFound)
         {
             CallRingingEvent *tCREvent = new CallRingingEvent();
-            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
                 tCREvent->Sender = "sip:" + GetServerConferenceId();
             else
                 tCREvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
@@ -706,7 +706,7 @@ bool Meeting::SendCallAccept(string pParticipant, enum TransportType pParticipan
         if (tFound)
         {
             CallAcceptEvent *tCAEvent = new CallAcceptEvent();
-            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
                 tCAEvent->Sender = "sip:" + GetServerConferenceId();
             else
                 tCAEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
@@ -751,7 +751,7 @@ bool Meeting::SendCallCancel(string pParticipant, enum TransportType pParticipan
         if (tFound)
         {
             CallCancelEvent *tCCEvent = new CallCancelEvent();
-            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
                 tCCEvent->Sender = "sip:" + GetServerConferenceId();
             else
                 tCCEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
@@ -796,7 +796,7 @@ bool Meeting::SendCallDeny(string pParticipant, enum TransportType pParticipantT
         if (tFound)
         {
             CallDenyEvent *tCDEvent = new CallDenyEvent();
-            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
                 tCDEvent->Sender = "sip:" + GetServerConferenceId();
             else
                 tCDEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
@@ -844,7 +844,7 @@ bool Meeting::SendHangUp(string pParticipant, enum TransportType pParticipantTra
         if (tFound)
         {
             CallHangUpEvent *tCHUEvent = new CallHangUpEvent();
-            if ((pParticipant.find(mSipRegisterServer) != string::npos) && (GetServerRegistrationState()))
+            if ((pParticipant.find(mSipRegisterServerAddress) != string::npos) && (GetServerRegistrationState()))
                 tCHUEvent->Sender = "sip:" + GetServerConferenceId();
             else
                 tCHUEvent->Sender = "sip:" + GetLocalConferenceId(tDestinationAddress);
@@ -870,7 +870,7 @@ bool Meeting::SendProbe(std::string pHost, std::string pPort, enum TransportType
     mParticipantsMutex.lock();
 
     // is participant user of the registered SIP server then acknowledge directly
-    if ((pHost.find(mSipRegisterServer) != string::npos) && (pPort.find(mSipRegisterServerPort) != string::npos) && (GetServerRegistrationState()))
+    if ((pHost.find(mSipRegisterServerAddress) != string::npos) && (pPort.find(mSipRegisterServerPort) != string::npos) && (GetServerRegistrationState()))
     {
         LOG(LOG_VERBOSE, "Probing of %s skipped and participant reported as available because he belongs to the registered SIP server", pHost.c_str());
         OptionsAcceptEvent *tOAEvent = new OptionsAcceptEvent();
