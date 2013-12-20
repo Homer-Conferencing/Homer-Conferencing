@@ -1920,14 +1920,14 @@ Homer Conferencing wird danach gestoppt!</translation>
     <message>
         <location filename="../src/Widgets/MessageWidget.cpp" line="156"/>
         <location filename="../src/Widgets/MessageWidget.cpp" line="174"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="594"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="588"/>
         <source>Close window</source>
         <translation>Fenster schließen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/MessageWidget.cpp" line="158"/>
         <location filename="../src/Widgets/MessageWidget.cpp" line="169"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="589"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="583"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
@@ -2516,224 +2516,224 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::ParticipantWidget</name>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="483"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="477"/>
         <source>Video</source>
         <translation>Video</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="488"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="482"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="491"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="485"/>
         <source>A/V controls</source>
         <translation>A/V-Steuerung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="495"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="489"/>
         <source>Messages</source>
         <translation>Nachrichten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="502"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="496"/>
         <source>Session info</source>
         <translation>Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="744"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="776"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="738"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="770"/>
         <source>Hide session info</source>
         <translation>Verstecke Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="749"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="771"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="743"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="765"/>
         <source>Show session info</source>
         <translation>Zeige Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="756"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="786"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="802"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="821"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="750"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="780"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="796"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="815"/>
         <source>Hide A/V info</source>
         <translation>Verstecke A/V-Info</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="762"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="781"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="807"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="816"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="756"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="775"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="801"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="810"/>
         <source>Show A/V info</source>
         <translation>Zeige A/V-Info</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="949"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="943"/>
         <source>DNS lookup error</source>
         <translation>DNS Auflösungsfehler</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="949"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="943"/>
         <source>Unable to lookup DNS entry for</source>
         <translation>Die DNS-Auflösung war unmöglich für</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="949"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="943"/>
         <source>because</source>
         <translation>, weil</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1066"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1060"/>
         <source>General error occurred</source>
         <translation>Allgemeiner Fehler aufgetreten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1066"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1060"/>
         <source>General error of code</source>
         <translation>Allgemeiner Fehler mit Code</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1066"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1060"/>
         <source>occurred. The error is described with</source>
         <translation>aufgetreten. Der Fehler ist beschrieben mit </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1109"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1354"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1356"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1103"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1348"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1350"/>
         <source>Participant unavailable</source>
         <translation>Teilnehmer nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1109"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1354"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1356"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1103"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1348"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1350"/>
         <source>The participant</source>
         <translation>Der Teilnehmer</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1109"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1103"/>
         <source>is currently unavailable for an instant message! The reason is</source>
         <translation>ist im Moment nicht verfügbar für eine Nachricht. Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1354"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1348"/>
         <source>does not accept your video/audio codecs. Please, check the configuration and use different settings.</source>
         <translation>akzeptiert den Video-/Audiocodec nicht. Bitte die Konfiguration prüfen und andere Einstellungen verwenden.</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1356"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1350"/>
         <source>is currently unavailable for a call! The reason is</source>
         <translation>ist im Moment nicht verfügbar für einen Anruf. Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1820"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1814"/>
         <source>in chat</source>
         <translation>im Chat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1823"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1817"/>
         <source>chat</source>
         <translation>Chat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1828"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1822"/>
         <source>in conference</source>
         <translation>in Konferenz</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1831"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1825"/>
         <source>conference</source>
         <translation>Konferenz</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1836"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1839"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1830"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1833"/>
         <source>ringing</source>
         <translation>Rufen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1963"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1957"/>
         <source>Set file name for video/audio recording</source>
         <translation>Dateinamen für das Aufzeichnen von Video/Audio festlegen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1977"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1971"/>
         <source>Select video recording quality</source>
         <translation>Auswahl der Qualität für die Videoaufzeichnung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1977"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1971"/>
         <source>Record video with quality:</source>
         <translation>Videoaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1997"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1991"/>
         <source>Select audio recording quality</source>
         <translation>Auswahl der Qualität für die Audioaufzeichnung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1997"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1991"/>
         <source>Record audio with quality:</source>
         <translation>Audioaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2342"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2336"/>
         <source>Video:</source>
         <translation>Video:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2385"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2379"/>
         <source>Audio:</source>
         <translation>Audio:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2351"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2394"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2345"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2388"/>
         <source>MetaData:</source>
         <translation>Metadaten:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="580"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="574"/>
         <source>Close window</source>
         <translation>Fenster schließen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="582"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="576"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2362"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2356"/>
         <source>A/V pre-buffering:</source>
         <translation>A/V Vorpufferung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2364"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2373"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2358"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2367"/>
         <source>active</source>
         <translation>aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2366"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2375"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2360"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2369"/>
         <source>inactive</source>
         <translation>inaktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2369"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2363"/>
         <source>(auto restart)</source>
         <translation>(auto. Neustart)</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2360"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2371"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2354"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2365"/>
         <source>A/V synchronization:</source>
         <translation>A/V Synchronisierung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2377"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2371"/>
         <source>A/V synchronizations:</source>
         <translation>A/V Synchronisierungen:</translation>
     </message>
@@ -2741,8 +2741,8 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::PlaybackSlider</name>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="573"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="599"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="567"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="593"/>
         <location filename="../src/Widgets/PlaybackSlider.cpp" line="84"/>
         <location filename="../src/Widgets/PlaybackSlider.cpp" line="95"/>
         <source>Adjust A/V drift</source>
@@ -3904,27 +3904,27 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Hinzufügen zur Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="251"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="263"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="290"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="302"/>
         <source>send local files(s)</source>
         <translation>Senden einer lokalen Datei</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="293"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="318"/>
         <source>Send file(s)</source>
         <translation>Datei(en) senden</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="351"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="376"/>
         <source>call/hangup</source>
         <translation>Anrufen/Auflegen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="354"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="391"/>
         <source>Call</source>
         <translation>Anrufen</translation>
     </message>
@@ -4254,27 +4254,27 @@ datei</translation>
 <context>
     <name>OverviewChannelsWidget</name>
     <message>
-        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="22"/>
+        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="26"/>
         <source>Channel list</source>
         <translation>Kanalliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="152"/>
+        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="156"/>
         <source>save contact list</source>
         <translation>Speichern der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="198"/>
+        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="202"/>
         <source>load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="244"/>
+        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="248"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="290"/>
+        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="294"/>
         <source>Remove contact(s)</source>
         <translation>Kontakt(e) entfernen</translation>
     </message>
@@ -4282,27 +4282,27 @@ datei</translation>
 <context>
     <name>OverviewContactsWidget</name>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="22"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="26"/>
         <source>Contact list</source>
         <translation>Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="155"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="159"/>
         <source>save contact list</source>
         <translation>Speichern der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="201"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="205"/>
         <source>load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="247"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="251"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="293"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="297"/>
         <source>Remove contact(s)</source>
         <translation>Kontakt(e) entfernen</translation>
     </message>
@@ -4310,107 +4310,107 @@ datei</translation>
 <context>
     <name>OverviewDataStreamsWidget</name>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="31"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="35"/>
         <source>Debug: data streams</source>
         <translation>Debug: Datenströme</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="280"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="284"/>
         <source> Audio streams </source>
         <translation>Audioströme</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="148"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="376"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="152"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="380"/>
         <source>Outgoing per participant</source>
         <translation>Ausgehend pro Teilnehmer</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="153"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="381"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="157"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="385"/>
         <source>Stream name</source>
         <translation>Stromname</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="158"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="386"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="162"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="390"/>
         <source>Min.size</source>
         <translation>Min. Größe</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="163"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="391"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="167"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="395"/>
         <source>Max.size</source>
         <translation>Max. Größe</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="168"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="396"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="172"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="400"/>
         <source>Avg.size</source>
         <translation>Mitl. Größe</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="173"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="401"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="177"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="405"/>
         <source>Data size</source>
         <translation>Datenmenge</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="178"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="406"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="182"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="410"/>
         <source>Packets</source>
         <translation>Pakete</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="183"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="411"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="187"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="415"/>
         <source>Lost</source>
         <translation>Verluste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="188"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="416"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="192"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="420"/>
         <source>Direction</source>
         <translation>Richtung</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="193"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="421"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="197"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="425"/>
         <source>Transp.</source>
         <translation>Transp.</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="198"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="426"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="202"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="430"/>
         <source>Netw.</source>
         <translation>Netzw.</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="203"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="431"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="207"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="435"/>
         <source>Moment data rate</source>
         <translation>Mom. Datenrate</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="208"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="436"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="212"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="440"/>
         <source>Data rate</source>
         <translation>Datenrate</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="213"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="441"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="217"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="445"/>
         <source>ID</source>
         <translation>ID</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="258"/>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="486"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="262"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="490"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="52"/>
+        <location filename="../forms/Widgets/OverviewDataStreamsWidget.ui" line="56"/>
         <source> Video streams </source>
         <translation>Videoströme</translation>
     </message>
@@ -4469,52 +4469,52 @@ datei</translation>
 <context>
     <name>OverviewNetworkStreamsWidget</name>
     <message>
-        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="31"/>
+        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="35"/>
         <source>Control: network streams</source>
         <translation>Control: Netzwerkströme</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="48"/>
+        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="52"/>
         <source> Outgoing IPv4/IPv6 network streams </source>
         <translation> Ausgehende IPv4/IPv6-Netzwerkströme </translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="147"/>
+        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="151"/>
         <source>Local address</source>
         <translation>Lokale Adresse</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="152"/>
+        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="156"/>
         <source>Peer address</source>
         <translation>Peeradresse</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="157"/>
+        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="161"/>
         <source>Network</source>
         <translation>NetzwerkNetzwerk</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="162"/>
+        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="166"/>
         <source>Transport</source>
         <translation>Transport</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="167"/>
+        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="171"/>
         <source>Req: lossless</source>
         <translation>Anf.: verlustlos</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="172"/>
+        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="176"/>
         <source>Req: delay</source>
         <translation>Anf.: Verzögerung</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="177"/>
+        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="181"/>
         <source>Req: data rate</source>
         <translation>Anf.: Datenrate</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="182"/>
+        <location filename="../forms/Widgets/OverviewNetworkStreamsWidget.ui" line="186"/>
         <source>ID</source>
         <translation>ID</translation>
     </message>
@@ -4522,27 +4522,27 @@ datei</translation>
 <context>
     <name>OverviewPlaylistWidget</name>
     <message>
-        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="25"/>
+        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="29"/>
         <source>Playlist</source>
         <translation>Playlist</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="149"/>
+        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="153"/>
         <source>save playlist</source>
         <translation>Speichern der Playlist</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="241"/>
+        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="245"/>
         <source>add url</source>
         <translation>Url hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="195"/>
+        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="199"/>
         <source>add file(s)</source>
         <translation>Datei(en) hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="287"/>
+        <location filename="../forms/Widgets/OverviewPlaylistWidget.ui" line="291"/>
         <source>remove entry/entries</source>
         <translation>Eintrag/Einträge entfernen</translation>
     </message>
@@ -4550,83 +4550,83 @@ datei</translation>
 <context>
     <name>OverviewThreadsWidget</name>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="31"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="35"/>
         <source>Debug: program threads</source>
         <translation>Debug: Programmthreads</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="48"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="52"/>
         <source> Threads </source>
         <translation> Threads </translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="156"/>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="216"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="160"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="220"/>
         <source>Total</source>
         <translation>Total</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="161"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="165"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="166"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="170"/>
         <source>Tid</source>
         <translation>Tid</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="171"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="175"/>
         <source>Pid</source>
         <translation>Pid</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="176"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="180"/>
         <source>PPid</source>
         <translation>PPid</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="181"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="185"/>
         <source>Threads</source>
         <translation>Threads</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="186"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="190"/>
         <source>PriorityBase</source>
         <translation>Prioritätsbasis</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="191"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="195"/>
         <source>Priority</source>
         <translation>Priorität</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="196"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="200"/>
         <source>Mem(virt.)</source>
         <translation>Speicher(virt.)</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="201"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="205"/>
         <source>Mem(phys.)</source>
         <translation>Speicher(phys.)</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="206"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="210"/>
         <source>User</source>
         <translation>Nutzer</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="211"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="215"/>
         <source>System</source>
         <translation>System</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="221"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="225"/>
         <source>ID</source>
         <translation>ID</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="290"/>
+        <location filename="../forms/Widgets/OverviewThreadsWidget.ui" line="294"/>
         <source>0</source>
         <translation>0</translation>
     </message>
@@ -4634,60 +4634,60 @@ datei</translation>
 <context>
     <name>ParticipantWidget</name>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="25"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="35"/>
         <source>Participant widget</source>
         <translation> Teilnehmerfenster </translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="294"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="304"/>
         <source>Show/hide playlist</source>
         <translation>Zeige/verstecke die Playlist</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="340"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="350"/>
         <source>actions and settings</source>
         <translation>Aktionen und Einstellungen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="414"/>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="472"/>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="518"/>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="564"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="424"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="482"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="528"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="574"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="501"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="511"/>
         <source>play previous track</source>
         <translation>Abspielen des vorhergehenden Titels</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="547"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="557"/>
         <source>play next track</source>
         <translation>Abspielen des nächsten Titels</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="397"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="407"/>
         <source>record video and video</source>
         <translation>Aufnahme von Video und Audio</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="1016"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="1026"/>
         <source>(de-)activation of outgoing audio</source>
         <translation>(De-)Aktivierung von ausgehendem Audio</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="1078"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="1088"/>
         <source>(de-)activation of outgoing video</source>
         <translation>(De-)Aktivierung von ausgehendem Video</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="455"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="465"/>
         <source>play / pause</source>
         <translation>Abspielen / Pause</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="832"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="842"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
@@ -4696,12 +4696,12 @@ p, li { white-space: pre-wrap; }
         <translation></translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="874"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="884"/>
         <source>jump to desired file position</source>
         <translation>Sprung zur gewünschter Position</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/ParticipantWidget.ui" line="939"/>
+        <location filename="../forms/Widgets/ParticipantWidget.ui" line="949"/>
         <source>A/V drift: </source>
         <translation>A/V Drift:</translation>
     </message>

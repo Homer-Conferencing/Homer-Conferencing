@@ -6,20 +6,30 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>775</width>
-    <height>276</height>
+    <width>723</width>
+    <height>257</height>
    </rect>
   </property>
   <property name="font">
    <font>
     <family>Arial</family>
-    <pointsize>10</pointsize>
+    <pointsize>12</pointsize>
     <weight>75</weight>
     <bold>true</bold>
    </font>
   </property>
   <property name="acceptDrops">
    <bool>true</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDockWidget::title { font: bold; text-align: center; padding: 3px;
+		background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(176, 176, 176, 255), stop:1 rgba(255, 255, 255, 255));}</string>
+  </property>
+  <property name="floating">
+   <bool>false</bool>
+  </property>
+  <property name="features">
+   <set>QDockWidget::AllDockWidgetFeatures</set>
   </property>
   <property name="windowTitle">
    <string>Participant widget</string>

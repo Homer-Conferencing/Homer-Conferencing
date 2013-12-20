@@ -266,12 +266,6 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 
     setupUi(this);
 
-    QFont font;
-    font.setPointSize(8);
-    font.setBold(true);
-    font.setWeight(75);
-    setFont(font);
-
     mSlMovie->Init(this);
     mAVDriftFrame->hide();
     mLbAVInfo->hide();
