@@ -1781,10 +1781,10 @@ ParticipantWidget* MainWindow::AddParticipantWidget(QString pUser, QString pHost
 
 				mParticipantWidgets.push_back(tParticipantWidget);
 
-				if (pInitState == CALLSTATE_RINGING)
-					MEETING.SendCall(MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()), pTransport);
-            }else
-                LOG(LOG_VERBOSE, "Participant widget already exists, open request ignored");
+            }
+
+            if (pInitState == CALLSTATE_RINGING)
+                tParticipantWidget->Call();
     	}else
     	{
 			ShowInfo(Homer::Gui::MainWindow::tr("Loop detected"), Homer::Gui::MainWindow::tr("You tried to contact yourself!"));

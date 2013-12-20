@@ -1720,165 +1720,165 @@ Bitte Konfiguration prüfen!</translation>
         <translation>Konnte die NAT-Adresse und -Typ nicht via STUN-Server erkennen. Die Fehlerursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1657"/>
-        <location filename="../src/MainWindow.cpp" line="1661"/>
+        <location filename="../src/MainWindow.cpp" line="1659"/>
+        <location filename="../src/MainWindow.cpp" line="1663"/>
         <source>Registration failed</source>
         <translation>Registrierung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1657"/>
-        <location filename="../src/MainWindow.cpp" line="1661"/>
+        <location filename="../src/MainWindow.cpp" line="1659"/>
+        <location filename="../src/MainWindow.cpp" line="1663"/>
         <source>Could not register</source>
         <translation>Registerung fehlgeschlagen für</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1657"/>
-        <location filename="../src/MainWindow.cpp" line="1661"/>
+        <location filename="../src/MainWindow.cpp" line="1659"/>
+        <location filename="../src/MainWindow.cpp" line="1663"/>
         <source>at the SIP server</source>
         <translation>am SIP-Server</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1657"/>
-        <location filename="../src/MainWindow.cpp" line="1677"/>
+        <location filename="../src/MainWindow.cpp" line="1659"/>
+        <location filename="../src/MainWindow.cpp" line="1679"/>
         <source>The reason is</source>
         <translation>Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1658"/>
-        <location filename="../src/MainWindow.cpp" line="1662"/>
-        <location filename="../src/MainWindow.cpp" line="1678"/>
+        <location filename="../src/MainWindow.cpp" line="1660"/>
+        <location filename="../src/MainWindow.cpp" line="1664"/>
+        <location filename="../src/MainWindow.cpp" line="1680"/>
         <source>SIP server runs software</source>
         <translation>Der SIP-Server nutzt die Software</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1661"/>
+        <location filename="../src/MainWindow.cpp" line="1663"/>
         <source>The login name or password is wrong. Check configuration!
 </source>
         <translation>Der Loginname oder das Passwort sind falsch. Bitte die Konfiguration prüfen!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1677"/>
+        <location filename="../src/MainWindow.cpp" line="1679"/>
         <source>Presence publication failed</source>
         <translation>Verfügbarkeitsstatus nicht aktualisiert</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1677"/>
+        <location filename="../src/MainWindow.cpp" line="1679"/>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1755"/>
+        <location filename="../src/MainWindow.cpp" line="1761"/>
         <source>Participant already called</source>
         <translation>Teilnehmer bereits angerufen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1755"/>
+        <location filename="../src/MainWindow.cpp" line="1761"/>
         <source>The participant</source>
         <translation>Der Teilnehmer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1755"/>
+        <location filename="../src/MainWindow.cpp" line="1761"/>
         <source>is already called!
 The participant is known as</source>
         <translation>ist bereits angerufen!
 Der Teilnehmer ist bekannt unter</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1784"/>
+        <location filename="../src/MainWindow.cpp" line="1790"/>
         <source>Loop detected</source>
         <translation>Schleife erkannt</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1784"/>
+        <location filename="../src/MainWindow.cpp" line="1790"/>
         <source>You tried to contact yourself!</source>
         <translation>Sie versuchten sich selbst zu kontaktieren!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1841"/>
+        <location filename="../src/MainWindow.cpp" line="1847"/>
         <source>Acknowledge configuration reset</source>
         <translation>Bestätigung der Rücksetzung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1841"/>
+        <location filename="../src/MainWindow.cpp" line="1847"/>
         <source>Do you want to reset the program settings?
 Homer Conferencing will be stopped afterwards!</source>
         <translation>Wollen Sie die Programmeinstellungen zurücksetzen?
 Homer Conferencing wird danach gestoppt!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2220"/>
-        <location filename="../src/MainWindow.cpp" line="2355"/>
+        <location filename="../src/MainWindow.cpp" line="2226"/>
+        <location filename="../src/MainWindow.cpp" line="2361"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2223"/>
-        <location filename="../src/MainWindow.cpp" line="2358"/>
+        <location filename="../src/MainWindow.cpp" line="2229"/>
+        <location filename="../src/MainWindow.cpp" line="2364"/>
         <source>Hide window</source>
         <translation>Fenster minimieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2229"/>
+        <location filename="../src/MainWindow.cpp" line="2235"/>
         <source>Main menu</source>
         <translation>Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2242"/>
+        <location filename="../src/MainWindow.cpp" line="2248"/>
         <source>Tool bars</source>
         <translation>Werkzeugleisten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2254"/>
+        <location filename="../src/MainWindow.cpp" line="2260"/>
         <source>Streaming</source>
         <translation>Übertragung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2265"/>
+        <location filename="../src/MainWindow.cpp" line="2271"/>
         <source>Broadcast data</source>
         <translation>Audio-/Videoverteilung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2278"/>
+        <location filename="../src/MainWindow.cpp" line="2284"/>
         <source>Mosaic mode</source>
         <translation>Mosaikmodus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2295"/>
-        <location filename="../src/MainWindow.cpp" line="2368"/>
+        <location filename="../src/MainWindow.cpp" line="2301"/>
+        <location filename="../src/MainWindow.cpp" line="2374"/>
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2299"/>
-        <location filename="../src/MainWindow.cpp" line="2372"/>
+        <location filename="../src/MainWindow.cpp" line="2305"/>
+        <location filename="../src/MainWindow.cpp" line="2378"/>
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2305"/>
-        <location filename="../src/MainWindow.cpp" line="2378"/>
+        <location filename="../src/MainWindow.cpp" line="2311"/>
+        <location filename="../src/MainWindow.cpp" line="2384"/>
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2245"/>
-        <location filename="../src/MainWindow.cpp" line="2314"/>
-        <location filename="../src/MainWindow.cpp" line="2387"/>
+        <location filename="../src/MainWindow.cpp" line="2251"/>
+        <location filename="../src/MainWindow.cpp" line="2320"/>
+        <location filename="../src/MainWindow.cpp" line="2393"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2321"/>
+        <location filename="../src/MainWindow.cpp" line="2327"/>
         <source>Configuration</source>
         <translation>Konfiguration</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2331"/>
+        <location filename="../src/MainWindow.cpp" line="2337"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2339"/>
+        <location filename="../src/MainWindow.cpp" line="2345"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -2679,18 +2679,18 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Audioaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2328"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2342"/>
         <source>Video:</source>
         <translation>Video:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2371"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2385"/>
         <source>Audio:</source>
         <translation>Audio:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2337"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2380"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2351"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2394"/>
         <source>MetaData:</source>
         <translation>Metadaten:</translation>
     </message>
@@ -2705,35 +2705,35 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2348"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2362"/>
         <source>A/V pre-buffering:</source>
         <translation>A/V Vorpufferung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2350"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2359"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2364"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2373"/>
         <source>active</source>
         <translation>aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2352"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2361"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2366"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2375"/>
         <source>inactive</source>
         <translation>inaktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2355"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2369"/>
         <source>(auto restart)</source>
         <translation>(auto. Neustart)</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2346"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2357"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2360"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2371"/>
         <source>A/V synchronization:</source>
         <translation>A/V Synchronisierung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2363"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2377"/>
         <source>A/V synchronizations:</source>
         <translation>A/V Synchronisierungen:</translation>
     </message>
@@ -3899,32 +3899,32 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Name des Teilnehmers</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="241"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="248"/>
         <source>add to contact list</source>
         <translation>Hinzufügen zur Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="244"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="251"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="276"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="290"/>
         <source>send local files(s)</source>
         <translation>Senden einer lokalen Datei</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="279"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="293"/>
         <source>Send file(s)</source>
         <translation>Datei(en) senden</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="330"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="351"/>
         <source>call/hangup</source>
         <translation>Anrufen/Auflegen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/MessageWidget.ui" line="333"/>
+        <location filename="../forms/Widgets/MessageWidget.ui" line="354"/>
         <source>Call</source>
         <translation>Anrufen</translation>
     </message>

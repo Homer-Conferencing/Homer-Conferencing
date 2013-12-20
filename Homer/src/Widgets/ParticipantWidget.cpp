@@ -2070,6 +2070,20 @@ void ParticipantWidget::ToggleFullScreenMode(bool pActive)
         mVideoWidget->ToggleFullScreenMode(pActive);
 }
 
+void ParticipantWidget::Call()
+{
+    if(mSessionType == PARTICIPANT)
+    {
+        if (MEETING.GetCallState(mSessionName.toStdString(), mSessionTransport) == CALLSTATE_STANDBY)
+        {
+            MEETING.SendCall(mSessionName.toStdString(), mSessionTransport);
+        }
+    }else
+    {
+        LOG(LOG_ERROR, "Call() isn't supported for this kind of participant widget with type: %d", (int)mSessionType);
+    }
+}
+
 void ParticipantWidget::ActionSeekMovieFile(int pPos)
 {
 	LOG(LOG_VERBOSE, "User moved playback slider to position %d", pPos);

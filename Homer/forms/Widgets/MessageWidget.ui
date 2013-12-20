@@ -194,9 +194,9 @@
           </property>
           <property name="font">
            <font>
-            <weight>75</weight>
-            <italic>true</italic>
-            <bold>true</bold>
+            <weight>50</weight>
+            <italic>false</italic>
+            <bold>false</bold>
             <kerning>true</kerning>
            </font>
           </property>
@@ -237,6 +237,13 @@
             <height>30</height>
            </size>
           </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
           <property name="toolTip">
            <string>add to contact list</string>
           </property>
@@ -271,6 +278,13 @@
             <width>16777215</width>
             <height>30</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
           </property>
           <property name="toolTip">
            <string>send local files(s)</string>
@@ -325,6 +339,13 @@
             <width>16777215</width>
             <height>30</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
           </property>
           <property name="toolTip">
            <string>call/hangup</string>

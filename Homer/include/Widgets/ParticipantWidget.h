@@ -157,6 +157,8 @@ public:
     /* fullscreen mode */
     void ToggleFullScreenMode(bool pActive);
 
+    void Call();
+
 private slots:
     void ActionPlayPauseMovieFile(QString pFileName = "");
     void ActionRecordMovieFile();
