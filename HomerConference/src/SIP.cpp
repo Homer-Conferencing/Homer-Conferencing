@@ -2555,8 +2555,8 @@ void SIP::SipReceivedShutdownResponse(const sip_to_t *pSipRemote, const sip_to_t
     if ((pStatus == SIP_STATE_OKAY /* okay */) || (pStatus == 500 /* timeout */))
         mSipStackOnline = false;
 
-    LOG(LOG_VERBOSE, "Sending BREAK to sofia main loop");
-    su_root_break(mSipContext->Root);
+//    LOG(LOG_VERBOSE, "Sending BREAK to sofia main loop");
+//    su_root_break(mSipContext->Root);
 }
 
 void SIP::SipReceivedAuthenticationResponse(const sip_to_t *pSipRemote, const sip_to_t *pSipLocal, nua_handle_t *pNuaHandle, int pStatus, char const *pPhrase, std::string pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport)
