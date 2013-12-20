@@ -600,13 +600,19 @@ bool Meeting::SendCall(string pParticipant, enum TransportType pParticipantTrans
     LOG(LOG_VERBOSE, "Search matching database entry for SendCall()");
     for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
     {
-        if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_STANDBY))
+        if (IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport))
         {
-            LOG(LOG_VERBOSE, "...found");
-            tFound = true;
-            tDestinationAddress = tIt->Host;
-            tHandlePtr = &tIt->SipNuaHandleForCalls;
-            break;
+            if(tIt->CallState == CALLSTATE_STANDBY)
+            {
+                LOG(LOG_VERBOSE, "...found");
+                tFound = true;
+                tDestinationAddress = tIt->Host;
+                tHandlePtr = &tIt->SipNuaHandleForCalls;
+                break;
+            }else
+            {
+                LOG(LOG_WARN, "SendCall() detected inconsistency in state machine, ignoring call request in order to fix this");
+            }
         }
     }
 
