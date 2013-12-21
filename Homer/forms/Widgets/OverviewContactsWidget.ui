@@ -97,8 +97,11 @@
          <property name="animated">
           <bool>true</bool>
          </property>
-         <attribute name="headerVisible">
+         <property name="allColumnsShowFocus">
           <bool>true</bool>
+         </property>
+         <attribute name="headerVisible">
+          <bool>false</bool>
          </attribute>
          <attribute name="headerCascadingSectionResizes">
           <bool>true</bool>

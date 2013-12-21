@@ -67,7 +67,7 @@ public:
 #define CONTACTSWIDGET OverviewContactsWidget::GetInstance()
 
 ///////////////////////////////////////////////////////////////////////////////
-
+class MainWindow;
 class OverviewContactsWidget :
     public QDockWidget,
     public Ui_OverviewContactsWidget
@@ -75,7 +75,7 @@ class OverviewContactsWidget :
     Q_OBJECT;
 public:
     /// The default constructor
-    OverviewContactsWidget(QAction *pAssignedAction, QMainWindow *pMainWindow);
+    OverviewContactsWidget(QAction *pAssignedAction, MainWindow *pMainWindow);
 
     /// The destructor.
     virtual ~OverviewContactsWidget();
@@ -92,6 +92,7 @@ public slots:
 private slots:
     void processCustomContextMenuRequest(const QPoint &pPos);
     void ContactParticipantDoubleClick(const QModelIndex &pIndex);
+    void ContactParticipantOneClick(const QModelIndex &pIndex);
     void LookedUpContactHost(const QHostInfo &pHost);
     void SaveList();
     void LoadList();
@@ -99,7 +100,7 @@ private slots:
     void EditSelected();
     void DeleteSelected();
     void ResetList();
-    void ContactSelected(bool pCall = false);
+    void actionContactSelection(bool pCall = false);
 
 private:
     friend class ContactListModel; // allow model to save and restore currently selected index in GUI
@@ -118,7 +119,7 @@ private:
     void Dialog2Contact(ContactEditDialog *pCED, ContactDescriptor *pContact, bool pNewContact);
     void Contact2Dialog(ContactDescriptor *pContact, ContactEditDialog *pCED);
 
-    QMainWindow             *mMainWindow;
+    MainWindow              *mMainWindow;
     QPoint                  mWinPos;
     QAction                 *mAssignedAction;
     int                     mTimerId;

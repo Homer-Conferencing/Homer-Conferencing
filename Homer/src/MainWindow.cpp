@@ -1737,6 +1737,7 @@ QString MainWindow::CompleteIpAddress(QString pAddr)
 ParticipantWidget* MainWindow::AddParticipantWidget(QString pUser, QString pHost, QString pPort, enum TransportType pTransport, QString pIp, int pInitState)
 {
     ParticipantWidget *tParticipantWidget = NULL;
+    ParticipantWidget *tLastParticipantWidget = NULL;
 
     LOG(LOG_VERBOSE, "Going to add participant session for %s [%s]", MEETING.SipCreateId(QString(pUser.toLocal8Bit()).toStdString(), QString(pHost.toLocal8Bit()).toStdString(), pPort.toStdString()).c_str(), Socket::TransportType2String(pTransport).c_str());
 
@@ -1767,6 +1768,10 @@ ParticipantWidget* MainWindow::AddParticipantWidget(QString pUser, QString pHost
 						 return NULL;
 					 }
 				}
+				if((*tIt) != mLocalUserParticipantWidget)
+				{
+				    tLastParticipantWidget = *tIt;
+				}
 			}
 
 			pHost = CompleteIpAddress(pHost);
@@ -1777,7 +1782,14 @@ ParticipantWidget* MainWindow::AddParticipantWidget(QString pUser, QString pHost
 			tParticipantWidget = GetParticipantWidget(tParticipant, pTransport);
             if(tParticipantWidget == NULL)
             {
+                QSize tOldSize = size();
 				tParticipantWidget = ParticipantWidget::CreateParticipant(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, tParticipant, pTransport);
+
+				if(tLastParticipantWidget != NULL)
+                {
+                    tabifyDockWidget(tLastParticipantWidget, tParticipantWidget);
+				    resize(tOldSize);
+                }
 
 				mParticipantWidgets.push_back(tParticipantWidget);
 

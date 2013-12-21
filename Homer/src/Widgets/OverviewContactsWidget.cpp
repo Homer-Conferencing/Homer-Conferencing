@@ -50,7 +50,7 @@ OverviewContactsWidget& OverviewContactsWidget::GetInstance()
     return *sOverviewContactsWidget;
 }
 
-OverviewContactsWidget::OverviewContactsWidget(QAction *pAssignedAction, QMainWindow* pMainWindow):
+OverviewContactsWidget::OverviewContactsWidget(QAction *pAssignedAction, MainWindow* pMainWindow):
     QDockWidget(pMainWindow)
 {
 	sOverviewContactsWidget = this;
@@ -71,6 +71,7 @@ OverviewContactsWidget::OverviewContactsWidget(QAction *pAssignedAction, QMainWi
     }
     connect(toggleViewAction(), SIGNAL(toggled(bool)), mAssignedAction, SLOT(setChecked(bool)));
     connect(mTvContacts, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(processCustomContextMenuRequest(QPoint)));
+    connect(mTvContacts, SIGNAL(clicked(const QModelIndex)), this, SLOT(ContactParticipantOneClick(const QModelIndex)));
     connect(mTvContacts, SIGNAL(doubleClicked(const QModelIndex)), this, SLOT(ContactParticipantDoubleClick(const QModelIndex)));
     connect(mTbSaveList, SIGNAL(clicked()), this, SLOT(SaveList()));
     connect(mTbLoadList, SIGNAL(clicked()), this, SLOT(LoadList()));
@@ -163,7 +164,7 @@ void OverviewContactsWidget::keyPressEvent(QKeyEvent *pEvent)
 {
     if (pEvent->key() == Qt::Key_Return)
     {
-        ContactSelected();
+        actionContactSelection();
         return;
     }
     if (pEvent->key() == Qt::Key_Insert)
@@ -261,12 +262,12 @@ void OverviewContactsWidget::processCustomContextMenuRequest(const QPoint &pPos)
     {
         if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Send message")))
         {
-            ContactSelected();
+            actionContactSelection();
             return;
         }
         if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Call")))
         {
-            ContactSelected(true);
+            actionContactSelection(true);
             return;
         }
         if (tPopupRes->text().contains(Homer::Gui::OverviewContactsWidget::tr("Add contact")))
@@ -548,7 +549,7 @@ void OverviewContactsWidget::ResetList()
     CONTACTS.ResetPool();
 }
 
-void OverviewContactsWidget::ContactSelected(bool pCall)
+void OverviewContactsWidget::actionContactSelection(bool pCall)
 {
     QModelIndex tIndex = mTvContacts->currentIndex();
     ContactDescriptor* tContact = (ContactDescriptor*)tIndex.internalPointer();
@@ -580,6 +581,23 @@ void OverviewContactsWidget::InsertCopy(ContactDescriptor *pContact)
 
         Dialog2Contact(&tCED, &tContact, true);
         CONTACTS.AddContact(tContact);
+    }
+}
+
+void OverviewContactsWidget::ContactParticipantOneClick(const QModelIndex &pIndex)
+{
+    ContactDescriptor *tContact = NULL;
+
+    if ((pIndex.isValid()) && (pIndex.internalPointer() != NULL))
+    {
+        tContact = (ContactDescriptor*)pIndex.internalPointer();
+        LOG(LOG_VERBOSE, "Clicked on contact: %s@%s:%s [%d]", tContact->GetUserStdStr().c_str(), tContact->GetHostStdStr().c_str(), tContact->GetPortStdStr().c_str(), (int)tContact->Transport);
+        QString tParticipant = QString(MEETING.SipCreateId(tContact->GetUserStdStr(), tContact->GetHostStdStr(), tContact->GetPortStdStr()).c_str());
+        ParticipantWidget *tParticipantWidget = mMainWindow->GetParticipantWidget(tParticipant, tContact->Transport);
+        if(tParticipantWidget != NULL)
+        {
+            tParticipantWidget->raise();
+        }
     }
 }
 

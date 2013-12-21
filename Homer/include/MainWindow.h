@@ -97,6 +97,8 @@ public:
 
     static void removeArguments(QStringList &pArguments, QString pFilter);
 
+    ParticipantWidget* GetParticipantWidget(QString pParticipant, enum TransportType pTransport);
+
 public slots:
     void actionOpenVideoAudioPreview();
 
@@ -170,7 +172,6 @@ private:
     void loadSettings();
     bool GetNetworkInfo(AddressesList &pLocalAddressesList, AddressesList &pLocalAddressesNetmaskList,QString &pLocalGatewayIp, QString &pLocalLoopIp);
     QString CompleteIpAddress(QString pAddr);
-    ParticipantWidget* GetParticipantWidget(QString pParticipant, enum TransportType pTransport);
     ParticipantWidget* AddParticipantWidget(QString pUser, QString pHost, QString pPort, enum TransportType pTransport, QString pIp, int pInitState);
     void DeleteParticipantSession(ParticipantWidget *pParticipantWidget);
 
