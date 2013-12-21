@@ -985,6 +985,8 @@ bool ParticipantWidget::IsThisParticipant(QString pParticipant, enum TransportTy
 
     QString tUser = pParticipant.section('@', 0, 0);
     QString tHost = pParticipant.section('@', 1, 1);
+    QString tThisUser = mSessionName.section('@', 0, 0);
+    QString tThisHost = mSessionName.section('@', 1, 1);
 
     // first sign is a letter? -> we have a DNS name here
     if (((tHost[0] >= 'a') && (tHost[0] <= 'z')) || ((tHost[0] >= 'A') && (tHost[0] <= 'Z')))
@@ -1001,11 +1003,13 @@ bool ParticipantWidget::IsThisParticipant(QString pParticipant, enum TransportTy
     bool tSearchedParticipantIsServercontact = false;
     if ((mSessionName.section("@", 1).contains(CONF.GetSipServer())) || (mSipInterface.contains(CONF.GetSipServer())))
     {// this participant belongs to SIP server (pbx box) -> we also have to check the user name
-        tResult = ((pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface))) && (mSessionName.section("@", 0, 0) == pParticipant.section("@", 0, 0)) && (mSessionTransport == pParticipantTransport);
+        LOG(LOG_VERBOSE, "%s =?= %s, %s =?= %s, %s =?= %s", tUser.toStdString().c_str(), tThisUser.toStdString().c_str(), tHost.toStdString().c_str(), tThisHost.toStdString().c_str(), pParticipant.toStdString().c_str(), mSipInterface.toStdString().c_str());
+        tResult = (tHost == tThisHost) && (mSessionTransport == pParticipantTransport) && (tUser == tThisUser);
         tSearchedParticipantIsServercontact = true;
     }else
     {// this participant is located on some foreign host and uses peer-to-peer communication
-        tResult = (pParticipant.contains(mSessionName.section("@", 1)) || pParticipant.contains(mSipInterface)) && (mSessionTransport == pParticipantTransport);
+        LOG(LOG_VERBOSE, "%s =?= %s, %s =?= %s", tHost.toStdString().c_str(), tThisHost.toStdString().c_str(), pParticipant.toStdString().c_str(), mSipInterface.toStdString().c_str());
+        tResult = (tHost == tThisHost) && (mSessionTransport == pParticipantTransport);
     }
     LOG(LOG_VERBOSE, "@\"%s\"[%s] - IsThisParticipant \"%s\"[%s](server contact: %d) ? ==> %s", mSessionName.toStdString().c_str(), Socket::TransportType2String(mSessionTransport).c_str(), pParticipant.toStdString().c_str(), Socket::TransportType2String(pParticipantTransport).c_str(), tSearchedParticipantIsServercontact, tResult ? "MATCH" : "no match");
 
