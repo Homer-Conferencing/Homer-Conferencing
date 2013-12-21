@@ -80,7 +80,6 @@ OverviewContactsWidget::OverviewContactsWidget(QAction *pAssignedAction, MainWin
     mTvContacts->setModel(mContactListModel);
     SetVisible(CONF.GetVisibilityContactsWidget());
     mAssignedAction->setChecked(CONF.GetVisibilityContactsWidget());
-    CONTACTS.ProbeAvailabilityForAll();
 }
 
 OverviewContactsWidget::~OverviewContactsWidget()

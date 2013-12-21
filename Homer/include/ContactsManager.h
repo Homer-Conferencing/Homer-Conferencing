@@ -35,14 +35,14 @@
 #include <vector>
 #include <string>
 
-#define BROACAST_IDENTIFIER	"BROADCAST"
-#define DATABASE_IDENTIFIER "Homer_database"
-
 namespace Homer { namespace Gui {
 
-#define         CONTACT_UNDEFINED_STATE         -1
-#define         CONTACT_UNAVAILABLE             0
-#define         CONTACT_AVAILABLE               1
+#define BROACAST_IDENTIFIER             "BROADCAST"
+#define DATABASE_IDENTIFIER             "Homer_database"
+
+#define CONTACT_UNDEFINED_STATE         -1
+#define CONTACT_UNAVAILABLE             0
+#define CONTACT_AVAILABLE               1
 
 struct ContactDescriptor
 {
@@ -78,8 +78,10 @@ class ContactListModel;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class ContactsManager
+class ContactsManager:
+    public QObject
 {
+    Q_OBJECT;
 public:
     ContactsManager();
 
@@ -113,7 +115,6 @@ public:
     bool SplitAddress(QString pAddr, QString &pUser, QString &pHost, QString &pPort);
 
     /* contact availability management */
-    void ProbeAvailabilityForAll();
     void UpdateContact(QString pContact, enum TransportType pContactTransport, bool pState, QString pSoftware = "");
 
     /* sorting */
@@ -122,6 +123,10 @@ public:
     void UpdateSorting();
 
     void RegisterAtController(ContactListModel *pContactsModel);
+
+public slots:
+    /* contact availability management */
+    void ProbeAvailabilityForAll();
 
 private:
     ContactListModel    *mContactsModel;

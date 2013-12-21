@@ -40,6 +40,7 @@
 #include <QIODevice>
 #include <QTextStream>
 #include <QNetworkInterface>
+#include <QTimer>
 
 namespace Homer { namespace Gui {
 
@@ -47,6 +48,8 @@ using namespace std;
 using namespace Homer::Conference;
 
 ContactsManager sContactsManager;
+
+#define TIME_FOR_FIRST_CONTACTS_PROBING 1000
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -223,11 +226,11 @@ void ContactsManager::LoadPool(string pContactsFile)
     mContactsMutex.unlock();
 
 	mContactsFile = pContactsFile;
-	ProbeAvailabilityForAll();
     UpdateSorting();
 	if (mContactsModel != NULL)
         mContactsModel->UpdateView();
     CONF.SetContactFile(tFile.fileName());
+    QTimer::singleShot(TIME_FOR_FIRST_CONTACTS_PROBING, this, SLOT(ProbeAvailabilityForAll()));
 }
 
 void ContactsManager::ResetPool()
@@ -454,6 +457,8 @@ bool ContactsManager::FavorizedContact(QString pUser, QString pHost, QString pPo
 
 void ContactsManager::ProbeAvailabilityForAll()
 {
+    LOG(LOG_WARN, "######## PROBING CONTACTS - START ########");
+
     if (!CONF.GetSipContactsProbing())
         return;
 
@@ -546,6 +551,7 @@ void ContactsManager::ProbeAvailabilityForAll()
             }
         }
     }
+    LOG(LOG_WARN, "######## PROBING CONTACTS - END ########");
 }
 
 void ContactsManager::UpdateContact(QString pContact, enum TransportType pContactTransport, bool pState, QString pSoftware)

@@ -168,6 +168,7 @@ SET (SOURCES
 	../src/Widgets/VideoWidget
 )
 SET (QT_MOC_SOURCES
+	../include/ContactsManager.h
 	../include/MainWindow.h
 	../include/MediaSourceGrabberThread.h
 	../include/Dialogs/AddNetworkSinkDialog.h

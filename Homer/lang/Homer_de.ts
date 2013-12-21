@@ -2066,113 +2066,113 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::OverviewContactsWidget</name>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="135"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="143"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="212"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="273"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="419"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="462"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="134"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="142"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="211"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="272"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="418"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="461"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="198"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="263"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="197"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="262"/>
         <source>Send message</source>
         <translation>Nachrichten senden</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="204"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="268"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="203"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="267"/>
         <source>Call</source>
         <translation>Anrufen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="220"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="283"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="492"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="219"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="282"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="491"/>
         <source>Edit contact</source>
         <translation>Kontakt bearbeiten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="226"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="278"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="225"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="277"/>
         <source>Duplicate contact</source>
         <translation>Kontakt duplizieren</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="231"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="288"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="230"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="287"/>
         <source>Delete contact</source>
         <translation>Kontakt entfernen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="242"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="294"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="241"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="293"/>
         <source>Reset contact list</source>
         <translation>Kontaktliste zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="252"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="300"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="251"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="299"/>
         <source>Update availability</source>
         <translation>Verfügbarkeit aktualisieren</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="256"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="312"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="255"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="311"/>
         <source>Detect unknown contacts</source>
         <translation>Unbekannte Kontakte erkennen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="518"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="524"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="517"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="523"/>
         <source>Acknowledge deletion</source>
         <translation>Bestätigung der Löschung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="518"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="517"/>
         <source>Do you want to delete &quot;</source>
         <translation>Soll &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="518"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="517"/>
         <source>&quot; from the contact list?</source>
         <translation>&quot; aus der Kontaktliste gelöscht werden?</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="524"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="523"/>
         <source>Do you want to delete </source>
         <translation>Sollen </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="524"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="523"/>
         <source> entries from the contact list?</source>
         <translation> Einträge aus der Kontaktliste gelöscht werden?</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="575"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="574"/>
         <source>Insert duplicated contact</source>
         <translation>Duplizierten Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="613"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="612"/>
         <source>Save contact list</source>
         <translation>Speichern der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="630"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="629"/>
         <source>Load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="865"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="864"/>
         <source>Name</source>
         <translatorcomment>Name</translatorcomment>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="867"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="866"/>
         <source>Software</source>
         <translation>Software</translation>
     </message>
@@ -2492,8 +2492,8 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Abspeichern der Playlist ist fehlgeschlagen in </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="615"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="632"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="614"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="631"/>
         <source>Contact list</source>
         <translation>Kontaktliste</translation>
     </message>
@@ -3263,23 +3263,23 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Lautstärke:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2136"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2138"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2142"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2144"/>
         <source>Video source not available</source>
         <translation>Videoquelle nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2136"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2142"/>
         <source>The selected video source &quot;</source>
         <translation>Die ausgewählte Videoquelle &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2136"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2142"/>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot; ist nicht verfügbar. Bitte eine andere auswählen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2138"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2144"/>
         <source>The selected video source auto detection was not successful. Please, connect an additional video device to your hardware!</source>
         <translation>Die ausgewählte automatische Erkennung der Videoquelle war nicht erfolgreich. Bitte ein zusätzliches Gerät anschließen!</translation>
     </message>
