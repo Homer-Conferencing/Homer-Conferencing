@@ -560,7 +560,7 @@ void ParticipantWidget::InitializeMenuAVControls(QMenu *pMenu)
 
     pMenu->clear();
 
-    if(PlayingMovieFile())
+    if(IsPlayingMovieFile())
     {
         tAction = pMenu->addAction(QPixmap(":/images/22_22/Configuration_Video.png"), Homer::Gui::PlaybackSlider::tr("Adjust A/V drift"));
         tAction->setCheckable(true);
@@ -1608,7 +1608,7 @@ void ParticipantWidget::AVSync()
                 LOG(LOG_VERBOSE, "Drift: %.2f", (float)tTimeDiff);
             #endif
             // is video and audio stream still active and their synch. times are still changing?
-            if ((mLastVideoSynchronizationTimestamp != tVideoSyncTime) && ((mLastAudioSynchronizationTimestamp != tAudioSyncTime) || (PlayingMovieFile())))
+            if ((mLastVideoSynchronizationTimestamp != tVideoSyncTime) && ((mLastAudioSynchronizationTimestamp != tAudioSyncTime) || (IsPlayingMovieFile())))
             {// video and audio stream are still active
                 // are audio and video playback out of synch.?
                 if (((tTimeDiff < -AV_SYNC_MAX_DRIFT_UNTIL_RESYNC) || (tTimeDiff > AV_SYNC_MAX_DRIFT_UNTIL_RESYNC)))
@@ -1731,7 +1731,7 @@ float ParticipantWidget::GetUserAVDrift()
         return 0;
 
     // do we play video and audio from the same file?
-    if (PlayingMovieFile())
+    if (IsPlayingMovieFile())
     {
         tResult = mAudioWidget->GetWorker()->GetUserAVDrift();
     }
@@ -1750,7 +1750,7 @@ float ParticipantWidget::GetVideoDelayAVDrift()
         return 0;
 
     // do we play video and audio from the same file?
-    if (PlayingMovieFile())
+    if (IsPlayingMovieFile())
     {
         tResult = mAudioWidget->GetWorker()->GetVideoDelayAVDrift();
     }
@@ -1767,7 +1767,7 @@ void ParticipantWidget::SetUserAVDrift(float pDrift)
         return;
 
     // do we play video and audio from the same file?
-    if (PlayingMovieFile())
+    if (IsPlayingMovieFile())
     {
         mAudioWidget->GetWorker()->SetUserAVDrift(pDrift);
     }
@@ -1789,7 +1789,7 @@ void ParticipantWidget::ReportVideoDelay(float pDelay)
             return;
 
         // do we play video and audio from the same file?
-        if (PlayingMovieFile())
+        if (IsPlayingMovieFile())
         {
             mAudioWidget->GetWorker()->SetVideoDelayAVDrift(pDelay);
         }
@@ -1841,7 +1841,7 @@ void ParticipantWidget::ShowNewState()
     }
 }
 
-bool ParticipantWidget::PlayingMovieFile()
+bool ParticipantWidget::IsPlayingMovieFile()
 {
     if ((mVideoWidget != NULL) && (mAudioWidget != NULL))
     {
@@ -1851,7 +1851,7 @@ bool ParticipantWidget::PlayingMovieFile()
         if((tVWorker != NULL) && (tAWorker != NULL))
         {
             bool tPlayingSameFile = (tVWorker->CurrentFile() == tAWorker->CurrentFile());
-            return ((tVWorker->PlayingFile()) && (tAWorker->PlayingFile()) && tPlayingSameFile);
+            return ((tVWorker->IsPlayingFile()) && (tAWorker->IsPlayingFile()) && tPlayingSameFile);
         }
     }
 
@@ -2021,7 +2021,7 @@ void ParticipantWidget::SeekMovieFileRelative(float pSeconds)
     mVideoWidget->GetWorker()->Seek(tTargetPos);
     mAudioWidget->GetWorker()->Seek(tTargetPos);
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
-        if (PlayingMovieFile())
+        if (IsPlayingMovieFile())
         {// synch. audio to video
             // force an AV sync
             mTimeOfLastAVSynch = 0;
@@ -2107,15 +2107,15 @@ void ParticipantWidget::AVSeek(int pPos)
     double tPos = 0;
 
     //mVideoWidget->GetWorker()->PlayingFile()) && (!mVideoWidget->GetWorker()->IsPaused()
-    if ((mVideoWidget != NULL) && (mVideoWidget->GetWorker()->PlayingFile()))
+    if ((mVideoWidget != NULL) && (mVideoWidget->GetWorker()->IsPlayingFile()))
         tPos = (double)mVideoWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
-    if ((mAudioWidget != NULL) && (mAudioWidget->GetWorker()->PlayingFile()))
+    if ((mAudioWidget != NULL) && (mAudioWidget->GetWorker()->IsPlayingFile()))
         tPos = (double)mAudioWidget->GetWorker()->GetSeekEnd() * pPos / 1000;
 
     mVideoWidget->GetWorker()->Seek(tPos);
     mAudioWidget->GetWorker()->Seek(tPos);
     #ifdef PARTICIPANT_WIDGET_AV_SYNC
-        if (PlayingMovieFile())
+        if (IsPlayingMovieFile())
         {// synch. audio to video
             // force an AV sync
             mTimeOfLastAVSynch = 0;
@@ -2280,14 +2280,14 @@ void ParticipantWidget::UpdateMovieControls()
         //#################
 		float tCurPos = -1;
 		float tEndPos = -1;
-		if ((mVideoSource) && (mVideoWidget->GetWorker()->PlayingFile()) && (!mVideoWidget->GetWorker()->IsSeeking()))
+		if ((mVideoSource) && (mVideoWidget->GetWorker()->IsPlayingFile()) && (!mVideoWidget->GetWorker()->IsSeeking()))
 		{
 		    //LOG(LOG_VERBOSE, "Valid video position");
 			// get current stream position from video source and use it as movie position
 			tCurPos = mVideoWidget->GetWorker()->GetSeekPos();
 			tEndPos = mVideoWidget->GetWorker()->GetSeekEnd();
 		}
-        if ((mAudioSource) && (mAudioWidget->GetWorker()->PlayingFile()) && (tCurPos == -1) && (!mAudioWidget->GetWorker()->IsSeeking()))
+        if ((mAudioSource) && (mAudioWidget->GetWorker()->IsPlayingFile()) && (tCurPos == -1) && (!mAudioWidget->GetWorker()->IsSeeking()))
 		{
             //LOG(LOG_VERBOSE, "Valid audio position");
 			// get current stream position from audio source and use it as movie position
@@ -2420,7 +2420,7 @@ void ParticipantWidget::timerEvent(QTimerEvent *pEvent)
 	// make sure that for BROADCAST widget we only synchronize in case of movie input data
 	if (mSessionType == BROADCAST)
 	{
-	    bool tActive = PlayingMovieFile();
+	    bool tActive = IsPlayingMovieFile();
 
         // update the A/V synch. state
         mAVSynchActive = tActive;

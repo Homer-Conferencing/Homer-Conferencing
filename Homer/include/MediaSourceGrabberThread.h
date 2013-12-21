@@ -98,7 +98,7 @@ public:
     bool PlayFile(QString pName = "");
     void PauseFile();
     bool IsPaused();
-    bool PlayingFile();
+    bool IsPlayingFile();
     bool IsSeeking();
     void StopFile();
     bool EofReached();

@@ -1765,18 +1765,21 @@ void VideoWidget::keyPressEvent(QKeyEvent *pEvent)
     }
     if (((pEvent->key() == Qt::Key_Space) || (pEvent->key() == Qt::Key_MediaTogglePlayPause) || (pEvent->key() == Qt::Key_MediaPlay) || (pEvent->key() == Qt::Key_Play)) && (pEvent->modifiers() == 0))
     {
-        if (mParticipantWidget->isVideoFilePaused() || mParticipantWidget->isAudioFilePaused())
+        if ((mVideoWorker->IsPlayingFile()) || (mParticipantWidget->GetAudioWorker()->IsPlayingFile()))
         {
-        	ShowOsdMessage(Homer::Gui::VideoWidget::tr("Playing.."));
-            mParticipantWidget->ActionPlayPauseMovieFile();
-            pEvent->accept();
-            return;
-        }else
-        {
-        	ShowOsdMessage(Homer::Gui::VideoWidget::tr("Pausing.."));
-            mParticipantWidget->ActionPlayPauseMovieFile();
-			pEvent->accept();
-            return;
+            if (((mVideoWorker->IsPlayingFile()) && (mParticipantWidget->isVideoFilePaused())) || ((mParticipantWidget->GetAudioWorker()->IsPlayingFile()) && (mParticipantWidget->isAudioFilePaused())))
+            {
+                ShowOsdMessage(Homer::Gui::VideoWidget::tr("Playing.."));
+                mParticipantWidget->ActionPlayPauseMovieFile();
+                pEvent->accept();
+                return;
+            }else
+            {
+                ShowOsdMessage(Homer::Gui::VideoWidget::tr("Pausing.."));
+                mParticipantWidget->ActionPlayPauseMovieFile();
+                pEvent->accept();
+                return;
+            }
         }
     }
     if((pEvent->key() == Qt::Key_MediaNext) && (pEvent->modifiers() == 0))

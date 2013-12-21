@@ -3247,39 +3247,39 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Audiowiedergabe aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1770"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1772"/>
         <source>Playing..</source>
         <translation>Abspielend..</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1776"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1778"/>
         <source>Pausing..</source>
         <translation>Pausierend..</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1831"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="1841"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1834"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="1844"/>
         <source>Volume:</source>
         <translation>Lautstärke:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2142"/>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2144"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2145"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2147"/>
         <source>Video source not available</source>
         <translation>Videoquelle nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2142"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2145"/>
         <source>The selected video source &quot;</source>
         <translation>Die ausgewählte Videoquelle &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2142"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2145"/>
         <source>&quot; is not available. Please, select another one!</source>
         <translation>&quot; ist nicht verfügbar. Bitte eine andere auswählen!</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/VideoWidget.cpp" line="2144"/>
+        <location filename="../src/Widgets/VideoWidget.cpp" line="2147"/>
         <source>The selected video source auto detection was not successful. Please, connect an additional video device to your hardware!</source>
         <translation>Die ausgewählte automatische Erkennung der Videoquelle war nicht erfolgreich. Bitte ein zusätzliches Gerät anschließen!</translation>
     </message>

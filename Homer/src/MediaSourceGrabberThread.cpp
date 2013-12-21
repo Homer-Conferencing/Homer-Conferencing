@@ -307,7 +307,7 @@ bool MediaSourceGrabberThread::IsPaused()
         return false;
 }
 
-bool MediaSourceGrabberThread::PlayingFile()
+bool MediaSourceGrabberThread::IsPlayingFile()
 {
     if ((mMediaSource != NULL) && (mMediaSource->SupportsSeeking()) && (mMediaSource->GetSourceType() == SOURCE_FILE))
         return true;
@@ -343,7 +343,7 @@ bool MediaSourceGrabberThread::EofReached()
 
 QString MediaSourceGrabberThread::CurrentFile()
 {
-    if (PlayingFile())
+    if (IsPlayingFile())
     	return mCurrentFile;
     else
         return "";
