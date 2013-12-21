@@ -1419,13 +1419,9 @@ void MainWindow::customEvent(QEvent* pEvent)
                         tParticipantWidget = GetParticipantWidget(QString(tMEvent->Sender.c_str()), tMEvent->Transport);
                         if(tParticipantWidget == NULL)
                         {
-                            // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                            tParticipantWidget = ParticipantWidget::CreateParticipant(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tMEvent->Sender.c_str()), tMEvent->Transport);
-                            if (tParticipantWidget != NULL)
-                            {
-                                mParticipantWidgets.push_back(tParticipantWidget);
-                            } else
-                                LOG(LOG_ERROR, "ParticipantWidget creation failed");
+                            string tUser, tHost, tPort;
+                            MEETING.SplitParticipantName(tMEvent->Sender, tUser, tHost, tPort);
+                            tParticipantWidget = AddParticipantWidget(QString(tUser.c_str()), QString(tHost.c_str()), QString(tPort.c_str()), tMEvent->Transport, QString(tHost.c_str()), CALLSTATE_STANDBY);
                         }else
                             tKnownParticipant = true;
 
@@ -1497,13 +1493,9 @@ void MainWindow::customEvent(QEvent* pEvent)
                     tParticipantWidget = GetParticipantWidget(QString(tCEvent->Sender.c_str()), tCEvent->Transport);
                     if(tParticipantWidget == NULL)
                     {
-                        // add without any OpenSession-check, the session is always added automatically by the meeting-layer
-                        tParticipantWidget = ParticipantWidget::CreateParticipant(this, mMenuParticipantVideoWidgets, mMenuParticipantAudioWidgets, mMenuParticipantAVControls, mMenuParticipantMessageWidgets, mOwnVideoMuxer, mOwnAudioMuxer, QString(tCEvent->Sender.c_str()), tCEvent->Transport);
-                        if (tParticipantWidget != NULL)
-                        {
-                            mParticipantWidgets.push_back(tParticipantWidget);
-                        } else
-                            LOG(LOG_ERROR, "ParticipantWidget creation failed");
+                        string tUser, tHost, tPort;
+                        MEETING.SplitParticipantName(tCEvent->Sender, tUser, tHost, tPort);
+                        tParticipantWidget = AddParticipantWidget(QString(tUser.c_str()), QString(tHost.c_str()), QString(tPort.c_str()), tCEvent->Transport, QString(tHost.c_str()), CALLSTATE_STANDBY);
                     }else
                         tKnownParticipant = true;
 
