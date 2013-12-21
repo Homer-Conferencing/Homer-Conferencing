@@ -1868,7 +1868,13 @@ void VideoWidget::mouseDoubleClickEvent(QMouseEvent *pEvent)
 
 void VideoWidget::wheelEvent(QWheelEvent *pEvent)
 {
-    int tOffset = pEvent->delta() * 25 / 120;
+    int tOffset = 20;
+    if (pEvent->delta() < 0)
+        tOffset = -20;
+    if(mParticipantWidget->GetAudioWorker()->GetVolume() < 50)
+        tOffset /= 2;
+    if(mParticipantWidget->GetAudioWorker()->GetVolume() < 25)
+        tOffset /= 2;
     //LOG(LOG_VERBOSE, "Got new wheel event with orientation %d and delta %d, derived volume offset: %d", (int)pEvent->orientation(), pEvent->delta(), tOffset);
 	if (pEvent->orientation() == Qt::Vertical)
 	{
