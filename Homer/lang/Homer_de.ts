@@ -5084,7 +5084,7 @@ Soll sie überschrieben werden?</translation>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="501"/>
         <source>Player</source>
-        <translation type="unfinished">Player</translation>
+        <translation>Player</translation>
     </message>
     <message>
         <location filename="../forms/Widgets/StreamingControlWidget.ui" line="242"/>
