@@ -162,7 +162,7 @@ void StreamingControlWidget::StartCameraStreaming()
 
     for (tIt = tList.begin(); tIt != tList.end(); tIt++)
     {
-        if (tIt->Type == Camera)
+        if ((tIt->Type == Camera) || (tIt->Type == SVideoComp))
         {
             tSelectedDevice = QString(tIt->Name.c_str());
             break;
