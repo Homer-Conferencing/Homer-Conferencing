@@ -1767,118 +1767,118 @@ Bitte Konfiguration prüfen!</translation>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1761"/>
+        <location filename="../src/MainWindow.cpp" line="1762"/>
         <source>Participant already called</source>
         <translation>Teilnehmer bereits angerufen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1761"/>
+        <location filename="../src/MainWindow.cpp" line="1762"/>
         <source>The participant</source>
         <translation>Der Teilnehmer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1761"/>
+        <location filename="../src/MainWindow.cpp" line="1762"/>
         <source>is already called!
 The participant is known as</source>
         <translation>ist bereits angerufen!
 Der Teilnehmer ist bekannt unter</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1790"/>
+        <location filename="../src/MainWindow.cpp" line="1802"/>
         <source>Loop detected</source>
         <translation>Schleife erkannt</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1790"/>
+        <location filename="../src/MainWindow.cpp" line="1802"/>
         <source>You tried to contact yourself!</source>
         <translation>Sie versuchten sich selbst zu kontaktieren!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1847"/>
+        <location filename="../src/MainWindow.cpp" line="1859"/>
         <source>Acknowledge configuration reset</source>
         <translation>Bestätigung der Rücksetzung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1847"/>
+        <location filename="../src/MainWindow.cpp" line="1859"/>
         <source>Do you want to reset the program settings?
 Homer Conferencing will be stopped afterwards!</source>
         <translation>Wollen Sie die Programmeinstellungen zurücksetzen?
 Homer Conferencing wird danach gestoppt!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2226"/>
-        <location filename="../src/MainWindow.cpp" line="2361"/>
+        <location filename="../src/MainWindow.cpp" line="2238"/>
+        <location filename="../src/MainWindow.cpp" line="2373"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2229"/>
-        <location filename="../src/MainWindow.cpp" line="2364"/>
+        <location filename="../src/MainWindow.cpp" line="2241"/>
+        <location filename="../src/MainWindow.cpp" line="2376"/>
         <source>Hide window</source>
         <translation>Fenster minimieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2235"/>
+        <location filename="../src/MainWindow.cpp" line="2247"/>
         <source>Main menu</source>
         <translation>Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2248"/>
+        <location filename="../src/MainWindow.cpp" line="2260"/>
         <source>Tool bars</source>
         <translation>Werkzeugleisten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2260"/>
+        <location filename="../src/MainWindow.cpp" line="2272"/>
         <source>Streaming</source>
         <translation>Übertragung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2271"/>
+        <location filename="../src/MainWindow.cpp" line="2283"/>
         <source>Broadcast data</source>
         <translation>Audio-/Videoverteilung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2284"/>
+        <location filename="../src/MainWindow.cpp" line="2296"/>
         <source>Mosaic mode</source>
         <translation>Mosaikmodus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2301"/>
-        <location filename="../src/MainWindow.cpp" line="2374"/>
+        <location filename="../src/MainWindow.cpp" line="2313"/>
+        <location filename="../src/MainWindow.cpp" line="2386"/>
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2305"/>
-        <location filename="../src/MainWindow.cpp" line="2378"/>
+        <location filename="../src/MainWindow.cpp" line="2317"/>
+        <location filename="../src/MainWindow.cpp" line="2390"/>
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2311"/>
-        <location filename="../src/MainWindow.cpp" line="2384"/>
+        <location filename="../src/MainWindow.cpp" line="2323"/>
+        <location filename="../src/MainWindow.cpp" line="2396"/>
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2251"/>
-        <location filename="../src/MainWindow.cpp" line="2320"/>
-        <location filename="../src/MainWindow.cpp" line="2393"/>
+        <location filename="../src/MainWindow.cpp" line="2263"/>
+        <location filename="../src/MainWindow.cpp" line="2332"/>
+        <location filename="../src/MainWindow.cpp" line="2405"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2327"/>
+        <location filename="../src/MainWindow.cpp" line="2339"/>
         <source>Configuration</source>
         <translation>Konfiguration</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2337"/>
+        <location filename="../src/MainWindow.cpp" line="2349"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2345"/>
+        <location filename="../src/MainWindow.cpp" line="2357"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -1920,14 +1920,14 @@ Homer Conferencing wird danach gestoppt!</translation>
     <message>
         <location filename="../src/Widgets/MessageWidget.cpp" line="156"/>
         <location filename="../src/Widgets/MessageWidget.cpp" line="174"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="588"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="586"/>
         <source>Close window</source>
         <translation>Fenster schließen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/MessageWidget.cpp" line="158"/>
         <location filename="../src/Widgets/MessageWidget.cpp" line="169"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="583"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="581"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
@@ -2066,113 +2066,113 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::OverviewContactsWidget</name>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="134"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="142"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="211"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="272"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="418"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="461"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="135"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="143"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="212"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="273"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="419"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="462"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="197"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="262"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="198"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="263"/>
         <source>Send message</source>
         <translation>Nachrichten senden</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="203"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="267"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="204"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="268"/>
         <source>Call</source>
         <translation>Anrufen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="219"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="282"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="491"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="220"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="283"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="492"/>
         <source>Edit contact</source>
         <translation>Kontakt bearbeiten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="225"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="277"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="226"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="278"/>
         <source>Duplicate contact</source>
         <translation>Kontakt duplizieren</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="230"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="287"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="231"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="288"/>
         <source>Delete contact</source>
         <translation>Kontakt entfernen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="241"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="293"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="242"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="294"/>
         <source>Reset contact list</source>
         <translation>Kontaktliste zurücksetzen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="251"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="299"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="252"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="300"/>
         <source>Update availability</source>
         <translation>Verfügbarkeit aktualisieren</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="255"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="311"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="256"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="312"/>
         <source>Detect unknown contacts</source>
         <translation>Unbekannte Kontakte erkennen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="517"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="523"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="518"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="524"/>
         <source>Acknowledge deletion</source>
         <translation>Bestätigung der Löschung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="517"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="518"/>
         <source>Do you want to delete &quot;</source>
         <translation>Soll &quot;</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="517"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="518"/>
         <source>&quot; from the contact list?</source>
         <translation>&quot; aus der Kontaktliste gelöscht werden?</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="523"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="524"/>
         <source>Do you want to delete </source>
         <translation>Sollen </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="523"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="524"/>
         <source> entries from the contact list?</source>
         <translation> Einträge aus der Kontaktliste gelöscht werden?</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="574"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="575"/>
         <source>Insert duplicated contact</source>
         <translation>Duplizierten Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="595"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="613"/>
         <source>Save contact list</source>
         <translation>Speichern der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="612"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="630"/>
         <source>Load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="847"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="865"/>
         <source>Name</source>
         <translatorcomment>Name</translatorcomment>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="849"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="867"/>
         <source>Software</source>
         <translation>Software</translation>
     </message>
@@ -2492,8 +2492,8 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Abspeichern der Playlist ist fehlgeschlagen in </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="597"/>
-        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="614"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="615"/>
+        <location filename="../src/Widgets/OverviewContactsWidget.cpp" line="632"/>
         <source>Contact list</source>
         <translation>Kontaktliste</translation>
     </message>
@@ -2516,224 +2516,224 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::ParticipantWidget</name>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="477"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="478"/>
         <source>Video</source>
         <translation>Video</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="482"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="483"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="485"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="486"/>
         <source>A/V controls</source>
         <translation>A/V-Steuerung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="489"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="490"/>
         <source>Messages</source>
         <translation>Nachrichten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="496"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="497"/>
         <source>Session info</source>
         <translation>Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="738"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="770"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="736"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="768"/>
         <source>Hide session info</source>
         <translation>Verstecke Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="743"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="765"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="741"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="763"/>
         <source>Show session info</source>
         <translation>Zeige Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="750"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="780"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="796"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="815"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="748"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="778"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="794"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="813"/>
         <source>Hide A/V info</source>
         <translation>Verstecke A/V-Info</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="756"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="775"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="801"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="810"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="754"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="773"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="799"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="808"/>
         <source>Show A/V info</source>
         <translation>Zeige A/V-Info</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="943"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="941"/>
         <source>DNS lookup error</source>
         <translation>DNS Auflösungsfehler</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="943"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="941"/>
         <source>Unable to lookup DNS entry for</source>
         <translation>Die DNS-Auflösung war unmöglich für</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="943"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="941"/>
         <source>because</source>
         <translation>, weil</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1060"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1058"/>
         <source>General error occurred</source>
         <translation>Allgemeiner Fehler aufgetreten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1060"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1058"/>
         <source>General error of code</source>
         <translation>Allgemeiner Fehler mit Code</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1060"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1058"/>
         <source>occurred. The error is described with</source>
         <translation>aufgetreten. Der Fehler ist beschrieben mit </translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1103"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1101"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1346"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="1348"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1350"/>
         <source>Participant unavailable</source>
         <translation>Teilnehmer nicht verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1103"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1101"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1346"/>
         <location filename="../src/Widgets/ParticipantWidget.cpp" line="1348"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1350"/>
         <source>The participant</source>
         <translation>Der Teilnehmer</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1103"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1101"/>
         <source>is currently unavailable for an instant message! The reason is</source>
         <translation>ist im Moment nicht verfügbar für eine Nachricht. Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1348"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1346"/>
         <source>does not accept your video/audio codecs. Please, check the configuration and use different settings.</source>
         <translation>akzeptiert den Video-/Audiocodec nicht. Bitte die Konfiguration prüfen und andere Einstellungen verwenden.</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1350"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1348"/>
         <source>is currently unavailable for a call! The reason is</source>
         <translation>ist im Moment nicht verfügbar für einen Anruf. Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1814"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1812"/>
         <source>in chat</source>
         <translation>im Chat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1817"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1815"/>
         <source>chat</source>
         <translation>Chat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1822"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1820"/>
         <source>in conference</source>
         <translation>in Konferenz</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1825"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1823"/>
         <source>conference</source>
         <translation>Konferenz</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1830"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1833"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1828"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1831"/>
         <source>ringing</source>
         <translation>Rufen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1957"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1955"/>
         <source>Set file name for video/audio recording</source>
         <translation>Dateinamen für das Aufzeichnen von Video/Audio festlegen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1971"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1969"/>
         <source>Select video recording quality</source>
         <translation>Auswahl der Qualität für die Videoaufzeichnung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1971"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1969"/>
         <source>Record video with quality:</source>
         <translation>Videoaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1991"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1989"/>
         <source>Select audio recording quality</source>
         <translation>Auswahl der Qualität für die Audioaufzeichnung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1991"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1989"/>
         <source>Record audio with quality:</source>
         <translation>Audioaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2336"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2344"/>
         <source>Video:</source>
         <translation>Video:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2379"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2387"/>
         <source>Audio:</source>
         <translation>Audio:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2345"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2388"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2353"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2396"/>
         <source>MetaData:</source>
         <translation>Metadaten:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="574"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="572"/>
         <source>Close window</source>
         <translation>Fenster schließen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="576"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="574"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2356"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2364"/>
         <source>A/V pre-buffering:</source>
         <translation>A/V Vorpufferung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2358"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2367"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2366"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2375"/>
         <source>active</source>
         <translation>aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2360"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2369"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2368"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2377"/>
         <source>inactive</source>
         <translation>inaktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2363"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2371"/>
         <source>(auto restart)</source>
         <translation>(auto. Neustart)</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2354"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2365"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2362"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2373"/>
         <source>A/V synchronization:</source>
         <translation>A/V Synchronisierung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2371"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2379"/>
         <source>A/V synchronizations:</source>
         <translation>A/V Synchronisierungen:</translation>
     </message>
@@ -2741,8 +2741,8 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::PlaybackSlider</name>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="567"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="593"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="565"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="591"/>
         <location filename="../src/Widgets/PlaybackSlider.cpp" line="84"/>
         <location filename="../src/Widgets/PlaybackSlider.cpp" line="95"/>
         <source>Adjust A/V drift</source>
@@ -4287,22 +4287,22 @@ datei</translation>
         <translation>Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="159"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="162"/>
         <source>save contact list</source>
         <translation>Speichern der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="205"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="208"/>
         <source>load contact list</source>
         <translation>Laden der Kontaktliste</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="251"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="254"/>
         <source>Add contact</source>
         <translation>Kontakt hinzufügen</translation>
     </message>
     <message>
-        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="297"/>
+        <location filename="../forms/Widgets/OverviewContactsWidget.ui" line="300"/>
         <source>Remove contact(s)</source>
         <translation>Kontakt(e) entfernen</translation>
     </message>

@@ -156,6 +156,7 @@ public:
 
     /* fullscreen mode */
     void ToggleFullScreenMode(bool pActive);
+    void SetVisible(bool pVisible);
 
     void Call();
 

@@ -1790,7 +1790,7 @@ ParticipantWidget* MainWindow::AddParticipantWidget(QString pUser, QString pHost
                     tabifyDockWidget(tLastParticipantWidget, tParticipantWidget);
 				    resize(tOldSize);
                 }
-
+				tParticipantWidget->SetVisible(true);
 				mParticipantWidgets.push_back(tParticipantWidget);
 
             }
@@ -2194,7 +2194,7 @@ void MainWindow::actionActivateBroadcastWidget(bool pActive)
 {
     LOG(LOG_VERBOSE, "Setting broadcast widget visibility to: %d", pActive);
     CONF.SetVisibilityBroadcastWidget(pActive);
-    mLocalUserParticipantWidget->setVisible(pActive);
+    mLocalUserParticipantWidget->SetVisible(pActive);
     if(mActionMonitorBroadcastWidget->isChecked() != pActive)
         mActionMonitorBroadcastWidget->setChecked(pActive);
 }

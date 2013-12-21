@@ -265,6 +265,7 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
     mAudioSourceMuxer = pAudioSourceMuxer;
 
     setupUi(this);
+    hide();
 
     mSlMovie->Init(this);
     mAVDriftFrame->hide();
@@ -507,7 +508,6 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
     UpdateParticipantName(mSessionName);
     // hide automatic QAction within QDockWidget context menu
     toggleViewAction()->setVisible(false);
-    show();
 
     /* A/V controls*/
     if (pAVControlsMenu != NULL)
@@ -525,8 +525,6 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
 
     if (mSessionType == BROADCAST)
         setVisible(CONF.GetVisibilityBroadcastWidget());
-    if (mSessionType == PARTICIPANT)
-    	ResizeAVView(0);
     UpdateMovieControls();
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
@@ -2062,6 +2060,16 @@ void ParticipantWidget::ToggleFullScreenMode(bool pActive)
         GetVideoWorker()->SetFullScreenDisplay();
     else
         mVideoWidget->ToggleFullScreenMode(pActive);
+}
+
+void ParticipantWidget::SetVisible(bool pVisible)
+{
+    setVisible(pVisible);
+    if(pVisible)
+    {
+        if (mSessionType == PARTICIPANT)
+            ResizeAVView(0);
+    }
 }
 
 void ParticipantWidget::Call()
