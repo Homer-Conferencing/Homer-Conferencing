@@ -911,33 +911,40 @@ void OverviewPlaylistWidget::ReceivedFileFromServer(QNetworkReply *pServerAnswer
     QTemporaryFile tTmpFile;
     if(tTmpFile.open())
     {
-        tTmpFile.write(tFileData);
+        qint64 tWrittenBytes = tTmpFile.write(tFileData);
+        qint64 tExpectedBytes = tFileData.size();
         tTmpFile.close();
 
-        QString tReceivedFileName = pServerAnswer->request().url().toString();
-        QString tTmpFileName = tTmpFile.fileName();
-
-        LOG(LOG_VERBOSE, " ..belongs to web source: %s", tReceivedFileName.toStdString().c_str());
-
-        // add the received content to the playlist
-        Playlist tPlaylist;
-        if (tReceivedFileName.endsWith(".m3u"))
-        {// an M3U playlist file
-            LOG(LOG_VERBOSE, " ..identified as M3U playlist");
-            tPlaylist = ParseM3U(tTmpFileName, true, true);
-        }else if (tReceivedFileName.endsWith(".pls"))
-        {// a PLS playlist file
-            LOG(LOG_VERBOSE, " ..identified as PLS playlist");
-            tPlaylist = ParsePLS(tTmpFileName, true, true);
-        }else if (tReceivedFileName.endsWith(".wmx"))
+        if(tWrittenBytes == tFileData.size())
         {
-            LOG(LOG_VERBOSE, " ..identified as WMX playlist");
-            tPlaylist = ParseWMX(tTmpFileName, true, true);
-        }else{
-            LOG(LOG_ERROR, "Unsupported web content from: %s", tReceivedFileName.toStdString().c_str());
+            QString tReceivedFileName = pServerAnswer->request().url().toString();
+            QString tTmpFileName = tTmpFile.fileName();
+
+            LOG(LOG_VERBOSE, " ..belongs to web source: %s", tReceivedFileName.toStdString().c_str());
+
+            // add the received content to the playlist
+            Playlist tPlaylist;
+            if (tReceivedFileName.endsWith(".m3u"))
+            {// an M3U playlist file
+                LOG(LOG_VERBOSE, " ..identified as M3U playlist");
+                tPlaylist = ParseM3U(tTmpFileName, true, true);
+            }else if (tReceivedFileName.endsWith(".pls"))
+            {// a PLS playlist file
+                LOG(LOG_VERBOSE, " ..identified as PLS playlist");
+                tPlaylist = ParsePLS(tTmpFileName, true, true);
+            }else if (tReceivedFileName.endsWith(".wmx"))
+            {
+                LOG(LOG_VERBOSE, " ..identified as WMX playlist");
+                tPlaylist = ParseWMX(tTmpFileName, true, true);
+            }else{
+                LOG(LOG_ERROR, "Unsupported web content from: %s", tReceivedFileName.toStdString().c_str());
+            }
+            if(tPlaylist.size() > 0)
+                AddPlaylist(tPlaylist, true);
+        }else
+        {
+            LOG(LOG_ERROR, "Error occurred when writing to temporary file: %s, %d written bytes, %d expected bytes", tTmpFile.fileName().toStdString().c_str(), (int)tWrittenBytes, (int)tExpectedBytes);
         }
-        if(tPlaylist.size() > 0)
-            AddPlaylist(tPlaylist, true);
     }else{
         LOG(LOG_ERROR, "Could not create a temporary file for storing the download web data");
     }
@@ -953,8 +960,16 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
 	Playlist tResult;
 	PlaylistEntry tPlaylistEntry;
 
-	if (pLocation == "")
-		return tResult;
+    // removing heading whitespaces
+	while(pLocation.startsWith(" "))
+	    pLocation = pLocation.right(pLocation.size() -1);
+
+	// removing trailing whitespaces
+	while(pLocation.endsWith(" "))
+        pLocation = pLocation.left(pLocation.size() -1);
+
+    if (pLocation == "")
+        return tResult;
 
     CheckAndRemoveFilePrefix(pLocation);
 
