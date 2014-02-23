@@ -96,7 +96,7 @@ namespace Homer { namespace Gui {
 ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow):
     QDockWidget(pMainWindow), AudioPlayback("Events")
 {
-    LOG(LOG_ERROR, "Creating session of type: %d", (int)pSessionType);
+    LOG(LOG_VERBOSE, "Creating session of type: %d", (int)pSessionType);
     hide();
     mPlayPauseButtonIsPaused = -1;
     mMosaicMode = false;
@@ -140,7 +140,7 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
 
 ParticipantWidget::~ParticipantWidget()
 {
-    LOG(LOG_ERROR, "Going to destroy %s participant widget..", mSessionName.toStdString().c_str());
+    LOG(LOG_VERBOSE, "Going to destroy %s participant widget..", mSessionName.toStdString().c_str());
 
     if (mTimerId != -1)
         killTimer(mTimerId);
@@ -258,7 +258,7 @@ ParticipantWidget* ParticipantWidget::CreatePreviewNetworkStreams(MainWindow *pM
 
 void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport)
 {
-    LOG(LOG_ERROR, "Initiating new participant widget for %s..", pParticipant.toStdString().c_str());
+    LOG(LOG_VERBOSE, "Initiating new participant widget for %s..", pParticipant.toStdString().c_str());
     mVideoSourceMuxer = pVideoSourceMuxer;
     mAudioSourceMuxer = pAudioSourceMuxer;
 
