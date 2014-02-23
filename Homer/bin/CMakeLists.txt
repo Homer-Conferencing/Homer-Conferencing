@@ -383,7 +383,7 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		libgstinterfaces-0.10.so.0.24.0
 		libgstreamer-0.10.so         
 		libgstvideo-0.10.so.0
-		libstdc++.so.6.0.14
+		libstdc++.so.6.0.18
 		libQtCore.so.4.8.4
 		libQtGui.so.4.8.4
 		libQtWebKit.so.4.9.3
