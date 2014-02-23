@@ -96,7 +96,7 @@ namespace Homer { namespace Gui {
 ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *pMainWindow):
     QDockWidget(pMainWindow), AudioPlayback("Events")
 {
-    LOG(LOG_VERBOSE, "Creating session of type: %d", (int)pSessionType);
+    LOG(LOG_ERROR, "Creating session of type: %d", (int)pSessionType);
     hide();
     mPlayPauseButtonIsPaused = -1;
     mMosaicMode = false;
@@ -136,16 +136,11 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mIncomingCall = false;
     mQuitForced = false;
     mAssignedActionAVControls = NULL;
-
-    //####################################################################
-    //### create the remaining necessary widgets, menu and layouts
-    //####################################################################
-    LOG(LOG_VERBOSE, "..init participant widget");
 }
 
 ParticipantWidget::~ParticipantWidget()
 {
-    LOG(LOG_VERBOSE, "Going to destroy %s participant widget..", mSessionName.toStdString().c_str());
+    LOG(LOG_ERROR, "Going to destroy %s participant widget..", mSessionName.toStdString().c_str());
 
     if (mTimerId != -1)
         killTimer(mTimerId);
@@ -210,6 +205,7 @@ ParticipantWidget* ParticipantWidget::CreateBroadcast(MainWindow *pMainWindow, Q
 {
     ParticipantWidget *tResult = new ParticipantWidget(BROADCAST, pMainWindow);
     tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pVideoSourceMuxer, pAudioSourceMuxer);
+    tResult->SetVisible(CONF.GetVisibilityBroadcastWidget());
 
     return tResult;
 }
@@ -218,6 +214,7 @@ ParticipantWidget* ParticipantWidget::CreateParticipant(MainWindow *pMainWindow,
 {
     ParticipantWidget *tResult = new ParticipantWidget(PARTICIPANT, pMainWindow);
     tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pVideoSourceMuxer, pAudioSourceMuxer, pParticipant, pTransport);
+    tResult->SetVisible(true);
 
     return tResult;
 }
@@ -226,6 +223,7 @@ ParticipantWidget* ParticipantWidget::CreatePreview(MainWindow *pMainWindow, QMe
 {
     ParticipantWidget *tResult = new ParticipantWidget(PREVIEW, pMainWindow);
     tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu);
+    tResult->SetVisible(true);
 
     return tResult;
 }
@@ -260,7 +258,7 @@ ParticipantWidget* ParticipantWidget::CreatePreviewNetworkStreams(MainWindow *pM
 
 void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVControlsMenu, QMenu *pMessageMenu, MediaSourceMuxer *pVideoSourceMuxer, MediaSourceMuxer *pAudioSourceMuxer, QString pParticipant, enum TransportType pTransport)
 {
-    LOG(LOG_VERBOSE, "Initiating new participant widget for %s..", pParticipant.toStdString().c_str());
+    LOG(LOG_ERROR, "Initiating new participant widget for %s..", pParticipant.toStdString().c_str());
     mVideoSourceMuxer = pVideoSourceMuxer;
     mAudioSourceMuxer = pAudioSourceMuxer;
 
@@ -523,8 +521,6 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
     if (mAssignedActionAVControls != NULL)
         connect(mAssignedActionAVControls, SIGNAL(triggered()), this, SLOT(ToggleAVControlsVisibility()));
 
-    if (mSessionType == BROADCAST)
-        setVisible(CONF.GetVisibilityBroadcastWidget());
     UpdateMovieControls();
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);

@@ -1782,7 +1782,6 @@ ParticipantWidget* MainWindow::AddParticipantWidget(QString pUser, QString pHost
                     tabifyDockWidget(tLastParticipantWidget, tParticipantWidget);
 				    resize(tOldSize);
                 }
-				tParticipantWidget->SetVisible(true);
 				mParticipantWidgets.push_back(tParticipantWidget);
 
             }
