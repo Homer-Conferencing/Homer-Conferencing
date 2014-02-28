@@ -3,6 +3,10 @@
 # Since:   2010-11-13
 ###############################################################################
 
+INCLUDE(CheckLibraryExists)
+
+##############################################################
+
 IF (DEFINED TARGET_PROGRAM_NAME) 
 	MESSAGE("###########################################################################")
 	MESSAGE("##### Configuring program \"${TARGET_PROGRAM_NAME}\" to build \"${BUILD}\" version")
