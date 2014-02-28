@@ -136,11 +136,6 @@ ParticipantWidget::ParticipantWidget(enum SessionType pSessionType, MainWindow *
     mIncomingCall = false;
     mQuitForced = false;
     mAssignedActionAVControls = NULL;
-
-    //####################################################################
-    //### create the remaining necessary widgets, menu and layouts
-    //####################################################################
-    LOG(LOG_VERBOSE, "..init participant widget");
 }
 
 ParticipantWidget::~ParticipantWidget()
@@ -210,6 +205,7 @@ ParticipantWidget* ParticipantWidget::CreateBroadcast(MainWindow *pMainWindow, Q
 {
     ParticipantWidget *tResult = new ParticipantWidget(BROADCAST, pMainWindow);
     tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pVideoSourceMuxer, pAudioSourceMuxer);
+    tResult->SetVisible(CONF.GetVisibilityBroadcastWidget());
 
     return tResult;
 }
@@ -218,6 +214,7 @@ ParticipantWidget* ParticipantWidget::CreateParticipant(MainWindow *pMainWindow,
 {
     ParticipantWidget *tResult = new ParticipantWidget(PARTICIPANT, pMainWindow);
     tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu, pMessageMenu, pVideoSourceMuxer, pAudioSourceMuxer, pParticipant, pTransport);
+    tResult->SetVisible(true);
 
     return tResult;
 }
@@ -226,6 +223,7 @@ ParticipantWidget* ParticipantWidget::CreatePreview(MainWindow *pMainWindow, QMe
 {
     ParticipantWidget *tResult = new ParticipantWidget(PREVIEW, pMainWindow);
     tResult->Init(pVideoMenu, pAudioMenu, pAVControlsMenu);
+    tResult->SetVisible(true);
 
     return tResult;
 }
@@ -523,8 +521,6 @@ void ParticipantWidget::Init(QMenu *pVideoMenu, QMenu *pAudioMenu, QMenu *pAVCon
     if (mAssignedActionAVControls != NULL)
         connect(mAssignedActionAVControls, SIGNAL(triggered()), this, SLOT(ToggleAVControlsVisibility()));
 
-    if (mSessionType == BROADCAST)
-        setVisible(CONF.GetVisibilityBroadcastWidget());
     UpdateMovieControls();
 
     mTimerId = startTimer(STREAM_POS_UPDATE_DELAY);
