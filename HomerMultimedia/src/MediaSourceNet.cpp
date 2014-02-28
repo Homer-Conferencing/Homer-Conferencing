@@ -86,7 +86,7 @@ private:
     int                 mReceiveErrors;
     int                 mPacketNumber;
     bool                mListenerNeeded;
-    bool				mListenerStopped;
+    bool                mListenerStopped;
     bool                mListenerSocketCreatedOutside;
     bool                mStreamedTransport;
     /* Berkeley sockets based transport */
@@ -275,27 +275,27 @@ void NetworkListener::StopListener()
 
     LOG(LOG_VERBOSE, "Stopping %s network listener", mMediaSourceNet->GetMediaTypeStr().c_str());
 
-	// tell network listener thread: it isn't needed anymore
-	mListenerNeeded = false;
+    // tell network listener thread: it isn't needed anymore
+    mListenerNeeded = false;
 
-	if (mNAPIUsed)
-	{
-		mNAPIDataSocket->cancel();
-	}else
-	{
-		if (mDataSocket != NULL)
-			mDataSocket->StopReceiving();
-	}
+    if (mNAPIUsed)
+    {
+        mNAPIDataSocket->cancel();
+    }else
+    {
+        if (mDataSocket != NULL)
+            mDataSocket->StopReceiving();
+    }
 
-	// wait for termination of decoder thread
-	do
-	{
-		if(tSignalingRound > 0)
-			LOG(LOG_WARN, "Signaling attempt %d to stop %s network listener", tSignalingRound, mMediaSourceNet->GetMediaTypeStr().c_str());
-		tSignalingRound++;
+    // wait for termination of decoder thread
+    do
+    {
+        if(tSignalingRound > 0)
+            LOG(LOG_WARN, "Signaling attempt %d to stop %s network listener", tSignalingRound, mMediaSourceNet->GetMediaTypeStr().c_str());
+        tSignalingRound++;
 
-		Suspend(25 * 1000);
-	}while(IsRunning());
+        Suspend(25 * 1000);
+    }while(IsRunning());
     
     LOG(LOG_VERBOSE, "%s network listener stopped", mMediaSourceNet->GetMediaTypeStr().c_str());
 }
@@ -488,8 +488,8 @@ void* NetworkListener::Run(void* pArgs)
         // stop loop if listener isn't needed anymore
         if (!mListenerNeeded)
         {
-        	LOG(LOG_WARN, "Leaving %s network listener immediately", mMediaSourceNet->GetMediaTypeStr().c_str());
-        	break;
+            LOG(LOG_WARN, "Leaving %s network listener immediately", mMediaSourceNet->GetMediaTypeStr().c_str());
+            break;
         }
 //      LOG(LOG_ERROR, "Data Size: %d", (int)tDataSize);
 //      LOG(LOG_ERROR, "Port: %u", tSourcePort);
@@ -601,7 +601,7 @@ void MediaSourceNet::Init()
 MediaSourceNet::MediaSourceNet(Socket *pDataSocket):
     MediaSourceMem("NET-IN:")
 {
-	LOG(LOG_VERBOSE, "Created with pre-defined socket object");
+    LOG(LOG_VERBOSE, "Created with pre-defined socket object");
 
     mNetworkListener = new NetworkListener(this, pDataSocket);
 
@@ -611,7 +611,7 @@ MediaSourceNet::MediaSourceNet(Socket *pDataSocket):
 MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTransportType):
     MediaSourceMem("NET-IN:")
 {
-	LOG(LOG_VERBOSE, "Created, have to create socket");
+    LOG(LOG_VERBOSE, "Created, have to create socket");
     if ((pPortNumber == 0) || (pPortNumber > 65535))
         LOG(LOG_ERROR, "Given port number is invalid");
 
@@ -625,7 +625,7 @@ MediaSourceNet::MediaSourceNet(unsigned int pPortNumber, enum TransportType pTra
 MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequirements):
     MediaSourceMem("NET-IN:")
 {
-	LOG(LOG_VERBOSE, "Created via NAPI, local name: &s, requirements: %s", pLocalName.c_str(), (pTransportRequirements != NULL) ? pTransportRequirements->getDescription().c_str() : "");
+    LOG(LOG_VERBOSE, "Created via NAPI, local name: &s, requirements: %s", pLocalName.c_str(), (pTransportRequirements != NULL) ? pTransportRequirements->getDescription().c_str() : "");
 
     mNetworkListener = new NetworkListener(this, pLocalName, pTransportRequirements);
 
@@ -634,7 +634,7 @@ MediaSourceNet::MediaSourceNet(string pLocalName, Requirements *pTransportRequir
 
 MediaSourceNet::~MediaSourceNet()
 {
-	LOG(LOG_VERBOSE, "Going to destroy network based media source");
+    LOG(LOG_VERBOSE, "Going to destroy network based media source");
 
     LOG(LOG_VERBOSE, "..stopping %s grabbing", GetMediaTypeStr().c_str());
     StopGrabbing();
@@ -672,19 +672,19 @@ bool MediaSourceNet::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     LOG(LOG_VERBOSE, "Trying to open the video source");
 
     // setting this explicitly, otherwise the Run-method won't assign the thread name correctly
-	mMediaType = MEDIA_VIDEO;
+    mMediaType = MEDIA_VIDEO;
 
-	// start socket listener
-	mNetworkListener->StartListener();
+    // start socket listener
+    mNetworkListener->StartListener();
 
     bool tResult = MediaSourceMem::OpenVideoGrabDevice(pResX, pResY, pFps);
 
-	if (tResult)
-	{
+    if (tResult)
+    {
         mCurrentDeviceName = mNetworkListener->GetListenerName();
         SVC_PROCESS_STATISTIC.AssignThreadName("Video-Grabber(NET)");
         ClassifyStream(DATA_TYPE_VIDEO, mNetworkListener->GetTransportType(), mNetworkListener->GetNetworkType());
-	}
+    }
 
     return tResult;
 }
@@ -694,19 +694,19 @@ bool MediaSourceNet::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     LOG(LOG_VERBOSE, "Trying to open the audio source");
 
     // setting this explicitly, otherwise the Run-method won't assign the thread name correctly
-	mMediaType = MEDIA_AUDIO;
+    mMediaType = MEDIA_AUDIO;
 
-	// start socket listener
-	mNetworkListener->StartListener();
+    // start socket listener
+    mNetworkListener->StartListener();
 
     bool tResult = MediaSourceMem::OpenAudioGrabDevice(pSampleRate, pChannels);
 
-	if (tResult)
-	{
+    if (tResult)
+    {
         mCurrentDeviceName = mNetworkListener->GetListenerName();
         SVC_PROCESS_STATISTIC.AssignThreadName("Audio-Grabber(NET)");
         ClassifyStream(DATA_TYPE_AUDIO, mNetworkListener->GetTransportType(), mNetworkListener->GetNetworkType());
-	}
+    }
 
     return tResult;
 }

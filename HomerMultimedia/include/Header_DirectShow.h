@@ -169,18 +169,18 @@ typedef struct tagVIDEOINFOHEADER {
 } VIDEOINFOHEADER;
 
 typedef struct tagVIDEOINFOHEADER2 {
-		RECT rcSource;
-		RECT rcTarget;
-		DWORD dwBitRate;
-		DWORD dwBitErrorRate;
-		REFERENCE_TIME AvgTimePerFrame;
-		DWORD dwInterlaceFlags;
-		DWORD dwCopyProtectFlags;
-		DWORD dwPictAspectRatioX;
-		DWORD dwPictAspectRatioY;
-		DWORD dwReserved1;
-		DWORD dwReserved2;
-		BITMAPINFOHEADER bmiHeader;
+        RECT rcSource;
+        RECT rcTarget;
+        DWORD dwBitRate;
+        DWORD dwBitErrorRate;
+        REFERENCE_TIME AvgTimePerFrame;
+        DWORD dwInterlaceFlags;
+        DWORD dwCopyProtectFlags;
+        DWORD dwPictAspectRatioX;
+        DWORD dwPictAspectRatioY;
+        DWORD dwReserved1;
+        DWORD dwReserved2;
+        BITMAPINFOHEADER bmiHeader;
 } VIDEOINFOHEADER2;
 
 typedef struct _AMMediaType {
@@ -458,9 +458,9 @@ typedef struct _BDA_TEMPLATE_CONNECTION
 
 // strmif.h
 typedef struct {
-	CLSID clsMedium;
-	DWORD dw1;
-	DWORD dw2;
+    CLSID clsMedium;
+    DWORD dw1;
+    DWORD dw2;
 } REGPINMEDIUM;
 
 // bdaiface.h
@@ -468,56 +468,56 @@ MIDL_INTERFACE("79B56888-7FEA-4690-B45D-38FD3C7849BE")
 IBDA_Topology : public IUnknown
 {
 public:
-	virtual HRESULT STDMETHODCALLTYPE GetNodeTypes(
-		/* [out][in] */ ULONG *pulcNodeTypes,
-		/* [in] */ ULONG ulcNodeTypesMax,
-		/* [size_is][out][in] */ ULONG rgulNodeTypes[  ]) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetNodeTypes(
+        /* [out][in] */ ULONG *pulcNodeTypes,
+        /* [in] */ ULONG ulcNodeTypesMax,
+        /* [size_is][out][in] */ ULONG rgulNodeTypes[  ]) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE GetNodeDescriptors(
-		/* [out][in] */ ULONG *ulcNodeDescriptors,
-		/* [in] */ ULONG ulcNodeDescriptorsMax,
-		/* [size_is][out][in] */ BDANODE_DESCRIPTOR rgNodeDescriptors[  ]) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetNodeDescriptors(
+        /* [out][in] */ ULONG *ulcNodeDescriptors,
+        /* [in] */ ULONG ulcNodeDescriptorsMax,
+        /* [size_is][out][in] */ BDANODE_DESCRIPTOR rgNodeDescriptors[  ]) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE GetNodeInterfaces(
-		/* [in] */ ULONG ulNodeType,
-		/* [out][in] */ ULONG *pulcInterfaces,
-		/* [in] */ ULONG ulcInterfacesMax,
-		/* [size_is][out][in] */ GUID rgguidInterfaces[  ]) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetNodeInterfaces(
+        /* [in] */ ULONG ulNodeType,
+        /* [out][in] */ ULONG *pulcInterfaces,
+        /* [in] */ ULONG ulcInterfacesMax,
+        /* [size_is][out][in] */ GUID rgguidInterfaces[  ]) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE GetPinTypes(
-		/* [out][in] */ ULONG *pulcPinTypes,
-		/* [in] */ ULONG ulcPinTypesMax,
-		/* [size_is][out][in] */ ULONG rgulPinTypes[  ]) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetPinTypes(
+        /* [out][in] */ ULONG *pulcPinTypes,
+        /* [in] */ ULONG ulcPinTypesMax,
+        /* [size_is][out][in] */ ULONG rgulPinTypes[  ]) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE GetTemplateConnections(
-		/* [out][in] */ ULONG *pulcConnections,
-		/* [in] */ ULONG ulcConnectionsMax,
-		/* [size_is][out][in] */ BDA_TEMPLATE_CONNECTION rgConnections[  ]) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetTemplateConnections(
+        /* [out][in] */ ULONG *pulcConnections,
+        /* [in] */ ULONG ulcConnectionsMax,
+        /* [size_is][out][in] */ BDA_TEMPLATE_CONNECTION rgConnections[  ]) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE CreatePin(
-		/* [in] */ ULONG ulPinType,
-		/* [out][in] */ ULONG *pulPinId) = 0;
+    virtual HRESULT STDMETHODCALLTYPE CreatePin(
+        /* [in] */ ULONG ulPinType,
+        /* [out][in] */ ULONG *pulPinId) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE DeletePin(
-		/* [in] */ ULONG ulPinId) = 0;
+    virtual HRESULT STDMETHODCALLTYPE DeletePin(
+        /* [in] */ ULONG ulPinId) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE SetMediaType(
-		/* [in] */ ULONG ulPinId,
-		/* [in] */ AM_MEDIA_TYPE *pMediaType) = 0;
+    virtual HRESULT STDMETHODCALLTYPE SetMediaType(
+        /* [in] */ ULONG ulPinId,
+        /* [in] */ AM_MEDIA_TYPE *pMediaType) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE SetMedium(
-		/* [in] */ ULONG ulPinId,
-		/* [in] */ REGPINMEDIUM *pMedium) = 0;
+    virtual HRESULT STDMETHODCALLTYPE SetMedium(
+        /* [in] */ ULONG ulPinId,
+        /* [in] */ REGPINMEDIUM *pMedium) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE CreateTopology(
-		/* [in] */ ULONG ulInputPinId,
-		/* [in] */ ULONG ulOutputPinId) = 0;
+    virtual HRESULT STDMETHODCALLTYPE CreateTopology(
+        /* [in] */ ULONG ulInputPinId,
+        /* [in] */ ULONG ulOutputPinId) = 0;
 
-	virtual HRESULT STDMETHODCALLTYPE GetControlNode(
-		/* [in] */ ULONG ulInputPinId,
-		/* [in] */ ULONG ulOutputPinId,
-		/* [in] */ ULONG ulNodeType,
-		/* [out][in] */ IUnknown **ppControlNode) = 0;
+    virtual HRESULT STDMETHODCALLTYPE GetControlNode(
+        /* [in] */ ULONG ulInputPinId,
+        /* [in] */ ULONG ulOutputPinId,
+        /* [in] */ ULONG ulNodeType,
+        /* [out][in] */ IUnknown **ppControlNode) = 0;
 
 };
 
@@ -856,123 +856,123 @@ public:
 
 string GUID2String(GUID pGUID)
 {
-	string tResult = "";
+    string tResult = "";
 
-	char tBuffer[512];
-	snprintf(tBuffer, 512, "{%08x-%04x-%04x-%02x%02x-%02x-%02x-%02x-%02x-%02x-%02x}",
-			pGUID.Data1, pGUID.Data2, pGUID.Data3,
-			pGUID.Data4[0], pGUID.Data4[1], pGUID.Data4[2], pGUID.Data4[3],
-			pGUID.Data4[4], pGUID.Data4[5], pGUID.Data4[6], pGUID.Data4[7]);
+    char tBuffer[512];
+    snprintf(tBuffer, 512, "{%08x-%04x-%04x-%02x%02x-%02x-%02x-%02x-%02x-%02x-%02x}",
+            pGUID.Data1, pGUID.Data2, pGUID.Data3,
+            pGUID.Data4[0], pGUID.Data4[1], pGUID.Data4[2], pGUID.Data4[3],
+            pGUID.Data4[4], pGUID.Data4[5], pGUID.Data4[6], pGUID.Data4[7]);
 
-	tResult = string(tBuffer);
+    tResult = string(tBuffer);
 
-	return tResult;
+    return tResult;
 }
 
 string GetMediaTypeName(GUID pType)
 {
-	string tResult = "";
+    string tResult = "";
 
-	if (pType == MEDIATYPE_Video)
-	{
-		tResult = "Video";
-	}else if (pType == MEDIATYPE_Audio)
-	{
-		tResult = "Audio";
-	}else if (pType == MEDIATYPE_Stream)
-	{
-		tResult = "Stream";
-	}else if (pType == MEDIATYPE_VBI)
-	{
-		tResult = "Video vertical blinking interval";
-	}else if (pType == MEDIATYPE_Interleaved)
-	{
-		tResult = "Interleaved";
-	}else
-	{
-		tResult = GUID2String(pType);
-	}
+    if (pType == MEDIATYPE_Video)
+    {
+        tResult = "Video";
+    }else if (pType == MEDIATYPE_Audio)
+    {
+        tResult = "Audio";
+    }else if (pType == MEDIATYPE_Stream)
+    {
+        tResult = "Stream";
+    }else if (pType == MEDIATYPE_VBI)
+    {
+        tResult = "Video vertical blinking interval";
+    }else if (pType == MEDIATYPE_Interleaved)
+    {
+        tResult = "Interleaved";
+    }else
+    {
+        tResult = GUID2String(pType);
+    }
 
-	return tResult;
+    return tResult;
 }
 
 string GetSubTypeName(GUID pType)
 {
-	string tResult = "";
+    string tResult = "";
 
-	if (pType == MEDIASUBTYPE_MPEG2_TRANSPORT)
-	{
-		tResult = "Mpeg2 transport";
-	}else
+    if (pType == MEDIASUBTYPE_MPEG2_TRANSPORT)
+    {
+        tResult = "Mpeg2 transport";
+    }else
 
-	if (pType == MEDIASUBTYPE_AYUV)
-	{
-		tResult = "AYUV 4:4:4 Packed 8";
-	}else if (pType == MEDIASUBTYPE_YUY2)
-	{
-		tResult = "YUY2 4:2:2 Packed 8";
-	}else if (pType == MEDIASUBTYPE_UYVY)
-	{
-		tResult = "UYVY 4:2:2 Packed 8";
-	}else if (pType == MEDIASUBTYPE_YV12)
-	{
-		tResult = "YV12 4:2:0 Planar 8";
-	}else if (pType == MEDIASUBTYPE_NV12)
-	{
-		tResult = "NV12 4:2:0 Planar 8";
-	}else if (pType == MEDIASUBTYPE_I420)
-	{
-		tResult = "I420 4:2:0 Planar 8";
-	}else if (pType == MEDIASUBTYPE_IF09)
-	{
-		tResult = "Indeo YVU9 Planar 8";
-	}else if (pType == MEDIASUBTYPE_IYUV)
-	{
-		tResult = "IYUV 4:2:0 Planar 8";
-	}else if (pType == MEDIASUBTYPE_Y211)
-	{
-		tResult = "Y211 Packed 8";
-	}else if (pType == MEDIASUBTYPE_Y411)
-	{
-		tResult = "Y411 4:1:1 Packed 8";
-	}else if (pType == MEDIASUBTYPE_Y41P)
-	{
-		tResult = "Y41P 4:1:1 Packed 8";
-	}else if (pType == MEDIASUBTYPE_YVU9)
-	{
-		tResult = "YVU9	Planar 8";
-	}else if (pType == MEDIASUBTYPE_YVYU)
-	{
-		tResult = "YVYU 4:2:2 Packed 8";
-	}else if (pType == MEDIASUBTYPE_RGB24)
-	{
-		tResult = "RGB 24 bpp";
-	}else if (pType == MEDIASUBTYPE_Y8)
-	{
-		tResult = "Y8 monochrome";
-	}else if (pType == MEDIASUBTYPE_Y800)
-	{
-		tResult = "Y800 monochrome";
-	}else if (pType == MEDIASUBTYPE_GREY)
-	{
-		tResult = "GREY monochrome";
-	}else if (pType == MEDIASUBTYPE_IMC1)
-	{
-		tResult = "IMC1 4:2:0 Planar 8";
-	}else if (pType == MEDIASUBTYPE_IMC2)
-	{
-		tResult = "IMC2 4:2:0 Planar 8";
-	}else if (pType == MEDIASUBTYPE_IMC3)
-	{
-		tResult = "IMC3 4:2:0 Planar 8";
-	}else if (pType == MEDIASUBTYPE_IMC4)
-	{
-		tResult = "IMC4 4:2:0 Planar 8";
-	}else
-	{
-		tResult = GUID2String(pType);
-	}
-	return tResult;
+    if (pType == MEDIASUBTYPE_AYUV)
+    {
+        tResult = "AYUV 4:4:4 Packed 8";
+    }else if (pType == MEDIASUBTYPE_YUY2)
+    {
+        tResult = "YUY2 4:2:2 Packed 8";
+    }else if (pType == MEDIASUBTYPE_UYVY)
+    {
+        tResult = "UYVY 4:2:2 Packed 8";
+    }else if (pType == MEDIASUBTYPE_YV12)
+    {
+        tResult = "YV12 4:2:0 Planar 8";
+    }else if (pType == MEDIASUBTYPE_NV12)
+    {
+        tResult = "NV12 4:2:0 Planar 8";
+    }else if (pType == MEDIASUBTYPE_I420)
+    {
+        tResult = "I420 4:2:0 Planar 8";
+    }else if (pType == MEDIASUBTYPE_IF09)
+    {
+        tResult = "Indeo YVU9 Planar 8";
+    }else if (pType == MEDIASUBTYPE_IYUV)
+    {
+        tResult = "IYUV 4:2:0 Planar 8";
+    }else if (pType == MEDIASUBTYPE_Y211)
+    {
+        tResult = "Y211 Packed 8";
+    }else if (pType == MEDIASUBTYPE_Y411)
+    {
+        tResult = "Y411 4:1:1 Packed 8";
+    }else if (pType == MEDIASUBTYPE_Y41P)
+    {
+        tResult = "Y41P 4:1:1 Packed 8";
+    }else if (pType == MEDIASUBTYPE_YVU9)
+    {
+        tResult = "YVU9    Planar 8";
+    }else if (pType == MEDIASUBTYPE_YVYU)
+    {
+        tResult = "YVYU 4:2:2 Packed 8";
+    }else if (pType == MEDIASUBTYPE_RGB24)
+    {
+        tResult = "RGB 24 bpp";
+    }else if (pType == MEDIASUBTYPE_Y8)
+    {
+        tResult = "Y8 monochrome";
+    }else if (pType == MEDIASUBTYPE_Y800)
+    {
+        tResult = "Y800 monochrome";
+    }else if (pType == MEDIASUBTYPE_GREY)
+    {
+        tResult = "GREY monochrome";
+    }else if (pType == MEDIASUBTYPE_IMC1)
+    {
+        tResult = "IMC1 4:2:0 Planar 8";
+    }else if (pType == MEDIASUBTYPE_IMC2)
+    {
+        tResult = "IMC2 4:2:0 Planar 8";
+    }else if (pType == MEDIASUBTYPE_IMC3)
+    {
+        tResult = "IMC3 4:2:0 Planar 8";
+    }else if (pType == MEDIASUBTYPE_IMC4)
+    {
+        tResult = "IMC4 4:2:0 Planar 8";
+    }else
+    {
+        tResult = GUID2String(pType);
+    }
+    return tResult;
 }
 
 #endif

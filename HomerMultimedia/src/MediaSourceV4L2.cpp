@@ -359,8 +359,8 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
         return false;
 
-	if (!OpenFormatConverter())
-		return false;
+    if (!OpenFormatConverter())
+        return false;
 
     //###########################################################################################
     //### seek to the current position and drop data received during codec auto detection phase
@@ -651,7 +651,7 @@ GrabResolutions MediaSourceV4L2::GetSupportedVideoGrabResolutions()
 
 bool MediaSourceV4L2::HasVariableVideoOutputFrameRate()
 {
-	return true;
+    return true;
 }
 
 bool MediaSourceV4L2::SupportsDecoderFrameStatistics()
@@ -671,7 +671,7 @@ string MediaSourceV4L2::GetSourceCodecDescription()
 
 bool MediaSourceV4L2::SupportsRecording()
 {
-	return true;
+    return true;
 }
 
 bool MediaSourceV4L2::SupportsMultipleInputStreams()

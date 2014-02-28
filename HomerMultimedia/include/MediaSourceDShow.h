@@ -47,7 +47,7 @@ class MediaSourceDShow:
     public MediaSource
 {
 public:
-	MediaSourceDShow(std::string pDesiredDevice = "");
+    MediaSourceDShow(std::string pDesiredDevice = "");
 
     virtual ~MediaSourceDShow();
 

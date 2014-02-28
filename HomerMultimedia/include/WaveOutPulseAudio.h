@@ -66,7 +66,7 @@ public:
 private:
     virtual void DoWriteChunk(char *pChunkBuffer, int pChunkSize);
 
-	struct pa_simple 		*mOutputStream;
+    struct pa_simple         *mOutputStream;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

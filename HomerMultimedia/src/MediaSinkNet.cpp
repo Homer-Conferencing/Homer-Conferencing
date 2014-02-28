@@ -57,7 +57,7 @@ using namespace Homer::Base;
 
 void MediaSinkNet::BasicInit(string pTargetHost, unsigned int pTargetPort)
 {
-	mStreamFragmentCopyBuffer = NULL;
+    mStreamFragmentCopyBuffer = NULL;
     mNAPIDataSocket = NULL;
     mDataSocket = NULL;
     mBrokenPipe = false;
@@ -94,7 +94,7 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
     enum TransportType tTransportType = (mStreamedTransport ? SOCKET_TCP : (pTransportRequirements->contains(RequirementTransmitBitErrors::type()) ? SOCKET_UDP_LITE : SOCKET_UDP));
     enum NetworkType tNetworkType = (IS_IPV6_ADDRESS(pTarget)) ? SOCKET_IPv6 : SOCKET_IPv4;
     if (mStreamedTransport)
-    	mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
+        mStreamFragmentCopyBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
 
     // call NAPI
     if (mTargetHost != "")
@@ -126,7 +126,7 @@ MediaSinkNet::MediaSinkNet(string pTarget, Requirements *pTransportRequirements,
 }
 
 MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, Socket* pLocalSocket, enum MediaSinkType pType, bool pRtpActivated):
-	MediaSinkMem("memory", pType, pRtpActivated)
+    MediaSinkMem("memory", pType, pRtpActivated)
 {
     BasicInit(pTargetHost, pTargetPort);
     mDataSocket = pLocalSocket;
@@ -177,15 +177,15 @@ MediaSinkNet::MediaSinkNet(string pTargetHost, unsigned int pTargetPort, Socket*
 
 MediaSinkNet::~MediaSinkNet()
 {
-	StopSender();
+    StopSender();
 
-	if(mNAPIUsed)
+    if(mNAPIUsed)
     {
-		if (mNAPIDataSocket != NULL)
-			delete mNAPIDataSocket;
+        if (mNAPIDataSocket != NULL)
+            delete mNAPIDataSocket;
     }else
     {
-    	//HINT: socket object has to be deleted outside
+        //HINT: socket object has to be deleted outside
     }
     free(mStreamFragmentCopyBuffer);
     LOG(LOG_VERBOSE, "Destroyed");
@@ -228,8 +228,8 @@ string MediaSinkNet::CreateId(string pHost, string pPort, enum TransportType pSo
 
 void MediaSinkNet::StopProcessing()
 {
-	mSenderNeeded = false;
-	MediaSinkMem::StopProcessing();
+    mSenderNeeded = false;
+    MediaSinkMem::StopProcessing();
 }
 
 void MediaSinkNet::WriteFragment(char* pData, unsigned int pSize, int64_t pFragmentNumber)
@@ -334,7 +334,7 @@ void MediaSinkNet::StopSender()
     if (mSinkFifo != NULL)
     {
         // tell sender thread it isn't needed anymore
-    	mSenderNeeded = false;
+        mSenderNeeded = false;
 
         // wait for termination of sender thread
         do
@@ -395,9 +395,9 @@ void* MediaSinkNet::Run(void* pArgs)
 
     while(mSenderNeeded)
     {
-    	if (mSinkFifo != NULL)
-    	{
-    	    int tBufferedPackets = mSinkFifo->GetUsage();
+        if (mSinkFifo != NULL)
+        {
+            int tBufferedPackets = mSinkFifo->GetUsage();
 
             tFifoEntry = mSinkFifo->ReadFifoExclusive(&tBuffer, tBufferSize, tFragmentNumber);
 
@@ -410,18 +410,18 @@ void* MediaSinkNet::Run(void* pArgs)
                         LOG(LOG_VERBOSE, "Sending packet %d with %d bytes, %d remaining packets in queue", (int)tFragmentNumber, tBufferSize, tBufferedPackets);
                 #endif
 
-            	SendPacket(tBuffer, tBufferSize);
+                SendPacket(tBuffer, tBufferSize);
             }
 
             // release FIFO entry lock
             mSinkFifo->ReadFifoExclusiveFinished(tFifoEntry);
 
-			if (tBufferSize == 0)
-			{
-				LOG(LOG_VERBOSE, "Zero byte %s packet in relay thread detected", GetDataTypeStr().c_str());
-			}
+            if (tBufferSize == 0)
+            {
+                LOG(LOG_VERBOSE, "Zero byte %s packet in relay thread detected", GetDataTypeStr().c_str());
+            }
 
-			// is FIFO near overload situation?
+            // is FIFO near overload situation?
             if (mSinkFifo->GetUsage() >= mSinkFifo->GetSize() - 4)
             {
                 LOG(LOG_WARN, "Relay FIFO is near overload situation, deleting all stored frames");
@@ -429,7 +429,7 @@ void* MediaSinkNet::Run(void* pArgs)
                 // delete all stored frames: it is a better for the encoding to have a gap instead of frames which have high picture differences
                 mSinkFifo->ClearFifo();
             }
-    	}else
+        }else
         {
             LOG(LOG_VERBOSE, "Suspending the sender thread for 10 ms");
             Suspend(10 * 1000); // check every 1/100 seconds the state of the FIFO

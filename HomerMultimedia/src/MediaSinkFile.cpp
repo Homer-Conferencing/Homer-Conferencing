@@ -42,7 +42,7 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSinkFile::MediaSinkFile(string pSinkFile, enum MediaSinkType pType, bool pRtpActivated):
-	MediaSinkMem(pSinkFile, pType, pRtpActivated)
+    MediaSinkMem(pSinkFile, pType, pRtpActivated)
 {
     mSinkFile = pSinkFile;
     mMediaId = pSinkFile;

@@ -69,7 +69,7 @@ extern "C" {
 }
 
 #ifndef AV_NUM_DATA_POINTERS
-#define AV_NUM_DATA_POINTERS 			4 // old value was 4, later "AV_NUM_DATA_POINTERS" was introduced
+#define AV_NUM_DATA_POINTERS             4 // old value was 4, later "AV_NUM_DATA_POINTERS" was introduced
 #endif
 
 #ifndef CODEC_FLAG2_SHOW_ALL
@@ -93,7 +93,7 @@ inline struct SwrContext *HM_swr_alloc_set_opts(struct SwrContext *s,
 
 inline int HM_swr_init(struct SwrContext *s)
 {
-	return swr_init(s);
+    return swr_init(s);
 }
 
 inline int HM_swr_convert(struct SwrContext *s, uint8_t **out, int out_count,
@@ -104,7 +104,7 @@ inline int HM_swr_convert(struct SwrContext *s, uint8_t **out, int out_count,
 
 inline void HM_swr_free(struct SwrContext **s)
 {
-	swr_free(s);
+    swr_free(s);
 }
 
 #else
@@ -126,7 +126,7 @@ inline struct ReSampleContext *HM_swr_alloc_set_opts(struct ReSampleContext *s,
 
 inline int HM_swr_init(struct ReSampleContext *s)
 {
-	return 0;
+    return 0;
 }
 
 inline int HM_swr_convert(struct ReSampleContext *s, uint8_t **out, int out_count,
@@ -137,7 +137,7 @@ inline int HM_swr_convert(struct ReSampleContext *s, uint8_t **out, int out_coun
 
 inline void HM_swr_free(struct ReSampleContext **s)
 {
-	audio_resample_close(*s);
+    audio_resample_close(*s);
 }
 
 #endif
@@ -155,9 +155,9 @@ inline void HM_swr_free(struct ReSampleContext **s)
 #endif
 
 #ifndef APPLE // on OSX we would have redefinitions and conflicts with QuickTime
-	#ifndef CodecType
-		#define CodecType CodecID
-	#endif
+    #ifndef CodecType
+        #define CodecType CodecID
+    #endif
 #endif
 
 #if (LIBAVUTIL_VERSION_MAJOR < 51)
@@ -311,16 +311,16 @@ inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, cons
     int tResult;
 
     #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 23, 100))
-		if (avpkt == NULL)
-			return -1;
+        if (avpkt == NULL)
+            return -1;
 
-		if (avpkt->data == NULL)
-		{
-			avpkt->size = avpicture_get_size(avctx->pix_fmt, avctx->width, avctx->height) + FF_INPUT_BUFFER_PADDING_SIZE;
-			avpkt->data = (uint8_t*)malloc(avpkt->size);
-		}
+        if (avpkt->data == NULL)
+        {
+            avpkt->size = avpicture_get_size(avctx->pix_fmt, avctx->width, avctx->height) + FF_INPUT_BUFFER_PADDING_SIZE;
+            avpkt->data = (uint8_t*)malloc(avpkt->size);
+        }
 
-		tResult = avcodec_encode_video(avctx, avpkt->data, avpkt->size, (const AVFrame *)frame);
+        tResult = avcodec_encode_video(avctx, avpkt->data, avpkt->size, (const AVFrame *)frame);
 
         if (frame->key_frame)
             avpkt->flags |= AV_PKT_FLAG_KEY;
@@ -329,20 +329,20 @@ inline int HM_avcodec_encode_video2(AVCodecContext *avctx, AVPacket *avpkt, cons
         avpkt->dts = frame->pts;
         avpkt->size = tResult;
 
-		if (got_packet_ptr != NULL)
-			*got_packet_ptr = (tResult > 0);
+        if (got_packet_ptr != NULL)
+            *got_packet_ptr = (tResult > 0);
     #else
         tResult = avcodec_encode_video2(avctx, avpkt, frame, got_packet_ptr);
     #endif
 
-	if ((!avctx) || (!(avctx->codec->capabilities & CODEC_CAP_DELAY)))
-	{// no delay by encoder
-		avpkt->pts = frame->pts;
-		avpkt->dts = frame->pts;
-	}else
-	{// possible delay by encoder, e.g., H.264 encoder
-		// encoder has set the pts/dts value during "avcodec_encode_video(2)"
-	}
+    if ((!avctx) || (!(avctx->codec->capabilities & CODEC_CAP_DELAY)))
+    {// no delay by encoder
+        avpkt->pts = frame->pts;
+        avpkt->dts = frame->pts;
+    }else
+    {// possible delay by encoder, e.g., H.264 encoder
+        // encoder has set the pts/dts value during "avcodec_encode_video(2)"
+    }
 
     return tResult;
 }
@@ -378,23 +378,23 @@ inline int HM_sws_scale(struct SwsContext *context, const uint8_t* const srcSlic
 
 inline void HM_avformat_close_input(AVFormatContext *s)
 {
-	#if (LIBAVFORMAT_VERSION_MAJOR < 54)
-		av_close_input_file(s);
-	#else
-		avformat_close_input(&s);
-	#endif
+    #if (LIBAVFORMAT_VERSION_MAJOR < 54)
+        av_close_input_file(s);
+    #else
+        avformat_close_input(&s);
+    #endif
 }
 
 inline AVStream *HM_avformat_new_stream(AVFormatContext *s, int id)
 {
-	#if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 10, 0))
-		return av_new_stream(s, id);
-	#else
-		AVStream *st = avformat_new_stream(s, NULL);
-		if (st)
-			st->id = id;
-		return st;
-	#endif
+    #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 10, 0))
+        return av_new_stream(s, id);
+    #else
+        AVStream *st = avformat_new_stream(s, NULL);
+        if (st)
+            st->id = id;
+        return st;
+    #endif
 }
 
 #if (LIBAVUTIL_VERSION_INT < AV_VERSION_INT(51, 35, 0))

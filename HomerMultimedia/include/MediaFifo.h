@@ -47,10 +47,10 @@ namespace Homer { namespace Multimedia {
 
 struct MediaFifoEntry
 {
-	char	*Data;
-	int		Size;
-	int64_t Number;
-	Mutex   EntryMutex;
+    char    *Data;
+    int     Size;
+    int64_t Number;
+    Mutex   EntryMutex;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,15 +74,15 @@ public:
     virtual int GetSize();
 
 protected:
-    std::string			mName;
+    std::string         mName;
     MediaFifoEntry      *mFifo;
-	int					mFifoWritePtr;
-	int                 mFifoReadPtr;
-	int                 mFifoAvailableEntries;
-	int                 mFifoSize;
-	int 				mFifoEntrySize;
-    Mutex				mFifoMutex;
-    Condition			mFifoDataInputCondition;
+    int                 mFifoWritePtr;
+    int                 mFifoReadPtr;
+    int                 mFifoAvailableEntries;
+    int                 mFifoSize;
+    int                 mFifoEntrySize;
+    Mutex               mFifoMutex;
+    Condition           mFifoDataInputCondition;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

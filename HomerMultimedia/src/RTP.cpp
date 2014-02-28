@@ -26,21 +26,21 @@
  */
 
 /*
-			 Result of functional validation (24.Feb.2013):
-					 Sending                        Receiving
-			--------------------------------------------------------------------
-			 h261:   ok (HC)                        ok (HC)
-			 h263:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
-			h263+:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
-			 h264:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
-			Mpeg1:   ok (HC)                        ok (HC)
-			Mpeg2:   ok (HC)                        ok (HC)
-			Mpeg4:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+             Result of functional validation (24.Feb.2013):
+                     Sending                        Receiving
+            --------------------------------------------------------------------
+             h261:   ok (HC)                        ok (HC)
+             h263:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+            h263+:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+             h264:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+            Mpeg1:   ok (HC)                        ok (HC)
+            Mpeg2:   ok (HC)                        ok (HC)
+            Mpeg4:   ok (Hc, Ekiga)                 ok (HC, Ekiga)
 
-	  pcma (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
-	  pcmu (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
-	adpcm(G722):     ok (Hc, Ekiga)                 ok (HC, Ekiga)
-			  mp3:   ok (HC)                        ok (HC) (A/V sync. needs to be reworked)
+      pcma (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+      pcmu (G711):   ok (Hc, Ekiga)                 ok (HC, Ekiga)
+    adpcm(G722):     ok (Hc, Ekiga)                 ok (HC, Ekiga)
+              mp3:   ok (HC)                        ok (HC) (A/V sync. needs to be reworked)
   pcm16be (PCM16):   ok (HC)                        ok (HC)
 
 
@@ -70,20 +70,20 @@ using namespace Homer::Monitor;
 ///////////////////////////////////////////////////////////////////////////////
 
 // how many consecutive timestamp overflows do we want to accept before we assume that the remote source has changed?
-#define RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS								1
+#define RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS                                1
 
 // how many consecutive sequence number overflows do we want to accept before we assume that the remote source has changed?
-#define RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS						1
+#define RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS                        1
 
 #define RTP_MAX_REMOTE_SOURCE_CHANGED_RESET_SCORE                          32 // how many times should the same payload ID be received until we believe in an actual source change at remote side?
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IS_RTCP_TYPE(x) 				((x >= 72) && (x <= 76))
+#define IS_RTCP_TYPE(x)                 ((x >= 72) && (x <= 76))
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define RTP_PAYLOAD_TYPE_NONE											0x7F
+#define RTP_PAYLOAD_TYPE_NONE                                            0x7F
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -487,8 +487,8 @@ void RTP::Init()
 
 bool RTP::ResetRrtpParser()
 {
-	Init();
-	return true;
+    Init();
+    return true;
 }
 
 bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
@@ -533,7 +533,7 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
 bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream)
 {
     AVDictionary        *tOptions = NULL;
-    int					tRes;
+    int                    tRes;
 
     if (mRtpEncoderOpened)
         return false;
@@ -563,7 +563,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mLocalSourceIdentifier = av_get_random_seed();
 
     if (mStreamCodecID == AV_CODEC_ID_H261)
-    	return OpenRtpEncoderH261(pTargetHost, pTargetPort, pInnerStream);
+        return OpenRtpEncoderH261(pTargetHost, pTargetPort, pInnerStream);
 
     int                 tResult;
     AVOutputFormat      *tFormat;
@@ -623,7 +623,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mRtpFormatContext->start_time_realtime = av_gettime();
 
 //    if ((tRes = av_dict_set(&tOptions, "cname", "www.homer-conferencing.com", 0)) < 0)
-//    	LOG(LOG_ERROR, "Failed to set A/V option \"cname\" because %s(0x%x) [option not found = 0x%x]", strerror(AVUNERROR(tRes)), tRes, AVERROR_OPTION_NOT_FOUND);
+//        LOG(LOG_ERROR, "Failed to set A/V option \"cname\" because %s(0x%x) [option not found = 0x%x]", strerror(AVUNERROR(tRes)), tRes, AVERROR_OPTION_NOT_FOUND);
 //
 //    if ((tRes = av_dict_set(&tOptions, "ssrc", toString(mLocalSourceIdentifier).c_str(), 0)) < 0)
 //        LOG(LOG_ERROR, "Failed to set A/V option \"ssrc\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
@@ -633,7 +633,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
         case AV_CODEC_ID_H263:
                 // use older rfc2190 for RTP packetizing
                 if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0)) < 0)
-                	LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
+                    LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
                 break;
         default:
                 break;
@@ -801,8 +801,8 @@ int RTP::GetPayloadHeaderSizeMax(enum AVCodecID pCodec)
                 tResult = 0;
                 break;
             case AV_CODEC_ID_AMR_NB:
-            	tResult = sizeof(AMRNBHeader);
-            	break;
+                tResult = sizeof(AMRNBHeader);
+                break;
             case AV_CODEC_ID_PCM_ALAW:
                 tResult = 0;
                 break;
@@ -810,8 +810,8 @@ int RTP::GetPayloadHeaderSizeMax(enum AVCodecID pCodec)
                 tResult = 0;
                 break;
             case AV_CODEC_ID_ADPCM_G722:
-            	tResult = 0;
-            	break;
+                tResult = 0;
+                break;
             case AV_CODEC_ID_PCM_S16BE:
                 tResult = 0;
                 break;
@@ -904,12 +904,12 @@ int RTP::StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
 
 int64_t RTP::ReceivedRTPPackets()
 {
-	return mRTPPacketCounter;
+    return mRTPPacketCounter;
 }
 
 int64_t RTP::ReceivedRTCPPackets()
 {
-	return mRTCPPacketCounter;
+    return mRTCPPacketCounter;
 }
 
 bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
@@ -962,8 +962,8 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     tMp3Hack_EntireBufferSize = pDataSize;
 
     // adapt clock rate for G.722
-	if (mStreamCodecID == AV_CODEC_ID_ADPCM_G722)
-		pPacketPts /= 2; // transform from 16 kHz to 8kHz
+    if (mStreamCodecID == AV_CODEC_ID_ADPCM_G722)
+        pPacketPts /= 2; // transform from 16 kHz to 8kHz
 
     av_init_packet(&tPacket);
     #ifdef RTP_DEBUG_PACKET_ENCODER_PTS
@@ -1106,7 +1106,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                             case AV_CODEC_ID_ADPCM_G722:
                                             tRtpHeader->PayloadType = 9;
                                             break;
-				//            case AV_CODEC_ID_ADPCM_G726:
+                //            case AV_CODEC_ID_ADPCM_G726:
                             case AV_CODEC_ID_PCM_S16BE:
                                             tRtpHeader->PayloadType = 10;
                                             break;
@@ -1158,8 +1158,8 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                             case AV_CODEC_ID_VP8:
                                             tRtpHeader->PayloadType = 123;
                                             break;
-				//            case AV_CODEC_ID_MPEG2TS:
-				//            case AV_CODEC_ID_VORBIS:
+                //            case AV_CODEC_ID_MPEG2TS:
+                //            case AV_CODEC_ID_VORBIS:
                 }
 
                 //#################################################################################
@@ -1421,7 +1421,7 @@ uint64_t RTP::GetCurrentPtsFromRTP()
     // clock rate adaption
     tResult = mRemoteTimestamp / CalculateClockRateFactor();
     if (mStreamCodecID == AV_CODEC_ID_ADPCM_G722)
-    	tResult *= 2; // transform from 8 kHz to 16kHz
+        tResult *= 2; // transform from 8 kHz to 16kHz
 
     return tResult;
 }
@@ -1435,19 +1435,19 @@ void RTP::GetSynchronizationReferenceFromRTP(uint64_t &pReferenceNtpTime, uint64
     // clock rate adaption
     pReferencePts = mRtcpLastRemoteTimestamp / CalculateClockRateFactor();
     if (mStreamCodecID == AV_CODEC_ID_ADPCM_G722)
-    	pReferencePts *= 2; // transform from 8 kHz to 16kHz
+        pReferencePts *= 2; // transform from 8 kHz to 16kHz
 
     mSynchDataMutex.unlock();
 }
 
 unsigned int RTP::GetSourceIdentifierFromRTP()
 {
-	return mRemoteSourceIdentifier;
+    return mRemoteSourceIdentifier;
 }
 
 bool RTP::HasSourceChangedFromRTP()
 {
-	return mRtpRemoteSourceChanged;
+    return mRtpRemoteSourceChanged;
 }
 
 float RTP::CalculateClockRateFactor()
@@ -1493,43 +1493,43 @@ float RTP::CalculateClockRateFactor()
 
 bool RTP::ReceivedCorrectPayload(unsigned int pType)
 {
-	bool tResult = false;
+    bool tResult = false;
 
     switch(mStreamCodecID)
     {
                 case AV_CODEC_ID_PCM_MULAW:
                                 if (pType == 0)
-                                	tResult = true;
+                                    tResult = true;
                                 break;
                 case AV_CODEC_ID_PCM_ALAW:
-								if (pType == 8)
-									tResult = true;
+                                if (pType == 8)
+                                    tResult = true;
                                 break;
                 case AV_CODEC_ID_ADPCM_G722:
-								if (pType == 9)
-									tResult = true;
+                                if (pType == 9)
+                                    tResult = true;
                                 break;
-	//            case AV_CODEC_ID_ADPCM_G726:
+    //            case AV_CODEC_ID_ADPCM_G726:
                 case AV_CODEC_ID_PCM_S16BE:
-								if (pType == 10)
-									tResult = true;
+                                if (pType == 10)
+                                    tResult = true;
                                 break;
                 case AV_CODEC_ID_MP3:
-								if (pType == 14)
-									tResult = true;
+                                if (pType == 14)
+                                    tResult = true;
                                 break;
                 case AV_CODEC_ID_H261:
-								if (pType == 31)
-									tResult = true;
+                                if (pType == 31)
+                                    tResult = true;
                                 break;
                 case AV_CODEC_ID_MPEG1VIDEO:
                 case AV_CODEC_ID_MPEG2VIDEO:
-								if (pType == 32)
-									tResult = true;
+                                if (pType == 32)
+                                    tResult = true;
                                 break;
                 case AV_CODEC_ID_H263:
-								if ((pType == 34) || (pType >= 96))
-									tResult = true;
+                                if ((pType == 34) || (pType >= 96))
+                                    tResult = true;
                                 break;
                 case AV_CODEC_ID_AAC:
                 case AV_CODEC_ID_AMR_NB:
@@ -1538,13 +1538,13 @@ bool RTP::ReceivedCorrectPayload(unsigned int pType)
                 case AV_CODEC_ID_MPEG4:
                 case AV_CODEC_ID_THEORA:
                 case AV_CODEC_ID_VP8:
-	//            case AV_CODEC_ID_MPEG2TS:
-	//            case AV_CODEC_ID_VORBIS:
-								if (pType >= 96)
-									tResult = true;
-								break;
+    //            case AV_CODEC_ID_MPEG2TS:
+    //            case AV_CODEC_ID_VORBIS:
+                                if (pType >= 96)
+                                    tResult = true;
+                                break;
                 default:
-								break;
+                                break;
     }
 
     return tResult;
@@ -1571,7 +1571,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     switch(mStreamCodecID)
     {
             //supported audio codecs
-    		case AV_CODEC_ID_AMR_NB:
+            case AV_CODEC_ID_AMR_NB:
             case AV_CODEC_ID_PCM_MULAW:
             case AV_CODEC_ID_PCM_ALAW:
             case AV_CODEC_ID_PCM_S16BE:
@@ -1627,12 +1627,12 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
         for (int i = 0; i < 3; i++)
             tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
-		#ifdef RTP_DEBUG_PACKET_DECODER
+        #ifdef RTP_DEBUG_PACKET_DECODER
 
-			// print some verbose outputs
-			LogRtpHeader(tRtpHeader);
+            // print some verbose outputs
+            LogRtpHeader(tRtpHeader);
 
-		#endif
+        #endif
 
         return false;
     }
@@ -1654,10 +1654,10 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     // #############################################################
     if ((tRtpHeader->PayloadType >= 72) && (tRtpHeader->PayloadType <= 76))
     {// RTCP intermediate packet for streaming feedback received
-    	if (!pLoggingOnly)
-    		mRTCPPacketCounter++;
+        if (!pLoggingOnly)
+            mRTCPPacketCounter++;
 
-    	// RTCP in-stream feedback starts at the beginning of RTP header
+        // RTCP in-stream feedback starts at the beginning of RTP header
         RtcpHeader* tRtcpHeader = (RtcpHeader*)tRtpPacketStart;
 
         pIsLastFragment = false;
@@ -1677,12 +1677,12 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
         return false;
     }else
     {// usual RTP packet
-    	pRtcpType = RTCP_NOT_FOUND;
+        pRtcpType = RTCP_NOT_FOUND;
 
-    	if (!pLoggingOnly)
-    		mRTPPacketCounter++;
+        if (!pLoggingOnly)
+            mRTPPacketCounter++;
 
-    	#ifdef RTP_DEBUG_PACKET_DECODER
+        #ifdef RTP_DEBUG_PACKET_DECODER
             for (int i = 0; i < 3; i++)
                 tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
 
@@ -1704,8 +1704,8 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
         // ###################################################
         if (!IS_RTCP_TYPE(tRtpHeader->PayloadType))
         {// we should have received a valid A/V RTP packet
-			if (mPayloadId != tRtpHeader->PayloadType)
-			{// payload changed
+            if (mPayloadId != tRtpHeader->PayloadType)
+            {// payload changed
                 if (mPayloadId != RTP_PAYLOAD_TYPE_NONE)
                 {// we already know a payload type but the current packet does not belong to this type
 
@@ -1743,7 +1743,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 
                 // store the payload ID to be able to detect repeating changes
                 mPayloadId = tRtpHeader->PayloadType;
-			}
+            }
         }
 
         // #######################################################################################
@@ -1772,10 +1772,10 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
         // #############################################################
         if (mRemoteStartSequenceNumber == 0)
         {
-        	LOG(LOG_WARN, "Setting remote start sequence number to: %hu", tRtpHeader->SequenceNumber);
+            LOG(LOG_WARN, "Setting remote start sequence number to: %hu", tRtpHeader->SequenceNumber);
 
             // we have to reset the timestamp calculation
-        	mRemoteStartSequenceNumber = tRtpHeader->SequenceNumber;
+            mRemoteStartSequenceNumber = tRtpHeader->SequenceNumber;
         }
 
         // ##########################################################################
@@ -1784,25 +1784,25 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
         // do we have a sequence number overflow?
         if ((mLastSequenceNumberFromRTPHeader > tRtpHeader->SequenceNumber) && (mLastSequenceNumberFromRTPHeader - tRtpHeader->SequenceNumber > UINT16_MAX / 2 /* avoid false-positive overflow detection in case of out-of-order packets */))
         {// we have detected an value overflow
-        	// shift the SequenceNumber value
-        	mRemoteSequenceNumberOverflowShift += UINT16_MAX + 1;
+            // shift the SequenceNumber value
+            mRemoteSequenceNumberOverflowShift += UINT16_MAX + 1;
 
             // update the remote SequenceNumber depending on the overflow shift value
             mRemoteSequenceNumber = mRemoteSequenceNumberOverflowShift + (uint64_t)tRtpHeader->SequenceNumber - mRemoteStartSequenceNumber;
 
-			#ifdef RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
-            	LOG(LOG_WARN, "Overflow detected and compensated, new remote sequence number: abs=%hu(max: %hu), start=%hu, normalized=%"PRIu64"", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
-			#endif
+            #ifdef RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
+                LOG(LOG_WARN, "Overflow detected and compensated, new remote sequence number: abs=%hu(max: %hu), start=%hu, normalized=%"PRIu64"", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
+            #endif
 
-			// increase the "overflow" counter
-        	mRemoteSequenceNumberConsecutiveOverflows++;
+            // increase the "overflow" counter
+            mRemoteSequenceNumberConsecutiveOverflows++;
 
-        	// did we reach the limit of allowed consecutive SequenceNumber overflows?
-        	if (mRemoteSequenceNumberConsecutiveOverflows > RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS)
-        	{// yes -> mark source as changed
-        		LOG(LOG_WARN, "Detected %d(max. allowed: %d) consecutive sequence number overflows, mark remote source as changed", mRemoteSequenceNumberConsecutiveOverflows, RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS);
-        		mRtpRemoteSourceChanged = true;
-        	}
+            // did we reach the limit of allowed consecutive SequenceNumber overflows?
+            if (mRemoteSequenceNumberConsecutiveOverflows > RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS)
+            {// yes -> mark source as changed
+                LOG(LOG_WARN, "Detected %d(max. allowed: %d) consecutive sequence number overflows, mark remote source as changed", mRemoteSequenceNumberConsecutiveOverflows, RTP_MAX_CONSECUTIVE_SEQUENCE_NUMBER_OVERFLOWS);
+                mRtpRemoteSourceChanged = true;
+            }
         }else
         {// we don't have an value overflow
             // update the remote SequenceNumber depending on the overflow shift value
@@ -1810,9 +1810,9 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 
             // reset the "overflow" counter
             mRemoteSequenceNumberConsecutiveOverflows = 0;
-			#ifdef RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
-            	LOG(LOG_VERBOSE, "New remote SequenceNumber: abs=%hu(max: %hu), start=%hu, normalized=%"PRIu64"", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
-			#endif
+            #ifdef RTP_DEBUG_PACKET_DECODER_SEQUENCE_NUMBERS
+                LOG(LOG_VERBOSE, "New remote SequenceNumber: abs=%hu(max: %hu), start=%hu, normalized=%"PRIu64"", tRtpHeader->SequenceNumber, (unsigned short int)UINT16_MAX, mRemoteStartSequenceNumber, mRemoteSequenceNumber);
+            #endif
         }
         mLastSequenceNumberFromRTPHeader = tRtpHeader->SequenceNumber;
 
@@ -1857,25 +1857,25 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
         // do we have a timestamp overflow?
         if ((mLastTimestampFromRTPHeader > tRtpHeader->Timestamp) && (mLastTimestampFromRTPHeader - tRtpHeader->Timestamp > UINT32_MAX / 2 /* avoid false-positive overflow detection in case of out-of-order timestamps */) &&  (!tPacketOutOfOrder))
         {// we have detected an value overflow
-        	// shift the timestamp value
-        	mRemoteTimestampOverflowShift += UINT32_MAX + 1;
+            // shift the timestamp value
+            mRemoteTimestampOverflowShift += UINT32_MAX + 1;
 
             // update the remote timestamp depending on the overflow shift value
             mRemoteTimestamp = mRemoteTimestampOverflowShift + (uint64_t)tRtpHeader->Timestamp - mRemoteStartTimestamp;
 
-			#ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
-            	LOG(LOG_WARN, "Overflow detected and compensated, new remote timestamp: last=%u, abs=%u(max: %u), start=%"PRIu64", normalized=%"PRIu64"", mLastTimestampFromRTPHeader, tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
-			#endif
+            #ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
+                LOG(LOG_WARN, "Overflow detected and compensated, new remote timestamp: last=%u, abs=%u(max: %u), start=%"PRIu64", normalized=%"PRIu64"", mLastTimestampFromRTPHeader, tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp);
+            #endif
 
-			// increase the "overflow" counter
-        	mRemoteTimestampConsecutiveOverflows++;
+            // increase the "overflow" counter
+            mRemoteTimestampConsecutiveOverflows++;
 
-        	// did we reach the limit of allowed consecutive timestamp overflows?
-        	if (mRemoteTimestampConsecutiveOverflows > RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS)
-        	{// yes -> mark source as changed
-        		LOG(LOG_WARN, "Detected %d(max. allowed: %d) consecutive timestamp overflows, mark remote source as changed", mRemoteTimestampConsecutiveOverflows, RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS);
-        		mRtpRemoteSourceChanged = true;
-        	}
+            // did we reach the limit of allowed consecutive timestamp overflows?
+            if (mRemoteTimestampConsecutiveOverflows > RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS)
+            {// yes -> mark source as changed
+                LOG(LOG_WARN, "Detected %d(max. allowed: %d) consecutive timestamp overflows, mark remote source as changed", mRemoteTimestampConsecutiveOverflows, RTP_MAX_CONSECUTIVE_TIMESTAMP_OVERFLOWS);
+                mRtpRemoteSourceChanged = true;
+            }
         }else
         {// we don't have an value overflow
             // update the remote timestamp depending on the overflow shift value
@@ -1884,9 +1884,9 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
             // reset the "overflow" counter
             mRemoteTimestampConsecutiveOverflows = 0;
 
-			#ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
-            	LOG(LOG_VERBOSE, "New remote timestamp: abs=%u(max: %u), start=%u, normalized=%"PRIu64", pts=%"PRIu64, tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp, GetCurrentPtsFromRTP());
-			#endif
+            #ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS
+                LOG(LOG_VERBOSE, "New remote timestamp: abs=%u(max: %u), start=%u, normalized=%"PRIu64", pts=%"PRIu64, tRtpHeader->Timestamp, UINT32_MAX, mRemoteStartTimestamp, mRemoteTimestamp, GetCurrentPtsFromRTP());
+            #endif
             #ifdef RTP_DEBUG_PACKET_DECODER_TIMESTAMPS_CONTINUITY
                 LOG(LOG_VERBOSE, "New remote timestamp: normalized=%"PRIu64", diff. to last=%"PRIu64, mRemoteTimestamp, mRemoteTimestamp - mRemoteTimestampLastPacket);
             #endif
@@ -1920,13 +1920,13 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     switch(mStreamCodecID)
     {
             // audio
-    		case AV_CODEC_ID_AMR_NB:
-							#ifdef RTP_DEBUG_PACKET_DECODER
-								LOG(LOG_VERBOSE, "#################### AMR-NB header #######################");
-								LOG(LOG_VERBOSE, "No additional information");//TODO
-							#endif
-							mIntermediateFragment = false;//TODO
-							break;
+            case AV_CODEC_ID_AMR_NB:
+                            #ifdef RTP_DEBUG_PACKET_DECODER
+                                LOG(LOG_VERBOSE, "#################### AMR-NB header #######################");
+                                LOG(LOG_VERBOSE, "No additional information");//TODO
+                            #endif
+                            mIntermediateFragment = false;//TODO
+                            break;
             case AV_CODEC_ID_PCM_ALAW:
                             #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "#################### PCMA header #######################");
@@ -1952,13 +1952,13 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             mIntermediateFragment = false;
                             break;
             case AV_CODEC_ID_ADPCM_G722:
-							#ifdef RTP_DEBUG_PACKET_DECODER
-								LOG(LOG_VERBOSE, "#################### G.722 header #######################");
-								LOG(LOG_VERBOSE, "No additional information");
-							#endif
-							// no fragmentation because our encoder sends raw data
-							mIntermediateFragment = false;
-            				break;
+                            #ifdef RTP_DEBUG_PACKET_DECODER
+                                LOG(LOG_VERBOSE, "#################### G.722 header #######################");
+                                LOG(LOG_VERBOSE, "No additional information");
+                            #endif
+                            // no fragmentation because our encoder sends raw data
+                            mIntermediateFragment = false;
+                            break;
 //            case AV_CODEC_ID_ADPCM_G726:
             case AV_CODEC_ID_MP3:
                             // convert from network to host byte order
@@ -2106,62 +2106,62 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                 tH263Header->Data[0] = htonl(tH263Header->Data[0]);
                             }else
                             {// H263+ rtp scheme
-								// convert from network to host byte order
-								tH263PHeader->Data[0] = ntohl(tH263PHeader->Data[0]);
+                                // convert from network to host byte order
+                                tH263PHeader->Data[0] = ntohl(tH263PHeader->Data[0]);
 
-								#ifdef RTP_DEBUG_PACKET_DECODER
-									LOG(LOG_VERBOSE, "################## H263+ header ######################");
-									LOG(LOG_VERBOSE, "Reserved bits: %d", tH263PHeader->Reserved);
-									LOG(LOG_VERBOSE, "P bit: %d", tH263PHeader->P);
-									LOG(LOG_VERBOSE, "V bit: %d", tH263PHeader->V);
-									LOG(LOG_VERBOSE, "Extra picture header length: %d", tH263PHeader->Plen);
-									LOG(LOG_VERBOSE, "Amount of ignored bits: %d", tH263PHeader->Pebit);
-									if (tH263PHeader->V)
-									{
-										LOG(LOG_VERBOSE, "################## H263+ VRC header ##################");
-										LOG(LOG_VERBOSE, "Thread ID: %d", tH263PHeader->Vrc.Tid);
-										LOG(LOG_VERBOSE, "Thread fragment number: %d", tH263PHeader->Vrc.Trunc);
-										if (tH263PHeader->Vrc.S)
-											LOG(LOG_VERBOSE, "Synch. frame: yes");
-										else
-											LOG(LOG_VERBOSE, "Synch. frame: no");
-									}
-								#endif
+                                #ifdef RTP_DEBUG_PACKET_DECODER
+                                    LOG(LOG_VERBOSE, "################## H263+ header ######################");
+                                    LOG(LOG_VERBOSE, "Reserved bits: %d", tH263PHeader->Reserved);
+                                    LOG(LOG_VERBOSE, "P bit: %d", tH263PHeader->P);
+                                    LOG(LOG_VERBOSE, "V bit: %d", tH263PHeader->V);
+                                    LOG(LOG_VERBOSE, "Extra picture header length: %d", tH263PHeader->Plen);
+                                    LOG(LOG_VERBOSE, "Amount of ignored bits: %d", tH263PHeader->Pebit);
+                                    if (tH263PHeader->V)
+                                    {
+                                        LOG(LOG_VERBOSE, "################## H263+ VRC header ##################");
+                                        LOG(LOG_VERBOSE, "Thread ID: %d", tH263PHeader->Vrc.Tid);
+                                        LOG(LOG_VERBOSE, "Thread fragment number: %d", tH263PHeader->Vrc.Trunc);
+                                        if (tH263PHeader->Vrc.S)
+                                            LOG(LOG_VERBOSE, "Synch. frame: yes");
+                                        else
+                                            LOG(LOG_VERBOSE, "Synch. frame: no");
+                                    }
+                                #endif
 
-								// 2 bytes for standard h263+ header
-								pData += 2;
+                                // 2 bytes for standard h263+ header
+                                pData += 2;
 
-								// do we have separate VRC byte?
-								if (tH263PHeader->V)
-									pData += 1;
+                                // do we have separate VRC byte?
+                                if (tH263PHeader->V)
+                                    pData += 1;
 
-								// do we have extra picture header?
-								if (tH263PHeader->Plen > 0)
-									pData += tH263PHeader->Plen;
+                                // do we have extra picture header?
+                                if (tH263PHeader->Plen > 0)
+                                    pData += tH263PHeader->Plen;
 
-								// do we have a picture start?
-								if (tH263PHeader->P)
-									tH263PPictureStart = true;
-								else
-									tH263PPictureStart = false;
+                                // do we have a picture start?
+                                if (tH263PHeader->P)
+                                    tH263PPictureStart = true;
+                                else
+                                    tH263PPictureStart = false;
 
-								// convert from host to network byte order
-								tH263PHeader->Data[0] = htonl(tH263PHeader->Data[0]);
+                                // convert from host to network byte order
+                                tH263PHeader->Data[0] = htonl(tH263PHeader->Data[0]);
 
-								// if P bit was set clear the first 2 bytes of the frame data
-								if (tH263PPictureStart)
-								{
-									#ifdef RTP_DEBUG_PACKET_DECODER
-										LOG(LOG_VERBOSE, "P bit is set: clear first 2 byte of frame data");
-									#endif
-									pData -= 2; // 2 bytes backward
-									//HINT: see section 6.1.1 in RFC 4629
-									if (!pLoggingOnly)
-									{
-										pData[0] = 0;
-										pData[1] = 0;
-									}
-								}
+                                // if P bit was set clear the first 2 bytes of the frame data
+                                if (tH263PPictureStart)
+                                {
+                                    #ifdef RTP_DEBUG_PACKET_DECODER
+                                        LOG(LOG_VERBOSE, "P bit is set: clear first 2 byte of frame data");
+                                    #endif
+                                    pData -= 2; // 2 bytes backward
+                                    //HINT: see section 6.1.1 in RFC 4629
+                                    if (!pLoggingOnly)
+                                    {
+                                        pData[0] = 0;
+                                        pData[1] = 0;
+                                    }
+                                }
                             }
                             break;
             case AV_CODEC_ID_H264:
@@ -2217,9 +2217,9 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                                 // start fragment?
                                                 if (tH264HeaderFragmentStart)
                                                 {
-													#ifdef RTP_DEBUG_PACKET_DECODER
-                                                		LOG(LOG_VERBOSE, "..H264 start fragment");
-													#endif
+                                                    #ifdef RTP_DEBUG_PACKET_DECODER
+                                                        LOG(LOG_VERBOSE, "..H264 start fragment");
+                                                    #endif
                                                     // use FU header as NAL header, reconstruct the original NAL header
                                                     if (!pLoggingOnly)
                                                     {
@@ -2234,12 +2234,12 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                                     pData += 1;
                                                 }else
                                                 {
-													#ifdef RTP_DEBUG_PACKET_DECODER
-														if (tH264Header->FuA.E)
-															LOG(LOG_VERBOSE, "..H264 end fragment");
-														else
-															LOG(LOG_VERBOSE, "..H264 intermediate fragment");
-													#endif
+                                                    #ifdef RTP_DEBUG_PACKET_DECODER
+                                                        if (tH264Header->FuA.E)
+                                                            LOG(LOG_VERBOSE, "..H264 end fragment");
+                                                        else
+                                                            LOG(LOG_VERBOSE, "..H264 intermediate fragment");
+                                                    #endif
                                                     pData += 2;
                                                 }
                                                 break;
@@ -2254,17 +2254,17 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             // HINT: inspired by "h264_handle_packet" from rtp_h264.c from ffmpeg package
                             if (((tH264HeaderType != 28) && (tH264HeaderType != 29)) || (tH264HeaderFragmentStart))
                             {
-                            	#ifdef RTP_DEBUG_PACKET_DECODER
-								#endif
-                            	if (!pLoggingOnly)
-                            	{
-    								//HINT: make sure that the byte order is correct here because we abuse the former RTP header memory
-									pData -= 3;
-									// create the start sequence "001"
-									pData[0] = 0;
-									pData[1] = 0;
-									pData[2] = 1;
-                            	}
+                                #ifdef RTP_DEBUG_PACKET_DECODER
+                                #endif
+                                if (!pLoggingOnly)
+                                {
+                                    //HINT: make sure that the byte order is correct here because we abuse the former RTP header memory
+                                    pData -= 3;
+                                    // create the start sequence "001"
+                                    pData[0] = 0;
+                                    pData[1] = 0;
+                                    pData[2] = 1;
+                                }
                             }
 
                             break;
@@ -2385,34 +2385,34 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             break;
     }
 
-	#ifdef RTP_DEBUG_PACKET_DECODER
-		if (mIntermediateFragment)
-			LOG(LOG_VERBOSE, "FRAGMENT");
-		else
-			LOG(LOG_VERBOSE, "MESSAGE COMPLETE");
-	#endif
+    #ifdef RTP_DEBUG_PACKET_DECODER
+        if (mIntermediateFragment)
+            LOG(LOG_VERBOSE, "FRAGMENT");
+        else
+            LOG(LOG_VERBOSE, "MESSAGE COMPLETE");
+    #endif
 
-	if (!pLoggingOnly)
-	{// update the status variables
-		// check if there was a new frame begun before the last was finished
-		if ((mRemoteTimestampLastCompleteFrame != mRemoteTimestampLastPacket) && (mRemoteTimestampLastPacket != mRemoteTimestamp))
-		{
-			AnnounceLostPackets(1);
-			LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %"PRIu64", last complete timestamp: %"PRIu64", last timestamp: %"PRIu64"", mLostPackets, mRemoteTimestampLastCompleteFrame, mRemoteTimestampLastPacket);
-		}
-		// store the timestamp of the last complete frame
-		if (!mIntermediateFragment)
-			mRemoteTimestampLastCompleteFrame = mRemoteTimestamp;
+    if (!pLoggingOnly)
+    {// update the status variables
+        // check if there was a new frame begun before the last was finished
+        if ((mRemoteTimestampLastCompleteFrame != mRemoteTimestampLastPacket) && (mRemoteTimestampLastPacket != mRemoteTimestamp))
+        {
+            AnnounceLostPackets(1);
+            LOG(LOG_ERROR, "Packet belongs to new frame while last frame is incomplete, overall packet loss is now %"PRIu64", last complete timestamp: %"PRIu64", last timestamp: %"PRIu64"", mLostPackets, mRemoteTimestampLastCompleteFrame, mRemoteTimestampLastPacket);
+        }
+        // store the timestamp of the last complete frame
+        if (!mIntermediateFragment)
+            mRemoteTimestampLastCompleteFrame = mRemoteTimestamp;
 
-		mRemoteSequenceNumberLastPacket = mRemoteSequenceNumber;
-		mRemoteTimestampLastPacket = mRemoteTimestamp;
-	}else
-	{// restore the original unchanged packet memory here
+        mRemoteSequenceNumberLastPacket = mRemoteSequenceNumber;
+        mRemoteTimestampLastPacket = mRemoteTimestamp;
+    }else
+    {// restore the original unchanged packet memory here
 
-	    // convert from host to network byte order again
-	    for (int i = 0; i < 3; i++)
-	        tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
-	}
+        // convert from host to network byte order again
+        for (int i = 0; i < 3; i++)
+            tRtpHeader->Data[i] = htonl(tRtpHeader->Data[i]);
+    }
 
     // decrease data size by the size of the found header structures
     if ((pData - tRtpPacketStart) > (int)pDataSize)
@@ -2434,27 +2434,27 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 /*************************************************
  *  Video codec name to RTP id mapping:
  *  ===================================
- *        h261						31
- *        h263						34
- *        mpeg1video				32
- *        mpeg2video				32
- *        h263+ 					119 (HC internal standard)
- *        h264						120 (HC internal standard)
- *        mpeg4						121 (HC internal standard)
- *        theora					122 (HC internal standard)
- *        vp8						123 (HC internal standard)
+ *        h261                        31
+ *        h263                        34
+ *        mpeg1video                32
+ *        mpeg2video                32
+ *        h263+                     119 (HC internal standard)
+ *        h264                        120 (HC internal standard)
+ *        mpeg4                        121 (HC internal standard)
+ *        theora                    122 (HC internal standard)
+ *        vp8                        123 (HC internal standard)
  *
  *
  *  Audio codec name to RTP id mapping:
  *  ===================================
- *        ulaw						0
- *        gsm						3
- *        alaw						8
- *        g722						9
- *        pcms16					10
- *        mp3						14
- *        aac						100 (HC internal standard)
- *        amr						101 (HC internal standard)
+ *        ulaw                        0
+ *        gsm                        3
+ *        alaw                        8
+ *        g722                        9
+ *        pcms16                    10
+ *        mp3                        14
+ *        aac                        100 (HC internal standard)
+ *        amr                        101 (HC internal standard)
  *
  ****************************************************/
 unsigned int RTP::CodecToPayloadId(std::string pName)
@@ -2788,14 +2788,14 @@ void RTP::SetSynchronizationReferenceForRTP(uint64_t pReferenceNtpTime, uint32_t
     if (pReferencePts < 1)
         return;
 
-	#ifdef RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
-    	LOG(LOG_VERBOSE, "New synchronization for %d codec: %u, clock: %.2f, RTP timestamp: %.2f, timestamp offset: %lu", mStreamCodecID, pReferencePts, CalculateClockRateFactor(), (float)pReferencePts * CalculateClockRateFactor(), mLocalTimestampOffset);
-	#endif
+    #ifdef RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
+        LOG(LOG_VERBOSE, "New synchronization for %d codec: %u, clock: %.2f, RTP timestamp: %.2f, timestamp offset: %lu", mStreamCodecID, pReferencePts, CalculateClockRateFactor(), (float)pReferencePts * CalculateClockRateFactor(), mLocalTimestampOffset);
+    #endif
 
-	if (mStreamCodecID == AV_CODEC_ID_ADPCM_G722)
-		pReferencePts /= 2; // transform from 16 kHz to 8kHz
+    if (mStreamCodecID == AV_CODEC_ID_ADPCM_G722)
+        pReferencePts /= 2; // transform from 16 kHz to 8kHz
 
-	mSyncDataMutex.lock();
+    mSyncDataMutex.lock();
     mSyncNTPTime = pReferenceNtpTime;
     mSyncPTS = mLocalTimestampOffset + (uint64_t)(pReferencePts * CalculateClockRateFactor()); // clock rate adaption according to rfc (mpeg uses 90 kHz)
     mSyncDataMutex.unlock();

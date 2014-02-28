@@ -58,9 +58,9 @@ namespace Homer { namespace Multimedia {
 ///////////////////////////////////////////////////////////////////////////////
 
 enum RtcpType{
-	RTCP_NOT_FOUND = 0,
-	RTCP_SENDER_REPORT = 200,
-	RTCP_SOURCE_DESCRIPTION = 202
+    RTCP_NOT_FOUND = 0,
+    RTCP_SENDER_REPORT = 200,
+    RTCP_SOURCE_DESCRIPTION = 202
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -203,25 +203,25 @@ private:
     bool                mRtpEncoderOpened;
     std::string         mTargetHost;
     unsigned int        mTargetPort;
-    uint64_t	        mLostPackets;
+    uint64_t            mLostPackets;
     float               mRelativeLostPackets;
     unsigned int        mLocalSourceIdentifier;
     enum AVCodecID      mStreamCodecID;
-    uint64_t			mRemoteSequenceNumber; // without overflows
-    unsigned short int	mLastSequenceNumberFromRTPHeader; // for overflow check
-    uint64_t			mRemoteSequenceNumberOverflowShift; // offset for shifting the value range
-    uint64_t			mRemoteSequenceNumberLastPacket;
-    int					mRemoteSequenceNumberConsecutiveOverflows;
+    uint64_t            mRemoteSequenceNumber; // without overflows
+    unsigned short int  mLastSequenceNumberFromRTPHeader; // for overflow check
+    uint64_t            mRemoteSequenceNumberOverflowShift; // offset for shifting the value range
+    uint64_t            mRemoteSequenceNumberLastPacket;
+    int                 mRemoteSequenceNumberConsecutiveOverflows;
     unsigned short int  mRemoteStartSequenceNumber;
     uint64_t            mRemoteTimestamp; // without overflows
     uint64_t            mLocalTimestampOffset;
-    unsigned int		mLastTimestampFromRTPHeader; // for overflow check
-    uint64_t			mRemoteTimestampOverflowShift; // offset for shifting the value range
+    unsigned int        mLastTimestampFromRTPHeader; // for overflow check
+    uint64_t            mRemoteTimestampOverflowShift; // offset for shifting the value range
     uint64_t            mRemoteTimestampLastPacket;
-    int 				mRemoteTimestampConsecutiveOverflows;
+    int                 mRemoteTimestampConsecutiveOverflows;
     uint64_t            mRemoteTimestampLastCompleteFrame;
     uint64_t            mRemoteStartTimestamp;
-    bool				mRtpRemoteSourceChanged;
+    bool                mRtpRemoteSourceChanged;
     int                 mRemoteSourceChangedLastPayload;
     int                 mRemoteSourceChangedResetScore;
     unsigned int        mRemoteSourceIdentifier;
@@ -253,8 +253,8 @@ private:
     unsigned int        mRtcpLastRemoteOctets; // sent bytes, reported via RTCP
     uint64_t            mRtcpLastReceivedPackets;
     /* packet statistic */
-    int64_t				mRTCPPacketCounter;
-    int64_t				mRTPPacketCounter;
+    int64_t             mRTCPPacketCounter;
+    int64_t             mRTPPacketCounter;
     /* synchronization */
     Mutex               mSyncDataMutex;
     uint64_t            mSyncNTPTime;

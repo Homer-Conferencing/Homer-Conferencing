@@ -61,13 +61,13 @@ void CallbackStateChange(pa_context *pContext, void *pUserdata)
                 case PA_CONTEXT_TERMINATED:
                         *tIsReady = 2;
                         break;
-				// there are just here for reference
-				case PA_CONTEXT_UNCONNECTED:
-				case PA_CONTEXT_CONNECTING:
-				case PA_CONTEXT_AUTHORIZING:
-				case PA_CONTEXT_SETTING_NAME:
-				default:
-						break;
+                // there are just here for reference
+                case PA_CONTEXT_UNCONNECTED:
+                case PA_CONTEXT_CONNECTING:
+                case PA_CONTEXT_AUTHORIZING:
+                case PA_CONTEXT_SETTING_NAME:
+                default:
+                        break;
         }
 }
 
@@ -118,7 +118,7 @@ void CallbackAudioSourcesList(pa_context *pContext, const pa_source_info *pSourc
 
     // we don't want to use monitors
     if (pSourceInfo->monitor_of_sink != PA_INVALID_INDEX)
-    	return;
+        return;
 
     for (int i = 0; i < MAX_PULSEAUDIO_DEVICES_IN_LIST; i++)
     {
@@ -233,35 +233,35 @@ static int sPulseAudioServerAvailable = -1;
 
 bool MediaSourcePulseAudio::PulseAudioAvailable()
 {
-	pa_sample_spec 	tOutputFormat;
-	int				tRes;
-	pa_simple 		*tOutputStream = NULL;
-	bool			tResult;
+    pa_sample_spec     tOutputFormat;
+    int                tRes;
+    pa_simple          *tOutputStream = NULL;
+    bool               tResult;
 
-	if (sPulseAudioServerAvailable == -1)
-	{
-		tOutputFormat.format = PA_SAMPLE_S16LE;
-		tOutputFormat.rate = 44100;
-		tOutputFormat.channels = 2;
+    if (sPulseAudioServerAvailable == -1)
+    {
+        tOutputFormat.format = PA_SAMPLE_S16LE;
+        tOutputFormat.rate = 44100;
+        tOutputFormat.channels = 2;
 
-		LOGEX(WaveOutPulseAudio, LOG_VERBOSE, "Probing PulseAudio server..");
-		if (!(tOutputStream = pa_simple_new(NULL, "Homer-Conferencing", PA_STREAM_PLAYBACK, NULL /* dev Name */, "test playback", &tOutputFormat, NULL, NULL, &tRes)))
-		{
-			LOGEX(WaveOutPulseAudio, LOG_WARN, "Couldn't create PulseAudio stream because %s(%d)", pa_strerror(tRes), tRes);
-			sPulseAudioServerAvailable = false;
-		}else
-		{
-			LOGEX(WaveOutPulseAudio, LOG_VERBOSE, ">>> PulseAudio available <<<");
-			sPulseAudioServerAvailable = true;
-		}
+        LOGEX(WaveOutPulseAudio, LOG_VERBOSE, "Probing PulseAudio server..");
+        if (!(tOutputStream = pa_simple_new(NULL, "Homer-Conferencing", PA_STREAM_PLAYBACK, NULL /* dev Name */, "test playback", &tOutputFormat, NULL, NULL, &tRes)))
+        {
+            LOGEX(WaveOutPulseAudio, LOG_WARN, "Couldn't create PulseAudio stream because %s(%d)", pa_strerror(tRes), tRes);
+            sPulseAudioServerAvailable = false;
+        }else
+        {
+            LOGEX(WaveOutPulseAudio, LOG_VERBOSE, ">>> PulseAudio available <<<");
+            sPulseAudioServerAvailable = true;
+        }
 
-		if (tOutputStream != NULL)
-			pa_simple_free(tOutputStream);
-	}
+        if (tOutputStream != NULL)
+            pa_simple_free(tOutputStream);
+    }
 
-	tResult = sPulseAudioServerAvailable;
+    tResult = sPulseAudioServerAvailable;
 
-	return tResult;
+    return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -298,14 +298,14 @@ MediaSourcePulseAudio::~MediaSourcePulseAudio()
 
 void MediaSourcePulseAudio::getAudioDevices(AudioDevices &pAList)
 {
-	// This is where we'll store the input device list
-	PulseAudioDeviceDescriptor tInputDevicesList[MAX_PULSEAUDIO_DEVICES_IN_LIST];
+    // This is where we'll store the input device list
+    PulseAudioDeviceDescriptor tInputDevicesList[MAX_PULSEAUDIO_DEVICES_IN_LIST];
 
-	// This is where we'll store the output device list
-	PulseAudioDeviceDescriptor tOutputDevicesList[MAX_PULSEAUDIO_DEVICES_IN_LIST];
+    // This is where we'll store the output device list
+    PulseAudioDeviceDescriptor tOutputDevicesList[MAX_PULSEAUDIO_DEVICES_IN_LIST];
 
-	if (MediaSourcePulseAudio::GetPulseAudioDevices(tInputDevicesList, tOutputDevicesList) < 0)
-		LOG(LOG_ERROR, "Couldn't determine the available PulseAudio devices");
+    if (MediaSourcePulseAudio::GetPulseAudioDevices(tInputDevicesList, tOutputDevicesList) < 0)
+        LOG(LOG_ERROR, "Couldn't determine the available PulseAudio devices");
 
     static bool tFirstCall = true;
     AudioDeviceDescriptor tDevice;
@@ -352,9 +352,9 @@ bool MediaSourcePulseAudio::OpenVideoGrabDevice(int pResX, int pResY, float pFps
 
 bool MediaSourcePulseAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
-	pa_sample_spec 	tInputFormat;
-	int				tRes;
-    pa_usec_t 		tLatency;
+    pa_sample_spec     tInputFormat;
+    int                tRes;
+    pa_usec_t          tLatency;
 
     mMediaType = MEDIA_AUDIO;
     mOutputAudioChannels = pChannels;
@@ -381,12 +381,12 @@ bool MediaSourcePulseAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     tInputFormat.rate = pSampleRate;
     tInputFormat.channels = pChannels;
 
-	// create a new recording stream
-	if (!(mInputStream = pa_simple_new(NULL, "Homer-Conferencing", PA_STREAM_RECORD, (mDesiredDevice != "" ? mDesiredDevice.c_str() : NULL) /* dev Name */, GetStreamName().c_str(), &tInputFormat, NULL, NULL, &tRes)))
-	{
-	    LOG(LOG_ERROR, "Couldn't create PulseAudio stream because %s(%d)", pa_strerror(tRes), tRes);
-	    return false;
-	}
+    // create a new recording stream
+    if (!(mInputStream = pa_simple_new(NULL, "Homer-Conferencing", PA_STREAM_RECORD, (mDesiredDevice != "" ? mDesiredDevice.c_str() : NULL) /* dev Name */, GetStreamName().c_str(), &tInputFormat, NULL, NULL, &tRes)))
+    {
+        LOG(LOG_ERROR, "Couldn't create PulseAudio stream because %s(%d)", pa_strerror(tRes), tRes);
+        return false;
+    }
 
     if ((tLatency = pa_simple_get_latency(mInputStream, &tRes)) == (pa_usec_t) -1)
     {
@@ -398,7 +398,7 @@ bool MediaSourcePulseAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     mCurrentDevice = mDesiredDevice;
     mInputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-	mOutputFrameRate = mInputFrameRate;
+    mOutputFrameRate = mInputFrameRate;
 
     //######################################################
     //### give some verbose output
@@ -421,8 +421,8 @@ bool MediaSourcePulseAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
 bool MediaSourcePulseAudio::CloseGrabDevice()
 {
-    bool 	tResult = false;
-    int 	tRes;
+    bool     tResult = false;
+    int      tRes;
 
     LOG(LOG_VERBOSE, "Going to close");
 
@@ -441,14 +441,14 @@ bool MediaSourcePulseAudio::CloseGrabDevice()
 
         if (mInputStream != NULL)
         {
-        	LOG(LOG_VERBOSE, "..draining stream");
-        	if (pa_simple_drain(mInputStream, &tRes) < 0)
-        	{
-        	    if (tRes != 15 /* bad state */)
-        	        LOG(LOG_ERROR, "Couldn't drain the output stream because %s(%d)", pa_strerror(tRes), tRes);
-        	}
-        	LOG(LOG_VERBOSE, "..closing stream");
-        	pa_simple_free(mInputStream);
+            LOG(LOG_VERBOSE, "..draining stream");
+            if (pa_simple_drain(mInputStream, &tRes) < 0)
+            {
+                if (tRes != 15 /* bad state */)
+                    LOG(LOG_ERROR, "Couldn't drain the output stream because %s(%d)", pa_strerror(tRes), tRes);
+            }
+            LOG(LOG_VERBOSE, "..closing stream");
+            pa_simple_free(mInputStream);
         }
 
         LOG(LOG_INFO, "...closed");
@@ -467,8 +467,8 @@ bool MediaSourcePulseAudio::CloseGrabDevice()
 
 int MediaSourcePulseAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
 {
-    int 	tResult;
-    int		tRes;
+    int     tResult;
+    int     tRes;
 
     #ifdef MSPUA_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Going to grab new input data");
@@ -498,17 +498,17 @@ int MediaSourcePulseAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool p
     }
 
     if (pChunkSize != MEDIA_SOURCE_SAMPLES_BUFFER_SIZE)
-    	pChunkSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
+        pChunkSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
 
     #ifdef MSPUA_DEBUG_TIMING
         int64_t tTime = Time::GetTimeStamp();
     #endif
-	if (pa_simple_read(mInputStream, (void *)pChunkBuffer, (size_t)pChunkSize, &tRes) < 0)
-	{
-		LOG(LOG_ERROR, "Couldn't write audio chunk of %d bytes to output stream because %s(%d)", pChunkSize, pa_strerror(tRes), tRes);
-	}
+    if (pa_simple_read(mInputStream, (void *)pChunkBuffer, (size_t)pChunkSize, &tRes) < 0)
+    {
+        LOG(LOG_ERROR, "Couldn't write audio chunk of %d bytes to output stream because %s(%d)", pChunkSize, pa_strerror(tRes), tRes);
+    }
 
-	//TODO: use pa_simple_get_latency() and determine the grabber latency -> but until now we do not support timestamps for A/V grabber
+    //TODO: use pa_simple_get_latency() and determine the grabber latency -> however, we do not support timestamps for A/V grabber
 
     // re-encode the frame and write it to file
     if ((mRecording) && (pChunkSize > 0))

@@ -43,7 +43,7 @@ class WaveOutSdl:
     public WaveOut
 {
 public:
-	WaveOutSdl(std::string pOutputName, std::string pDesiredDevice = "");
+    WaveOutSdl(std::string pOutputName, std::string pDesiredDevice = "");
 
     /// The destructor
     virtual ~WaveOutSdl();
@@ -72,9 +72,9 @@ private:
     static Mutex        mSdlInitMutex;
     static bool         mSdlInitiated;
     /* playback */
-    int            		mAudioChannel;
+    int                 mAudioChannel;
     /* recursion logger */
-    static int			mOpenStreams;
+    static int          mOpenStreams;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

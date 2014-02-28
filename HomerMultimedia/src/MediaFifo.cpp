@@ -53,20 +53,20 @@ MediaFifo::MediaFifo(std::string pName)
 MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
 {
     mName = pName;
-	mFifoSize = pFifoSize;
+    mFifoSize = pFifoSize;
     mFifoEntrySize = pFifoEntrySize;
     mFifoWritePtr = 0;
     mFifoReadPtr = 0;
     mFifoAvailableEntries = 0;
     mFifo = new MediaFifoEntry[mFifoSize];
     for (int i = 0; i < mFifoSize; i++)
-	{
-		mFifo[i].Size = 0;
-		mFifo[i].Data = (char*)av_malloc(mFifoEntrySize);
-		if (mFifo[i].Data == NULL)
-			LOG(LOG_ERROR, "Unable to allocate %d bytes of memory for FIFO %s", mFifoEntrySize, pName.c_str());
-	}
-	LOG(LOG_VERBOSE, "Created FIFO for %s with %d entries of %d bytes", pName.c_str(), mFifoSize, mFifoEntrySize);
+    {
+        mFifo[i].Size = 0;
+        mFifo[i].Data = (char*)av_malloc(mFifoEntrySize);
+        if (mFifo[i].Data == NULL)
+            LOG(LOG_ERROR, "Unable to allocate %d bytes of memory for FIFO %s", mFifoEntrySize, pName.c_str());
+    }
+    LOG(LOG_VERBOSE, "Created FIFO for %s with %d entries of %d bytes", pName.c_str(), mFifoSize, mFifoEntrySize);
 }
 
 MediaFifo::~MediaFifo()
@@ -92,31 +92,31 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferTimest
     int tCurrentFifoReadPtr;
 
     #ifdef MF_DEBUG
-		LOG(LOG_VERBOSE, "%s-FIFO: ReadFifo() START", mName.c_str());
-	#endif
+        LOG(LOG_VERBOSE, "%s-FIFO: ReadFifo() START", mName.c_str());
+    #endif
 
     // make sure there is some pending data in the input Fifo
-	mFifoMutex.lock();
-	while(mFifoAvailableEntries < 1)
-	{
-		#ifdef MF_DEBUG
-			LOG(LOG_VERBOSE, "%s-FIFO: waiting for new input", mName.c_str());
-		#endif
+    mFifoMutex.lock();
+    while(mFifoAvailableEntries < 1)
+    {
+        #ifdef MF_DEBUG
+            LOG(LOG_VERBOSE, "%s-FIFO: waiting for new input", mName.c_str());
+        #endif
 
-		while(!mFifoDataInputCondition.Wait(&mFifoMutex))
-		{
-			LOG(LOG_ERROR, "%s-FIFO: error when waiting for new input", mName.c_str());
-		}
+        while(!mFifoDataInputCondition.Wait(&mFifoMutex))
+        {
+            LOG(LOG_ERROR, "%s-FIFO: error when waiting for new input", mName.c_str());
+        }
 
-		#ifdef MF_DEBUG
-			LOG(LOG_VERBOSE, "%s-FIFO: woke up from waiting on new data", mName.c_str());
-		#endif
+        #ifdef MF_DEBUG
+            LOG(LOG_VERBOSE, "%s-FIFO: woke up from waiting on new data", mName.c_str());
+        #endif
 
-		if (mFifoAvailableEntries < 0)
-		    LOG(LOG_ERROR, "%s-FIFO: negative amount of entries: %d", mName.c_str(), mFifoAvailableEntries);
-	}
+        if (mFifoAvailableEntries < 0)
+            LOG(LOG_ERROR, "%s-FIFO: negative amount of entries: %d", mName.c_str(), mFifoAvailableEntries);
+    }
 
-	tCurrentFifoReadPtr = mFifoReadPtr;
+    tCurrentFifoReadPtr = mFifoReadPtr;
 
     #ifdef MF_DEBUG
         LOG(LOG_VERBOSE, "%s-FIFO: reading entry %d", mName.c_str(), tCurrentFifoReadPtr);
@@ -149,9 +149,9 @@ void MediaFifo::ReadFifo(char *pBuffer, int &pBufferSize, int64_t &pBufferTimest
     // unlock fine grained mutex again
     mFifo[tCurrentFifoReadPtr].EntryMutex.unlock();
 
-	#ifdef MF_DEBUG
-		LOG(LOG_VERBOSE, "%s-FIFO: erased front element of size %d, size afterwards: %d", mName.c_str(), (int)pBufferSize, (int)mFifoAvailableEntries);
-	#endif
+    #ifdef MF_DEBUG
+        LOG(LOG_VERBOSE, "%s-FIFO: erased front element of size %d, size afterwards: %d", mName.c_str(), (int)pBufferSize, (int)mFifoAvailableEntries);
+    #endif
 
     if (pBufferSize == 0)
         LOG(LOG_VERBOSE, "%s-FIFO: data chunk with size 0 read", mName.c_str());
@@ -282,37 +282,37 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferTimesta
     int tCurrentFifoWritePtr;
 
     #ifdef MF_DEBUG
-		LOG(LOG_VERBOSE, "%s-FIFO: WriteFifo() START", mName.c_str());
-	#endif
+        LOG(LOG_VERBOSE, "%s-FIFO: WriteFifo() START", mName.c_str());
+    #endif
 
-	if (pBufferSize > mFifoEntrySize)
-	{
-		LOG(LOG_ERROR, "%-FIFO: entries are limited to %d bytes, current write request of %d bytes will be ignored", mName.c_str(), mFifoEntrySize, pBufferSize);
-		return;
-	}
+    if (pBufferSize > mFifoEntrySize)
+    {
+        LOG(LOG_ERROR, "%-FIFO: entries are limited to %d bytes, current write request of %d bytes will be ignored", mName.c_str(), mFifoEntrySize, pBufferSize);
+        return;
+    }
 
-	if (pBufferSize == 0)
-	    LOG(LOG_VERBOSE, "%s-FIFO: writing empty chunk", mName.c_str());
+    if (pBufferSize == 0)
+        LOG(LOG_VERBOSE, "%s-FIFO: writing empty chunk", mName.c_str());
 
-	mFifoMutex.lock();
-	if (pBufferSize == 0)
-	    LOG(LOG_VERBOSE, "%s-FIFO: got lock for empty chunk", mName.c_str());
+    mFifoMutex.lock();
+    if (pBufferSize == 0)
+        LOG(LOG_VERBOSE, "%s-FIFO: got lock for empty chunk", mName.c_str());
 
-	if (mFifoAvailableEntries >= mFifoSize)
-	{
-	    LOG(LOG_WARN, "%s-FIFO: buffer full (size is %d, read: %d, write %d) - dropping oldest (%d) data chunk", mName.c_str(), mFifoSize, mFifoReadPtr, mFifoWritePtr, mFifoReadPtr);
+    if (mFifoAvailableEntries >= mFifoSize)
+    {
+        LOG(LOG_WARN, "%s-FIFO: buffer full (size is %d, read: %d, write %d) - dropping oldest (%d) data chunk", mName.c_str(), mFifoSize, mFifoReadPtr, mFifoWritePtr, mFifoReadPtr);
 
-	    // update FIFO read pointer
+        // update FIFO read pointer
         mFifoReadPtr++;
         if (mFifoReadPtr >= mFifoSize)
             mFifoReadPtr = mFifoReadPtr - mFifoSize;
-	}else
-	{
-	    // update FIFO counter
-	    mFifoAvailableEntries++;
-	}
+    }else
+    {
+        // update FIFO counter
+        mFifoAvailableEntries++;
+    }
 
-	tCurrentFifoWritePtr = mFifoWritePtr;
+    tCurrentFifoWritePtr = mFifoWritePtr;
 
     #ifdef MF_DEBUG
         LOG(LOG_VERBOSE, "%s-FIFO: writing entry %d", mName.c_str(), tCurrentFifoWritePtr);
@@ -344,8 +344,8 @@ void MediaFifo::WriteFifo(char* pBuffer, int pBufferSize, int64_t pBufferTimesta
 
     mFifoDataInputCondition.Signal();
     mFifoMutex.unlock();
-	if (pBufferSize == 0)
-	    LOG(LOG_VERBOSE, "%s-FIFO: released lock after writing empty chunk", mName.c_str());
+    if (pBufferSize == 0)
+        LOG(LOG_VERBOSE, "%s-FIFO: released lock after writing empty chunk", mName.c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

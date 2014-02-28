@@ -44,13 +44,13 @@ bool WaveOutSdl::mSdlInitiated = false;
 
 void WaveOutSdl::SdlAudioInit(string pDeviceName)
 {
-	mSdlInitMutex.lock();
+    mSdlInitMutex.lock();
     if (!mSdlInitiated)
     {
         // initialize SDL library
-    	LOGEX(WaveOutSdl, LOG_WARN, "Will use SDL audio playback on device %s", pDeviceName.c_str());
-    	AUDIOOUTSDL.OpenPlaybackDevice(44100, true, "", pDeviceName);
-    	//HINT: we neglect     AUDIOOUTSDL.ClosePlaybackDevice();
+        LOGEX(WaveOutSdl, LOG_WARN, "Will use SDL audio playback on device %s", pDeviceName.c_str());
+        AUDIOOUTSDL.OpenPlaybackDevice(44100, true, "", pDeviceName);
+        //HINT: we neglect     AUDIOOUTSDL.ClosePlaybackDevice();
 
         LOGEX(WaveOutSdl, LOG_VERBOSE, "Initiated SDL with result: %d", Pa_Initialize());
         mSdlInitiated = true;
@@ -69,7 +69,7 @@ WaveOutSdl::WaveOutSdl(string pOutputName, string pDesiredDevice):
             LOG(LOG_INFO, "Haven't selected new SDL device when creating source object");
     }
 
-	SdlAudioInit(pDesiredDevice);
+    SdlAudioInit(pDesiredDevice);
 
     LOG(LOG_VERBOSE, "Created");
 }
@@ -236,12 +236,12 @@ void WaveOutSdl::DoWriteChunk(char *pChunkBuffer, int pChunkSize)
 
 void WaveOutSdl::SetVolume(int pValue)
 {
-	LOG(LOG_VERBOSE, "Setting volume to %d \%", pValue);
-	if (pValue > 0)
-		AUDIOOUTSDL.SetVolume(mAudioChannel, 128);
-	else
-		AUDIOOUTSDL.SetVolume(mAudioChannel, 0);
-	WaveOut::SetVolume(pValue);
+    LOG(LOG_VERBOSE, "Setting volume to %d \%", pValue);
+    if (pValue > 0)
+        AUDIOOUTSDL.SetVolume(mAudioChannel, 128);
+    else
+        AUDIOOUTSDL.SetVolume(mAudioChannel, 0);
+    WaveOut::SetVolume(pValue);
 }
 
 bool WaveOutSdl::Play()

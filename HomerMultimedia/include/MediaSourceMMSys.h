@@ -56,15 +56,15 @@ namespace Homer { namespace Multimedia {
 
 struct MMSysDataChunkDesc
 {
-	char  *Data;
-	int   Size;
+    char  *Data;
+    int   Size;
 };
 
 class MediaSourceMMSys:
     public MediaSource
 {
 public:
-	MediaSourceMMSys(std::string pDesiredDevice = "");
+    MediaSourceMMSys(std::string pDesiredDevice = "");
 
     virtual ~MediaSourceMMSys();
 
@@ -88,15 +88,15 @@ public:
 private:
     static void CALLBACK EventHandler(HWAVEIN pCapturDevice, UINT pMessage, DWORD pInstance, DWORD pParam1, DWORD pParam2);
 
-    //HANDLE			mCaptureEvent;
-    HWAVEIN      	mCaptureHandle;
-    WAVEHDR			mCaptureBufferDesc[MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT];
-    char			*mCaptureBuffer[MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT];
-	int				mSampleBufferSize;
-	Mutex			mMutexStateData;
-	Condition 		mWaitCondition;
-	MMSysDataChunkDesc mQueue[MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE];
-	int				mQueueWritePtr, mQueueReadPtr, mQueueSize;
+    //HANDLE             mCaptureEvent;
+    HWAVEIN          mCaptureHandle;
+    WAVEHDR          mCaptureBufferDesc[MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT];
+    char             *mCaptureBuffer[MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT];
+    int              mSampleBufferSize;
+    Mutex            mMutexStateData;
+    Condition        mWaitCondition;
+    MMSysDataChunkDesc mQueue[MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE];
+    int              mQueueWritePtr, mQueueReadPtr, mQueueSize;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

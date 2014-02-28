@@ -83,18 +83,18 @@ void MediaSink::Stop()
 
 string MediaSink::GetId()
 {
-	return mMediaId;
+    return mMediaId;
 }
 
 void MediaSink::SetMaxFps(int pMaxFps)
 {
-	LOG(LOG_VERBOSE, "Setting max. %d FPS", pMaxFps);
-	mMaxFps = pMaxFps;
+    LOG(LOG_VERBOSE, "Setting max. %d FPS", pMaxFps);
+    mMaxFps = pMaxFps;
 }
 
 int MediaSink::GetMaxFps()
 {
-	return mMaxFps;
+    return mMaxFps;
 }
 
 bool MediaSink::BelowMaxFps(int pFrameNumber)
@@ -109,14 +109,14 @@ bool MediaSink::BelowMaxFps(int pFrameNumber)
         //### skip capturing when we are too slow
         if (tTimeDiff < 1000*1000 / mMaxFps)
         {
-        	return false;
+            return false;
         }
     }
 
     if(mMaxFpsFrameNumberLastFragment != pFrameNumber)
     {
-    	mMaxFpsTimestampLastFragment = tCurrentTime;
-    	mMaxFpsFrameNumberLastFragment = pFrameNumber;
+        mMaxFpsTimestampLastFragment = tCurrentTime;
+        mMaxFpsFrameNumberLastFragment = pFrameNumber;
     }
 
     return true;

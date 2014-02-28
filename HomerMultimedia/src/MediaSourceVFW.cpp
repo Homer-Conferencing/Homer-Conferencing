@@ -89,79 +89,79 @@ void MediaSourceVFW::getVideoDevices(VideoDevices &pVList)
 
     if (tFirstCall)
     {
-    	mFoundVFWDevices.clear();
+        mFoundVFWDevices.clear();
 
         LOG(LOG_VERBOSE, "Enumerating hardware..");
 
-		// windows supports up to 10 drivers which are indexed from 0 to 9
-		//HINT: http://msdn.microsoft.com/en-us/library/dd756909%28VS.85%29.aspx
-		char tDriverName[256];
-		char tDriverVersion[32];
-		for (int i = 0; i < 10; i++)
-		{
-			//####################################
-			//### verbose output and store device description
-			//####################################
-			if (capGetDriverDescription(i, tDriverName, 256, tDriverVersion, 32))
-			{
-				LOG(LOG_INFO, "Found active VFW device %d", i);
-				LOG(LOG_INFO, "  ..name: %s", tDriverName);
-				LOG(LOG_INFO, "  ..version: %s", tDriverVersion);
+        // windows supports up to 10 drivers which are indexed from 0 to 9
+        //HINT: http://msdn.microsoft.com/en-us/library/dd756909%28VS.85%29.aspx
+        char tDriverName[256];
+        char tDriverVersion[32];
+        for (int i = 0; i < 10; i++)
+        {
+            //####################################
+            //### verbose output and store device description
+            //####################################
+            if (capGetDriverDescription(i, tDriverName, 256, tDriverVersion, 32))
+            {
+                LOG(LOG_INFO, "Found active VFW device %d", i);
+                LOG(LOG_INFO, "  ..name: %s", tDriverName);
+                LOG(LOG_INFO, "  ..version: %s", tDriverVersion);
 
-				tDevice.Name = string(tDriverName);
-				tDevice.Card = (char)i + 48;
-				tDevice.Desc = "VFW based video device " + tDevice.Card + " \"" + string(tDriverName) + "\"";
-				tDevice.Type = Camera; // assume all as camera devices
-				LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
-			}
+                tDevice.Name = string(tDriverName);
+                tDevice.Card = (char)i + 48;
+                tDevice.Desc = "VFW based video device " + tDevice.Card + " \"" + string(tDriverName) + "\"";
+                tDevice.Type = Camera; // assume all as camera devices
+                LOG(LOG_VERBOSE, "Found video device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
+            }
 
-			//##############################################
-			//### probe device by creating a capture window
-			//##############################################
-			tWinHandle = capCreateCaptureWindow(NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, 0);
-			if(!tWinHandle)
-			{
-				LOG(LOG_INFO, "Could not create capture window");
-				continue;
-			}
+            //##############################################
+            //### probe device by creating a capture window
+            //##############################################
+            tWinHandle = capCreateCaptureWindow(NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, 0);
+            if(!tWinHandle)
+            {
+                LOG(LOG_INFO, "Could not create capture window");
+                continue;
+            }
 
-			tRes = SendMessage(tWinHandle, WM_CAP_DRIVER_CONNECT, i, 0);
-			if(!tRes)
-			{
-				LOG(LOG_INFO, "Could not connect to device");
-				mDeviceAvailable[i] = false;
-				DestroyWindow(tWinHandle);
-				continue;
-			}else
-				mDeviceAvailable[i] = true;
+            tRes = SendMessage(tWinHandle, WM_CAP_DRIVER_CONNECT, i, 0);
+            if(!tRes)
+            {
+                LOG(LOG_INFO, "Could not connect to device");
+                mDeviceAvailable[i] = false;
+                DestroyWindow(tWinHandle);
+                continue;
+            }else
+                mDeviceAvailable[i] = true;
 
-			//HINT: maybe our capture frames are upside down, see http://www.microsoft.com/whdc/archive/biheight.mspx -> detect this
-			BITMAPINFO tInfo;
-			tRes = capGetVideoFormat(tWinHandle, &tInfo, sizeof(tInfo));
-			if (!tRes)
-			{
-				LOG(LOG_ERROR, "Not connected to the capture window");
-				DestroyWindow(tWinHandle);
-				continue;
-			}
+            //HINT: maybe our capture frames are upside down, see http://www.microsoft.com/whdc/archive/biheight.mspx -> detect this
+            BITMAPINFO tInfo;
+            tRes = capGetVideoFormat(tWinHandle, &tInfo, sizeof(tInfo));
+            if (!tRes)
+            {
+                LOG(LOG_ERROR, "Not connected to the capture window");
+                DestroyWindow(tWinHandle);
+                continue;
+            }
 
-			DestroyWindow(tWinHandle);
+            DestroyWindow(tWinHandle);
 
-			//###############################################
-			//### finally add this device to the result list
-			//###############################################
-			mFoundVFWDevices.push_back(tDevice);
-		}
+            //###############################################
+            //### finally add this device to the result list
+            //###############################################
+            mFoundVFWDevices.push_back(tDevice);
+        }
     }else
     {
-    	LOG(LOG_VERBOSE, "Using internal device cache with %d entries", (int)mFoundVFWDevices.size());
+        LOG(LOG_VERBOSE, "Using internal device cache with %d entries", (int)mFoundVFWDevices.size());
     }
     tFirstCall = false;
 
     VideoDevices::iterator tIt;
     for (tIt = mFoundVFWDevices.begin(); tIt != mFoundVFWDevices.end(); tIt++)
     {
-    	pVList.push_back(*tIt);
+        pVList.push_back(*tIt);
     }
 }
 
@@ -224,17 +224,17 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
         bool tFound = false;
         for (int i = 0; i < 10; i++)
         {
-        	if (mDeviceAvailable[i])
-        	{
-        		LOG(LOG_VERBOSE, "Probing VFW device number: %d", i);
-				mDesiredDevice = (char)i + 48;
-				if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions)) == 0)
-				{
-					LOG(LOG_VERBOSE, " ..available device connected");
-					tFound = true;
-					break;
-				}
-        	}
+            if (mDeviceAvailable[i])
+            {
+                LOG(LOG_VERBOSE, "Probing VFW device number: %d", i);
+                mDesiredDevice = (char)i + 48;
+                if ((tResult = avformat_open_input(&mFormatContext, (const char *)mDesiredDevice.c_str(), tFormat, &tOptions)) == 0)
+                {
+                    LOG(LOG_VERBOSE, " ..available device connected");
+                    tFound = true;
+                    break;
+                }
+            }
         }
         if (!tFound)
         {
@@ -245,19 +245,19 @@ bool MediaSourceVFW::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     mCurrentDevice = mDesiredDevice;
 
     if (!DetectAllStreams())
-    	return false;
+        return false;
 
     if (!SelectStream())
-    	return false;
+        return false;
 
     mFormatContext->streams[mMediaStreamIndex]->time_base.num = 100;
     mFormatContext->streams[mMediaStreamIndex]->time_base.den = (int)pFps * 100;
 
     if (!OpenDecoder())
-    	return false;
+        return false;
 
-	if (!OpenFormatConverter())
-		return false;
+    if (!OpenFormatConverter())
+        return false;
 
     //###########################################################################################
     //### seek to the current position and drop data received during codec auto detection phase
@@ -283,7 +283,7 @@ bool MediaSourceVFW::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
 bool MediaSourceVFW::CloseGrabDevice()
 {
-	bool tResult = false;
+    bool tResult = false;
 
     LOG(LOG_VERBOSE, "Going to close");
 
@@ -424,8 +424,8 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 LOG(LOG_VERBOSE, "      ..display pic number: %d", mSourceFrame->display_picture_number);
             #endif
 
-			if ((tFrameFinished != 0) && (tBytesDecoded > 0))
-			{
+            if ((tFrameFinished != 0) && (tBytesDecoded > 0))
+            {
                 // ############################
                 // ### ANNOUNCE FRAME (statistics)
                 // ############################
@@ -440,20 +440,20 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
                 // ############################
                 // ### SCALE FRAME (CONVERT)
                 // ############################
-				if (!pDropChunk)
-				{
-					HM_sws_scale(mVideoScalerContext, mSourceFrame->data, mSourceFrame->linesize, 0, mCodecContext->height, mRGBFrame->data, mRGBFrame->linesize);
-				}
-			}else
-			{
-				// unlock grabbing
-				mGrabMutex.unlock();
+                if (!pDropChunk)
+                {
+                    HM_sws_scale(mVideoScalerContext, mSourceFrame->data, mSourceFrame->linesize, 0, mCodecContext->height, mRGBFrame->data, mRGBFrame->linesize);
+                }
+            }else
+            {
+                // unlock grabbing
+                mGrabMutex.unlock();
 
-				// acknowledge failed
-				MarkGrabChunkFailed("couldn't decode video frame");
+                // acknowledge failed
+                MarkGrabChunkFailed("couldn't decode video frame");
 
-				return GRAB_RES_INVALID;
-			}
+                return GRAB_RES_INVALID;
+            }
         }
         av_free_packet(&tPacket);
     }
@@ -474,7 +474,7 @@ int MediaSourceVFW::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 
 bool MediaSourceVFW::SupportsRecording()
 {
-	return true;
+    return true;
 }
 
 string MediaSourceVFW::GetSourceCodecStr()

@@ -61,12 +61,12 @@ WaveOut::WaveOut(string pName):
     LOG(LOG_VERBOSE, "Going to allocate sample size FIFO");
     mSampleFifo = HM_av_fifo_alloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE * 4);
     if (mSampleFifo == NULL)
-    	LOG(LOG_ERROR, "Sample size FIFO is invalid");
+        LOG(LOG_ERROR, "Sample size FIFO is invalid");
 }
 
 WaveOut::~WaveOut()
 {
-	LOG(LOG_VERBOSE, "Going to release playback FIFO");
+    LOG(LOG_VERBOSE, "Going to release playback FIFO");
     delete mPlaybackFifo;
 
     LOG(LOG_VERBOSE, "Going to release file playback buffer");
@@ -119,14 +119,14 @@ bool WaveOut::SelectDevice(string pDeviceName)
 
 void WaveOut::Stop()
 {
-	LOG(LOG_VERBOSE, "Mark stream as stopped");
+    LOG(LOG_VERBOSE, "Mark stream as stopped");
     mPlaybackStopped = true;
     mFilePlaybackLoops = 0;
 }
 
 bool WaveOut::Play()
 {
-	LOG(LOG_VERBOSE, "Mark stream as started");
+    LOG(LOG_VERBOSE, "Mark stream as started");
     mPlaybackStopped = false;
     mHaveToAssignThreadName = true;
 
@@ -149,7 +149,7 @@ bool WaveOut::IsPlaying()
 
     mOpenNewFile.unlock();
 
-	 return tResult;
+     return tResult;
 }
 
 int WaveOut::GetVolume()
@@ -159,7 +159,7 @@ int WaveOut::GetVolume()
 
 void WaveOut::SetVolume(int pValue)
 {
-	LOG(LOG_VERBOSE, "Setting volume to %d \%", pValue);
+    LOG(LOG_VERBOSE, "Setting volume to %d \%", pValue);
     if (pValue < 0)
         pValue = 0;
     if(pValue > 300)
@@ -202,7 +202,7 @@ bool WaveOut::PlayFile(string pFileName, int pLoops)
 
 string WaveOut::CurrentFile()
 {
-	return mFilePlaybackFileName;
+    return mFilePlaybackFileName;
 }
 
 int WaveOut::GetQueueUsage()
@@ -431,18 +431,18 @@ void* WaveOut::Run(void* pArgs)
 
         if (mFilePlaybackSource != NULL)
         {
-			// get new samples from audio file
-			tSamplesSize = MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
-			tSampleNumber = mFilePlaybackSource->GrabChunk(mFilePlaybackBuffer, tSamplesSize);
+            // get new samples from audio file
+            tSamplesSize = MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
+            tSampleNumber = mFilePlaybackSource->GrabChunk(mFilePlaybackBuffer, tSamplesSize);
 
-			if ((tSampleNumber >= 0) && (!mPlaybackStopped))
-			{
-				#ifdef WO_DEBUG_FILE
-					LOG(LOG_VERBOSE, "Sending audio chunk %d of %d bytes from file to playback device", tSampleNumber, tSamplesSize);
-				#endif
+            if ((tSampleNumber >= 0) && (!mPlaybackStopped))
+            {
+                #ifdef WO_DEBUG_FILE
+                    LOG(LOG_VERBOSE, "Sending audio chunk %d of %d bytes from file to playback device", tSampleNumber, tSamplesSize);
+                #endif
 
                 // wait
-				// HINT: we use 2 additional zero buffers after EOF was detected!
+                // HINT: we use 2 additional zero buffers after EOF was detected!
                 while ((GetQueueUsage() > MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE - 4) && (MEDIA_SOURCE_SAMPLES_PLAYBACK_FIFO_SIZE > 4))
                 {
                     #ifdef WO_DEBUG_FILE
@@ -452,49 +452,49 @@ void* WaveOut::Run(void* pArgs)
                 }
 
                 WriteChunk(mFilePlaybackBuffer, tSamplesSize);
-			}
+            }
 
-			// if we have reached EOF then we wait until next file is scheduled for playback
-			if (tSampleNumber == GRAB_RES_EOF)
-			{
-				// add 2 more zero buffers to audio output queue
-				char *tZeroBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
-				memset(tZeroBuffer, 0, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
-				WriteChunk(tZeroBuffer, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
-				free(tZeroBuffer);
+            // if we have reached EOF then we wait until next file is scheduled for playback
+            if (tSampleNumber == GRAB_RES_EOF)
+            {
+                // add 2 more zero buffers to audio output queue
+                char *tZeroBuffer = (char*)malloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+                memset(tZeroBuffer, 0, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+                WriteChunk(tZeroBuffer, MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+                free(tZeroBuffer);
 
-				mFilePlaybackLoops--;
+                mFilePlaybackLoops--;
 
-				// should we loop the file?
-				if (mFilePlaybackLoops > 0)
-				{// repeat file
-					LOG(LOG_VERBOSE, "Looping %s, remaining loops: %d", mFilePlaybackFileName.c_str(), mFilePlaybackLoops - 1);
-					mFilePlaybackSource->Seek(0);
-				}else
-				{// passive waiting until next trigger is received
-					// wait until last chunk is played
-					LOG(LOG_VERBOSE, "EOF reached, waiting for playback end");
-					while(mPlaybackFifo->GetUsage() > 0)
-						Suspend(50 * 1000);
+                // should we loop the file?
+                if (mFilePlaybackLoops > 0)
+                {// repeat file
+                    LOG(LOG_VERBOSE, "Looping %s, remaining loops: %d", mFilePlaybackFileName.c_str(), mFilePlaybackLoops - 1);
+                    mFilePlaybackSource->Seek(0);
+                }else
+                {// passive waiting until next trigger is received
+                    // wait until last chunk is played
+                    LOG(LOG_VERBOSE, "EOF reached, waiting for playback end");
+                    while(mPlaybackFifo->GetUsage() > 0)
+                        Suspend(50 * 1000);
 
-					// stop playback
-					Stop();
+                    // stop playback
+                    Stop();
 
-					// wait for next trigger
-					mFilePlaybackCondition.Wait();
-					LOG(LOG_VERBOSE, "Continuing after last file based playback has finished");
-					if ((!mOpenNewFileAsap) && (!mPlaybackStopped))
-					    LOG(LOG_ERROR, "Error in state machine of file based audio playback thread");
-					Play();
-				}
-			}
+                    // wait for next trigger
+                    mFilePlaybackCondition.Wait();
+                    LOG(LOG_VERBOSE, "Continuing after last file based playback has finished");
+                    if ((!mOpenNewFileAsap) && (!mPlaybackStopped))
+                        LOG(LOG_ERROR, "Error in state machine of file based audio playback thread");
+                    Play();
+                }
+            }
         }else
         {
-			// wait for next trigger
-			mFilePlaybackCondition.Wait();
+            // wait for next trigger
+            mFilePlaybackCondition.Wait();
             LOG(LOG_VERBOSE, "Continuing after last file based playback was invalid");
         }
-	}
+    }
 
     LOG(LOG_WARN, "End of thread for file based audio playback reached, playback needed: %d", mFilePlaybackNeeded);
 
