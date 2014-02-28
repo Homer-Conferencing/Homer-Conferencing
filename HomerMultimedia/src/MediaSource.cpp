@@ -3475,19 +3475,6 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
 
     if (mMediaStreamIndex == -1)
     {
-        //######################################################
-        //### dump ffmpeg information about format
-        //######################################################
-        if(mFormatContext->streams[i]->codec->codec_type == tTargetMediaType)
-        {
-            av_dump_format(mFormatContext, i, tTargetMediaDescription.c_str(), false);
-            mMediaStreamIndex = i;
-            break;
-        }
-    }
-
-    if (mMediaStreamIndex == -1)
-    {
         LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a %s stream..", GetMediaTypeStr().c_str());
 
         // Close the video stream
