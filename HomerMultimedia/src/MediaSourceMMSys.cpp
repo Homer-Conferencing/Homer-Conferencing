@@ -89,8 +89,8 @@ void MediaSourceMMSys::getAudioDevices(AudioDevices &pAList)
     MMRESULT tRes;
     for (UINT i = 0; i < 20; i++)
     {
-    	if (waveInGetDevCaps(i, (LPWAVEINCAPS)&tCaps, tCapsSize) == MMSYSERR_NOERROR)
-    	{
+        if (waveInGetDevCaps(i, (LPWAVEINCAPS)&tCaps, tCapsSize) == MMSYSERR_NOERROR)
+        {
             tDevice.Name = string(tCaps.szPname);
             tDevice.Card = (char)i + 48;
             tDevice.Desc = "Windows multimedia system (MMSYS) audio device " + tDevice.Card + " \"" + string(tCaps.szPname) + "\"";
@@ -153,9 +153,9 @@ void MediaSourceMMSys::getAudioDevices(AudioDevices &pAList)
                 LOG(LOG_VERBOSE, "Found audio capture device: %s (card: %s)", tDevice.Name.c_str(), tDevice.Card.c_str());
             }
 
-		    pAList.push_back(tDevice);
-    	}else
-    		break;
+            pAList.push_back(tDevice);
+        }else
+            break;
     }
     tFirstCall = false;
 }
@@ -172,8 +172,8 @@ bool MediaSourceMMSys::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
     int tErr;
     MMRESULT tResult;
-	WAVEFORMATEX tFormat;
-	char tErrorBuffer[256];
+    WAVEFORMATEX tFormat;
+    char tErrorBuffer[256];
 
     mMediaType = MEDIA_AUDIO;
     mOutputAudioChannels = pChannels;
@@ -190,90 +190,90 @@ bool MediaSourceMMSys::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     if ((mDesiredDevice == "") || (mDesiredDevice == "auto") || (mDesiredDevice == "automatic"))
         mDesiredDevice = toString((int)WAVE_MAPPER);
 
-	 // Specify recording parameters
+    // Specify recording parameters
     tFormat.wFormatTag = WAVE_FORMAT_PCM;   // simple, uncompressed format
     tFormat.nChannels = mOutputAudioChannels;
     tFormat.nSamplesPerSec = mOutputAudioSampleRate;   // default: 44100
     tFormat.nAvgBytesPerSec = mOutputAudioSampleRate * 2 * 2; // SamplesPerSec * Channels * BitsPerSample / 8
     tFormat.nBlockAlign = 2 * 2;            // Channels * BitsPerSample / 8
     tFormat.wBitsPerSample = 16;            //  16 for high quality, 8 for telephone quality
-    tFormat.cbSize = 0;						// no additional information appended
+    tFormat.cbSize = 0;                     // no additional information appended
 
     LOG(LOG_VERBOSE, "Check if format is supported..");
     tResult = waveInOpen(&mCaptureHandle, (UINT)atoi(mDesiredDevice.c_str()), &tFormat, 0L, 0L, WAVE_FORMAT_QUERY);
     if(tResult == WAVERR_BADFORMAT)
     {
-    	waveInGetErrorText(tResult, tErrorBuffer, 256);
-    	LOG(LOG_ERROR, "Selected wave format isn't support because of \"%s\"", tErrorBuffer);
-    	return false;
+        waveInGetErrorText(tResult, tErrorBuffer, 256);
+        LOG(LOG_ERROR, "Selected wave format isn't support because of \"%s\"", tErrorBuffer);
+        return false;
     }
 
     LOG(LOG_VERBOSE, "Open WaveIn device..");
     tResult = waveInOpen(&mCaptureHandle, (UINT)atoi(mDesiredDevice.c_str()), &tFormat, (DWORD)&EventHandler, (DWORD)this, CALLBACK_FUNCTION | WAVE_FORMAT_DIRECT);
     if(tResult != MMSYSERR_NOERROR)
     {
-    	waveInGetErrorText(tResult, tErrorBuffer, 256);
-    	LOG(LOG_ERROR, "Can not open WaveIn device because of \"%s\"", tErrorBuffer);
-    	return false;
+        waveInGetErrorText(tResult, tErrorBuffer, 256);
+        LOG(LOG_ERROR, "Can not open WaveIn device because of \"%s\"", tErrorBuffer);
+        return false;
     }
 
     mCurrentDevice = mDesiredDevice;
     mSampleBufferSize = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
 
-	for (int i = 0; i < MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT; i++)
-	{
-		mCaptureBuffer[i] = (char*)malloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
-		mCaptureBufferDesc[i].lpData = (LPSTR)mCaptureBuffer[i];
-		mCaptureBufferDesc[i].dwBufferLength = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
-		mCaptureBufferDesc[i].dwBytesRecorded = 0;
-		mCaptureBufferDesc[i].dwUser = i;
-		mCaptureBufferDesc[i].dwFlags = 0L;
-		mCaptureBufferDesc[i].dwLoops = 0L;
-		#ifdef MMSYS_DEBUG_PACKETS
-			LOG(LOG_VERBOSE, "Preparing buffer descriptor %d at %p.. with capture buffer at %p", i, &mCaptureBufferDesc[i], mCaptureBuffer[i]);
-		#endif
-	    // prepare buffer descriptor for usage for audio capturing
-	    tResult = waveInPrepareHeader(mCaptureHandle, &mCaptureBufferDesc[i], sizeof(WAVEHDR));
-	    if(tResult != MMSYSERR_NOERROR)
-	    {
-	    	waveInGetErrorText(tResult, tErrorBuffer, 256);
-	    	LOG(LOG_ERROR, "Can not prepare capture buffer descriptor %d for WaveIn device because of \"%s\"", i, tErrorBuffer);
-	    	return false;
-	    }
+    for (int i = 0; i < MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT; i++)
+    {
+        mCaptureBuffer[i] = (char*)malloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+        mCaptureBufferDesc[i].lpData = (LPSTR)mCaptureBuffer[i];
+        mCaptureBufferDesc[i].dwBufferLength = MEDIA_SOURCE_SAMPLES_BUFFER_SIZE;
+        mCaptureBufferDesc[i].dwBytesRecorded = 0;
+        mCaptureBufferDesc[i].dwUser = i;
+        mCaptureBufferDesc[i].dwFlags = 0L;
+        mCaptureBufferDesc[i].dwLoops = 0L;
+        #ifdef MMSYS_DEBUG_PACKETS
+            LOG(LOG_VERBOSE, "Preparing buffer descriptor %d at %p.. with capture buffer at %p", i, &mCaptureBufferDesc[i], mCaptureBuffer[i]);
+        #endif
+        // prepare buffer descriptor for usage for audio capturing
+        tResult = waveInPrepareHeader(mCaptureHandle, &mCaptureBufferDesc[i], sizeof(WAVEHDR));
+        if(tResult != MMSYSERR_NOERROR)
+        {
+            waveInGetErrorText(tResult, tErrorBuffer, 256);
+            LOG(LOG_ERROR, "Can not prepare capture buffer descriptor %d for WaveIn device because of \"%s\"", i, tErrorBuffer);
+            return false;
+        }
 
-		#ifdef MMSYS_DEBUG_PACKETS
-			LOG(LOG_VERBOSE, "Adding capture buffer %d..", i);
-		#endif
-	    // insert new buffer in device queue
-	    tResult = waveInAddBuffer(mCaptureHandle, &mCaptureBufferDesc[i], sizeof(WAVEHDR));
-	    if(tResult != MMSYSERR_NOERROR)
-	    {
-	    	waveInGetErrorText(tResult, tErrorBuffer, 256);
-	    	LOG(LOG_ERROR, "Can not register capture buffer %d for WaveIn device because of \"%s\"", i, tErrorBuffer);
-	    	return false;
-	    }
-	}
+        #ifdef MMSYS_DEBUG_PACKETS
+            LOG(LOG_VERBOSE, "Adding capture buffer %d..", i);
+        #endif
+        // insert new buffer in device queue
+        tResult = waveInAddBuffer(mCaptureHandle, &mCaptureBufferDesc[i], sizeof(WAVEHDR));
+        if(tResult != MMSYSERR_NOERROR)
+        {
+            waveInGetErrorText(tResult, tErrorBuffer, 256);
+            LOG(LOG_ERROR, "Can not register capture buffer %d for WaveIn device because of \"%s\"", i, tErrorBuffer);
+            return false;
+        }
+    }
 
-	for (int i = 0; i < MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE; i++)
-	{
-		mQueue[i].Size = 0;
-		mQueue[i].Data = (char*)malloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
-	}
+    for (int i = 0; i < MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE; i++)
+    {
+        mQueue[i].Size = 0;
+        mQueue[i].Data = (char*)malloc(MEDIA_SOURCE_SAMPLES_BUFFER_SIZE);
+    }
 
-	#ifdef MMSYS_DEBUG_PACKETS
-		LOG(LOG_VERBOSE, "Starting capturing..");
-	#endif
-	// commence sampling input
-	tResult = waveInStart(mCaptureHandle);
-	if(tResult != MMSYSERR_NOERROR)
-	{
-		waveInGetErrorText(tResult, tErrorBuffer, 256);
-		LOG(LOG_ERROR, "Can not start audio capturing on WaveIn device because of \"%s\"", tErrorBuffer);
-		return false;
-	}
+    #ifdef MMSYS_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Starting capturing..");
+    #endif
+    // commence sampling input
+    tResult = waveInStart(mCaptureHandle);
+    if(tResult != MMSYSERR_NOERROR)
+    {
+        waveInGetErrorText(tResult, tErrorBuffer, 256);
+        LOG(LOG_ERROR, "Can not start audio capturing on WaveIn device because of \"%s\"", tErrorBuffer);
+        return false;
+    }
 
     mInputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-	mOutputFrameRate = mInputFrameRate;
+    mOutputFrameRate = mInputFrameRate;
 
     //######################################################
     //### give some verbose output
@@ -299,7 +299,7 @@ bool MediaSourceMMSys::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 bool MediaSourceMMSys::CloseGrabDevice()
 {
     MMRESULT tResult = 0;
-	char tErrorBuffer[256];
+    char tErrorBuffer[256];
 
     LOG(LOG_VERBOSE, "Going to close");
 
@@ -315,36 +315,36 @@ bool MediaSourceMMSys::CloseGrabDevice()
 
         mMediaSourceOpened = false;
 
-		LOG(LOG_VERBOSE, "Stopping capturing..");
-		// commence sampling input
-		tResult = waveInStop(mCaptureHandle);
-		if(tResult != MMSYSERR_NOERROR)
-		{
-			waveInGetErrorText(tResult, tErrorBuffer, 256);
-			LOG(LOG_ERROR, "Can not stop audio capturing on WaveIn device because of \"%s\"", tErrorBuffer);
-			return false;
-		}
+        LOG(LOG_VERBOSE, "Stopping capturing..");
+        // commence sampling input
+        tResult = waveInStop(mCaptureHandle);
+        if(tResult != MMSYSERR_NOERROR)
+        {
+            waveInGetErrorText(tResult, tErrorBuffer, 256);
+            LOG(LOG_ERROR, "Can not stop audio capturing on WaveIn device because of \"%s\"", tErrorBuffer);
+            return false;
+        }
 
-		LOG(LOG_VERBOSE, "Going to close WaveIn device");
+        LOG(LOG_VERBOSE, "Going to close WaveIn device");
         tResult = waveInClose(mCaptureHandle);
         if(tResult != MMSYSERR_NOERROR)
         {
-        	waveInGetErrorText(tResult, tErrorBuffer, 256);
-        	LOG(LOG_ERROR, "Can not close WaveIn device because of \"%s\"", tErrorBuffer);
-        	return false;
+            waveInGetErrorText(tResult, tErrorBuffer, 256);
+            LOG(LOG_ERROR, "Can not close WaveIn device because of \"%s\"", tErrorBuffer);
+            return false;
         }
 
         LOG(LOG_VERBOSE, "Going to release capture buffers");
-    	for (int i = 0; i < MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT; i++)
-    	{
-			free(mCaptureBuffer[i]);
-    	}
+        for (int i = 0; i < MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT; i++)
+        {
+            free(mCaptureBuffer[i]);
+        }
 
-    	for (int i = 0; i < MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE; i++)
-    	{
-    		mQueue[i].Size = 0;
-    		free(mQueue[i].Data);
-    	}
+        for (int i = 0; i < MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE; i++)
+        {
+            mQueue[i].Size = 0;
+            free(mQueue[i].Data);
+        }
 
         LOG(LOG_INFO, "...closed");
 
@@ -362,99 +362,99 @@ bool MediaSourceMMSys::CloseGrabDevice()
 
 void CALLBACK MediaSourceMMSys::EventHandler(HWAVEIN pCapturDevice, UINT pMessage, DWORD pInstance, DWORD pParam1, DWORD pParam2)
 {
-	MediaSourceMMSys *tSource = (MediaSourceMMSys*)pInstance;
-	WAVEHDR *tBufferDesc;
-	MMRESULT tResult;
-	char tErrorBuffer[256];
+    MediaSourceMMSys *tSource = (MediaSourceMMSys*)pInstance;
+    WAVEHDR *tBufferDesc;
+    MMRESULT tResult;
+    char tErrorBuffer[256];
 
-	if (tSource == NULL)
-	{
-		LOGEX(MediaSourceMMSys, LOG_ERROR, "Could not determine the original source of the call back");
-		return;
-	}
+    if (tSource == NULL)
+    {
+        LOGEX(MediaSourceMMSys, LOG_ERROR, "Could not determine the original source of the call back");
+        return;
+    }
 
-	switch(pMessage)
-	{
-		case WIM_CLOSE:
-			#ifdef MMSYS_DEBUG_PACKETS
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "################## WaveIn event of type \"device closed\" occurred ######################");
-			#endif
-			break;
-		case WIM_OPEN:
-			#ifdef MMSYS_DEBUG_PACKETS
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "################## WaveIn event of type \"device opened\" occurred ######################");
-			#endif
-			break;
-		case WIM_DATA:
-			tBufferDesc = (WAVEHDR*)pParam1;
-			if (tBufferDesc == NULL)
-			{
-				LOGEX(MediaSourceMMSys, LOG_ERROR, "Delivered buffer descriptor is invalid");
-				break;
-			}
-			#ifdef MMSYS_DEBUG_PACKETS
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "################## WaveIn event of type \"capture data\" occurred #######################");
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..instance: %p", pInstance);
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..param1: %p", pParam1);
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..param1: %u", pParam2);
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..hdr buffer: %p", tBufferDesc->lpData);
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..hdr buffer length: %u", tBufferDesc->dwBufferLength);
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..hdr buffer recorded: %u", tBufferDesc->dwBytesRecorded);
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..hdr user data: %u", tBufferDesc->dwUser);
-			#endif
+    switch(pMessage)
+    {
+        case WIM_CLOSE:
+            #ifdef MMSYS_DEBUG_PACKETS
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "################## WaveIn event of type \"device closed\" occurred ######################");
+            #endif
+            break;
+        case WIM_OPEN:
+            #ifdef MMSYS_DEBUG_PACKETS
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "################## WaveIn event of type \"device opened\" occurred ######################");
+            #endif
+            break;
+        case WIM_DATA:
+            tBufferDesc = (WAVEHDR*)pParam1;
+            if (tBufferDesc == NULL)
+            {
+                LOGEX(MediaSourceMMSys, LOG_ERROR, "Delivered buffer descriptor is invalid");
+                break;
+            }
+            #ifdef MMSYS_DEBUG_PACKETS
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "################## WaveIn event of type \"capture data\" occurred #######################");
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..instance: %p", pInstance);
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..param1: %p", pParam1);
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..param1: %u", pParam2);
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..hdr buffer: %p", tBufferDesc->lpData);
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..hdr buffer length: %u", tBufferDesc->dwBufferLength);
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..hdr buffer recorded: %u", tBufferDesc->dwBytesRecorded);
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "  ..hdr user data: %u", tBufferDesc->dwUser);
+            #endif
 
-			// save current index in local variable
-			int tCurIndex = tBufferDesc->dwUser;
-			#ifdef MMSYS_DEBUG_PACKETS
-				LOGEX(MediaSourceMMSys, LOG_VERBOSE, "Full buffer %d..", tCurIndex);
-			#endif
+            // save current index in local variable
+            int tCurIndex = tBufferDesc->dwUser;
+            #ifdef MMSYS_DEBUG_PACKETS
+                LOGEX(MediaSourceMMSys, LOG_VERBOSE, "Full buffer %d..", tCurIndex);
+            #endif
 
-			// set write pointer to next valid value for the buffer queue, set count of waiting buffers
-			tSource->mMutexStateData.lock();
+            // set write pointer to next valid value for the buffer queue, set count of waiting buffers
+            tSource->mMutexStateData.lock();
 
-			// only process new audio data if all variables are already initiated
-			if (tSource->mMediaSourceOpened)
-			{
-				if (tSource->mQueueSize < MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE)
-				{
-					// rescue captured data
-					tSource->mQueue[tSource->mQueueWritePtr].Size = (int)tBufferDesc->dwBytesRecorded;
-					memcpy(tSource->mQueue[tSource->mQueueWritePtr].Data, tBufferDesc->lpData, (size_t)tBufferDesc->dwBytesRecorded);
-					tSource->mQueueSize++;
+            // only process new audio data if all variables are already initiated
+            if (tSource->mMediaSourceOpened)
+            {
+                if (tSource->mQueueSize < MEDIA_SOURCE_MMSYS_BUFFER_QUEUE_SIZE)
+                {
+                    // rescue captured data
+                    tSource->mQueue[tSource->mQueueWritePtr].Size = (int)tBufferDesc->dwBytesRecorded;
+                    memcpy(tSource->mQueue[tSource->mQueueWritePtr].Data, tBufferDesc->lpData, (size_t)tBufferDesc->dwBytesRecorded);
+                    tSource->mQueueSize++;
 
-					// witch to next element in queue
-					tSource->mQueueWritePtr++;
-					if (tSource->mQueueWritePtr >= MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT)
-						tSource->mQueueWritePtr = tSource->mQueueWritePtr - MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT;
+                    // witch to next element in queue
+                    tSource->mQueueWritePtr++;
+                    if (tSource->mQueueWritePtr >= MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT)
+                        tSource->mQueueWritePtr = tSource->mQueueWritePtr - MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT;
 
-					// re-use capture buffer
-					if (!tSource->mGrabbingStopped)
-					{
-						// insert new buffer in device queue
-						#ifdef MMSYS_DEBUG_PACKETS
-							LOGEX(MediaSourceMMSys, LOG_VERBOSE, "Adding capture buffer %d..", tCurIndex);
-						#endif
-						//tSource->mCaptureBufferDesc[tCurIndex].dwBytesRecorded = 0;
-						tResult = waveInAddBuffer(tSource->mCaptureHandle, tBufferDesc, sizeof(WAVEHDR));
-						if(tResult != MMSYSERR_NOERROR)
-						{
-							waveInGetErrorText(tResult, tErrorBuffer, 256);
-							LOGEX(MediaSourceMMSys, LOG_ERROR, "Can not register capture buffer %d for WaveIn device because of \"%s\"", tCurIndex, tErrorBuffer);
-							break;
-						}
-					}
+                    // re-use capture buffer
+                    if (!tSource->mGrabbingStopped)
+                    {
+                        // insert new buffer in device queue
+                        #ifdef MMSYS_DEBUG_PACKETS
+                            LOGEX(MediaSourceMMSys, LOG_VERBOSE, "Adding capture buffer %d..", tCurIndex);
+                        #endif
+                        //tSource->mCaptureBufferDesc[tCurIndex].dwBytesRecorded = 0;
+                        tResult = waveInAddBuffer(tSource->mCaptureHandle, tBufferDesc, sizeof(WAVEHDR));
+                        if(tResult != MMSYSERR_NOERROR)
+                        {
+                            waveInGetErrorText(tResult, tErrorBuffer, 256);
+                            LOGEX(MediaSourceMMSys, LOG_ERROR, "Can not register capture buffer %d for WaveIn device because of \"%s\"", tCurIndex, tErrorBuffer);
+                            break;
+                        }
+                    }
 
-					// are we informed about new capture data?
-					if (pMessage == WIM_DATA)
-						tSource->mWaitCondition.SignalOne();
-				}else
-					LOGEX(MediaSourceMMSys, LOG_ERROR, "Buffer queue full - dropping current data chunk");
-			}
+                    // are we informed about new capture data?
+                    if (pMessage == WIM_DATA)
+                        tSource->mWaitCondition.SignalOne();
+                }else
+                    LOGEX(MediaSourceMMSys, LOG_ERROR, "Buffer queue full - dropping current data chunk");
+            }
 
-			tSource->mMutexStateData.unlock();
+            tSource->mMutexStateData.unlock();
 
-			break;
-	}
+            break;
+    }
 }
 
 int MediaSourceMMSys::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk)
@@ -488,18 +488,18 @@ int MediaSourceMMSys::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 
     if (mQueueSize == 0)
     {
-		#ifdef MMSYS_DEBUG_PACKETS
-			LOG(LOG_VERBOSE, "Waiting for some new audio capture data");
-		#endif
+        #ifdef MMSYS_DEBUG_PACKETS
+            LOG(LOG_VERBOSE, "Waiting for some new audio capture data");
+        #endif
 
-    	// wait for capture event from static function
+        // wait for capture event from static function
         if (!mWaitCondition.Wait(&mMutexStateData))
-        	LOG(LOG_ERROR, "Error when waiting for capture event");
+            LOG(LOG_ERROR, "Error when waiting for capture event");
     }
-	#ifdef MMSYS_DEBUG_PACKETS
-		LOG(LOG_VERBOSE, "Pending buffers %d", mQueueSize);
-		LOG(LOG_VERBOSE, "Reading from buffer %d", mQueueReadPtr);
-	#endif
+    #ifdef MMSYS_DEBUG_PACKETS
+        LOG(LOG_VERBOSE, "Pending buffers %d", mQueueSize);
+        LOG(LOG_VERBOSE, "Reading from buffer %d", mQueueReadPtr);
+    #endif
 
     // get captured data from queue
     pChunkSize = (int)mQueue[mQueueReadPtr].Size;
@@ -507,17 +507,17 @@ int MediaSourceMMSys::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
     mQueueSize--;
 
     mQueueReadPtr++;
-	if (mQueueReadPtr >= MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT)
-		mQueueReadPtr = mQueueReadPtr - MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT;
+    if (mQueueReadPtr >= MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT)
+        mQueueReadPtr = mQueueReadPtr - MEDIA_SOURCE_MMSYS_BUFFER_AMOUNT;
 
     mMutexStateData.unlock();
 
     if ((pChunkSize < mSampleBufferSize) && (!mGrabbingStopped))
-    	LOG(LOG_INFO, "Captured data chunk is too short (%d < %d)", pChunkSize, mSampleBufferSize);
+        LOG(LOG_INFO, "Captured data chunk is too short (%d < %d)", pChunkSize, mSampleBufferSize);
 
     #ifdef MMSYS_DEBUG_PACKETS
-		LOG(LOG_VERBOSE, "Delivering packet with size %d", pChunkSize);
-	#endif
+        LOG(LOG_VERBOSE, "Delivering packet with size %d", pChunkSize);
+    #endif
 
     // re-encode the frame and write it to file
     if (mRecording)
@@ -539,25 +539,25 @@ int MediaSourceMMSys::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropC
 
 bool MediaSourceMMSys::SupportsRecording()
 {
-	return true;
+    return true;
 }
 
 void MediaSourceMMSys::StopGrabbing()
 {
-	MMRESULT  tResult;
-	char tErrorBuffer[256];
+    MMRESULT  tResult;
+    char tErrorBuffer[256];
 
-	MediaSource::StopGrabbing();
+    MediaSource::StopGrabbing();
 
-	if (mMediaSourceOpened)
-	{
+    if (mMediaSourceOpened)
+    {
         tResult = waveInReset(mCaptureHandle);
         if(tResult != MMSYSERR_NOERROR)
         {
             waveInGetErrorText(tResult, tErrorBuffer, 256);
             LOG(LOG_ERROR, "Can not reset WaveIn device because of \"%s\"", tErrorBuffer);
         }
-	}
+    }
 }
 
 string MediaSourceMMSys::GetSourceCodecStr()

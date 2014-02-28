@@ -59,14 +59,14 @@ using namespace Homer::Monitor;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IS_WEB_LINK(x)										((x.substr(0, 7) == "http://") || (x.substr(0, 7) == "mmst://") || (x.substr(0, 7) == "icyx://"))
+#define IS_WEB_LINK(x)                                        ((x.substr(0, 7) == "http://") || (x.substr(0, 7) == "mmst://") || (x.substr(0, 7) == "icyx://"))
 
 MediaSourceFile::MediaSourceFile(string pSourceFile, bool pGrabInRealTime):
     MediaSourceMem("FILE: " + pSourceFile)
 {
-	mLastDecoderFilePosition = 0;
+    mLastDecoderFilePosition = 0;
     mDecoderFrameBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME;
-	mDecoderFramePreBufferTime = mDecoderFrameBufferTimeMax; // for file based media sources we use the entire frame buffer
+    mDecoderFramePreBufferTime = mDecoderFrameBufferTimeMax; // for file based media sources we use the entire frame buffer
     mSourceType = SOURCE_FILE;
     mDesiredDevice = pSourceFile;
     mGrabberProvidesRTGrabbing = pGrabInRealTime;
@@ -124,22 +124,22 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
     if (!OpenInput(mDesiredDevice.c_str(), NULL, NULL))
-    	return false;
+        return false;
 
     if (!DetectAllStreams())
-    	return false;
+        return false;
 
     if (!SelectStream())
-    	return false;
+        return false;
 
     DetermineMetaData(mFormatContext->metadata);
 
     if (!OpenDecoder())
-    	return false;
+        return false;
 
-	if ((SupportsSeeking() /* ignore http::// and mms:// based streams */) && (mFormatContext->streams[mMediaStreamIndex]->duration > 1 /* ignore pictures: picture files would have 1 here */))
+    if ((SupportsSeeking() /* ignore http::// and mms:// based streams */) && (mFormatContext->streams[mMediaStreamIndex]->duration > 1 /* ignore pictures: picture files would have 1 here */))
     {
-    	int tResult = 0;
+        int tResult = 0;
         if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
         {
             LOG(LOG_WARN, "Couldn't seek to the start of video stream because \"%s\".", strerror(AVUNERROR(tResult)));
@@ -162,10 +162,10 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 
 bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 {
-	bool tIsNetworkStream = false;
-	int tResult = 0;
+    bool tIsNetworkStream = false;
+    int tResult = 0;
 
-	mMediaType = MEDIA_AUDIO;
+    mMediaType = MEDIA_AUDIO;
     mOutputAudioChannels = pChannels;
     mOutputAudioSampleRate = pSampleRate;
     mOutputAudioFormat = AV_SAMPLE_FMT_S16; // assume we always want signed 16 bit
@@ -180,9 +180,9 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     // ffmpeg uses mmst:// instead of mms://
     if (mDesiredDevice.compare(0, string("mms://").size(), "mms://") == 0)
     {
-    	LOG(LOG_VERBOSE, "Replacing mms:// by mmst:// in %s", mDesiredDevice.c_str());
-		string tNewDesiredDevice = "mmst://" + mDesiredDevice.substr(6, mDesiredDevice.size() - 6);
-		mDesiredDevice = tNewDesiredDevice;
+        LOG(LOG_VERBOSE, "Replacing mms:// by mmst:// in %s", mDesiredDevice.c_str());
+        string tNewDesiredDevice = "mmst://" + mDesiredDevice.substr(6, mDesiredDevice.size() - 6);
+        mDesiredDevice = tNewDesiredDevice;
     }
 
     // ffmpeg uses http:// instead of icyx://
@@ -197,20 +197,20 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     // correct pre-buffering if the source is in real a network stream
     if (IS_WEB_LINK(mDesiredDevice))
     {
-    	LOG(LOG_VERBOSE, "Detected a network stream encapsulated in file source");
-    	mDecoderFrameBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME_WEB_STREAMS; // use more buffering for web streams
-    	mDecoderFramePreBufferTime = MSF_FRAME_INPUT_QUEUE_MAX_TIME_WEB_STREAMS;
-    	tIsNetworkStream = true;
+        LOG(LOG_VERBOSE, "Detected a network stream encapsulated in file source");
+        mDecoderFrameBufferTimeMax = MSF_FRAME_INPUT_QUEUE_MAX_TIME_WEB_STREAMS; // use more buffering for web streams
+        mDecoderFramePreBufferTime = MSF_FRAME_INPUT_QUEUE_MAX_TIME_WEB_STREAMS;
+        tIsNetworkStream = true;
     }
 
     if (!OpenInput(mDesiredDevice.c_str(), NULL, NULL))
-    	return false;
+        return false;
 
     mCurrentDevice = mDesiredDevice;
     mCurrentDeviceName = mDesiredDevice;
 
     if (!DetectAllStreams())
-    	return false;
+        return false;
 
     // enumerate all audio streams and store them as possible input channels
     // find correct audio stream, depending on the desired input channel
@@ -224,68 +224,68 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     {
         if (mFormatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
         {
-        	if (mFormatContext->streams[i]->codec->channels < 7)
-        	{
-				string tLanguage = "";
-				string tTitle = "";
-				AVCodec *tCodec = NULL;
-				tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
-				tDictEntry = NULL;
+            if (mFormatContext->streams[i]->codec->channels < 7)
+            {
+                string tLanguage = "";
+                string tTitle = "";
+                AVCodec *tCodec = NULL;
+                tCodec = avcodec_find_decoder(mFormatContext->streams[i]->codec->codec_id);
+                tDictEntry = NULL;
 
-				// get the language of the stream
-				tDictEntry = HM_av_dict_get(mFormatContext->streams[i]->metadata, "language", NULL);
-				if (tDictEntry != NULL)
-				{
-					if (tDictEntry->value != NULL)
-					{
-						tLanguage = string(tDictEntry->value);
-						std::transform(tLanguage.begin(), tLanguage.end(), tLanguage.begin(), ::toupper);
-						LOG(LOG_VERBOSE, "Language found: %s", tLanguage.c_str());
-					}
-				}
+                // get the language of the stream
+                tDictEntry = HM_av_dict_get(mFormatContext->streams[i]->metadata, "language", NULL);
+                if (tDictEntry != NULL)
+                {
+                    if (tDictEntry->value != NULL)
+                    {
+                        tLanguage = string(tDictEntry->value);
+                        std::transform(tLanguage.begin(), tLanguage.end(), tLanguage.begin(), ::toupper);
+                        LOG(LOG_VERBOSE, "Language found: %s", tLanguage.c_str());
+                    }
+                }
 
-				// get the title of the stream
-				tDictEntry = HM_av_dict_get(mFormatContext->streams[i]->metadata, "title", NULL);
-				if (tDictEntry != NULL)
-				{
-					if (tDictEntry->value != NULL)
-					{
-						tTitle = string(tDictEntry->value);
-						LOG(LOG_VERBOSE, "Title found: %s", tTitle.c_str());
-					}
-				}
+                // get the title of the stream
+                tDictEntry = HM_av_dict_get(mFormatContext->streams[i]->metadata, "title", NULL);
+                if (tDictEntry != NULL)
+                {
+                    if (tDictEntry->value != NULL)
+                    {
+                        tTitle = string(tDictEntry->value);
+                        LOG(LOG_VERBOSE, "Title found: %s", tTitle.c_str());
+                    }
+                }
 
-				LOG(LOG_VERBOSE, "Desired audio input channel: %d, current found audio input channel: %d", mDesiredInputChannel, tAudioStreamCount);
-				if(tAudioStreamCount == mDesiredInputChannel)
-				{
-					mMediaStreamIndex = i;
-					LOG(LOG_VERBOSE, "Using audio input channel %d in stream %d for grabbing", mDesiredInputChannel, i);
+                LOG(LOG_VERBOSE, "Desired audio input channel: %d, current found audio input channel: %d", mDesiredInputChannel, tAudioStreamCount);
+                if(tAudioStreamCount == mDesiredInputChannel)
+                {
+                    mMediaStreamIndex = i;
+                    LOG(LOG_VERBOSE, "Using audio input channel %d in stream %d for grabbing", mDesiredInputChannel, i);
 
-					// Dump information about device file
-					av_dump_format(mFormatContext, i, "MediaSourceFile(audio)", false);
-				}
+                    // Dump information about device file
+                    av_dump_format(mFormatContext, i, "MediaSourceFile(audio)", false);
+                }
 
-				tAudioStreamCount++;
+                tAudioStreamCount++;
 
-				if ((tLanguage != "") || (tTitle != ""))
-					tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch, " + toString(mFormatContext->streams[i]->codec->bit_rate / 1000) + " kbit/s)";
-				else
-					tEntry = "Audio " + toString(tAudioStreamCount) + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch, " + toString(mFormatContext->streams[i]->codec->bit_rate / 1000) + " kbit/s)";
-				LOG(LOG_VERBOSE, "Found audio stream: %s", tEntry.c_str());
-				int tDuplicates = 0;
-				for(int i = 0; i < (int)mInputChannels.size(); i++)
-				{
-					if (mInputChannels[i].compare(0, tEntry.size(), tEntry) == 0)
-						tDuplicates++;
-				}
-				if (tDuplicates > 0)
-					tEntry+= "-" + toString(tDuplicates + 1);
-				mInputChannels.push_back(tEntry);
-        	}else
-        	{
-        		LOG(LOG_ERROR, "Detected unsupported audio channel setup with %d channels, will ignore this audio stream", mFormatContext->streams[i]->codec->channels);
-        	}
-		}
+                if ((tLanguage != "") || (tTitle != ""))
+                    tEntry = tLanguage + ": " + tTitle + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch, " + toString(mFormatContext->streams[i]->codec->bit_rate / 1000) + " kbit/s)";
+                else
+                    tEntry = "Audio " + toString(tAudioStreamCount) + " (" + toString(tCodec->name) + ", " + toString(mFormatContext->streams[i]->codec->channels) + " ch, " + toString(mFormatContext->streams[i]->codec->bit_rate / 1000) + " kbit/s)";
+                LOG(LOG_VERBOSE, "Found audio stream: %s", tEntry.c_str());
+                int tDuplicates = 0;
+                for(int i = 0; i < (int)mInputChannels.size(); i++)
+                {
+                    if (mInputChannels[i].compare(0, tEntry.size(), tEntry) == 0)
+                        tDuplicates++;
+                }
+                if (tDuplicates > 0)
+                    tEntry+= "-" + toString(tDuplicates + 1);
+                mInputChannels.push_back(tEntry);
+            }else
+            {
+                LOG(LOG_ERROR, "Detected unsupported audio channel setup with %d channels, will ignore this audio stream", mFormatContext->streams[i]->codec->channels);
+            }
+        }
     }
     if (mMediaStreamIndex == -1)
     {
@@ -300,23 +300,31 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     mCurrentInputChannel = mDesiredInputChannel;
 
     if (!OpenDecoder())
-    	return false;
+        return false;
 
     //HINT: OpenFormatConverter() will be called by the Run() method of MediaSourceMem
-		
-	if (SupportsSeeking())
-	{
-		if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
-		{
-			LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
-		}
-	}
 
-	// avoid frame dropping during decoding (mDecoderExpectedMaxOutputPerInputFrame might be wrong otherwise), assume 64 kB as max. input per read cycle
+    if (SupportsSeeking())
+    {
+        if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
+        {
+            LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
+        }
+    }
+
+    if (SupportsSeeking())
+    {
+        if((tResult = avformat_seek_file(mFormatContext, -1, INT64_MIN, 0, INT64_MAX, AVSEEK_FLAG_ANY)) < 0)
+        {
+            LOG(LOG_WARN, "Couldn't seek to the start of audio stream because \"%s\".", strerror(AVUNERROR(tResult)));
+        }
+    }
+
+    // avoid frame dropping during decoding (mDecoderExpectedMaxOutputPerInputFrame might be wrong otherwise), assume 64 kB as max. input per read cycle
     if ((tIsNetworkStream) && (mCodecContext->codec_id == AV_CODEC_ID_WMAV2))
     {
-    	LOG(LOG_VERBOSE, "Detected WMAV2 codec in hidden network stream, will assume a default frame size of 64kB to avoid frame dropping");
-    	mCodecContext->frame_size = 64 * 1024;
+        LOG(LOG_VERBOSE, "Detected WMAV2 codec in hidden network stream, will assume a default frame size of 64kB to avoid frame dropping");
+        mCodecContext->frame_size = 64 * 1024;
     }
 
     MarkOpenGrabDeviceSuccessful();
@@ -375,7 +383,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
     if (IsSeeking())
     {
-    	LOG(LOG_ERROR, "%s decoder is currently seeking for an explicit stream position, seeking isn't reentrant", GetMediaTypeStr().c_str());
+        LOG(LOG_ERROR, "%s decoder is currently seeking for an explicit stream position, seeking isn't reentrant", GetMediaTypeStr().c_str());
     }
 
     //HINT: we need the original PTS values from the file
@@ -424,7 +432,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
         // seek only if it is necessary
         if (pSeconds != GetSeekPos())
         {
-        	mDecoderSeekMutex.lock();
+            mDecoderSeekMutex.lock();
 
             if ((!mGrabberProvidesRTGrabbing) || ((tTimeDiff > MSF_SEEK_WAIT_THRESHOLD) || (tTimeDiff < -MSF_SEEK_WAIT_THRESHOLD)))
             {
@@ -570,7 +578,7 @@ float MediaSourceFile::GetSeekPos()
         }
     }
 
-	//LOG(LOG_VERBOSE, "Resulting %s file position: %.2f", GetMediaTypeStr().c_str(), tResult);
+    //LOG(LOG_VERBOSE, "Resulting %s file position: %.2f", GetMediaTypeStr().c_str(), tResult);
 
     return tResult;
 }
@@ -655,7 +663,7 @@ void MediaSourceFile::CalibrateRTGrabbing()
     // adopt the stored pts value which represent the start of the media presentation in real-time useconds
     float  tRelativeFrameIndex = mCurrentOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts);
     double tRelativeTime = (int64_t)((double)AV_TIME_BASE * tRelativeFrameIndex / GetOutputFrameRate());
-	LOG(LOG_WARN, "Calibrating %s RT playback, current frame: %.2lf, source start: %.2lf, RT ref. time: %.2f->%.2f(diff: %.2f)", GetMediaTypeStr().c_str(), mCurrentOutputFrameIndex, mInputStartPts, mSourceStartTimeForRTGrabbing, (float)av_gettime() - tRelativeTime, (float)av_gettime() - tRelativeTime -mSourceStartTimeForRTGrabbing);
+    LOG(LOG_WARN, "Calibrating %s RT playback, current frame: %.2lf, source start: %.2lf, RT ref. time: %.2f->%.2f(diff: %.2f)", GetMediaTypeStr().c_str(), mCurrentOutputFrameIndex, mInputStartPts, mSourceStartTimeForRTGrabbing, (float)av_gettime() - tRelativeTime, (float)av_gettime() - tRelativeTime -mSourceStartTimeForRTGrabbing);
     mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime; //HINT: no "+ mDecoderFramePreBufferTime * AV_TIME_BASE" here because we start playback immediately
     #ifdef MSMEM_DEBUG_CALIBRATION
         LOG(LOG_WARN, "Calibrating %s RT playback: new PTS start: %.2f, rel. frame index: %.2f, rel. time: %.2f ms", GetMediaTypeStr().c_str(), mSourceStartTimeForRTGrabbing, tRelativeFrameIndex, (float)(tRelativeTime / 1000));
@@ -664,28 +672,28 @@ void MediaSourceFile::CalibrateRTGrabbing()
 
 void MediaSourceFile::StartDecoder()
 {
-	// setting last decoder file position
-	//HINT: we can not use Seek() because this would lead to recursion
-	if (SupportsSeeking())
-	{
-		LOG(LOG_VERBOSE, "Seeking to last %s decoder position: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
-		int tRes;
-		if ((tRes = avformat_seek_file(mFormatContext, -1, INT64_MIN, mInputStartPts + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0)) < 0)
-			LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)));
-	}
+    // setting last decoder file position
+    //HINT: we can not use Seek() because this would lead to recursion
+    if (SupportsSeeking())
+    {
+        LOG(LOG_VERBOSE, "Seeking to last %s decoder position: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
+        int tRes;
+        if ((tRes = avformat_seek_file(mFormatContext, -1, INT64_MIN, mInputStartPts + mLastDecoderFilePosition * AV_TIME_BASE, INT64_MAX, 0)) < 0)
+            LOG(LOG_ERROR, "Error during absolute seeking in %s source file because \"%s\"", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tRes)));
+    }
     MediaSourceMem::StartDecoder();
 }
 
 void MediaSourceFile::StopDecoder()
 {
-	// storing current decoder file position
-	if (!InputIsPicture())
-	    mLastDecoderFilePosition = GetSeekPos();
-	else
-	    mLastDecoderFilePosition = 0;
-	LOG(LOG_VERBOSE, "Last %s decoder position was set to: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
+    // storing current decoder file position
+    if (!InputIsPicture())
+        mLastDecoderFilePosition = GetSeekPos();
+    else
+        mLastDecoderFilePosition = 0;
+    LOG(LOG_VERBOSE, "Last %s decoder position was set to: %.2f", GetMediaTypeStr().c_str(), mLastDecoderFilePosition);
 
-	MediaSourceMem::StopDecoder();
+    MediaSourceMem::StopDecoder();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

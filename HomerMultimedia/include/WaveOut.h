@@ -103,7 +103,7 @@ protected:
     /* device state */
     bool                mWaveOutOpened;
     bool                mPlaybackStopped;
-    Mutex				mPlayMutex;
+    Mutex               mPlayMutex;
     /* device parameters */
     int                 mSampleRate;
     int                 mAudioChannels;
@@ -123,7 +123,7 @@ protected:
     bool                mFilePlaybackNeeded;
     Mutex               mOpenNewFile;
     MediaSourceFile     *mFilePlaybackSource;
-    int					mFilePlaybackLoops;
+    int                 mFilePlaybackLoops;
     char                *mFilePlaybackBuffer;
     Condition           mFilePlaybackCondition;
 };

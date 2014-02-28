@@ -207,7 +207,7 @@ bool MediaSourceAlsa::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     mSampleBufferSize = MEDIA_SOURCE_SAMPLES_PER_BUFFER * 2 /* SND_PCM_FORMAT_S16_LE */ * mOutputAudioChannels;
     mInputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-	mOutputFrameRate = mInputFrameRate;
+    mOutputFrameRate = mInputFrameRate;
 
     //######################################################
     //### give some verbose output
@@ -330,19 +330,19 @@ int MediaSourceAlsa::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropCh
 
 bool MediaSourceAlsa::SupportsRecording()
 {
-	return true;
+    return true;
 }
 
 void MediaSourceAlsa::StopGrabbing()
 {
-	MediaSource::StopGrabbing();
+    MediaSource::StopGrabbing();
 
-	if (mMediaSourceOpened)
-	{
+    if (mMediaSourceOpened)
+    {
         int tRes = 0;
         if ((tRes = snd_pcm_drop(mCaptureHandle)) < 0)
             LOG(LOG_INFO, "Couldn't stop audio grabbing because of \"%s\", return value was: %d", snd_strerror(tRes), tRes);
-	}
+    }
 }
 
 string MediaSourceAlsa::GetSourceCodecStr()

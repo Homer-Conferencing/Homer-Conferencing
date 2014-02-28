@@ -53,11 +53,11 @@ MediaSinkMem::MediaSinkMem(string pMediaId, enum MediaSinkType pType, bool pRtpA
 {
     mLastPacketPts = 0;
     mMediaId = pMediaId;
-	mIncomingAVStream = NULL;
-	mIncomingAVStreamCodecID = AV_CODEC_ID_NONE;
-	mTargetHost = "";
-	mTargetPort = 0;
-	mIncomingAVStreamCodecContext = NULL;
+    mIncomingAVStream = NULL;
+    mIncomingAVStreamCodecID = AV_CODEC_ID_NONE;
+    mTargetHost = "";
+    mTargetPort = 0;
+    mIncomingAVStreamCodecContext = NULL;
     mRtpActivated = pRtpActivated;
     mWaitUntillFirstKeyFrame = (pType == MEDIA_SINK_VIDEO) ? true : false;
     if (mRtpActivated)
@@ -95,13 +95,13 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
     #endif
 
     // return immediately if the sink is stopped
-	if (!mSinkIsActive)
-	{
-//	    LOG(LOG_WARN, "Media sink isn't active yet");
-	    return;
-	}
+    if (!mSinkIsActive)
+    {
+//        LOG(LOG_WARN, "Media sink isn't active yet");
+        return;
+    }
 
-	// check for key frame if we wait for the first key frame
+    // check for key frame if we wait for the first key frame
     if (mWaitUntillFirstKeyFrame)
     {
         if (!pIsKeyFrame)
@@ -137,10 +137,10 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         // do we have monotonously increasing PTS values
         if (mIncomingAVStreamLastPts > pPacketTimestamp)
         {
-        	LOG(LOG_WARN, "Incoming AV stream PTS values are not monotonous, resetting the streamer now..");
-        	tResetNeeded = true;
+            LOG(LOG_WARN, "Incoming AV stream PTS values are not monotonous, resetting the streamer now..");
+            tResetNeeded = true;
         }
-    	mIncomingAVStreamLastPts = pPacketTimestamp;
+        mIncomingAVStreamLastPts = pPacketTimestamp;
 
         //####################################################################
         // check if RTP encoder is valid for the current stream
@@ -202,11 +202,11 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         //####################################################################
         if ((!BelowMaxFps(pStream->nb_frames)) && (!pIsKeyFrame))
         {
-			#ifdef MSIM_DEBUG_PACKETS
-        		LOG(LOG_VERBOSE, "Max. FPS reached, packet skipped");
-			#endif
+            #ifdef MSIM_DEBUG_PACKETS
+                LOG(LOG_VERBOSE, "Max. FPS reached, packet skipped");
+            #endif
 
-        	return;
+            return;
         }
 
         //####################################################################
@@ -396,7 +396,7 @@ bool MediaSinkMem::OpenStreamer(AVStream *pStream, string pStreamName)
     mIncomingAVStreamStartPts = 0;
     mIncomingAVStreamCodecID = pStream->codec->codec_id;
     mIncomingAVStream = pStream;
-	mIncomingAVStreamCodecContext = pStream->codec;
+    mIncomingAVStreamCodecContext = pStream->codec;
 
     return true;
 }

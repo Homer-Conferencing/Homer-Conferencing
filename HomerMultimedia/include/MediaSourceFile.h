@@ -88,7 +88,7 @@ protected:
 
 private:
     std::vector<string> mInputChannels;
-    float				mLastDecoderFilePosition;
+    float               mLastDecoderFilePosition;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

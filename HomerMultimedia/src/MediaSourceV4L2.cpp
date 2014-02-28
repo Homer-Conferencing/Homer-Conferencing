@@ -96,8 +96,8 @@ void MediaSourceV4L2::getVideoDevices(VideoDevices &pVList)
         tDeviceFile += char(tDeviceId + 48);
         if ((tFd = open(tDeviceFile.c_str(), O_RDONLY)) >= 0)
         {
-        	string tDeviceIdStr = "";
-        	tDeviceIdStr += char(tDeviceId + 48);
+            string tDeviceIdStr = "";
+            tDeviceIdStr += char(tDeviceId + 48);
             tDevice.Name = "V4L2 device " + tDeviceIdStr;
             tDevice.Card = tDeviceFile;
             tDevice.Desc = "V4L2 based video device " + tDeviceIdStr;
@@ -112,7 +112,7 @@ void MediaSourceV4L2::getVideoDevices(VideoDevices &pVList)
             }
 
             memset(&tV4L2Caps, 0, sizeof(tV4L2Caps));
-	        LOG(LOG_VERBOSE, "(trying to query caps for: %s)", tDeviceFile.c_str());
+            LOG(LOG_VERBOSE, "(trying to query caps for: %s)", tDeviceFile.c_str());
             if (ioctl(tFd, VIDIOC_QUERYCAP, &tV4L2Caps) < 0)
                 LOG(LOG_ERROR, "Can't get device capabilities for \"%s\" because of \"%s\"", tDeviceFile.c_str(), strerror(errno));
             else
@@ -346,10 +346,10 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
                     mCurrentInputChannelName = "";
                 }else
                 {
-                	if(tV4L2Input.std != 0 /* 0 means: no special TV-standard support -> not an analog video signal */)
-                	{
-                		tAnalogVideo = true;
-                	}
+                    if(tV4L2Input.std != 0 /* 0 means: no special TV-standard support -> not an analog video signal */)
+                    {
+                        tAnalogVideo = true;
+                    }
 
                     switch(tV4L2Input.type)
                     {
@@ -376,11 +376,11 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     av_dict_set(&tOptions, "channel", toString(mDesiredInputChannel).c_str(), 0);
     if(tAnalogVideo)
     {
-//    	if(((pResX != 352) || (pResY != 288)) && ((pResX != 720) || (pResY != 576)))
-//    	{
-    		pResX = 720;
-    		pResY = 576;
-//    	}
+//        if(((pResX != 352) || (pResY != 288)) && ((pResX != 720) || (pResY != 576)))
+//        {
+            pResX = 720;
+            pResY = 576;
+//        }
     }
     LOG(LOG_INFO, "Selected input resolution: %d x %d", pResX, pResY);
     av_dict_set(&tOptions, "video_size", (toString(pResX) + "x" + toString(pResY)).c_str(), 0);
@@ -477,8 +477,8 @@ bool MediaSourceV4L2::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!OpenDecoder())
         return false;
 
-	if (!OpenFormatConverter())
-		return false;
+    if (!OpenFormatConverter())
+        return false;
 
     //###########################################################################################
     //### seek to the current position and drop data received during codec auto detection phase
@@ -710,19 +710,19 @@ GrabResolutions MediaSourceV4L2::GetSupportedVideoGrabResolutions()
 
     if (mMediaType == MEDIA_VIDEO)
     {
-    	if(mAnalogVideoSignal)
-    	{
-			tFormat.Name="CIF";        //      352 x 288
-			tFormat.ResX = 352;
-			tFormat.ResY = 288;
-			mSupportedVideoFormats.push_back(tFormat);
+        if(mAnalogVideoSignal)
+        {
+            tFormat.Name="CIF";        //      352 x 288
+            tFormat.ResX = 352;
+            tFormat.ResY = 288;
+            mSupportedVideoFormats.push_back(tFormat);
 
-			tFormat.Name="DVD";        //      720 x 576
-			tFormat.ResX = 720;
-			tFormat.ResY = 576;
-			mSupportedVideoFormats.push_back(tFormat);
-    	}else
-    	{
+            tFormat.Name="DVD";        //      720 x 576
+            tFormat.ResX = 720;
+            tFormat.ResY = 576;
+            mSupportedVideoFormats.push_back(tFormat);
+        }else
+        {
             tFormat.Name="SQCIF";      //      128 ×  96
             tFormat.ResX = 128;
             tFormat.ResY = 96;
@@ -778,14 +778,14 @@ GrabResolutions MediaSourceV4L2::GetSupportedVideoGrabResolutions()
             tFormat.ResY = 1080;
             mSupportedVideoFormats.push_back(tFormat);
         }
-	}
+    }
 
     return mSupportedVideoFormats;
 }
 
 bool MediaSourceV4L2::HasVariableOutputFrameRate()
 {
-	return true;
+    return true;
 }
 
 bool MediaSourceV4L2::SupportsDecoderFrameStatistics()
@@ -805,7 +805,7 @@ string MediaSourceV4L2::GetSourceCodecDescription()
 
 bool MediaSourceV4L2::SupportsRecording()
 {
-	return true;
+    return true;
 }
 
 bool MediaSourceV4L2::SupportsMultipleInputStreams()

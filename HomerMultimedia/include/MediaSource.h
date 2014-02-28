@@ -171,21 +171,21 @@ typedef std::vector<MetaDataEntry> MetaData;
 ///////////////////////////////////////////////////////////////////////////////
 
 // event handling
-#define MarkOpenGrabDeviceSuccessful()              		EventOpenGrabDeviceSuccessful(GetObjectNameStr(this).c_str(), __LINE__)
-#define MarkGrabChunkSuccessful(ChunkNumber)        		EventGrabChunkSuccessful(GetObjectNameStr(this).c_str(), __LINE__, ChunkNumber)
-#define MarkGrabChunkFailed(Reason)                 		EventGrabChunkFailed(GetObjectNameStr(this).c_str(), __LINE__, Reason)
+#define MarkOpenGrabDeviceSuccessful()                      EventOpenGrabDeviceSuccessful(GetObjectNameStr(this).c_str(), __LINE__)
+#define MarkGrabChunkSuccessful(ChunkNumber)                EventGrabChunkSuccessful(GetObjectNameStr(this).c_str(), __LINE__, ChunkNumber)
+#define MarkGrabChunkFailed(Reason)                         EventGrabChunkFailed(GetObjectNameStr(this).c_str(), __LINE__, Reason)
 
 // ffmpeg helpers
-#define DescribeInput(CodecId, Format)						FfmpegDescribeInput(GetObjectNameStr(this).c_str(), __LINE__, CodecId, Format)
+#define DescribeInput(CodecId, Format)                      FfmpegDescribeInput(GetObjectNameStr(this).c_str(), __LINE__, CodecId, Format)
 #define CreateIOContext(PacketBuffer, PacketBufferSize, ReadFunction, WriteFunction, Opaque, IoContext) \
-															FfmpegCreateIOContext(GetObjectNameStr(this).c_str(), __LINE__, PacketBuffer, PacketBufferSize, ReadFunction, WriteFunction, Opaque, IoContext)
-#define OpenInput(InputName, InputFormat, IoContext)       	FfmpegOpenInput(GetObjectNameStr(this).c_str(), __LINE__, InputName, InputFormat, IoContext)
-#define DetectAllStreams()            						FfmpegDetectAllStreams(GetObjectNameStr(this).c_str(), __LINE__)
-#define SelectStream()              						FfmpegSelectStream(GetObjectNameStr(this).c_str(), __LINE__)
-#define OpenDecoder()										FfmpegOpenDecoder(GetObjectNameStr(this).c_str(), __LINE__)
-#define OpenFormatConverter()								FfmpegOpenFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
+                                                            FfmpegCreateIOContext(GetObjectNameStr(this).c_str(), __LINE__, PacketBuffer, PacketBufferSize, ReadFunction, WriteFunction, Opaque, IoContext)
+#define OpenInput(InputName, InputFormat, IoContext)        FfmpegOpenInput(GetObjectNameStr(this).c_str(), __LINE__, InputName, InputFormat, IoContext)
+#define DetectAllStreams()                                  FfmpegDetectAllStreams(GetObjectNameStr(this).c_str(), __LINE__)
+#define SelectStream()                                      FfmpegSelectStream(GetObjectNameStr(this).c_str(), __LINE__)
+#define OpenDecoder()                                       FfmpegOpenDecoder(GetObjectNameStr(this).c_str(), __LINE__)
+#define OpenFormatConverter()                               FfmpegOpenFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
 #define CloseFormatConverter()                              FfmpegCloseFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
-#define CloseAll()											FfmpegCloseAll(GetObjectNameStr(this).c_str(), __LINE__)
+#define CloseAll()                                          FfmpegCloseAll(GetObjectNameStr(this).c_str(), __LINE__)
 #define EncodeAndWritePacket(FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames, Timestamp) FfmpegEncodeAndWritePacket(GetObjectNameStr(this).c_str(), __LINE__, FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames, Timestamp)
 #define DetermineMetaData(MetaDataStorage)                  FfmpegDetermineMetaData(GetObjectNameStr(this).c_str(), __LINE__, MetaDataStorage)
 
@@ -305,20 +305,20 @@ public:
     void DeleteAllRegisteredMediaFilters();
 
     /* simple relaying WITHOUT any reencoding functionality but WITH rtp support*/
-	// register/unregister: Berkeley sockets based media sinks
-    	MediaSinkNet* RegisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, Socket* pSocket, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
-    	bool UnregisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, bool pAutoDelete = true);
-	// register/unregister: GAPI based network sinks
-    	MediaSinkNet* RegisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
-    	bool UnregisterMediaSink(std::string pTarget, Requirements *pTransportRequirements, bool pAutoDelete = true);
-	// register/unregister: file based media sinks
-    	MediaSinkFile* RegisterMediaSink(std::string pTargetFile, bool pRtpActivation);
-    	bool UnregisterMediaSink(std::string pTargetFile, bool pAutoDelete = true);
-	// register/unregister: already allocated media sinks
-    	MediaSink* RegisterMediaSink(MediaSink *pMediaSink);
-    	bool UnregisterMediaSink(MediaSink *pMediaSink, bool pAutoDelete = true);
-	// register/unregister: media sink of any type
-    	bool UnregisterGeneralMediaSink(std::string pId, bool pAutoDelete = true);
+    // register/unregister: Berkeley sockets based media sinks
+        MediaSinkNet* RegisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, Socket* pSocket, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
+        bool UnregisterMediaSink(std::string pTargetHost, unsigned int pTargetPort, bool pAutoDelete = true);
+    // register/unregister: GAPI based network sinks
+        MediaSinkNet* RegisterMediaSink(string pTarget, Requirements *pTransportRequirements, bool pRtpActivation, int pMaxFps = 0 /* max. fps */);
+        bool UnregisterMediaSink(std::string pTarget, Requirements *pTransportRequirements, bool pAutoDelete = true);
+    // register/unregister: file based media sinks
+        MediaSinkFile* RegisterMediaSink(std::string pTargetFile, bool pRtpActivation);
+        bool UnregisterMediaSink(std::string pTargetFile, bool pAutoDelete = true);
+    // register/unregister: already allocated media sinks
+        MediaSink* RegisterMediaSink(MediaSink *pMediaSink);
+        bool UnregisterMediaSink(MediaSink *pMediaSink, bool pAutoDelete = true);
+    // register/unregister: media sink of any type
+        bool UnregisterGeneralMediaSink(std::string pId, bool pAutoDelete = true);
     std::vector<std::string> ListRegisteredMediaSinks();
     void DeleteAllRegisteredMediaSinks();
     void SetRtpActivation(bool pState);
@@ -484,12 +484,12 @@ protected:
     int                 mOutputAudioSampleRate;
     int                 mOutputAudioChannels; // 1 - mono, 2 - stereo, ..
     enum AVSampleFormat mOutputAudioFormat;
-    int					mInputAudioSampleRate;
-    int  				mInputAudioChannels;
+    int                 mInputAudioSampleRate;
+    int                 mInputAudioChannels;
     enum AVSampleFormat mInputAudioFormat;
-    int 				mInputBitRate;
+    int                 mInputBitRate;
     /* audio silence */
-    int					mAudioSilenceThreshold;
+    int                 mAudioSilenceThreshold;
     /* video */
     GrabResolutions     mSupportedVideoFormats;
     int                 mSourceResX;
@@ -509,7 +509,7 @@ protected:
     int64_t             mDecodedSPFrames;
     int64_t             mDecodedBIFrames;
     /* frame pre-buffering */
-    float				mDecoderFrameBufferTime; // current pre-buffer length
+    float               mDecoderFrameBufferTime; // current pre-buffer length
     float               mDecoderFrameBufferTimeMax; // max. pre-buffer length
     float               mDecoderFramePreBufferTime;
     bool                mDecoderFramePreBufferingAutoRestart;
@@ -546,7 +546,7 @@ protected:
     /* device handling */
     std::string         mDesiredDevice;
     std::string         mCurrentDevice;
-    std::string			mCurrentDeviceName;
+    std::string         mCurrentDeviceName;
     /* event handling */
     bool                mLastGrabResultWasError;
     std::string         mLastGrabFailureReason;
@@ -554,8 +554,8 @@ protected:
     int                 mCurrentInputChannel;
     int                 mDesiredInputChannel;
     /* ffmpeg init */
-    static Mutex 		mFfmpegInitMutex;
-    static bool 		mFfmpegInitiated;
+    static Mutex        mFfmpegInitMutex;
+    static bool         mFfmpegInitiated;
 };
 
 typedef std::vector<MediaSource*>      MediaSources;

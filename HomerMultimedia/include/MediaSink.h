@@ -72,9 +72,9 @@ protected:
     std::string         mMediaId;
 
     /* video */
-    int					mMaxFps;
-    int 				mMaxFpsFrameNumberLastFragment;
-    int64_t				mMaxFpsTimestampLastFragment;
+    int                 mMaxFps;
+    int                 mMaxFpsFrameNumberLastFragment;
+    int64_t             mMaxFpsTimestampLastFragment;
 };
 
 typedef std::vector<MediaSink*>        MediaSinks;

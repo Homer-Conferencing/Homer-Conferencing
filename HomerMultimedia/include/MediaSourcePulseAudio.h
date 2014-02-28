@@ -45,14 +45,14 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MAX_PULSEAUDIO_DEVICES_IN_LIST					32
+#define MAX_PULSEAUDIO_DEVICES_IN_LIST                    32
 
 struct PulseAudioDeviceDescriptor
 {
-		char 		Name[512];
-		char 		Description[256];
-		uint32_t 	Index;
-		uint8_t 	Initialized;
+        char         Name[512];
+        char         Description[256];
+        uint32_t     Index;
+        uint8_t      Initialized;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -86,7 +86,7 @@ public:
 
 private:
 
-	struct pa_simple 		*mInputStream;
+    struct pa_simple         *mInputStream;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

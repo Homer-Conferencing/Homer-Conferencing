@@ -57,16 +57,16 @@ void MediaSourcePortAudio::PortAudioInit()
 
 void MediaSourcePortAudio::PortAudioLockStreamInterface()
 {
-	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Locking portaudio stream interface");
-	sPaStreamMutex.lock();
-	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Stream interface locked");
+    LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Locking portaudio stream interface");
+    sPaStreamMutex.lock();
+    LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Stream interface locked");
 }
 
 void MediaSourcePortAudio::PortAudioUnlockStreamInterface()
 {
-	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Unlocking portaudio stream interface");
-	sPaStreamMutex.unlock();
-	LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Stream interface unlocked");
+    LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Unlocking portaudio stream interface");
+    sPaStreamMutex.unlock();
+    LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Stream interface unlocked");
 }
 
 MediaSourcePortAudio::MediaSourcePortAudio(string pDesiredDevice):
@@ -240,8 +240,8 @@ int MediaSourcePortAudio::RecordedAudioHandler(const void *pInputBuffer, void *p
         LOGEX(MediaSourcePortAudio, LOG_VERBOSE, "Captured %d audio samples, time stamp of first sample: %f, current time stamp: %f", pInputSize, pTimeInfo->inputBufferAdcTime, pTimeInfo->currentTime);
     #endif
 
-	if ((tMediaSourcePortAudio->mMediaSourceOpened) && (pInputSize > 0))
-		tMediaSourcePortAudio->mCaptureFifo->WriteFifo((char*)pInputBuffer, (int)pInputSize * 2 /* 16 bit LittleEndian */ * (tMediaSourcePortAudio->mOutputAudioChannels ? 2 : 1), ++tMediaSourcePortAudio->mCapturedChunks);
+    if ((tMediaSourcePortAudio->mMediaSourceOpened) && (pInputSize > 0))
+        tMediaSourcePortAudio->mCaptureFifo->WriteFifo((char*)pInputBuffer, (int)pInputSize * 2 /* 16 bit LittleEndian */ * (tMediaSourcePortAudio->mOutputAudioChannels ? 2 : 1), ++tMediaSourcePortAudio->mCapturedChunks);
 
     return paContinue;
 }
@@ -292,17 +292,17 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     if (tDeviceId < 0)
     {
-    	LOG(LOG_ERROR, "Selected audio device id %d is invalid", tDeviceId);
-    	return false;
+        LOG(LOG_ERROR, "Selected audio device id %d is invalid", tDeviceId);
+        return false;
     }
     tInputParameters.device = tDeviceId;
     tInputParameters.channelCount = mOutputAudioChannels;
     tInputParameters.sampleFormat = paInt16;
     const PaDeviceInfo *tDevInfo = Pa_GetDeviceInfo(tInputParameters.device);
     if (tDevInfo != NULL)
-    	tInputParameters.suggestedLatency = tDevInfo->defaultLowInputLatency;
+        tInputParameters.suggestedLatency = tDevInfo->defaultLowInputLatency;
     else
-    	tInputParameters.suggestedLatency = 0.100;
+        tInputParameters.suggestedLatency = 0.100;
     tInputParameters.hostApiSpecificStreamInfo = NULL;
 
     LOG(LOG_VERBOSE, "Going to open stream..");
@@ -311,25 +311,25 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     PortAudioLockStreamInterface();
     if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mOutputAudioSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
     {
-    	if (tErr == paInvalidChannelCount)
-    	{
-    		LOG(LOG_WARN, "Got channel count problem when stereo mode is selected, will try mono mode instead");
-    	    tInputParameters.channelCount = 1;
-    	    if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mOutputAudioSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
-    	    {
-        		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
-        		PortAudioUnlockStreamInterface();
-        		return false;
-    	    }
-			mInputAudioChannels = 1;
-    	}else
-    	{
-    		LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+        if (tErr == paInvalidChannelCount)
+        {
+            LOG(LOG_WARN, "Got channel count problem when stereo mode is selected, will try mono mode instead");
+            tInputParameters.channelCount = 1;
+            if((tErr = Pa_OpenStream(&mStream, &tInputParameters, NULL /* output parameters */, mOutputAudioSampleRate, MEDIA_SOURCE_SAMPLES_PER_BUFFER, paClipOff | paDitherOff, RecordedAudioHandler, this)) != paNoError)
+            {
+                LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
+                PortAudioUnlockStreamInterface();
+                return false;
+            }
+            mInputAudioChannels = 1;
+        }else
+        {
+            LOG(LOG_ERROR, "Couldn't open stream because \"%s\"(%d)", Pa_GetErrorText(tErr), tErr);
             const PaHostErrorInfo *tErrInfo = Pa_GetLastHostErrorInfo();
             LOG(LOG_ERROR, "Host error is: %s(%d)", tErrInfo->errorText, (int)tErrInfo->errorCode);
-    		PortAudioUnlockStreamInterface();
-    		return false;
-    	}
+            PortAudioUnlockStreamInterface();
+            return false;
+        }
     }
     LOG(LOG_VERBOSE, "..stream opened");
 
@@ -346,7 +346,7 @@ bool MediaSourcePortAudio::OpenAudioGrabDevice(int pSampleRate, int pChannels)
 
     mCurrentDevice = mDesiredDevice;
     mInputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-	mOutputFrameRate = mInputFrameRate;
+    mOutputFrameRate = mInputFrameRate;
 
     //######################################################
     //### give some verbose output
@@ -462,20 +462,20 @@ int MediaSourcePortAudio::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pD
     //TODO: use ffmpeg and support more audio channel layouts
     if ((mInputAudioChannels == 1) && (mOutputAudioChannels == 2))
     {
-    	// assume buffer of 16 bit signed integer samples
-		short int *tBuffer = (short int*)pChunkBuffer;
-		// assume 16 bits per sample
-		int tSampleCount = pChunkSize / 2;
-		#ifdef MSPA_DEBUG_PACKETS
-			LOG(LOG_VERBOSE, "Duplicating %d samples from mono to stereo", tSampleCount);
-		#endif
-		// duplicate each sample: mono ==> stereo
-		for (int i = tSampleCount - 1; i > 0; i--)
-    	{
-			tBuffer[i * 2 + 1] = tBuffer[i];
-			tBuffer[i * 2] = tBuffer[i];
-    	}
-    	pChunkSize *= 2;
+        // assume buffer of 16 bit signed integer samples
+        short int *tBuffer = (short int*)pChunkBuffer;
+        // assume 16 bits per sample
+        int tSampleCount = pChunkSize / 2;
+        #ifdef MSPA_DEBUG_PACKETS
+            LOG(LOG_VERBOSE, "Duplicating %d samples from mono to stereo", tSampleCount);
+        #endif
+        // duplicate each sample: mono ==> stereo
+        for (int i = tSampleCount - 1; i > 0; i--)
+        {
+            tBuffer[i * 2 + 1] = tBuffer[i];
+            tBuffer[i * 2] = tBuffer[i];
+        }
+        pChunkSize *= 2;
     }
     #ifdef MSPA_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Delivering audio chunk of %d bytes", pChunkSize);

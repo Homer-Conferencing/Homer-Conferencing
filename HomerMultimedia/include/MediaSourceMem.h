@@ -69,14 +69,14 @@ namespace Homer { namespace Multimedia {
 // size of one single fragment of a frame packet
 #define MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE                8*1024 // 8 KB (for jumbo packets!)
 
-#define MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT 	 ((System::GetTargetMachineType() != "x86") ? 1024 : 512)
+#define MEDIA_SOURCE_MEM_FRAGMENT_INPUT_QUEUE_SIZE_LIMIT     ((System::GetTargetMachineType() != "x86") ? 1024 : 512)
 
 ///////////////////////////////////////////////////////////////////////////////
 
 struct MediaInputQueueEntry
 {
-	char	*Data;
-	int		Size;
+    char    *Data;
+    int     Size;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ protected:
     unsigned long       mFragmentNumber;
     char                *mStreamPacketBuffer;
     char                *mFragmentBuffer;
-    int					mResXLastGrabbedFrame, mResYLastGrabbedFrame;
+    int                 mResXLastGrabbedFrame, mResYLastGrabbedFrame;
     bool                mRtpActivated;
     bool                mOpenInputStream;
     int                 mWrappingHeaderSize;
@@ -197,19 +197,19 @@ protected:
     double              mCurrentOutputFrameIndex; // we have to determine this manually during grabbing because cur_dts and everything else in AVStream is buggy for some video/audio files
     double              mLastBufferedOutputFrameIndex; // we use this for calibrating RT grabbing
     bool                mGrabberProvidesRTGrabbing;
-    int64_t				mLastTimeWaitForRTGrabbing;
-    int64_t				mTimeLastWrittenOutputChunk;
+    int64_t             mLastTimeWaitForRTGrabbing;
+    int64_t             mTimeLastWrittenOutputChunk;
     /* decoder thread */
-    bool				mDecoderThreadAcountsPackets; //do we use custom I/O context? -> packet account is done there and should be done within decoder thread
-    double 				mFirstReceivedFrameTimestampFromRTP; //if multiple frames are delivered from the packet reciever towards the A/V frame decoder
+    bool                mDecoderThreadAcountsPackets; //do we use custom I/O context? -> packet account is done there and should be done within decoder thread
+    double              mFirstReceivedFrameTimestampFromRTP; //if multiple frames are delivered from the packet reciever towards the A/V frame decoder
     bool                mDecoderUsesPTSFromInputPackets;
     bool                mDecoderThreadNeeded; // also used to signal that the decoder thread has finished the init. process
     double              mDecoderLastReadPts; // check for interleaved packets, non-monotonous PTS values
     Condition           mDecoderNeedWorkCondition;
     Mutex               mDecoderNeedWorkConditionMutex;
-    Mutex				mDecoderSeekMutex;
+    Mutex               mDecoderSeekMutex;
     MediaFifo           *mDecoderFragmentFifo;
-    Mutex				mDecoderFragmentFifoDestructionMutex;
+    Mutex               mDecoderFragmentFifoDestructionMutex;
     MediaFifo           *mDecoderFifo; // for frames
     int                 mDecoderExpectedMaxOutputPerInputFrame; // how many output frames can be calculated of one input frame?
     /* decoder thread seeking */

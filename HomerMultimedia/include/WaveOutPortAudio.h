@@ -70,7 +70,7 @@ private:
     bool                mWaitingForFirstBuffer;
     void                *mStream;
     /* recursion logger */
-    static int			mOpenStreams;
+    static int          mOpenStreams;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

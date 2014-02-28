@@ -78,15 +78,15 @@ protected:
     /* RTP stream handling */
     bool                mRtpActivated;
     int64_t             mIncomingAVStreamStartPts;
-    int64_t				mIncomingAVStreamLastPts;
+    int64_t             mIncomingAVStreamLastPts;
     bool                mIncomingFirstPacket;
     enum AVCodecID      mIncomingAVStreamCodecID;
-    AVStream*			mIncomingAVStream;
-    AVCodecContext*	 	mIncomingAVStreamCodecContext;
+    AVStream*           mIncomingAVStream;
+    AVCodecContext*     mIncomingAVStreamCodecContext;
     /* general stream handling */
     bool                mWaitUntillFirstKeyFrame;
     /* queue handling */
-    MediaFifo       	*mSinkFifo;
+    MediaFifo           *mSinkFifo;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

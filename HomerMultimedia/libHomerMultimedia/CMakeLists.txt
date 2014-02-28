@@ -12,11 +12,11 @@ INCLUDE(CheckLibraryExists)
 ##############################################################
 # find package "ALSA"
 IF (LINUX)
-	MESSAGE("##### Searching for library ALSA")
-	Find_Package(ALSA REQUIRED)
-	IF (NOT ALSA_FOUND)
-		MESSAGE(FATAL_ERROR "You need library ALSA")
-	ENDIF ()
+    MESSAGE("##### Searching for library ALSA")
+    Find_Package(ALSA REQUIRED)
+    IF (NOT ALSA_FOUND)
+        MESSAGE(FATAL_ERROR "You need library ALSA")
+    ENDIF ()
 ELSE (LINUX)
     SET(ALSA_INCLUDE_DIRS "/usr/include")
 ENDIF (LINUX)
@@ -24,11 +24,11 @@ ENDIF (LINUX)
 ##############################################################
 # find package "SDL"
 IF (LINUX)
-	MESSAGE("##### Searching for library SDL")
-	Find_Package(SDL REQUIRED)
-	IF (NOT SDL_FOUND)
-		MESSAGE(FATAL_ERROR "You need library SDL")
-	ENDIF ()
+    MESSAGE("##### Searching for library SDL")
+    Find_Package(SDL REQUIRED)
+    IF (NOT SDL_FOUND)
+        MESSAGE(FATAL_ERROR "You need library SDL")
+    ENDIF ()
 ELSE (LINUX)
     SET(SDL_INCLUDE_DIR "/usr/include")
 ENDIF (LINUX)
@@ -44,16 +44,16 @@ ENDIF()
 ##############################################################
 # include dirs
 SET (INCLUDE_DIRS
-	${INCLUDE_DIRS}
-	../include
-	../../HomerBase/include/Logging
-	../../HomerBase/include
-	../../HomerNAPI/include
-	../../HomerMonitor/include
-	../../HomerSoundOutput/include
-	/usr/include/ffmpeg
-	${ALSA_INCLUDE_DIRS}
-	${SDL_INCLUDE_DIR}	
+    ${INCLUDE_DIRS}
+    ../include
+    ../../HomerBase/include/Logging
+    ../../HomerBase/include
+    ../../HomerNAPI/include
+    ../../HomerMonitor/include
+    ../../HomerSoundOutput/include
+    /usr/include/ffmpeg
+    ${ALSA_INCLUDE_DIRS}
+    ${SDL_INCLUDE_DIR}
 )
 
 ##############################################################
@@ -72,8 +72,8 @@ ENDIF (NOT (WINDOWS))
 # compile flags                                                                                                                                                                                                                                                                   
 IF (NOT APPLE)
 SET (FLAGS
-	${FLAGS}
-	-Wno-uninitialized
+    ${FLAGS}
+    -Wno-uninitialized
 )
 ENDIF (NOT APPLE)
 
@@ -99,139 +99,139 @@ SET (SOURCES
 )
 
 IF (WIN32 AND NOT WIN64)
-	SET (SOURCES
-		${SOURCES}
-		../src/MediaSourceDShow
-	)
+    SET (SOURCES
+        ${SOURCES}
+        ../src/MediaSourceDShow
+    )
 ENDIF()
 
 IF (APPLE)
-	SET (SOURCES
-		${SOURCES}
-		../src/MediaSourceCoreVideo
-		../src/WaveOutSdl
-	)
+    SET (SOURCES
+        ${SOURCES}
+        ../src/MediaSourceCoreVideo
+        ../src/WaveOutSdl
+    )
 ENDIF (APPLE)
 
 IF (BSD)
-	SET (SOURCES
-		${SOURCES}
-	)
+    SET (SOURCES
+        ${SOURCES}
+    )
 ENDIF (BSD)
 
 IF (LINUX)
-	SET (SOURCES
-		${SOURCES}
-		../src/MediaSourceV4L2
-	)
-	IF (FEATURE_PULSEAUDIO)
-		SET (SOURCES
-			${SOURCES}
-			../src/MediaSourcePulseAudio
-			../src/WaveOutPulseAudio
-		)
-	ENDIF()
+    SET (SOURCES
+        ${SOURCES}
+        ../src/MediaSourceV4L2
+    )
+    IF (FEATURE_PULSEAUDIO)
+        SET (SOURCES
+            ${SOURCES}
+            ../src/MediaSourcePulseAudio
+            ../src/WaveOutPulseAudio
+        )
+    ENDIF()
 ENDIF (LINUX)
 
 ##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
-	avutil-52.dll
-	avcodec-54.dll
-	avdevice-54.dll
-	avfilter-3.dll
-	avformat-54.dll
-	libgcc_s_dw2-1.dll
-	libstdc++-6.dll
-	portaudio.dll
-	postproc-52.dll
-	swresample-0.dll
-	swscale-2.dll
+    avutil-52.dll
+    avcodec-54.dll
+    avdevice-54.dll
+    avfilter-3.dll
+    avformat-54.dll
+    libgcc_s_dw2-1.dll
+    libstdc++-6.dll
+    portaudio.dll
+    postproc-52.dll
+    swresample-0.dll
+    swscale-2.dll
 )
 SET (LIBS_WINDOWS
-	avutil-52
-	avcodec-54
-	avfilter-3
-	avformat-54
-	avdevice-54
-	HomerBase
-	HomerNAPI
-	HomerMonitor
-	portaudio
-	swscale-2
-	swresample-0
-	ws2_32
-	Avicap32
-	Winmm
+    avutil-52
+    avcodec-54
+    avfilter-3
+    avformat-54
+    avdevice-54
+    HomerBase
+    HomerNAPI
+    HomerMonitor
+    portaudio
+    swscale-2
+    swresample-0
+    ws2_32
+    Avicap32
+    Winmm
 )
 
 #################
 # USED LIBRARIES for apple environment
 SET (LIBS_APPLE
-	HomerBase
-	HomerNAPI
-	HomerMonitor
-	HomerSoundOutput
+    HomerBase
+    HomerNAPI
+    HomerMonitor
+    HomerSoundOutput
 )
 SET (LIBS_APPLE_STATIC
-	avdevice
-	avformat
-	avcodec
-	avfilter
-	swresample
-	swscale
-	avutil
-	postproc
-	mp3lame
-	opencore-amrnb
-	opencore-amrwb
-	theoraenc
-	theoradec
-	ogg
-	x264
-	vpx
-	bz2
-	z
-	portaudio
-	SDL
+    avdevice
+    avformat
+    avcodec
+    avfilter
+    swresample
+    swscale
+    avutil
+    postproc
+    mp3lame
+    opencore-amrnb
+    opencore-amrwb
+    theoraenc
+    theoradec
+    ogg
+    x264
+    vpx
+    bz2
+    z
+    portaudio
+    SDL
 )
 SET (FRAMEWORKS_APPLE
-	AppKit
-	AudioToolbox
-	AudioUnit
-	Carbon
-	CoreAudio
-	CoreFoundation
-	CoreVideo
-	IOKit
-	OpenGL	
-	VideoDecodeAcceleration
+    AppKit
+    AudioToolbox
+    AudioUnit
+    Carbon
+    CoreAudio
+    CoreFoundation
+    CoreVideo
+    IOKit
+    OpenGL
+    VideoDecodeAcceleration
 )
 
 #################
 # used libraries for LINUX environment
 IF (${BUILD} MATCHES "Default")
-	SET (LIBS_LINUX
-		HomerBase
-		HomerNAPI
-		HomerMonitor
-		${ALSA_LIBRARIES}
-		avdevice
-		avformat
-		avcodec
-		avutil
-		avfilter
-		swscale
-		x264
-		${SDL_LIBRARY}		
-		portaudio
-	)
-	IF (HAVE_SWRESAMPLE)
-		SET (LIBS_LINUX
-			${LIBS_LINUX}
-			swresample
-		)
-	ENDIF ()
+    SET (LIBS_LINUX
+        HomerBase
+        HomerNAPI
+        HomerMonitor
+        ${ALSA_LIBRARIES}
+        avdevice
+        avformat
+        avcodec
+        avutil
+        avfilter
+        swscale
+        x264
+        ${SDL_LIBRARY}
+        portaudio
+    )
+    IF (HAVE_SWRESAMPLE)
+        SET (LIBS_LINUX
+            ${LIBS_LINUX}
+            swresample
+        )
+    ENDIF ()
 ELSE ()
 	# USED LIBRARIES for linux environment
 	SET (LIBS_LINUX
@@ -241,7 +241,6 @@ ELSE ()
 		asound
 		pthread
 	)
-
 	SET (LIBS_LINUX_STATIC
 		avdevice
 		avformat
@@ -270,42 +269,42 @@ ENDIF ()
 
 # FEATURE pulseaudio
 IF (FEATURE_PULSEAUDIO)
-	SET (LIBS_LINUX
-		${LIBS_LINUX}
-		pulse-simple
-		pulse
-	)	
-ENDIF()	
+    SET (LIBS_LINUX
+        ${LIBS_LINUX}
+        pulse-simple
+        pulse
+    )
+ENDIF()
 
 #################
 # USED LIBRARIES for BSD environment
 SET (LIBS_BSD
-	HomerBase
-	HomerNAPI
-	HomerMonitor
+    HomerBase
+    HomerNAPI
+    HomerMonitor
 )
 
 SET (LIBS_BSD_STATIC
-	avdevice
-	avformat
-	avcodec
-	avfilter
-	swresample
-	swscale
-	avutil
-	mp3lame
-	opencore-amrnb
-	opencore-amrwb
-	x264
-	bz2
-	z
-	portaudio
-	SDL
+    avdevice
+    avformat
+    avcodec
+    avfilter
+    swresample
+    swscale
+    avutil
+    mp3lame
+    opencore-amrnb
+    opencore-amrwb
+    x264
+    bz2
+    z
+    portaudio
+    SDL
 )
 
 ##############################################################
 SET (TARGET_LIB_NAME
-	HomerMultimedia
+    HomerMultimedia
 )
 
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeCore.txt)

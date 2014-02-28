@@ -44,7 +44,7 @@ using namespace Homer::Monitor;
 #define MEDIA_SOURCE_RT_GRABBING_TIMESTAMP_HISTORY                             128
 
 // define the threshold for silence detection
-#define MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD					               128
+#define MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD                                 128
 
 //de/activate VDPAU support
 //#define MEDIA_SOURCE_VDPAU_SUPPORT
@@ -66,13 +66,13 @@ MediaSource::MediaSource(string pName):
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
     mInputStartPts = 0;
-	mDecodedSFrames = 0;
-	mDecodedSIFrames = 0;
-	mDecodedSPFrames = 0;
-	mDecodedBIFrames = 0;
-	mDecoderOutputFrameDelay = 0;
-	mAudioSilenceThreshold = MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD;
-	mDecoderFrameBufferTime = 0;
+    mDecodedSFrames = 0;
+    mDecodedSIFrames = 0;
+    mDecodedSPFrames = 0;
+    mDecodedBIFrames = 0;
+    mDecoderOutputFrameDelay = 0;
+    mAudioSilenceThreshold = MEDIA_SOURCE_DEFAULT_SILENCE_THRESHOLD;
+    mDecoderFrameBufferTime = 0;
     mDecoderFrameBufferTimeMax = 0;
     mDecoderFramePreBufferTime = 0;
     mSourceType = SOURCE_ABSTRACT;
@@ -118,7 +118,7 @@ MediaSource::MediaSource(string pName):
     mRTGrabbingFrameTimestamps.clear();
     mMediaType = MEDIA_UNKNOWN;
     for (int i = 0; i < MEDIA_SOURCE_MAX_AUDIO_CHANNELS; i++)
-		mResampleFifo[i] = NULL;
+        mResampleFifo[i] = NULL;
 
     FfmpegInit();
 
@@ -231,8 +231,8 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
     AVCodec *tNextCodec = av_codec_next(tCodec);
 
     string tIntro = "Supported video codecs:\n"
-           " D . = Decoding supported\n"
-           " . E = Encoding supported\n";
+                    " D . = Decoding supported\n"
+                    " . E = Encoding supported\n";
 
     if (pSendToLoggerOnly)
         LOGEX(MediaSource, LOG_VERBOSE, "%s", tIntro.c_str());
@@ -253,7 +253,7 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
 
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-	            #ifndef FF_API_OLD_ENCODE_AUDIO
+                #ifndef FF_API_OLD_ENCODE_AUDIO
                     tEncode |= (tNextCodec->encode != NULL);
                 #else
                     tEncode |= (tNextCodec->encode2 != NULL);
@@ -262,17 +262,9 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
                 tCodec = tNextCodec;
             }
             if (pSendToLoggerOnly)
-                LOGEX(MediaSource, LOG_VERBOSE, " %s %s  %-15s %s",
-                   tDecode ? "D" : " ",
-                   tEncode ? "E" : " ",
-                   tCodec->name,
-                   tCodec->long_name ? tCodec->long_name : "");
+                LOGEX(MediaSource, LOG_VERBOSE, " %s %s  %-15s %s", tDecode ? "D" : " ", tEncode ? "E" : " ", tCodec->name, tCodec->long_name ? tCodec->long_name : "");
             else
-                printf(" %s %s  %-15s %s\n",
-                   tDecode ? "D" : " ",
-                   tEncode ? "E" : " ",
-                   tCodec->name,
-                   tCodec->long_name ? tCodec->long_name : "");
+                printf(" %s %s  %-15s %s\n", tDecode ? "D" : " ", tEncode ? "E" : " ", tCodec->name, tCodec->long_name ? tCodec->long_name : "");
         }
 
         // go to next
@@ -291,8 +283,8 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
     AVCodec *tNextCodec = av_codec_next(tCodec);
 
     string tIntro = "Supported video codecs:\n"
-           " D . = Decoding supported\n"
-           " . E = Encoding supported\n";
+                    " D . = Decoding supported\n"
+                    " . E = Encoding supported\n";
 
     if (pSendToLoggerOnly)
         LOGEX(MediaSource, LOG_VERBOSE, "%s", tIntro.c_str());
@@ -303,16 +295,6 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
     {
         if (tCodec->type == AVMEDIA_TYPE_AUDIO)
         {
-//            printf("Found audio codec: %s %s  %-15s %s\n",
-//               tCodec->decode ? "D" : " ",
-//               tCodec->encode ? "E" : " ",
-//               tCodec->name,
-//               tCodec->long_name ? tCodec->long_name : "");
-//            printf("Found audio next codec: %s %s  %-15s %s\n",
-//				tNextCodec->decode ? "D" : " ",
-//				tNextCodec->encode ? "E" : " ",
-//				tNextCodec->name,
-//				tNextCodec->long_name ? tCodec->long_name : "");
             bool tDecode = (tCodec->decode != NULL);
             bool tEncode = false;
             #ifndef FF_API_OLD_ENCODE_AUDIO
@@ -331,17 +313,9 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
                 tCodec = tNextCodec;
             }
             if (pSendToLoggerOnly)
-                LOGEX(MediaSource, LOG_VERBOSE, " %s %s  %-15s %s",
-                   tDecode ? "D" : " ",
-                   tEncode ? "E" : " ",
-                   tCodec->name,
-                   tCodec->long_name ? tCodec->long_name : "");
+                LOGEX(MediaSource, LOG_VERBOSE, " %s %s  %-15s %s", tDecode ? "D" : " ", tEncode ? "E" : " ", tCodec->name, tCodec->long_name ? tCodec->long_name : "");
             else
-                printf(" %s %s  %-15s %s\n",
-                   tDecode ? "D" : " ",
-                   tEncode ? "E" : " ",
-                   tCodec->name,
-                   tCodec->long_name ? tCodec->long_name : "");
+                printf(" %s %s  %-15s %s\n", tDecode ? "D" : " ", tEncode ? "E" : " ", tCodec->name, tCodec->long_name ? tCodec->long_name : "");
         }
 
         // go to next
@@ -368,13 +342,9 @@ void MediaSource::LogSupportedInputFormats(bool pSendToLoggerOnly)
     while ((tFormat != NULL))
     {
         if (pSendToLoggerOnly)
-            LOGEX(MediaSource, LOG_VERBOSE, " %-15s %s",
-                tFormat->name,
-                tFormat->long_name ? tFormat->long_name : "");
+            LOGEX(MediaSource, LOG_VERBOSE, " %-15s %s", tFormat->name, tFormat->long_name ? tFormat->long_name : "");
         else
-            printf(" %-15s %s\n",
-                tFormat->name,
-                tFormat->long_name ? tFormat->long_name : "");
+            printf(" %-15s %s\n", tFormat->name, tFormat->long_name ? tFormat->long_name : "");
 
         // go to next
         tFormat = av_iformat_next(tFormat);
@@ -398,13 +368,9 @@ void MediaSource::LogSupportedOutputFormats(bool pSendToLoggerOnly)
     while ((tFormat != NULL))
     {
         if (pSendToLoggerOnly)
-            LOGEX(MediaSource, LOG_VERBOSE, " %-15s %s",
-                tFormat->name,
-                tFormat->long_name ? tFormat->long_name : "");
+            LOGEX(MediaSource, LOG_VERBOSE, " %-15s %s", tFormat->name, tFormat->long_name ? tFormat->long_name : "");
         else
-            printf(" %-15s %s\n",
-                tFormat->name,
-                tFormat->long_name ? tFormat->long_name : "");
+            printf(" %-15s %s\n", tFormat->name, tFormat->long_name ? tFormat->long_name : "");
 
         // go to next
         tFormat = av_oformat_next(tFormat);
@@ -487,8 +453,8 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
             delete tMutex;
             return 0;
         default:
-        	LOGEX(MediaSource, LOG_ERROR, "We should never reach this point. Unknown mutex operation requested by ffmpeg library.");
-        	break;
+            LOGEX(MediaSource, LOG_ERROR, "We should never reach this point. Unknown mutex operation requested by ffmpeg library.");
+            break;
     }
     return 1;
 }
@@ -496,29 +462,29 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
 /*************************************************
  *  GUI name to video codec ID mapping:
  *  ================================
- *        H.261							CODEC_ID_H261
- *        H.263							CODEC_ID_H263
- *        MPEG1							CODEC_ID_MPEG1VIDEO
- *        MPEG2							CODEC_ID_MPEG2VIDEO
- *        H.263+						CODEC_ID_H263P+
- *        H.264							CODEC_ID_H264
- *        MPEG2TS                       CODEC_ID_MPEG2TS
- *        MPEG4							CODEC_ID_MPEG4
- *        THEORA						CODEC_ID_THEORA
- *        VP8							CODEC_ID_VP8
+ *        H.261                            CODEC_ID_H261
+ *        H.263                            CODEC_ID_H263
+ *        MPEG1                            CODEC_ID_MPEG1VIDEO
+ *        MPEG2                            CODEC_ID_MPEG2VIDEO
+ *        H.263+                           CODEC_ID_H263P+
+ *        H.264                            CODEC_ID_H264
+ *        MPEG2TS                          CODEC_ID_MPEG2TS
+ *        MPEG4                            CODEC_ID_MPEG4
+ *        THEORA                           CODEC_ID_THEORA
+ *        VP8                              CODEC_ID_VP8
  *
  *
  *  GUI name to audio codec ID mapping:
  *  ================================
- *        G711 A-law					CODEC_ID_PCM_MULAW
- *        GSM							CODEC_ID_GSM
- *        G711 µ-law					CODEC_ID_PCM_ALAW
- *        G722 adpcm					CODEC_ID_ADPCM_G722
- *        PCM16							CODEC_ID_PCM_S16BE
- *        MP2                           CODEC_ID_MP2
- *        MP3							CODEC_ID_MP3
- *        AAC							CODEC_ID_AAC
- *        AMR							CODEC_ID_AMR_NB
+ *        G711 A-law                       CODEC_ID_PCM_MULAW
+ *        GSM                              CODEC_ID_GSM
+ *        G711 µ-law                       CODEC_ID_PCM_ALAW
+ *        G722 adpcm                       CODEC_ID_ADPCM_G722
+ *        PCM16                            CODEC_ID_PCM_S16BE
+ *        MP2                              CODEC_ID_MP2
+ *        MP3                              CODEC_ID_MP3
+ *        AAC                              CODEC_ID_AAC
+ *        AMR                              CODEC_ID_AMR_NB
  *
  ****************************************************/
 enum AVCodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
@@ -582,72 +548,72 @@ string MediaSource::GetGuiNameFromCodecID(enum AVCodecID pCodecId)
 
     switch(pCodecId)
     {
-    	/* video */
-    	case AV_CODEC_ID_H261:
-    			tResult = "H.261";
-    			break;
-    	case AV_CODEC_ID_H263:
-    			tResult = "H.263";
-    			break;
-    	case AV_CODEC_ID_MPEG1VIDEO:
-    			tResult = "MPEG1";
-    			break;
+        /* video */
+        case AV_CODEC_ID_H261:
+                tResult = "H.261";
+                break;
+        case AV_CODEC_ID_H263:
+                tResult = "H.263";
+                break;
+        case AV_CODEC_ID_MPEG1VIDEO:
+                tResult = "MPEG1";
+                break;
         case AV_CODEC_ID_MPEG2VIDEO:
-    			tResult = "MPEG2";
-    			break;
+                tResult = "MPEG2";
+                break;
         case AV_CODEC_ID_H263P:
-    			tResult = "H.263+";
-    			break;
+                tResult = "H.263+";
+                break;
         case AV_CODEC_ID_H264:
-    			tResult = "H.264";
-    			break;
+                tResult = "H.264";
+                break;
         case AV_CODEC_ID_MPEG2TS:
                 tResult = "MPEG2TS";
                 break;
         case AV_CODEC_ID_MPEG4:
-    			tResult = "MPEG4";
-    			break;
+                tResult = "MPEG4";
+                break;
         case AV_CODEC_ID_MJPEG:
-    			tResult = "MJPEG";
-    			break;
+                tResult = "MJPEG";
+                break;
         case AV_CODEC_ID_THEORA:
-    			tResult = "THEORA";
-    			break;
+                tResult = "THEORA";
+                break;
         case AV_CODEC_ID_VP8:
-    			tResult = "VP8";
-    			break;
+                tResult = "VP8";
+                break;
 
-		/* audio */
+        /* audio */
         case AV_CODEC_ID_PCM_MULAW:
-    			tResult = "G711 µ-law";
-    			break;
+                tResult = "G711 µ-law";
+                break;
         case AV_CODEC_ID_GSM:
-    			tResult = "GSM";
-    			break;
+                tResult = "GSM";
+                break;
         case AV_CODEC_ID_PCM_ALAW:
-    			tResult = "G711 A-law";
-    			break;
+                tResult = "G711 A-law";
+                break;
         case AV_CODEC_ID_ADPCM_G722:
-    			tResult = "G722 adpcm";
-    			break;
+                tResult = "G722 adpcm";
+                break;
         case AV_CODEC_ID_PCM_S16BE:
-    			tResult = "PCM16";
-    			break;
+                tResult = "PCM16";
+                break;
         case AV_CODEC_ID_MP2:
                 tResult = "MP2";
                 break;
         case AV_CODEC_ID_MP3:
-    			tResult = "MP3";
-    			break;
+                tResult = "MP3";
+                break;
         case AV_CODEC_ID_AAC:
-    			tResult = "AAC";
-    			break;
+                tResult = "AAC";
+                break;
         case AV_CODEC_ID_AMR_NB:
-    			tResult = "AMR";
-    			break;
+                tResult = "AMR";
+                break;
         case AV_CODEC_ID_AC3:
-    			tResult = "AC3";
-    			break;
+                tResult = "AC3";
+                break;
 
         default:
                 {
@@ -666,30 +632,30 @@ string MediaSource::GetGuiNameFromCodecID(enum AVCodecID pCodecId)
 /*************************************************
  *  video codec ID to format mapping:
  *  ================================
- *        AV_CODEC_ID_H261					h261
- *        AV_CODEC_ID_H263					h263
- *        AV_CODEC_ID_MPEG1VIDEO			mpeg1video
- *        AV_CODEC_ID_MPEG2VIDEO			mpeg2video
- *        AV_CODEC_ID_H263P+				h263 // same like H263
- *        AV_CODEC_ID_H264					h264
- *        AV_CODEC_ID_MPEG2TS              	mpegts
- *        AV_CODEC_ID_MPEG4					m4v
- *        AV_CODEC_ID_MJPEG					mjpeg
- *        AV_CODEC_ID_THEORA				ogg
- *        AV_CODEC_ID_VP8					webm
+ *        AV_CODEC_ID_H261                 h261
+ *        AV_CODEC_ID_H263                 h263
+ *        AV_CODEC_ID_MPEG1VIDEO           mpeg1video
+ *        AV_CODEC_ID_MPEG2VIDEO           mpeg2video
+ *        AV_CODEC_ID_H263P+               h263 // same like H263
+ *        AV_CODEC_ID_H264                 h264
+ *        AV_CODEC_ID_MPEG2TS              mpegts
+ *        AV_CODEC_ID_MPEG4                m4v
+ *        AV_CODEC_ID_MJPEG                mjpeg
+ *        AV_CODEC_ID_THEORA               ogg
+ *        AV_CODEC_ID_VP8                  webm
  *
  *
  *  audio codec ID to format mapping:
  *  ================================
- *        AV_CODEC_ID_PCM_MULAW				mulaw
- *        AV_CODEC_ID_GSM					libgsm
- *        AV_CODEC_ID_PCM_ALAW				alaw
- *        AV_CODEC_ID_ADPCM_G722			g722
- *        AV_CODEC_ID_PCM_S16BE				s16be
- *        AV_CODEC_ID_MP2                  	mp3
- *        AV_CODEC_ID_MP3					mp3
- *        AV_CODEC_ID_AAC					aac
- *        AV_CODEC_ID_AMR_NB				amr
+ *        AV_CODEC_ID_PCM_MULAW            mulaw
+ *        AV_CODEC_ID_GSM                  libgsm
+ *        AV_CODEC_ID_PCM_ALAW             alaw
+ *        AV_CODEC_ID_ADPCM_G722           g722
+ *        AV_CODEC_ID_PCM_S16BE            s16be
+ *        AV_CODEC_ID_MP2                  mp3
+ *        AV_CODEC_ID_MP3                  mp3
+ *        AV_CODEC_ID_AAC                  aac
+ *        AV_CODEC_ID_AMR_NB               amr
  *
  ****************************************************/
 string MediaSource::GetFormatName(enum AVCodecID pCodecId)
@@ -698,76 +664,76 @@ string MediaSource::GetFormatName(enum AVCodecID pCodecId)
 
     switch(pCodecId)
     {
-    	/* video */
-    	case AV_CODEC_ID_H261:
-    			tResult = "h261";
-    			break;
-    	case AV_CODEC_ID_H263:
-    			tResult = "h263";
-    			break;
-    	case AV_CODEC_ID_MPEG1VIDEO:
-    			tResult = "mpeg1video";
-    			break;
+        /* video */
+        case AV_CODEC_ID_H261:
+                tResult = "h261";
+                break;
+        case AV_CODEC_ID_H263:
+                tResult = "h263";
+                break;
+        case AV_CODEC_ID_MPEG1VIDEO:
+                tResult = "mpeg1video";
+                break;
         case AV_CODEC_ID_MPEG2VIDEO:
-    			tResult = "mpeg2video";
-    			break;
+                tResult = "mpeg2video";
+                break;
         case AV_CODEC_ID_H263P:
-    			tResult = "h263"; // ffmpeg has no separate h263+ format
-    			break;
+                tResult = "h263"; // ffmpeg has no separate h263+ format
+                break;
         case AV_CODEC_ID_H264:
-    			tResult = "h264";
-    			break;
+                tResult = "h264";
+                break;
         case AV_CODEC_ID_MPEG2TS:
                 tResult = "mpegts";
                 break;
         case AV_CODEC_ID_MPEG4:
-    			tResult = "m4v";
-    			break;
+                tResult = "m4v";
+                break;
         case AV_CODEC_ID_MJPEG:
-    			tResult = "mjpeg";
-    			break;
+                tResult = "mjpeg";
+                break;
         case AV_CODEC_ID_THEORA:
-    			tResult = "ogg";
-    			break;
+                tResult = "ogg";
+                break;
         case AV_CODEC_ID_VP8:
-    			tResult = "webm";
-    			break;
+                tResult = "webm";
+                break;
 
-		/* audio */
+        /* audio */
         case AV_CODEC_ID_PCM_MULAW:
-    			tResult = "mulaw";
-    			break;
+                tResult = "mulaw";
+                break;
         case AV_CODEC_ID_GSM:
-    			tResult = "gsm";
-    			break;
+                tResult = "gsm";
+                break;
         case AV_CODEC_ID_PCM_ALAW:
-    			tResult = "alaw";
-    			break;
+                tResult = "alaw";
+                break;
         case AV_CODEC_ID_ADPCM_G722:
-    			tResult = "g722";
-    			break;
+                tResult = "g722";
+                break;
         case AV_CODEC_ID_PCM_S16BE:
-    			tResult = "s16be";
-    			break;
+                tResult = "s16be";
+                break;
         case AV_CODEC_ID_MP2:
                 tResult = "mp3";
                 break;
         case AV_CODEC_ID_MP3:
-    			tResult = "mp3";
-    			break;
+                tResult = "mp3";
+                break;
         case AV_CODEC_ID_AAC:
-    			tResult = "aac";
-    			break;
+                tResult = "aac";
+                break;
         case AV_CODEC_ID_AMR_NB:
-    			tResult = "amr";
-    			break;
+                tResult = "amr";
+                break;
         case AV_CODEC_ID_AC3:
-    			tResult = "ac3";
-    			break;
+                tResult = "ac3";
+                break;
 
         default:
-        	LOGEX(MediaSource, LOG_WARN, "Detected unsupported %s codec %s(%d)", GetMediaTypeStr().c_str(), HM_avcodec_get_name(pCodecId), pCodecId);
-        	break;
+            LOGEX(MediaSource, LOG_WARN, "Detected unsupported %s codec %s(%d)", GetMediaTypeStr().c_str(), HM_avcodec_get_name(pCodecId), pCodecId);
+            break;
     }
 
     //LOGEX(MediaSource, LOG_VERBOSE, "Translated codec id %d to format %s", pCodecId, tResult.c_str());
@@ -823,7 +789,7 @@ int MediaSource::GetOutputSampleRate()
 
 int MediaSource::GetOutputChannels()
 {
-	return mOutputAudioChannels;
+    return mOutputAudioChannels;
 }
 
 int MediaSource::GetInputSampleRate()
@@ -833,7 +799,7 @@ int MediaSource::GetInputSampleRate()
 
 int MediaSource::GetInputChannels()
 {
-	return mInputAudioChannels;
+    return mInputAudioChannels;
 }
 
 string MediaSource::GetInputFormatStr()
@@ -843,17 +809,17 @@ string MediaSource::GetInputFormatStr()
 
 int MediaSource::GetInputBitRate()
 {
-	return mInputBitRate;
+    return mInputBitRate;
 }
 
 bool MediaSource::HasVariableOutputFrameRate()
 {
-	return false;
+    return false;
 }
 
 bool MediaSource::IsSeeking()
 {
-	return false;
+    return false;
 }
 
 AVFrame *MediaSource::AllocFrame()
@@ -866,7 +832,7 @@ AVFrame *MediaSource::AllocFrame()
 
 int MediaSource::FillFrame(AVFrame *pFrame, void *pData, enum PixelFormat pPixFormat, int pWidth, int pHeight)
 {
-	return avpicture_fill((AVPicture *)pFrame, (uint8_t *)pData, pPixFormat, pWidth, pHeight);
+    return avpicture_fill((AVPicture *)pFrame, (uint8_t *)pData, pPixFormat, pWidth, pHeight);
 }
 
 void MediaSource::VideoFormat2Resolution(VideoFormat pFormat, int& pX, int& pY)
@@ -1032,7 +998,7 @@ void MediaSource::SetFrameBufferPreBufferingTime(float pTime)
 
 float MediaSource::GetFrameBufferTime()
 {
-	return mDecoderFrameBufferTime;
+    return mDecoderFrameBufferTime;
 }
 
 float MediaSource::GetFrameBufferTimeMax()
@@ -1042,7 +1008,7 @@ float MediaSource::GetFrameBufferTimeMax()
 
 int MediaSource::GetFrameBufferCounter()
 {
-	return 0;
+    return 0;
 }
 
 int MediaSource::GetFrameBufferSize()
@@ -1123,29 +1089,29 @@ void MediaSource::DoSetVideoGrabResolution(int pResX, int pResY)
 
 void MediaSource::SetVideoGrabResolution(int pResX, int pResY)
 {
-	if(!mRecording)
-	{
-		if ((pResX != mTargetResX) || (pResY != mTargetResY))
-		{
-			LOG(LOG_VERBOSE, "Setting video grabbing resolution to %d * %d", pResX, pResY);
+    if(!mRecording)
+    {
+        if ((pResX != mTargetResX) || (pResY != mTargetResY))
+        {
+            LOG(LOG_VERBOSE, "Setting video grabbing resolution to %d * %d", pResX, pResY);
 
-			mTargetResX = pResX;
-			mTargetResY = pResY;
-			if ((mMediaType == MEDIA_VIDEO) && (mMediaSourceOpened))
-			{
-				// lock grabbing
-				mGrabMutex.lock();
+            mTargetResX = pResX;
+            mTargetResY = pResY;
+            if ((mMediaType == MEDIA_VIDEO) && (mMediaSourceOpened))
+            {
+                // lock grabbing
+                mGrabMutex.lock();
 
-				DoSetVideoGrabResolution(mTargetResX, mTargetResY);
+                DoSetVideoGrabResolution(mTargetResX, mTargetResY);
 
-				// unlock grabbing
-				mGrabMutex.unlock();
-			}
-		}
-	}else
-	{
-		LOG(LOG_ERROR, "Can't change video resolution if recording is activated");
-	}
+                // unlock grabbing
+                mGrabMutex.unlock();
+            }
+        }
+    }else
+    {
+        LOG(LOG_ERROR, "Can't change video resolution if recording is activated");
+    }
 }
 
 void MediaSource::GetVideoGrabResolution(int &pResX, int &pResY)
@@ -1196,7 +1162,7 @@ bool MediaSource::IsGrabbingStopped()
 
 bool MediaSource::Reset(enum MediaType pMediaType)
 {
-	bool tResult = false;
+    bool tResult = false;
 
     // HINT: closing the grab device resets the media type!
     int tMediaType = (pMediaType == MEDIA_UNKNOWN) ? mMediaType : pMediaType;
@@ -1241,18 +1207,18 @@ enum AVCodecID MediaSource::GetSourceCodec()
 
 string MediaSource::GetSourceCodecStr()
 {
-	string tResult = "unknown";
+    string tResult = "unknown";
 
     if (mMediaSourceOpened)
         if (mCodecContext != NULL)
             if (mCodecContext->codec != NULL)
                 if (mCodecContext->codec->name != NULL)
                 {
-                	string tName = GetGuiNameFromCodecID(mCodecContext->codec->id);
-                	if (tName != "")
-                		tResult = tName;
-                	else
-                		tResult = string(mCodecContext->codec->name);
+                    string tName = GetGuiNameFromCodecID(mCodecContext->codec->id);
+                    if (tName != "")
+                        tResult = tName;
+                    else
+                        tResult = string(mCodecContext->codec->name);
                 }
 
     return tResult;
@@ -1260,7 +1226,7 @@ string MediaSource::GetSourceCodecStr()
 
 string MediaSource::GetSourceCodecDescription()
 {
-	string tResult = "unknown";
+    string tResult = "unknown";
 
     if (mMediaSourceOpened)
         if (mCodecContext != NULL)
@@ -1822,7 +1788,7 @@ bool MediaSource::SupportsRelaying()
 
 int MediaSource::GetEncoderBufferedFrames()
 {
-	return 0;
+    return 0;
 }
 
 void MediaSource::RelayChunkToMediaFilters(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame)
@@ -1905,20 +1871,20 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_VERBOSE, "Going to open recorder, media type is \"%s\"", GetMediaTypeStr().c_str());
 
     //find simple file name
-	size_t tSize;
-	tSize = pSaveFileName.rfind('/');
+    size_t tSize;
+    tSize = pSaveFileName.rfind('/');
 
-	// Windows path?
-	if (tSize == string::npos)
-		tSize = pSaveFileName.rfind('\\');
+    // Windows path?
+    if (tSize == string::npos)
+        tSize = pSaveFileName.rfind('\\');
 
-	// nothing found?
-	if (tSize != string::npos)
-		tSize++;
-	else
-		tSize = 0;
+    // nothing found?
+    if (tSize != string::npos)
+        tSize++;
+    else
+        tSize = 0;
 
-	string tSimpleFileName = pSaveFileName.substr(tSize, pSaveFileName.length() - tSize);
+    string tSimpleFileName = pSaveFileName.substr(tSize, pSaveFileName.length() - tSize);
 
     char tAuthor[512] = "HomerMultimedia";
     //char tTitle[512] = "recorded live video";
@@ -2340,7 +2306,7 @@ void MediaSource::StopRecording()
         av_freep(mRecorderEncoderStream);
 
         if (!(mRecorderFormatContext->oformat->flags & AVFMT_NOFILE))
-        	avio_close(mRecorderFormatContext->pb);
+            avio_close(mRecorderFormatContext->pb);
 
         // close the format context
         av_free(mRecorderFormatContext);
@@ -2365,12 +2331,12 @@ void MediaSource::StopRecording()
 
 bool MediaSource::SupportsRecording()
 {
-	return false;
+    return false;
 }
 
 bool MediaSource::IsRecording()
 {
-	return mRecording;
+    return mRecording;
 }
 
 int64_t MediaSource::RecordingTime()
@@ -2472,12 +2438,12 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
 
                     int tResamplingOutputSamples = 0;
 
-					#ifdef MS_DEBUG_RECORDER_PACKETS
-						if (mCodecContext != NULL)
-						{
-							if (pSourceFrame->nb_samples != mCodecContext->frame_size)
-								LOG(LOG_WARN, "Number of samples in source frame (%d) differs from the defined frame size (%d) in the codec context", pSourceFrame->nb_samples, mCodecContext->frame_size);
-						}
+                    #ifdef MS_DEBUG_RECORDER_PACKETS
+                        if (mCodecContext != NULL)
+                        {
+                            if (pSourceFrame->nb_samples != mCodecContext->frame_size)
+                                LOG(LOG_WARN, "Number of samples in source frame (%d) differs from the defined frame size (%d) in the codec context", pSourceFrame->nb_samples, mCodecContext->frame_size);
+                        }
                         LOG(LOG_VERBOSE, "Recorder audio input data planes...");
                         for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
                         {
@@ -2747,17 +2713,17 @@ void MediaSource::AnnounceFrame(AVFrame *pFrame)
                     mDecodedBFrames++;
                     break;
                 case AV_PICTURE_TYPE_S: // S(GMC)-VOP MPEG4
-                	mDecodedSFrames++;
-                	break;
+                    mDecodedSFrames++;
+                    break;
                 case AV_PICTURE_TYPE_SI: // Switching Intra
-                	mDecodedSIFrames++;
-                	break;
+                    mDecodedSIFrames++;
+                    break;
                 case AV_PICTURE_TYPE_SP: // Switching Predicted
-                	mDecodedSPFrames++;
-                	break;
+                    mDecodedSPFrames++;
+                    break;
                 case AV_PICTURE_TYPE_BI: // BI type
-                	mDecodedBIFrames++;
-                	break;
+                    mDecodedBIFrames++;
+                    break;
                 default:
                     LOG(LOG_WARN, "Unknown picture type: %d", pFrame->pict_type);
                     break;
@@ -2805,14 +2771,14 @@ string MediaSource::GetMediaTypeStr()
         case MEDIA_AUDIO:
             return "AUDIO";
         default:
-        	return "VIDEO/AUDIO";
+            return "VIDEO/AUDIO";
     }
     return "unknown";
 }
 
 enum MediaType MediaSource::GetMediaType()
 {
-	return mMediaType;
+    return mMediaType;
 }
 
 void MediaSource::getVideoDevices(VideoDevices &pVList)
@@ -2923,7 +2889,7 @@ bool MediaSource::SelectDevice(std::string pDeviceName, enum MediaType pMediaTyp
 
 std::string MediaSource::GetCurrentDevicePeerName()
 {
-	return "";
+    return "";
 }
 
 std::string MediaSource::GetPeerDeviceName()
@@ -2933,7 +2899,7 @@ std::string MediaSource::GetPeerDeviceName()
 
 std::string MediaSource::GetCurrentDeviceName()
 {
-	return mCurrentDeviceName;
+    return mCurrentDeviceName;
 }
 
 bool MediaSource::RegisterMediaSource(MediaSource* pMediaSource)
@@ -3013,7 +2979,7 @@ void* MediaSource::AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMedia
             pChunkBufferSize = MEDIA_SOURCE_SAMPLES_MULTI_BUFFER_SIZE * 2 + FF_INPUT_BUFFER_PADDING_SIZE;
             return av_malloc(pChunkBufferSize);
         default:
-        	LOG(LOG_WARN, "Undefined media type, returning chunk buffer will be invalid");
+            LOG(LOG_WARN, "Undefined media type, returning chunk buffer will be invalid");
             return NULL;
     }
 }
@@ -3066,7 +3032,7 @@ vector<string> MediaSource::GetInputStreams()
 
 bool MediaSource::HasInputStreamChanged()
 {
-	return false;
+    return false;
 }
 
 string MediaSource::CurrentInputStream()
@@ -3119,22 +3085,22 @@ int64_t MediaSource::GetPtsFromFpsEmulator()
 
 bool MediaSource::ContainsOnlySilence(void* pChunkBuffer, int pChunkSize)
 {
-	bool tResult = true;
-	short int tSample;
+    bool tResult = true;
+    short int tSample;
 
-	// scan all samples
-	for (int i = 0; i < pChunkSize / 4; i++)
-	{
-		tSample = *((int16_t*)pChunkBuffer + i * 2);
-		if ((tSample > mAudioSilenceThreshold) || (tSample < -mAudioSilenceThreshold))
-		{// we detected an interesting sample
-			//LOG(LOG_VERBOSE, "%hd %d %d", i, tSample, mAudioSilenceThreshold);
-			tResult = false;
-			break;
-		}
-	}
+    // scan all samples
+    for (int i = 0; i < pChunkSize / 4; i++)
+    {
+        tSample = *((int16_t*)pChunkBuffer + i * 2);
+        if ((tSample > mAudioSilenceThreshold) || (tSample < -mAudioSilenceThreshold))
+        {// we detected an interesting sample
+            //LOG(LOG_VERBOSE, "%hd %d %d", i, tSample, mAudioSilenceThreshold);
+            tResult = false;
+            break;
+        }
+    }
 
-	return tResult;
+    return tResult;
 }
 
 int64_t FilterNeg(int64_t pValue)
@@ -3223,10 +3189,10 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
     mDecodedIFrames = 0;
     mDecodedPFrames = 0;
     mDecodedBFrames = 0;
-	mDecodedSFrames = 0;
-	mDecodedSIFrames = 0;
-	mDecodedSPFrames = 0;
-	mDecodedBIFrames = 0;
+    mDecodedSFrames = 0;
+    mDecodedSIFrames = 0;
+    mDecodedSPFrames = 0;
+    mDecodedBIFrames = 0;
 }
 
 void MediaSource::EventGrabChunkSuccessful(string pSource, int pLine, int pChunkNumber)
@@ -3265,16 +3231,16 @@ void MediaSource::EventGrabChunkFailed(string pSource, int pLine, string pReason
 // ####################################################################################
 bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, AVCodecID pCodecId, AVInputFormat **pFormat)
 {
-	AVInputFormat *tResult = NULL;
+    AVInputFormat *tResult = NULL;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to find %s input format for codec %s(0x%x)..", GetMediaTypeStr().c_str(), HM_avcodec_get_name(pCodecId), pCodecId);
 
-	if (pFormat == NULL)
-	{
-		LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid format pointer");
+    if (pFormat == NULL)
+    {
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid format pointer");
 
-		return false;
-	}
+        return false;
+    }
 
     // derive codec name from codec ID
     string tCodecName = GetFormatName(pCodecId);
@@ -3283,44 +3249,44 @@ bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, AVCodecID pCode
         tCodecName = "mpegvideo";
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Searching for input format of codec: %s", tCodecName.c_str());
-	if ((tResult = av_find_input_format(tCodecName.c_str())) == NULL)
+    if ((tResult = av_find_input_format(tCodecName.c_str())) == NULL)
     {
         if (!mGrabbingStopped)
-        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s input format for codec %s", GetMediaTypeStr().c_str(), tCodecName.c_str());
+            LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s input format for codec %s", GetMediaTypeStr().c_str(), tCodecName.c_str());
 
         return NULL;
     }
 
-	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Successfully found %s input format %s(%s) with flags: 0x%x", GetMediaTypeStr().c_str(), tResult->name, tResult->long_name, tResult->flags);
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Successfully found %s input format %s(%s) with flags: 0x%x", GetMediaTypeStr().c_str(), tResult->name, tResult->long_name, tResult->flags);
 
     *pFormat = tResult;
 
-	return true;
+    return true;
 }
 
 bool MediaSource::FfmpegCreateIOContext(string pSource, int pLine, char *pPacketBuffer, int pPacketBufferSize, IOFunction pReadFunction, IOFunction pWriteFunction, void *pOpaque, AVIOContext **pIoContext)
 {
-	AVIOContext *tResult = NULL;
+    AVIOContext *tResult = NULL;
 
-	if (pIoContext == NULL)
-	{
-		LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid I/O context pointer");
+    if (pIoContext == NULL)
+    {
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid I/O context pointer");
 
-		return false;
-	}
+        return false;
+    }
 
-	// create the I/O context
-	tResult = avio_alloc_context((uint8_t*) pPacketBuffer, pPacketBufferSize, (pWriteFunction != NULL) ? 1 : 0 /* read-only? */, pOpaque, pReadFunction, pWriteFunction, NULL);
+    // create the I/O context
+    tResult = avio_alloc_context((uint8_t*) pPacketBuffer, pPacketBufferSize, (pWriteFunction != NULL) ? 1 : 0 /* read-only? */, pOpaque, pReadFunction, pWriteFunction, NULL);
 
-	//pPacketBuffermStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
-	tResult->seekable = 0;
+    //pPacketBuffermStreamPacketBuffer, MEDIA_SOURCE_MEM_STREAM_PACKET_BUFFER_SIZE, /* read-only */0, this, GetNextPacket, NULL, NULL);
+    tResult->seekable = 0;
 
-	// limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
-	tResult->max_packet_size = pPacketBufferSize;
+    // limit packet size, otherwise ffmpeg will deliver unpredictable results ;)
+    tResult->max_packet_size = pPacketBufferSize;
 
     *pIoContext = tResult;
 
-	return true;
+    return true;
 }
 
 int MediaSource::FindStreamInfoCallback(void *pMediaSource)
@@ -3337,13 +3303,13 @@ int MediaSource::FindStreamInfoCallback(void *pMediaSource)
 
 bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputName, AVInputFormat *pInputFormat, AVIOContext *pIOContext)
 {
-	int 				tRes = 0;
+    int                 tRes = 0;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to open %s input..", GetMediaTypeStr().c_str());
 
     if (mMediaSourceOpened)
     {
-    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "%s source already open", GetMediaTypeStr().c_str());
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "%s source already open", GetMediaTypeStr().c_str());
 
         return false;
     }
@@ -3360,12 +3326,12 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..calling avformat_open_input() for %s source and input format %s", GetMediaTypeStr().c_str(), (pInputFormat != NULL) ? pInputFormat->name : "unknown");
     mFormatContext->interrupt_callback.callback = FindStreamInfoCallback;
     mFormatContext->interrupt_callback.opaque = this;
-	if ((tRes = avformat_open_input(&mFormatContext, pInputName, pInputFormat, NULL)) < 0)
-	{
-    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open %s input \"%s\" because \"%s\"(%d)", GetMediaTypeStr().c_str(), pInputName, strerror(AVUNERROR(tRes)), tRes);
+    if ((tRes = avformat_open_input(&mFormatContext, pInputName, pInputFormat, NULL)) < 0)
+    {
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open %s input \"%s\" because \"%s\"(%d)", GetMediaTypeStr().c_str(), pInputName, strerror(AVUNERROR(tRes)), tRes);
 
-		return false;
-	}
+        return false;
+    }
     if (pInputFormat != NULL)
         LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s input format %s successfully opened ", GetMediaTypeStr().c_str(), pInputFormat->name);
 
@@ -3384,12 +3350,12 @@ bool MediaSource::FfmpegOpenInput(string pSource, int pLine, const char *pInputN
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "%s input opened", GetMediaTypeStr().c_str());
 
-	return true;
+    return true;
 }
 
 bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
 {
-	int 				tRes = 0;
+    int                 tRes = 0;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to detect all existing streams in input for selecting a %s stream later..", GetMediaTypeStr().c_str());
 
@@ -3437,7 +3403,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     if ((tRes = avformat_find_stream_info(mFormatContext, NULL)) < 0)
     {
         if (!mGrabbingStopped)
-        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s stream information for format %s because \"%s\"(%d)", GetMediaTypeStr().c_str(), mFormatContext->iformat->name, strerror(AVUNERROR(tRes)), tRes);
+            LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s stream information for format %s because \"%s\"(%d)", GetMediaTypeStr().c_str(), mFormatContext->iformat->name, strerror(AVUNERROR(tRes)), tRes);
         else
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped during avformat_find_stream_info()");
 
@@ -3453,7 +3419,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
         LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..flags: 0x%x", mFormatContext->iformat->flags);
     }
 
-	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected all %s streams", GetMediaTypeStr().c_str());
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected all %s streams", GetMediaTypeStr().c_str());
 
     return true;
 }
@@ -3465,66 +3431,79 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
     // reset used media stream ID
     mMediaStreamIndex = -1;
 
-	enum AVMediaType tTargetMediaType;
-	string tMediaSource = "";
-	string tTargetMediaDescription = "unknown";
-	int tPos = pSource.rfind(':');
-	if (tPos != (int)string::npos)
-		tMediaSource = pSource.substr(tPos + 1, pSource.length() - tPos- 1);
+    enum AVMediaType tTargetMediaType;
+    string tMediaSource = "";
+    string tTargetMediaDescription = "unknown";
+    int tPos = pSource.rfind(':');
+    if (tPos != (int)string::npos)
+        tMediaSource = pSource.substr(tPos + 1, pSource.length() - tPos- 1);
 
-	switch(mMediaType)
-	{
-		case MEDIA_VIDEO:
-			tTargetMediaType = AVMEDIA_TYPE_VIDEO;
-			tTargetMediaDescription = tMediaSource + "(video)";
-			break;
-		case MEDIA_AUDIO:
-			tTargetMediaType = AVMEDIA_TYPE_AUDIO;
-			tTargetMediaDescription = tMediaSource + "(audio)";
-			break;
-		default:
-			break;
-	}
+    switch(mMediaType)
+    {
+        case MEDIA_VIDEO:
+            tTargetMediaType = AVMEDIA_TYPE_VIDEO;
+            tTargetMediaDescription = tMediaSource + "(video)";
+            break;
+        case MEDIA_AUDIO:
+            tTargetMediaType = AVMEDIA_TYPE_AUDIO;
+            tTargetMediaDescription = tMediaSource + "(audio)";
+            break;
+        default:
+            break;
+    }
 
     //######################################################
     //### check all detected streams for a matching one
     //######################################################
-	LOG(LOG_VERBOSE, "Found %d input streams", mFormatContext->nb_streams);
-	for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
-	{
-	    //######################################################
-	    //### dump ffmpeg information about format
-	    //######################################################
-	    if(mFormatContext->streams[i]->codec->codec_type == tTargetMediaType)
-	    {
-	        av_dump_format(mFormatContext, i, tTargetMediaDescription.c_str(), false);
-	        mMediaStreamIndex = i;
-	        break;
-	    }else
-	    {
-	        LOG(LOG_VERBOSE, "Ignoring stream of type: %s(%d)", mFormatContext->streams[i]->codec->codec_name, mFormatContext->streams[i]->codec->codec_type);
-            av_dump_format(mFormatContext, i, "IGNORED STREAM", false);
-	    }
-	}
-
-	if (mMediaStreamIndex == -1)
+    LOG(LOG_VERBOSE, "Found %d input streams", mFormatContext->nb_streams);
+    for (int i = 0; i < (int)mFormatContext->nb_streams; i++)
     {
-	    LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a %s stream..", GetMediaTypeStr().c_str());
+        //######################################################
+        //### dump ffmpeg information about format
+        //######################################################
+        if(mFormatContext->streams[i]->codec->codec_type == tTargetMediaType)
+        {
+            av_dump_format(mFormatContext, i, tTargetMediaDescription.c_str(), false);
+            mMediaStreamIndex = i;
+            break;
+        }else
+        {
+            LOG(LOG_VERBOSE, "Ignoring stream of type: %s(%d)", mFormatContext->streams[i]->codec->codec_name, mFormatContext->streams[i]->codec->codec_type);
+            av_dump_format(mFormatContext, i, "IGNORED STREAM", false);
+        }
+    }
 
-	    // Close the video stream
-	    HM_avformat_close_input(mFormatContext);
+    if (mMediaStreamIndex == -1)
+    {
+        //######################################################
+        //### dump ffmpeg information about format
+        //######################################################
+        if(mFormatContext->streams[i]->codec->codec_type == tTargetMediaType)
+        {
+            av_dump_format(mFormatContext, i, tTargetMediaDescription.c_str(), false);
+            mMediaStreamIndex = i;
+            break;
+        }
+    }
+
+    if (mMediaStreamIndex == -1)
+    {
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a %s stream..", GetMediaTypeStr().c_str());
+
+        // Close the video stream
+        HM_avformat_close_input(mFormatContext);
 
         return false;
     }
 
-	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Found %s stream at index %d", GetMediaTypeStr().c_str(), mMediaStreamIndex);
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Found %s stream at index %d", GetMediaTypeStr().c_str(), mMediaStreamIndex);
 
-	return true;
+    return true;
 }
 
 bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 {
-	int 				tRes = 0;
+    int                 tRes = 0;
     AVCodec             *tCodec = NULL;
     AVDictionary        *tOptions = NULL;
 
@@ -3535,22 +3514,22 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     // check for VDPAU support
     if (mCodecContext->codec)
-	{
-    	if (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL_VDPAU)
-        	LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports HW decoding (VDPAU)!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+    {
+        if (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL_VDPAU)
+            LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports HW decoding (VDPAU)!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
 
-    	if (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL)
-        	LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports HW decoding (XvMC)!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+        if (mCodecContext->codec->capabilities & CODEC_CAP_HWACCEL)
+            LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports HW decoding (XvMC)!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
 
-    	if (mCodecContext->codec->capabilities & CODEC_CAP_SUBFRAMES)
-        	LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports SUB FRAMES!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
+        if (mCodecContext->codec->capabilities & CODEC_CAP_SUBFRAMES)
+            LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports SUB FRAMES!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
 
         if (mCodecContext->codec->capabilities & CODEC_CAP_DELAY)
             LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports might DELAY FRAMES!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
 
         if (mCodecContext->codec->capabilities & CODEC_CAP_TRUNCATED)
             LOG_REMOTE(LOG_WARN, pSource, pLine, "%s codec %s supports TRUNCATED PACKETS!", GetMediaTypeStr().c_str(), mCodecContext->codec->name);
-	}
+    }
 
     // make sure we have a defined frame size
     if (mCodecContext->frame_size < 32)
@@ -3561,50 +3540,50 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     switch(mMediaType)
     {
-		case MEDIA_VIDEO:
-			// set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
-			mSourceResX = mCodecContext->width;
-			mSourceResY = mCodecContext->height;
+        case MEDIA_VIDEO:
+            // set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
+            mSourceResX = mCodecContext->width;
+            mSourceResY = mCodecContext->height;
 
-			// fall back method for resolution detection
-		    if ((mSourceResX == 0) && (mSourceResY == 0))
-		    {
-		        mSourceResX = mCodecContext->coded_width;
-		        mSourceResY = mCodecContext->coded_height;
-		    }
+            // fall back method for resolution detection
+            if ((mSourceResX == 0) && (mSourceResY == 0))
+            {
+                mSourceResX = mCodecContext->coded_width;
+                mSourceResY = mCodecContext->coded_height;
+            }
 
-		    mOutputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
+            mOutputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
 
-		    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d", mSourceResX, mSourceResY);
-		    break;
+            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d", mSourceResX, mSourceResY);
+            break;
 
-		case MEDIA_AUDIO:
+        case MEDIA_AUDIO:
 
-			// set sample rate and bit rate to the resulting ones delivered by opened audio codec
-			mInputAudioSampleRate = mCodecContext->sample_rate;
-			mInputAudioChannels = mCodecContext->channels;
-			mInputAudioFormat = mCodecContext->sample_fmt;
-			mOutputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
+            // set sample rate and bit rate to the resulting ones delivered by opened audio codec
+            mInputAudioSampleRate = mCodecContext->sample_rate;
+            mInputAudioChannels = mCodecContext->channels;
+            mInputAudioFormat = mCodecContext->sample_fmt;
+            mOutputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
 
-		    break;
+            break;
 
-		default:
-			break;
+        default:
+            break;
     }
 
-	mInputBitRate = mFormatContext->streams[mMediaStreamIndex]->codec->bit_rate;
+    mInputBitRate = mFormatContext->streams[mMediaStreamIndex]->codec->bit_rate;
 
-	// derive the FPS from the timebase of the selected input stream
-	mInputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
+    // derive the FPS from the timebase of the selected input stream
+    mInputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", GetInputFrameRate());
 
     if ((mMediaType == MEDIA_VIDEO) && ((mSourceResX == 0) || (mSourceResY == 0)))
     {
-    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't detect VIDEO resolution information within input stream");
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't detect VIDEO resolution information within input stream");
 
         // Close the video file
-    	HM_avformat_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
 
         return false;
     }
@@ -3645,10 +3624,10 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     if(tCodec == NULL)
     {
-    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a fitting %s codec", GetMediaTypeStr().c_str());
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find a fitting %s codec", GetMediaTypeStr().c_str());
 
         // Close the video stream
-    	HM_avformat_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
 
         return false;
     }
@@ -3673,7 +3652,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     }
 
     if (tCodec->capabilities & CODEC_CAP_DR1)
-    	mCodecContext->flags |= CODEC_FLAG_EMU_EDGE;
+        mCodecContext->flags |= CODEC_FLAG_EMU_EDGE;
 
     //######################################################
     //### open the selected codec
@@ -3681,11 +3660,11 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..going to open %s codec..", GetMediaTypeStr().c_str());
     if ((tRes = HM_avcodec_open(mCodecContext, tCodec, &tOptions)) < 0)
     {
-    	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open video codec because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't open video codec because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
 
-    	HM_avformat_close_input(mFormatContext);
+        HM_avformat_close_input(mFormatContext);
 
-    	return false;
+        return false;
     }
 
     if (tCodec->capabilities & CODEC_CAP_DELAY)
@@ -3694,7 +3673,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     }
 
     //HINT: we allow the input bit stream to be truncated at packet boundaries instead of frame boundaries,
-    //		otherwise an UDP/TCP based transmission will fail because the decoder expects only complete packets as input
+    //        otherwise an UDP/TCP based transmission will fail because the decoder expects only complete packets as input
     mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS | CODEC_FLAG2_SHOW_ALL;
 
     //set duration
@@ -3705,7 +3684,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     }else
     {
         LOG_REMOTE(LOG_WARN, pSource, pLine, "Found duration of %s stream is invalid, will use a value of 0 instead", GetMediaTypeStr().c_str());
-    	mNumberOfFrames = 0;
+        mNumberOfFrames = 0;
     }
 
     if (mFormatContext->streams[mMediaStreamIndex]->start_time < 0)
@@ -3716,8 +3695,8 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 //
 //    if (mFormatContext->start_time > 0)
 //    {
-//    	mInputStartPts = mFormatContext->start_time;
-//    	LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the format context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
+//        mInputStartPts = mFormatContext->start_time;
+//        LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the format context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
 //    }else
 //    {
 //        if (mFormatContext->streams[mMediaStreamIndex]->start_time > 0)
@@ -3742,13 +3721,13 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
     int tRes;
 
     switch (mMediaType)
-	{
-		case MEDIA_VIDEO:
-		    // create context for picture scaler
-		    mVideoScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
-			break;
-		case MEDIA_AUDIO:
-			{
+    {
+        case MEDIA_VIDEO:
+            // create context for picture scaler
+            mVideoScalerContext = sws_getContext(mCodecContext->width, mCodecContext->height, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
+            break;
+        case MEDIA_AUDIO:
+            {
                 // create resample context
                 if (mAudioResampleContext != NULL)
                     LOG_REMOTE(LOG_ERROR, pSource, pLine, "State of audio resample context inconsistent");
@@ -3785,12 +3764,12 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
                     // init fifo buffer per channel
                     for (int i = 0; i < mOutputAudioChannels; i++)
                     {
-                    	LOG(LOG_VERBOSE, "Allocating AUDIO resample FIFO %d", i);
-                    	mResampleFifo[i] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
+                        LOG(LOG_VERBOSE, "Allocating AUDIO resample FIFO %d", i);
+                        mResampleFifo[i] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
                     }
                 }else
                 {// one interleaved audio buffer
-                	LOG(LOG_VERBOSE, "Allocating AUDIO resample FIFO %d", 0);
+                    LOG(LOG_VERBOSE, "Allocating AUDIO resample FIFO %d", 0);
                     mResampleFifo[0] = HM_av_fifo_alloc(AVCODEC_MAX_AUDIO_FRAME_SIZE);
                 }
 
@@ -3809,17 +3788,17 @@ bool MediaSource::FfmpegOpenFormatConverter(string pSource, int pLine)
                     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Plane %d index points to: %p (diff: %u)", i, mResampleBufferPlanes[i], (i > 0) ? (mResampleBufferPlanes[i] - mResampleBufferPlanes[i - 1]) : 0);
                 }
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Output audio format is planar: %d", av_sample_fmt_is_planar(mOutputAudioFormat));
-			}
-			break;
-		default:
-        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid media source type");
-			break;
+            }
+            break;
+        default:
+            LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid media source type");
+            break;
 
-	}
+    }
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s format converter successfully opened", GetMediaTypeStr().c_str());
 
-	return true;
+    return true;
 }
 
 bool MediaSource::FfmpegCloseFormatConverter(string pSource, int pLine)
@@ -3860,8 +3839,8 @@ bool MediaSource::FfmpegCloseFormatConverter(string pSource, int pLine)
             }
             break;
         default:
-        	LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid media source type");
-			break;
+            LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid media source type");
+            break;
     }
     return true;
 }
@@ -3870,12 +3849,12 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
 {
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "%s %s source closing..", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
-	if (mMediaSourceOpened)
-	{
-		mMediaSourceOpened = false;
+    if (mMediaSourceOpened)
+    {
+        mMediaSourceOpened = false;
 
-		// stop A/V recorder
-		LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..stopping %s recorder", GetMediaTypeStr().c_str());
+        // stop A/V recorder
+        LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..stopping %s recorder", GetMediaTypeStr().c_str());
         StopRecording();
 
         if (!FfmpegCloseFormatConverter(pSource, pLine))
@@ -3884,33 +3863,33 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
             return false;
         }
 
-		// Close the codec
-		if (mCodecContext != NULL)
-		{
-		    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..closing %s codec", GetMediaTypeStr().c_str());
-	    	mFormatContext->streams[mMediaStreamIndex]->discard = AVDISCARD_ALL;
-			avcodec_close(mCodecContext);
-			mCodecContext = NULL;
-		}else
-		{
-			LOG_REMOTE(LOG_WARN, pSource, pLine, "Codec context found in invalid state");
-			return false;
-		}
+        // Close the codec
+        if (mCodecContext != NULL)
+        {
+            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..closing %s codec", GetMediaTypeStr().c_str());
+            mFormatContext->streams[mMediaStreamIndex]->discard = AVDISCARD_ALL;
+            avcodec_close(mCodecContext);
+            mCodecContext = NULL;
+        }else
+        {
+            LOG_REMOTE(LOG_WARN, pSource, pLine, "Codec context found in invalid state");
+            return false;
+        }
 
-		// Close the file
-		if (mFormatContext != NULL)
-		{
-		    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..closing %s format context and releasing codec context", GetMediaTypeStr().c_str());
-			HM_avformat_close_input(mFormatContext);
-			mFormatContext = NULL;
-		}else
-		{
-			LOG_REMOTE(LOG_WARN, pSource, pLine, "Format context found in invalid state");
-			return false;
-		}
+        // Close the file
+        if (mFormatContext != NULL)
+        {
+            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..closing %s format context and releasing codec context", GetMediaTypeStr().c_str());
+            HM_avformat_close_input(mFormatContext);
+            mFormatContext = NULL;
+        }else
+        {
+            LOG_REMOTE(LOG_WARN, pSource, pLine, "Format context found in invalid state");
+            return false;
+        }
 
-		LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "...%s source closed", GetMediaTypeStr().c_str());
-	}
+        LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "...%s source closed", GetMediaTypeStr().c_str());
+    }
 
     return true;
 }
@@ -3983,15 +3962,15 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
             pBufferedFrames++;
         }
     }else
-    	if (AVUNERROR(tEncoderResult) != EPERM)
-    	{// failure reason is "operation not permitted"
-    		LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't re-encode current %s frame %"PRId64" because %s(%d)", GetMediaTypeStr().c_str(), pInputFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
-    	}else
-    	{// failure reason is something different
-			#ifdef MS_DEBUG_ENCODER_PACKETS
-    			LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't re-encode current %s frame %"PRId64" because %s(%d)", GetMediaTypeStr().c_str(), pInputFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
-			#endif
-    	}
+        if (AVUNERROR(tEncoderResult) != EPERM)
+        {// failure reason is "operation not permitted"
+            LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't re-encode current %s frame %"PRId64" because %s(%d)", GetMediaTypeStr().c_str(), pInputFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
+        }else
+        {// failure reason is something different
+            #ifdef MS_DEBUG_ENCODER_PACKETS
+                LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't re-encode current %s frame %"PRId64" because %s(%d)", GetMediaTypeStr().c_str(), pInputFrame->pts, strerror(AVUNERROR(tEncoderResult)), tEncoderResult);
+            #endif
+        }
     av_free_packet(tPacket);
 
     return tResult;

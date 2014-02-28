@@ -53,10 +53,10 @@ class MediaSinkNet:
 {
 
 public:
-	// general purpose constructor which uses NAPI library
-	MediaSinkNet(string pTarget, Requirements *pTransportRequirements, enum MediaSinkType pType, bool pRtpActivated);
-	// constructor to send media data via the same port of an existing already allocated socket object (can be used in conferences to support NAT traversal)
-	MediaSinkNet(std::string pTargetHost, unsigned int pTargetPort, Socket* pLocalSocket, enum MediaSinkType pType, bool pRtpActivated);
+    // general purpose constructor which uses NAPI library
+    MediaSinkNet(string pTarget, Requirements *pTransportRequirements, enum MediaSinkType pType, bool pRtpActivated);
+    // constructor to send media data via the same port of an existing already allocated socket object (can be used in conferences to support NAT traversal)
+    MediaSinkNet(std::string pTargetHost, unsigned int pTargetPort, Socket* pLocalSocket, enum MediaSinkType pType, bool pRtpActivated);
 
     virtual ~MediaSinkNet();
 
@@ -82,16 +82,16 @@ private:
     void BasicInit(string pTargetHost, unsigned int pTargetPort);
 
     /* general transport */
-    bool				mSenderNeeded;
+    bool                mSenderNeeded;
     int                 mMaxNetworkPacketSize;
     bool                mBrokenPipe;
     bool                mStreamedTransport;
     char                *mStreamFragmentCopyBuffer;
     /* Berkeley sockets based transport */
-    Socket				*mDataSocket;
+    Socket              *mDataSocket;
     /* NAPI based transport */
     IConnection         *mNAPIDataSocket;
-    bool 				mNAPIUsed;
+    bool                mNAPIUsed;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

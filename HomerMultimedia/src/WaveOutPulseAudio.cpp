@@ -43,7 +43,7 @@ namespace Homer { namespace Multimedia {
 WaveOutPulseAudio::WaveOutPulseAudio(string pOutputName, string pDesiredDevice):
     WaveOut(pOutputName)
 {
-	mOutputStream = NULL;
+    mOutputStream = NULL;
     LOG(LOG_VERBOSE, "Creating wave out for %s on device %s", pOutputName.c_str(), pDesiredDevice.c_str());
 
     if ((pDesiredDevice != "") && (pDesiredDevice != "auto"))
@@ -59,29 +59,29 @@ WaveOutPulseAudio::WaveOutPulseAudio(string pOutputName, string pDesiredDevice):
 
 WaveOutPulseAudio::~WaveOutPulseAudio()
 {
-	LOG(LOG_VERBOSE, "Going to destroy PulseAudio wave out object..");
+    LOG(LOG_VERBOSE, "Going to destroy PulseAudio wave out object..");
     if (mWaveOutOpened)
     {
-    	LOG(LOG_VERBOSE, "..stopping wave out");
+        LOG(LOG_VERBOSE, "..stopping wave out");
         Stop();
         LOG(LOG_VERBOSE, "..closing wave out device");
         CloseWaveOutDevice();
     }else
-    	LOG(LOG_VERBOSE, "Skipped CloseWaveOutDevice() because device is already closed");
+        LOG(LOG_VERBOSE, "Skipped CloseWaveOutDevice() because device is already closed");
 
     LOG(LOG_VERBOSE, "Destroyed");
 }
 
 void WaveOutPulseAudio::getAudioDevices(AudioDevices &pAList)
 {
-	// This is where we'll store the input device list
-	PulseAudioDeviceDescriptor tInputDevicesList[MAX_PULSEAUDIO_DEVICES_IN_LIST];
+    // This is where we'll store the input device list
+    PulseAudioDeviceDescriptor tInputDevicesList[MAX_PULSEAUDIO_DEVICES_IN_LIST];
 
-	// This is where we'll store the output device list
-	PulseAudioDeviceDescriptor tOutputDevicesList[MAX_PULSEAUDIO_DEVICES_IN_LIST];
+    // This is where we'll store the output device list
+    PulseAudioDeviceDescriptor tOutputDevicesList[MAX_PULSEAUDIO_DEVICES_IN_LIST];
 
-	if (MediaSourcePulseAudio::GetPulseAudioDevices(tInputDevicesList, tOutputDevicesList) < 0)
-		LOG(LOG_ERROR, "Couldn't determine the available PulseAudio devices");
+    if (MediaSourcePulseAudio::GetPulseAudioDevices(tInputDevicesList, tOutputDevicesList) < 0)
+        LOG(LOG_ERROR, "Couldn't determine the available PulseAudio devices");
 
     static bool tFirstCall = true;
     AudioDeviceDescriptor tDevice;
@@ -131,9 +131,9 @@ void WaveOutPulseAudio::getAudioDevices(AudioDevices &pAList)
 
 bool WaveOutPulseAudio::OpenWaveOutDevice(int pSampleRate, int pOutputChannels)
 {
-	pa_sample_spec 	tOutputFormat;
-	int				tRes;
-    pa_usec_t 		tLatency;
+    pa_sample_spec     tOutputFormat;
+    int                tRes;
+    pa_usec_t          tLatency;
 
     LOG(LOG_VERBOSE, "Trying to open the wave out device");
 
@@ -152,15 +152,15 @@ bool WaveOutPulseAudio::OpenWaveOutDevice(int pSampleRate, int pOutputChannels)
     }
 
     tOutputFormat.format = PA_SAMPLE_S16LE;
-	tOutputFormat.rate = mSampleRate;
-	tOutputFormat.channels = mAudioChannels;
+    tOutputFormat.rate = mSampleRate;
+    tOutputFormat.channels = mAudioChannels;
 
-	// create a new playback stream
-	if (!(mOutputStream = pa_simple_new(NULL, "Homer-Conferencing", PA_STREAM_PLAYBACK, (mDesiredDevice != "" ? mDesiredDevice.c_str() : NULL) /* dev Name */, GetStreamName().c_str(), &tOutputFormat, NULL, NULL, &tRes)))
-	{
-	    LOG(LOG_ERROR, "Couldn't create PulseAudio stream because %s(%d)", pa_strerror(tRes), tRes);
-	    return false;
-	}
+    // create a new playback stream
+    if (!(mOutputStream = pa_simple_new(NULL, "Homer-Conferencing", PA_STREAM_PLAYBACK, (mDesiredDevice != "" ? mDesiredDevice.c_str() : NULL) /* dev Name */, GetStreamName().c_str(), &tOutputFormat, NULL, NULL, &tRes)))
+    {
+        LOG(LOG_ERROR, "Couldn't create PulseAudio stream because %s(%d)", pa_strerror(tRes), tRes);
+        return false;
+    }
 
     if ((tLatency = pa_simple_get_latency(mOutputStream, &tRes)) == (pa_usec_t) -1)
     {
@@ -190,8 +190,8 @@ bool WaveOutPulseAudio::OpenWaveOutDevice(int pSampleRate, int pOutputChannels)
 
 bool WaveOutPulseAudio::CloseWaveOutDevice()
 {
-    bool 	tResult = false;
-    int 	tRes;
+    bool     tResult = false;
+    int      tRes;
 
     LOG(LOG_VERBOSE, "Going to close..");
 
@@ -202,13 +202,13 @@ bool WaveOutPulseAudio::CloseWaveOutDevice()
 
         if (mOutputStream != NULL)
         {
-        	LOG(LOG_VERBOSE, "..draining stream");
-        	if (pa_simple_drain(mOutputStream, &tRes) < 0)
-        	{
-        	    LOG(LOG_ERROR, "Couldn't drain the output stream because %s(%d)", pa_strerror(tRes), tRes);
-        	}
-        	LOG(LOG_VERBOSE, "..closing stream");
-        	pa_simple_free(mOutputStream);
+            LOG(LOG_VERBOSE, "..draining stream");
+            if (pa_simple_drain(mOutputStream, &tRes) < 0)
+            {
+                LOG(LOG_ERROR, "Couldn't drain the output stream because %s(%d)", pa_strerror(tRes), tRes);
+            }
+            LOG(LOG_VERBOSE, "..closing stream");
+            pa_simple_free(mOutputStream);
         }
 
         LOG(LOG_INFO, "...closed");
@@ -259,9 +259,9 @@ bool WaveOutPulseAudio::Play()
 
 void WaveOutPulseAudio::Stop()
 {
-	int tRes;
+    int tRes;
 
-	LOG(LOG_VERBOSE, "Stopping playback stream..");
+    LOG(LOG_VERBOSE, "Stopping playback stream..");
 
     mPlayMutex.lock();
 
@@ -290,11 +290,11 @@ void WaveOutPulseAudio::Stop()
 
     if (mOutputStream != NULL)
     {
-    	LOG(LOG_VERBOSE, "..draining stream");
-    	if (pa_simple_drain(mOutputStream, &tRes) < 0)
-    	{
-    	    LOG(LOG_ERROR, "Couldn't drain the output stream because %s(%d)", pa_strerror(tRes), tRes);
-    	}
+        LOG(LOG_VERBOSE, "..draining stream");
+        if (pa_simple_drain(mOutputStream, &tRes) < 0)
+        {
+            LOG(LOG_ERROR, "Couldn't drain the output stream because %s(%d)", pa_strerror(tRes), tRes);
+        }
     }
 
     // unlock grabbing
@@ -303,24 +303,24 @@ void WaveOutPulseAudio::Stop()
 
 bool WaveOutPulseAudio::PulseAudioAvailable()
 {
-	return MediaSourcePulseAudio::PulseAudioAvailable();
+    return MediaSourcePulseAudio::PulseAudioAvailable();
 }
 
 void WaveOutPulseAudio::DoWriteChunk(char *pChunkBuffer, int pChunkSize)
 {
-	int tRes;
+    int tRes;
 
     if (!mPlaybackStopped)
     {
         #ifdef WOPUA_DEBUG_TIMING
             int64_t tTime = Time::GetTimeStamp();
         #endif
-		if (pa_simple_write(mOutputStream, pChunkBuffer, pChunkSize, &tRes) < 0)
-		{
-			LOG(LOG_ERROR, "Couldn't write audio chunk of %d bytes to output stream because %s(%d)", pChunkSize, pa_strerror(tRes), tRes);
-		}
+        if (pa_simple_write(mOutputStream, pChunkBuffer, pChunkSize, &tRes) < 0)
+        {
+            LOG(LOG_ERROR, "Couldn't write audio chunk of %d bytes to output stream because %s(%d)", pChunkSize, pa_strerror(tRes), tRes);
+        }
         #ifdef WOPUA_DEBUG_TIMING
-		    LOG(LOG_VERBOSE, "PulseAudio-WRITE took %lld ms", (Time::GetTimeStamp() - tTime) / 1000);
+            LOG(LOG_VERBOSE, "PulseAudio-WRITE took %lld ms", (Time::GetTimeStamp() - tTime) / 1000);
         #endif
     }
 }

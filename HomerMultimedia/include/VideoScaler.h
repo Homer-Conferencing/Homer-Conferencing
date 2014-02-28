@@ -77,7 +77,7 @@ private:
 
     virtual void* Run(void* pArgs = NULL); // video scaler main loop
 
-    std::string			mName;
+    std::string         mName;
     Mutex               mInputFifoMutex;
     MediaFifo           *mInputFifo;
     Mutex               mScalingThreadMutex; // we use this to avoid concurrent access to input FIFO/scaler context by ChangeInputResolution() and scaler-thread

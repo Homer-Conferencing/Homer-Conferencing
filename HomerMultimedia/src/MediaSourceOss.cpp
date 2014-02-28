@@ -411,7 +411,7 @@ int MediaSourceOss::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
 
 bool MediaSourceOss::SupportsRecording()
 {
-	return true;
+    return true;
 }
 
 string MediaSourceOss::GetSourceCodecStr()
