@@ -3,6 +3,7 @@
 # Since:   2011-02-19
 ###############################################################################
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeConfig.txt)
+INCLUDE(CheckLibraryExists)
 
 ##############################################################
 # Configuration
@@ -33,8 +34,25 @@ ELSE (LINUX)
 ENDIF (LINUX)
 
 ##############################################################
-# find package "swresample"
-CHECK_LIBRARY_EXISTS(swresample swresample_version "" HAVE_SWRESAMPLE) 
+# find library ffmpeg parts
+IF(WINDOWS)
+    SET(HAVE_SWRESAMPLE true)
+    SET(HAVE_SWRESAMPLE_H true)    
+ELSE()
+    CHECK_LIBRARY_EXISTS(swresample swresample_version "" HAVE_SWRESAMPLE)
+    CHECK_INCLUDE_FILES (libswresample/swresample.h HAVE_SWRESAMPLE_H)
+    CHECK_INCLUDE_FILES (libavutil/time.h HAVE_AVUTIL_TIME_H)
+ENDIF() 
+
+##############################################################
+# create config.h
+IF (DEFINED INSIDE_HOMER_BUILD)
+    INCLUDE (CheckIncludeFiles)
+    CONFIGURE_FILE(
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}HomerMultimedia/resources/BuildConfigHomerMultimedia.h.in 
+        ${CMAKE_CURRENT_BINARY_DIR}/BuildConfigHomerMultimedia.h
+    )
+ENDIF()
 
 ##############################################################
 # include dirs
@@ -49,6 +67,8 @@ SET (INCLUDE_DIRS
     /usr/include/ffmpeg
     ${ALSA_INCLUDE_DIRS}
     ${SDL_INCLUDE_DIR}
+    ${CMAKE_BINARY_DIR}/HomerMultimedia/libHomerMultimedia
+    ${CMAKE_BINARY_DIR}/libHomerMultimedia
 )
 
 ##############################################################
@@ -89,7 +109,7 @@ SET (SOURCES
     ../src/RTP
     ../src/VideoScaler
     ../src/WaveOut
-    ../src/WaveOutPortAudio
+    ../src/WaveOutPortAudio    
 )
 
 IF (WIN32 AND NOT WIN64)
@@ -233,13 +253,13 @@ ELSE ()
         HomerNAPI
         HomerMonitor
         asound
+        pthread
     )
-
     SET (LIBS_LINUX_STATIC
         avdevice
         avformat
-        avcodec
         avfilter
+        avcodec
         swresample
         swscale
         avutil

@@ -40,6 +40,8 @@
 #endif
 
 #include <Logger.h>
+#include "BuildConfigHomerMultimedia.h"
+
 using namespace Homer::Base;
 
 extern "C" {

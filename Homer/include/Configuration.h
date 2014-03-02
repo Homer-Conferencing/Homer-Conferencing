@@ -30,7 +30,7 @@
 
 #include <HBSocket.h>
 #include <string>
-#include "config.h"
+#include "BuildConfigHomer.h"
 
 #include <QSettings>
 #include <QString>

@@ -35,6 +35,7 @@ SET (INCLUDE_DIRS
     ../../../Homer-Release/HomerIncludes/sofia-sip/
 	/usr/include/ffmpeg
 	${OPENSSL_INCLUDE_DIR}
+    ${CMAKE_BINARY_DIR}/HomerMultimedia/libHomerMultimedia
 )
 
 ##############################################################
