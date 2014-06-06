@@ -1010,6 +1010,10 @@
         <source>Send audio</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Output device</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Homer::Gui::CallButton</name>
@@ -1516,41 +1520,6 @@ Homer Conferencing will be stopped afterwards!</source>
     </message>
 </context>
 <context>
-    <name>Homer::Gui::OverviewChannelsWidget</name>
-    <message>
-        <source>Add channel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select channel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit channel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Duplicate channel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delete channel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Reset channel list</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save channel list</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Load channel list</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>Homer::Gui::OverviewContactsWidget</name>
     <message>
         <source>Call</source>
@@ -1854,10 +1823,6 @@ Homer Conferencing will be stopped afterwards!</source>
     <message>
         <source>Contact list</source>
         <translation>Список контактов</translation>
-    </message>
-    <message>
-        <source>Channel list</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Add directory to playlist</source>
@@ -3204,29 +3169,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Open video/audio player</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>OverviewChannelsWidget</name>
-    <message>
-        <source>Channel list</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>save contact list</source>
-        <translation type="unfinished">сохранить список контактов</translation>
-    </message>
-    <message>
-        <source>load contact list</source>
-        <translation type="unfinished">загрузить список контактов</translation>
-    </message>
-    <message>
-        <source>Add contact</source>
-        <translation type="unfinished">Добавить контакт</translation>
-    </message>
-    <message>
-        <source>Remove contact(s)</source>
-        <translation type="unfinished">Удалить контакт (ы)</translation>
     </message>
 </context>
 <context>

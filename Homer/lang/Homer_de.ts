@@ -1264,6 +1264,11 @@
         <translation>Zeige Quellinformation</translation>
     </message>
     <message>
+        <location filename="../src/Widgets/AudioWidget.cpp" line="289"/>
+        <source>Output device</source>
+        <translation>Ausgabegerät</translation>
+    </message>
+    <message>
         <location filename="../src/Widgets/AudioWidget.cpp" line="326"/>
         <source>Streaming</source>
         <translation>Übertragung</translation>
@@ -1784,101 +1789,101 @@ The participant is known as</source>
 Der Teilnehmer ist bekannt unter</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1794"/>
+        <location filename="../src/MainWindow.cpp" line="1793"/>
         <source>Loop detected</source>
         <translation>Schleife erkannt</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1794"/>
+        <location filename="../src/MainWindow.cpp" line="1793"/>
         <source>You tried to contact yourself!</source>
         <translation>Sie versuchten sich selbst zu kontaktieren!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1851"/>
+        <location filename="../src/MainWindow.cpp" line="1850"/>
         <source>Acknowledge configuration reset</source>
         <translation>Bestätigung der Rücksetzung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1851"/>
+        <location filename="../src/MainWindow.cpp" line="1850"/>
         <source>Do you want to reset the program settings?
 Homer Conferencing will be stopped afterwards!</source>
         <translation>Wollen Sie die Programmeinstellungen zurücksetzen?
 Homer Conferencing wird danach gestoppt!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2230"/>
-        <location filename="../src/MainWindow.cpp" line="2365"/>
+        <location filename="../src/MainWindow.cpp" line="2229"/>
+        <location filename="../src/MainWindow.cpp" line="2364"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2233"/>
-        <location filename="../src/MainWindow.cpp" line="2368"/>
+        <location filename="../src/MainWindow.cpp" line="2232"/>
+        <location filename="../src/MainWindow.cpp" line="2367"/>
         <source>Hide window</source>
         <translation>Fenster minimieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2239"/>
+        <location filename="../src/MainWindow.cpp" line="2238"/>
         <source>Main menu</source>
         <translation>Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2252"/>
+        <location filename="../src/MainWindow.cpp" line="2251"/>
         <source>Tool bars</source>
         <translation>Werkzeugleisten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2264"/>
+        <location filename="../src/MainWindow.cpp" line="2263"/>
         <source>Streaming</source>
         <translation>Übertragung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2275"/>
+        <location filename="../src/MainWindow.cpp" line="2274"/>
         <source>Broadcast data</source>
         <translation>Audio-/Videoverteilung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2288"/>
+        <location filename="../src/MainWindow.cpp" line="2287"/>
         <source>Mosaic mode</source>
         <translation>Mosaikmodus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2305"/>
-        <location filename="../src/MainWindow.cpp" line="2378"/>
+        <location filename="../src/MainWindow.cpp" line="2304"/>
+        <location filename="../src/MainWindow.cpp" line="2377"/>
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2309"/>
-        <location filename="../src/MainWindow.cpp" line="2382"/>
+        <location filename="../src/MainWindow.cpp" line="2308"/>
+        <location filename="../src/MainWindow.cpp" line="2381"/>
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2315"/>
-        <location filename="../src/MainWindow.cpp" line="2388"/>
+        <location filename="../src/MainWindow.cpp" line="2314"/>
+        <location filename="../src/MainWindow.cpp" line="2387"/>
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2255"/>
-        <location filename="../src/MainWindow.cpp" line="2324"/>
-        <location filename="../src/MainWindow.cpp" line="2397"/>
+        <location filename="../src/MainWindow.cpp" line="2254"/>
+        <location filename="../src/MainWindow.cpp" line="2323"/>
+        <location filename="../src/MainWindow.cpp" line="2396"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2331"/>
+        <location filename="../src/MainWindow.cpp" line="2330"/>
         <source>Configuration</source>
         <translation>Konfiguration</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2341"/>
+        <location filename="../src/MainWindow.cpp" line="2340"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2349"/>
+        <location filename="../src/MainWindow.cpp" line="2348"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -1920,14 +1925,14 @@ Homer Conferencing wird danach gestoppt!</translation>
     <message>
         <location filename="../src/Widgets/MessageWidget.cpp" line="156"/>
         <location filename="../src/Widgets/MessageWidget.cpp" line="174"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="586"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="582"/>
         <source>Close window</source>
         <translation>Fenster schließen</translation>
     </message>
     <message>
         <location filename="../src/Widgets/MessageWidget.cpp" line="158"/>
         <location filename="../src/Widgets/MessageWidget.cpp" line="169"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="581"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="577"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
@@ -2010,57 +2015,6 @@ Homer Conferencing wird danach gestoppt!</translation>
         <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="323"/>
         <source>The preview of the incoming audio stream at local port</source>
         <translation>Die Vorschau des empfangen Audiostroms ist nicht möglich am lokalen Port</translation>
-    </message>
-</context>
-<context>
-    <name>Homer::Gui::OverviewChannelsWidget</name>
-    <message>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="120"/>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="128"/>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="180"/>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="226"/>
-        <source>Add channel</source>
-        <translation>Kanal hinzufügen</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="171"/>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="221"/>
-        <source>Select channel</source>
-        <translation>Kanal auswählen</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="188"/>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="236"/>
-        <source>Edit channel</source>
-        <translation>Kanal bearbeiten</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="194"/>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="231"/>
-        <source>Duplicate channel</source>
-        <translation>Kanal duplizieren</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="199"/>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="241"/>
-        <source>Delete channel</source>
-        <translation>Kanal löschen</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="210"/>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="247"/>
-        <source>Reset channel list</source>
-        <translation>Kanalliste zurücksetzen</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="474"/>
-        <source>Save channel list</source>
-        <translation>Kanalliste speichern</translation>
-    </message>
-    <message>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="491"/>
-        <source>Load channel list</source>
-        <translation>Kanalliste laden</translation>
     </message>
 </context>
 <context>
@@ -2497,12 +2451,6 @@ Homer Conferencing wird danach gestoppt!</translation>
         <source>Contact list</source>
         <translation>Kontaktliste</translation>
     </message>
-    <message>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="476"/>
-        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="493"/>
-        <source>Channel list</source>
-        <translation>Kanalliste</translation>
-    </message>
 </context>
 <context>
     <name>Homer::Gui::OverviewThreadsWidget</name>
@@ -2516,70 +2464,70 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::ParticipantWidget</name>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="478"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="476"/>
         <source>Video</source>
         <translation>Video</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="483"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="481"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="486"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="484"/>
         <source>A/V controls</source>
         <translation>A/V-Steuerung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="490"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="488"/>
         <source>Messages</source>
         <translation>Nachrichten</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="497"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="495"/>
         <source>Session info</source>
         <translation>Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="736"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="768"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="732"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="764"/>
         <source>Hide session info</source>
         <translation>Verstecke Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="741"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="763"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="737"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="759"/>
         <source>Show session info</source>
         <translation>Zeige Sitzungsinfo</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="748"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="778"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="794"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="813"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="744"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="774"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="790"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="809"/>
         <source>Hide A/V info</source>
         <translation>Verstecke A/V-Info</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="754"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="773"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="799"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="808"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="750"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="769"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="795"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="804"/>
         <source>Show A/V info</source>
         <translation>Zeige A/V-Info</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="941"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="937"/>
         <source>DNS lookup error</source>
         <translation>DNS Auflösungsfehler</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="941"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="937"/>
         <source>Unable to lookup DNS entry for</source>
         <translation>Die DNS-Auflösung war unmöglich für</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="941"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="937"/>
         <source>because</source>
         <translation>, weil</translation>
     </message>
@@ -2695,12 +2643,12 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Metadaten:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="572"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="568"/>
         <source>Close window</source>
         <translation>Fenster schließen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="574"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="570"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
@@ -2741,8 +2689,8 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::PlaybackSlider</name>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="565"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="591"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="561"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="587"/>
         <location filename="../src/Widgets/PlaybackSlider.cpp" line="84"/>
         <location filename="../src/Widgets/PlaybackSlider.cpp" line="95"/>
         <source>Adjust A/V drift</source>
@@ -4249,34 +4197,6 @@ datei</translation>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1962"/>
         <source>Audio playback enabled</source>
         <translation>Audiowiedergabe aktiv</translation>
-    </message>
-</context>
-<context>
-    <name>OverviewChannelsWidget</name>
-    <message>
-        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="26"/>
-        <source>Channel list</source>
-        <translation>Kanalliste</translation>
-    </message>
-    <message>
-        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="156"/>
-        <source>save contact list</source>
-        <translation>Speichern der Kontaktliste</translation>
-    </message>
-    <message>
-        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="202"/>
-        <source>load contact list</source>
-        <translation>Laden der Kontaktliste</translation>
-    </message>
-    <message>
-        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="248"/>
-        <source>Add contact</source>
-        <translation>Kontakt hinzufügen</translation>
-    </message>
-    <message>
-        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="294"/>
-        <source>Remove contact(s)</source>
-        <translation>Kontakt(e) entfernen</translation>
     </message>
 </context>
 <context>

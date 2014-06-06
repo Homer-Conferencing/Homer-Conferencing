@@ -286,7 +286,7 @@ void AudioWidget::InitializeMenuAudioSettings(QMenu *pMenu)
             LOG(LOG_VERBOSE, "Found current audio output device: %s", tCurDevice.toStdString().c_str());
             if(tAudioOutputDevices.size() > 1)
             {
-                QMenu *tDevicesMenu = tPlaybackMenu->addMenu("Output device");
+                QMenu *tDevicesMenu = tPlaybackMenu->addMenu(Homer::Gui::AudioWidget::tr("Output device"));
                 AudioDevices::iterator tIt;
                 for(tIt = tAudioOutputDevices.begin(); tIt != tAudioOutputDevices.end(); tIt++)
                 {
