@@ -481,7 +481,6 @@ endif()
 
 SET (FRAMEWORKS_APPLE
 	Cocoa
-	CoreServices
 	ApplicationServices
 )
 
