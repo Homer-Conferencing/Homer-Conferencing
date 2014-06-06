@@ -147,13 +147,18 @@ SET (FLAGS
     -Wno-format
     -Wno-uninitialized
     -Wno-unused-parameter
-    -Wno-unused-but-set-parameter
 )
+IF (LINUX)
+    SET(FLAGS
+        ${FLAGS}
+	    -Wno-unused-but-set-parameter
+    )
+ENDIF()
 IF (DEFINED FORCE_ARCH_BITS)
     SET (FLAGS
         ${FLAGS}
         -m${FORCE_ARCH_BITS}
-s    )
+    )
 ENDIF()
 IF (NOT (${BUILD} MATCHES "Default"))
     SET (FLAGS
