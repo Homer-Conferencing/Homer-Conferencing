@@ -28,4 +28,8 @@ set(CPACK_DMG_BACKGROUND_IMAGE ${PACKAGE_TOP_SRC_DIR}/${RELOCATION_INCLUDES}Home
 
 set(CPACK_OSX_PACKAGE_VERSION "${MIN_SUPPORTED_OSX_VERSION}")
 set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for OS X" FORCE)
+
+# HACK: to force Rez to use correct root directory
+set(CPACK_COMMAND_REZ "/usr/bin/rez -isysroot '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk'")
+
 set(CPACK_SYSTEM_NAME "Homer Install")
