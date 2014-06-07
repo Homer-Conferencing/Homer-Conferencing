@@ -171,10 +171,10 @@ public:
     int64_t ReceivedRTCPPackets();
 
     /* RTP packetizing/parsing */
+    void SetExternallyNegotiatedPayloadID(unsigned int pNewID); //should be called before the first frame packet gets packetized
     bool RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts);
-    unsigned int GetLostPacketsFromRTP();
-    float GetRelativeLostPacketsFromRTP(); // uses RTCP packets and concludes relative packet loss in "per cent", which occurred within the last synch. period
 
+    unsigned int GetLostPacketsFromRTP();
     static void LogRtpHeader(RtpHeader *pRtpHeader);
     bool ReceivedCorrectPayload(unsigned int pType);
     bool RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum RtcpType &pRtcpType, enum AVCodecID pCodecId, bool pLoggingOnly);
@@ -223,6 +223,7 @@ private:
     AVStream            *mRtpEncoderStream;
     AVFormatContext     *mRtpFormatContext;
     unsigned int        mPayloadId;
+    unsigned int 		mPayloadIdNegotiatedByExternal; // e.g., SIP/SDP
     bool                mIntermediateFragment;
     bool                mRtpEncoderOpened;
     std::string         mTargetHost;

@@ -423,6 +423,8 @@ RTP::RTP()
     mTargetPort = 0;
     mStreamCodecID = AV_CODEC_ID_NONE;
     mLocalSourceIdentifier = 0;
+    mPayloadId = RTP_PAYLOAD_TYPE_NONE;
+    mPayloadIdNegotiatedByExternal = RTP_PAYLOAD_TYPE_NONE;
     Init();
 }
 
@@ -477,7 +479,6 @@ void RTP::Init()
     mLostPackets = 0;
     if (mPacketStatistic != NULL)
         mPacketStatistic->SetLostPacketCount(0);
-    mPayloadId = RTP_PAYLOAD_TYPE_NONE;
     mRemoteSequenceNumberOverflowShift = 0;
     mRemoteSequenceNumber = 0;
     mRtpEncoderStream = NULL;
@@ -553,14 +554,20 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     else
         LOG(LOG_VERBOSE, "Created RTP packet buffer memory of %d bytes at %p", MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, mRtpPacketBuffer);
 
-    const char *tCodecName = pInnerStream->codec->codec->name;
-    mPayloadId = GetPreferedRTPPayloadIDForCodec(tCodecName);
-    LOG(LOG_VERBOSE, "New payload id: %4u, Codec: %s", mPayloadId, tCodecName);
-
     mTargetHost = pTargetHost;
     mTargetPort = pTargetPort;
     mStreamCodecID = pInnerStream->codec->codec_id;
     mStreamName = pStreamName;
+
+    const char *tCodecName = pInnerStream->codec->codec->name;
+    if (mPayloadIdNegotiatedByExternal != RTP_PAYLOAD_TYPE_NONE)
+    {
+    	mPayloadId = mPayloadIdNegotiatedByExternal;
+    	LOG(LOG_VERBOSE, "Using externally negotiated payload ID %u for codec %s", mPayloadId, HM_avcodec_get_name(mStreamCodecID));
+    }else{
+   	 	mPayloadId = GetPreferedRTPPayloadIDForCodec(tCodecName);
+    	LOG(LOG_VERBOSE, "Using prefered payload ID %u for codec %s", mPayloadId, HM_avcodec_get_name(mStreamCodecID));
+    }
 
     Init();
 
@@ -926,6 +933,12 @@ int64_t RTP::ReceivedRTCPPackets()
     return mRTCPPacketCounter;
 }
 
+void RTP::SetExternallyNegotiatedPayloadID(unsigned int pNewID)
+{
+    LOG(LOG_VERBOSE, "Setting externally negotiated payload ID %u for codec %s", pNewID, HM_avcodec_get_name(mStreamCodecID));
+    mPayloadIdNegotiatedByExternal = pNewID;
+}
+
 bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
 {
     AVPacket                    tPacket;
@@ -1111,73 +1124,26 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                 //### patch payload ID
                 //#################################################################################
                 // patch ffmpeg payload values between 96 and 99
-                // HINT: ffmpeg uses some strange intermediate packets with payload id 72
-                //       -> don't know for what reason, but they should be kept as they are
-                switch(mStreamCodecID)
-                {
-                            case AV_CODEC_ID_PCM_MULAW:
-                                            tRtpHeader->PayloadType = 0;
-                                            break;
-                            case AV_CODEC_ID_PCM_ALAW:
-                                            tRtpHeader->PayloadType = 8;
-                                            break;
-                            case AV_CODEC_ID_ADPCM_G722:
-                                            tRtpHeader->PayloadType = 9;
-                                            break;
-                //            case AV_CODEC_ID_ADPCM_G726:
-                            case AV_CODEC_ID_PCM_S16BE:
-                                            tRtpHeader->PayloadType = 10;
-                                            break;
-                            case AV_CODEC_ID_MP3:
-                                            // HACK: some modification of the standard MPA payload header: use MBZ to signalize the size of the original audio packet
-                                            tMPAHeader = (MPAHeader*)(tRtpPacket + RTP_HEADER_SIZE);
+                tRtpHeader->PayloadType = mPayloadId;
+                //LOG(LOG_VERBOSE, "Using payload ID %u for codec %s", mPayloadId, HM_avcodec_get_name(mStreamCodecID));
 
-                                            // convert from network to host byte order
-                                            tMPAHeader->Data[0] = ntohl(tMPAHeader->Data[0]);
+                //#################################################################################
+                //### MP3 HACK
+                //#################################################################################
+                if (mStreamCodecID == AV_CODEC_ID_MP3){
+					// HACK: some modification of the standard MPA payload header: use MBZ to signalize the size of the original audio packet
+					tMPAHeader = (MPAHeader*)(tRtpPacket + RTP_HEADER_SIZE);
 
-                                            #ifdef RTP_DEBUG_PACKET_ENCODER
-                                                LOG(LOG_VERBOSE, "Set MBZ bytes to message size of %u", tMp3Hack_EntireBufferSize);
-                                            #endif
-                                            tMPAHeader->Mbz = (unsigned short int)tMp3Hack_EntireBufferSize;
+					// convert from network to host byte order
+					tMPAHeader->Data[0] = ntohl(tMPAHeader->Data[0]);
 
-                                            // convert from host to network byte order
-                                            tMPAHeader->Data[0] = htonl(tMPAHeader->Data[0]);
+					#ifdef RTP_DEBUG_PACKET_ENCODER
+						LOG(LOG_VERBOSE, "Set MBZ bytes to message size of %u", tMp3Hack_EntireBufferSize);
+					#endif
+					tMPAHeader->Mbz = (unsigned short int)tMp3Hack_EntireBufferSize;
 
-                                            tRtpHeader->PayloadType = 14;
-                                            break;
-                            case AV_CODEC_ID_H261:
-                                            tRtpHeader->PayloadType = 31;
-                                            break;
-                            case AV_CODEC_ID_MPEG1VIDEO:
-                            case AV_CODEC_ID_MPEG2VIDEO:
-                                            tRtpHeader->PayloadType = 32;
-                                            break;
-                            case AV_CODEC_ID_H263:
-                                            tRtpHeader->PayloadType = 34;
-                                            break;
-                            case AV_CODEC_ID_AAC:
-                                            tRtpHeader->PayloadType = 100;
-                                            break;
-                            case AV_CODEC_ID_AMR_NB:
-                                            tRtpHeader->PayloadType = 101;
-                                            break;
-                            case AV_CODEC_ID_H263P:
-                                            tRtpHeader->PayloadType = 119;
-                                            break;
-                            case AV_CODEC_ID_H264:
-                                            tRtpHeader->PayloadType = 120;
-                                            break;
-                            case AV_CODEC_ID_MPEG4:
-                                            tRtpHeader->PayloadType = 121;
-                                            break;
-                            case AV_CODEC_ID_THEORA:
-                                            tRtpHeader->PayloadType = 122;
-                                            break;
-                            case AV_CODEC_ID_VP8:
-                                            tRtpHeader->PayloadType = 123;
-                                            break;
-                //            case AV_CODEC_ID_MPEG2TS:
-                //            case AV_CODEC_ID_VORBIS:
+					// convert from host to network byte order
+					tMPAHeader->Data[0] = htonl(tMPAHeader->Data[0]);
                 }
 
                 //#################################################################################
@@ -1822,6 +1788,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             mRemoteSourceChangedResetScore = 0;
 
                             mPayloadId = mRemoteSourceChangedLastPayload;
+                            LOG(LOG_VERBOSE, "Setting payload ID: %u", mPayloadId);
                         }
                     }else
                     {
@@ -1837,6 +1804,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 
                 // store the payload ID to be able to detect repeating changes
                 mPayloadId = tRtpHeader->PayloadType;
+                LOG(LOG_VERBOSE, "Setting payload ID: %u", mPayloadId);
             }
         }
 
