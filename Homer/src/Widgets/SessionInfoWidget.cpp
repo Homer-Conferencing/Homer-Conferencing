@@ -124,9 +124,9 @@ void SessionInfoWidget::UpdateView()
         if (!mLeNat->hasSelectedText())
             mLeNat->setText(QString((tInfo.OwnIp + "<" + tInfo.OwnPort + ">").c_str()));
         if (!mLeVideo->hasSelectedText())
-            mLeVideo->setText(QString((tInfo.RemoteVideoCodec + "@" + tInfo.RemoteVideoHost + "<" + tInfo.RemoteVideoPort + ">").c_str()));
+            mLeVideo->setText(QString((tInfo.RemoteVideoCodec + "@" + tInfo.RemoteVideoHost + "<" + tInfo.RemoteVideoPort + ">[PT: " + toString(tInfo.RTPPayloadIDVideo) + "]").c_str()));
         if (!mLeAudio->hasSelectedText())
-            mLeAudio->setText(QString((tInfo.RemoteAudioCodec + "@" + tInfo.RemoteAudioHost + "<" + tInfo.RemoteAudioPort + ">").c_str()));
+            mLeAudio->setText(QString((tInfo.RemoteAudioCodec + "@" + tInfo.RemoteAudioHost + "<" + tInfo.RemoteAudioPort + ">[PT: " + toString(tInfo.RTPPayloadIDAudio) + "]").c_str()));
         if (!mLeLocalAudio->hasSelectedText())
             mLeLocalAudio->setText(QString((tInfo.RemoteAudioCodec + "@" + MEETING.GetHostAdr() + "<" + tInfo.LocalAudioPort + ">").c_str()));
         if (!mLeLocalVideo->hasSelectedText())

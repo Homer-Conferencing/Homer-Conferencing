@@ -134,7 +134,7 @@ public:
     void HandleCallUnavailable(bool pIncoming, int pStatusCode, QString pDescription);
     void HandleCallRinging(bool pIncoming);
     void HandleCallDenied(bool pIncoming);
-    void HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAdr, unsigned int pRemoteAudioPort, QString pRemoteAudioCodec, QString pRemoteVideoAdr, unsigned int pRemoteVideoPort, QString pRemoteVideoCodec);
+    void HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAdr, unsigned int pRemoteAudioPort, QString pRemoteAudioCodec, unsigned int pNegotiatedRTPAudioPayloadID, QString pRemoteVideoAdr, unsigned int pRemoteVideoPort, QString pRemoteVideoCodec, unsigned int pNegotiatedRTPVideoPayloadID);
 
     void SetVideoStreamPreferences(QString pCodec, bool pJustReset = false);
     void SetAudioStreamPreferences(QString pCodec, bool pJustReset = false);

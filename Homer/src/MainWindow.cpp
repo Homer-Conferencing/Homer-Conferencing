@@ -1628,7 +1628,7 @@ void MainWindow::customEvent(QEvent* pEvent)
                         tKnownParticipant = true;
                         if (tCMUEvent->SenderName.size())
                             tParticipantWidget->UpdateParticipantName(QString(tCMUEvent->SenderName.c_str()));
-                        tParticipantWidget->HandleMediaUpdate(tCMUEvent->IsIncomingEvent, QString(tCMUEvent->RemoteAudioAddress.c_str()), tCMUEvent->RemoteAudioPort, QString(tCMUEvent->RemoteAudioCodec.c_str()), QString(tCMUEvent->RemoteVideoAddress.c_str()), tCMUEvent->RemoteVideoPort, QString(tCMUEvent->RemoteVideoCodec.c_str()));
+                        tParticipantWidget->HandleMediaUpdate(tCMUEvent->IsIncomingEvent, QString(tCMUEvent->RemoteAudioAddress.c_str()), tCMUEvent->RemoteAudioPort, QString(tCMUEvent->RemoteAudioCodec.c_str()), tCMUEvent->NegotiatedRTPAudioPayloadID, QString(tCMUEvent->RemoteVideoAddress.c_str()), tCMUEvent->RemoteVideoPort, QString(tCMUEvent->RemoteVideoCodec.c_str()), tCMUEvent->NegotiatedRTPVideoPayloadID);
                     }
                     break;
         case REGISTRATION:

@@ -1411,7 +1411,7 @@ void ParticipantWidget::HandleCallAccept(bool pIncoming)
     }
 }
 
-void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAdr, unsigned int pRemoteAudioPort, QString pRemoteAudioCodec, QString pRemoteVideoAdr, unsigned int pRemoteVideoPort, QString pRemoteVideoCodec)
+void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAdr, unsigned int pRemoteAudioPort, QString pRemoteAudioCodec, unsigned int pNegotiatedRTPAudioPayloadID, QString pRemoteVideoAdr, unsigned int pRemoteVideoPort, QString pRemoteVideoCodec, unsigned int pNegotiatedRTPVideoPayloadID)
 {
     LOG(LOG_VERBOSE, "Media update");
 
@@ -1435,13 +1435,23 @@ void ParticipantWidget::HandleMediaUpdate(bool pIncoming, QString pRemoteAudioAd
 
         LOG(LOG_VERBOSE, "Video sink set to %s:%u", pRemoteVideoAdr.toStdString().c_str(), pRemoteVideoPort);
         LOG(LOG_VERBOSE, "Video sink uses codec: \"%s\"", pRemoteVideoCodec.toStdString().c_str());
+        LOG(LOG_VERBOSE, "Video sink uses payload ID: %u", pNegotiatedRTPVideoPayloadID);
         LOG(LOG_VERBOSE, "Audio sink set to %s:%u", pRemoteAudioAdr.toStdString().c_str(), pRemoteAudioPort);
         LOG(LOG_VERBOSE, "Audio sink uses codec: \"%s\"", pRemoteAudioCodec.toStdString().c_str());
+        LOG(LOG_VERBOSE, "Audio sink uses payload ID: %u", pNegotiatedRTPAudioPayloadID);
 
         if ((pRemoteVideoPort != 0) && (mParticipantVideoSink == NULL))
+        {
             mParticipantVideoSink = mVideoSourceMuxer->RegisterMediaSink(mRemoteVideoAdr.toStdString(), mRemoteVideoPort, mVideoSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
+            if(pNegotiatedRTPVideoPayloadID > 0)
+            	mParticipantVideoSink->SetExternallyNegotiatedPayloadID(pNegotiatedRTPVideoPayloadID);
+        }
         if ((pRemoteAudioPort != 0) && (mParticipantAudioSink == NULL))
+        {
             mParticipantAudioSink = mAudioSourceMuxer->RegisterMediaSink(mRemoteAudioAdr.toStdString(), mRemoteAudioPort, mAudioSendSocket, true); // always use RTP/AVP profile (RTP/UDP)
+            if(pNegotiatedRTPAudioPayloadID > 0)
+            	mParticipantAudioSink->SetExternallyNegotiatedPayloadID(pNegotiatedRTPAudioPayloadID);
+        }
 
         // activate the A/V media sinks
         if(mSessionIsRunning)
