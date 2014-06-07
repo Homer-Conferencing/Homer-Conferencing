@@ -554,7 +554,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
         LOG(LOG_VERBOSE, "Created RTP packet buffer memory of %d bytes at %p", MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE, mRtpPacketBuffer);
 
     const char *tCodecName = pInnerStream->codec->codec->name;
-    mPayloadId = CodecToPayloadId(tCodecName);
+    mPayloadId = GetPreferedRTPPayloadIDForCodec(tCodecName);
     LOG(LOG_VERBOSE, "New payload id: %4u, Codec: %s", mPayloadId, tCodecName);
 
     mTargetHost = pTargetHost;
@@ -1422,7 +1422,7 @@ void RTP::LogRtpHeader(RtpHeader *pRtpHeader)
         LOGEX(RTP, LOG_VERBOSE, "Marked: yes");
     else
         LOGEX(RTP, LOG_VERBOSE, "Marked: no");
-    LOGEX(RTP, LOG_VERBOSE, "Payload type    : %s(%d)", PayloadIdToCodec(pRtpHeader->PayloadType).c_str(), pRtpHeader->PayloadType);
+    LOGEX(RTP, LOG_VERBOSE, "Payload type    : %s(%d)", GetCodecFromPreferedPayloadID(pRtpHeader->PayloadType).c_str(), pRtpHeader->PayloadType);
     LOGEX(RTP, LOG_VERBOSE, "SequenceNumber  : %u", pRtpHeader->SequenceNumber);
     LOGEX(RTP, LOG_VERBOSE, "Timestamp (abs.): %10u", pRtpHeader->Timestamp);
 
@@ -1813,7 +1813,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 
                         if (mRemoteSourceChangedResetScore >= RTP_MAX_REMOTE_SOURCE_CHANGED_RESET_SCORE)
                         {// we should mark the remote source as "changed"
-                            LOG(LOG_WARN, "We received %d consecutive packets of payload type %u(%s), we assume a source change at remote side and trigger reset", mRemoteSourceChangedResetScore, tRtpHeader->PayloadType, PayloadIdToCodec(tRtpHeader->PayloadType).c_str());
+                            LOG(LOG_WARN, "We received %d consecutive packets of payload type %u(%s), we assume a source change at remote side and trigger reset", mRemoteSourceChangedResetScore, tRtpHeader->PayloadType, GetCodecFromPreferedPayloadID(tRtpHeader->PayloadType).c_str());
                             mRtpRemoteSourceChanged = true;
 
                             // force a reset of the start timestamp and trigger a re-initialization
@@ -2531,30 +2531,30 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 /*************************************************
  *  Video codec name to RTP id mapping:
  *  ===================================
- *        h261                        31
- *        h263                        34
- *        mpeg1video                32
- *        mpeg2video                32
+ *        h261                       31
+ *        h263                       34
+ *        mpeg1video                 32
+ *        mpeg2video                 32
  *        h263+                     119 (HC internal standard)
- *        h264                        120 (HC internal standard)
- *        mpeg4                        121 (HC internal standard)
+ *        h264                      120 (HC internal standard)
+ *        mpeg4                     121 (HC internal standard)
  *        theora                    122 (HC internal standard)
- *        vp8                        123 (HC internal standard)
+ *        vp8                       123 (HC internal standard)
  *
  *
  *  Audio codec name to RTP id mapping:
  *  ===================================
  *        ulaw                        0
- *        gsm                        3
+ *        gsm                         3
  *        alaw                        8
  *        g722                        9
- *        pcms16                    10
+ *        pcms16                     10
  *        mp3                        14
  *        aac                        100 (HC internal standard)
  *        amr                        101 (HC internal standard)
  *
  ****************************************************/
-unsigned int RTP::CodecToPayloadId(std::string pName)
+unsigned int RTP::GetPreferedRTPPayloadIDForCodec(std::string pName)
 {
     unsigned int tResult = -1;
 
@@ -2599,58 +2599,7 @@ unsigned int RTP::CodecToPayloadId(std::string pName)
     return tResult;
 }
 
-static std::string PayloadType(int pId)
-{
-    string tResult = "unknown";
-
-    switch(pId)
-    {
-        //video
-        case 31:
-        case 32:
-        case 34:
-        case 118:
-        case 119:
-        case 120:
-        case 121:
-        case 122:
-        case 123:
-                tResult = "VIDEO";
-                break;
-
-        //audio
-        case 0:
-        case 3:
-        case 8:
-        case 9:
-        case 10:
-        case 11:
-        case 14:
-        case 100:
-        case 101:
-                tResult = "AUDIO";
-                break;
-
-        //others
-        case 72 ... 76:
-                tResult = "RTCP";
-                break;
-
-        //others
-        case 96 ... 99:
-                tResult = "DYNAMIC";
-                break;
-        default:
-                tResult = "unknown";
-                break;
-    }
-
-    //LOGEX(RTP, LOG_VERBOSE, ("Translated %d to " + tResult).c_str(), pId);
-
-    return tResult;
-}
-
-string RTP::PayloadIdToCodec(int pId)
+string RTP::GetCodecFromPreferedPayloadID(int pId)
 {
     string tResult = "unknown";
 

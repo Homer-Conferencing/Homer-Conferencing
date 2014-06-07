@@ -155,9 +155,9 @@ public:
 
     virtual ~RTP( );
 
-    static unsigned int CodecToPayloadId(std::string pName);
-    static std::string PayloadIdToCodec(int pId);
-    static std::string PayloadType(int pId);
+    static unsigned int GetPreferedRTPPayloadIDForCodec(std::string pName);
+    static std::string GetCodecFromPreferedPayloadID(int pId);
+
     static bool IsPayloadSupported(enum AVCodecID pId);
     static int GetPayloadHeaderSizeMax(enum AVCodecID pCodec);// calculate the maximum header size of the RTP payload (not the RTP header!)
     static int GetHeaderSizeMax(enum AVCodecID pCodec);
