@@ -3254,7 +3254,7 @@ bool MediaSource::FfmpegDescribeInput(string pSource, int pLine, AVCodecID pCode
         if (!mGrabbingStopped)
             LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s input format for codec %s", GetMediaTypeStr().c_str(), tCodecName.c_str());
 
-        return NULL;
+        return false;
     }
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Successfully found %s input format %s(%s) with flags: 0x%x", GetMediaTypeStr().c_str(), tResult->name, tResult->long_name, tResult->flags);
