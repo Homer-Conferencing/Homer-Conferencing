@@ -265,6 +265,10 @@ ELSE ()
 		SDL
 		portaudio
 	)
+	SET (LIBS_APPLE
+		${LIBS_APPLE}
+		iconv
+	)
 ENDIF ()
 
 # FEATURE pulseaudio
