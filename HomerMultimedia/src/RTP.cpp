@@ -611,7 +611,9 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mRtpEncoderStream->priv_data = NULL;
     // create monotone timestamps
     mRtpEncoderStream->cur_dts = 0;
-    mRtpEncoderStream->reference_dts = 0;
+	#ifndef FF_API_REFERENCE_DTS
+    	mRtpEncoderStream->reference_dts = 0;
+	#endif
 
     // set target coordinates for rtp stream
     snprintf(mRtpFormatContext->filename, sizeof(mRtpFormatContext->filename), "rtp://%s:%u", pTargetHost.c_str(), pTargetPort);
