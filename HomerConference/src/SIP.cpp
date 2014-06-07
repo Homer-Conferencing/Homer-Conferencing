@@ -2984,6 +2984,7 @@ void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t 
                             case sdp_media_audio:
                                 tCMUEvent->RemoteAudioAddress = tSdpConnection->c_address;
                                 tCMUEvent->RemoteAudioPort = tMedia->m_port;
+                                tCMUEvent->NegotiatedRTPAudioPayloadID = tMedia->m_rtpmaps->rm_pt;
                                 if (tMedia->m_rtpmaps)
                                     tCMUEvent->RemoteAudioCodec = string(tMedia->m_proto_name) + "(" + string(tMedia->m_rtpmaps->rm_encoding) + ")";
                                 else
@@ -2997,6 +2998,7 @@ void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t 
                             case sdp_media_video:
                                 tCMUEvent->RemoteVideoAddress = tSdpConnection->c_address;
                                 tCMUEvent->RemoteVideoPort = tMedia->m_port;
+                                tCMUEvent->NegotiatedRTPVideoPayloadID = tMedia->m_rtpmaps->rm_pt;
                                 if (tMedia->m_rtpmaps)
                                     tCMUEvent->RemoteVideoCodec = string(tMedia->m_proto_name) + "(" + string(tMedia->m_rtpmaps->rm_encoding) + ")";
                                 else
@@ -3015,7 +3017,7 @@ void SIP::SipReceivedCallStateChange(const sip_to_t *pSipRemote, const sip_to_t 
                 {
                     LOG(LOG_VERBOSE, "Audio codec: %s", tCMUEvent->RemoteAudioCodec.c_str());
                     LOG(LOG_VERBOSE, "Video codec: %s", tCMUEvent->RemoteVideoCodec.c_str());
-                    MEETING.SearchParticipantAndSetRemoteMediaInformation(tCMUEvent->Sender, tCMUEvent->Transport, tCMUEvent->RemoteVideoAddress, tCMUEvent->RemoteVideoPort, tCMUEvent->RemoteVideoCodec, tCMUEvent->RemoteAudioAddress, tCMUEvent->RemoteAudioPort, tCMUEvent->RemoteAudioCodec);
+                    MEETING.SearchParticipantAndSetRemoteMediaInformation(tCMUEvent->Sender, tCMUEvent->Transport, tCMUEvent->RemoteVideoAddress, tCMUEvent->RemoteVideoPort, tCMUEvent->RemoteVideoCodec, tCMUEvent->NegotiatedRTPVideoPayloadID, tCMUEvent->RemoteAudioAddress, tCMUEvent->RemoteAudioPort, tCMUEvent->RemoteAudioCodec, tCMUEvent->NegotiatedRTPAudioPayloadID);
                     MEETING.notifyObservers(tCMUEvent);
                 }
             }

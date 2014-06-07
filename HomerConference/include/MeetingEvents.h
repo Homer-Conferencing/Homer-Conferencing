@@ -278,9 +278,12 @@ public:
     string RemoteAudioAddress;
     unsigned int RemoteAudioPort;
     string RemoteAudioCodec;
+    unsigned int NegotiatedRTPAudioPayloadID;
+
     string RemoteVideoAddress;
     unsigned int RemoteVideoPort;
     string RemoteVideoCodec;
+    unsigned int NegotiatedRTPVideoPayloadID;
 };
 
 class CallUnavailableEvent:

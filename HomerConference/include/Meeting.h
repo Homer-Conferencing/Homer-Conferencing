@@ -70,9 +70,11 @@ struct SessionInfo
     std::string    RemoteVideoHost;
     std::string    RemoteVideoPort;
     std::string    RemoteVideoCodec;
+    unsigned int   RTPPayloadIDVideo;
     std::string    RemoteAudioHost;
     std::string    RemoteAudioPort;
     std::string    RemoteAudioCodec;
+    unsigned int   RTPPayloadIDAudio;
     std::string    LocalVideoPort;
     std::string    LocalAudioPort;
     std::string    CallState;
@@ -138,7 +140,7 @@ private:
     bool SearchParticipantAndSetOwnContactAddress(std::string pParticipant, enum TransportType pParticipantTransport, std::string pOwnNatIp, unsigned int pOwnNatPort);
     bool SearchParticipantAndSetNuaHandleForMsgs(std::string pParticipant, enum TransportType pParticipantTransport, nua_handle_t *pNuaHandle);
     bool SearchParticipantAndSetNuaHandleForCalls(std::string pParticipant, enum TransportType pParticipantTransport, nua_handle_t *pNuaHandle);
-    bool SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, enum TransportType pParticipantTransport, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec);
+    bool SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, enum TransportType pParticipantTransport, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, unsigned int pPayloadIDVideo, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec, unsigned int pPayloadIDAudio);
     nua_handle_t ** SearchParticipantAndGetNuaHandleForCalls(string pParticipant, enum TransportType pParticipantTransport);
     bool SearchParticipantByNuaHandleOrName(string &pUser, string &pHost, string &pPort, nua_handle_t *pNuaHandle);
 

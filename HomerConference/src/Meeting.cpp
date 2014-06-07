@@ -56,9 +56,11 @@ struct ParticipantDescriptor
     std::string    RemoteVideoHost;
     unsigned int   RemoteVideoPort;
     std::string    RemoteVideoCodec;
+    unsigned int   RTPPayloadIDVideo;
     std::string    RemoteAudioHost;
     unsigned int   RemoteAudioPort;
     std::string    RemoteAudioCodec;
+    unsigned int   RTPPayloadIDAudio;
     nua_handle_t   *SipNuaHandleForCalls;
     nua_handle_t   *SipNuaHandleForMsgs;
     nua_handle_t   *SipNuaHandleForOptions;
@@ -322,9 +324,11 @@ bool Meeting::OpenParticipantSession(string pUser, string pHost, string pPort, e
         tParticipantDescriptor.RemoteVideoHost = "0.0.0.0";
         tParticipantDescriptor.RemoteVideoPort = 0;
         tParticipantDescriptor.RemoteVideoCodec = "";
+        tParticipantDescriptor.RTPPayloadIDVideo = 0;
         tParticipantDescriptor.RemoteAudioHost = "0.0.0.0";
         tParticipantDescriptor.RemoteAudioPort = 0;
         tParticipantDescriptor.RemoteAudioCodec = "";
+        tParticipantDescriptor.RTPPayloadIDAudio = 0;
         tParticipantDescriptor.SipNuaHandleForCalls = NULL;
         tParticipantDescriptor.SipNuaHandleForMsgs = NULL;
         tParticipantDescriptor.SipNuaHandleForOptions = NULL;
@@ -1128,7 +1132,7 @@ bool Meeting::SearchParticipantByNuaHandleOrName(string &pUser, string &pHost, s
     return tFound;
 }
 
-bool Meeting::SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, enum TransportType pParticipantTransport, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec)
+bool Meeting::SearchParticipantAndSetRemoteMediaInformation(std::string pParticipant, enum TransportType pParticipantTransport, std::string pVideoHost, unsigned int pVideoPort, std::string pVideoCodec, unsigned int pPayloadIDVideo, std::string pAudioHost, unsigned int pAudioPort, std::string pAudioCodec, unsigned int pPayloadIDAudio)
 {
     bool tFound = false;
     ParticipantList::iterator tIt;
@@ -1145,9 +1149,11 @@ bool Meeting::SearchParticipantAndSetRemoteMediaInformation(std::string pPartici
             tIt->RemoteVideoHost = pVideoHost;
             tIt->RemoteVideoPort = pVideoPort;
             tIt->RemoteVideoCodec = pVideoCodec;
+            tIt->RTPPayloadIDVideo = pPayloadIDVideo;
             tIt->RemoteAudioHost = pAudioHost;
             tIt->RemoteAudioPort = pAudioPort;
             tIt->RemoteAudioCodec = pAudioCodec;
+            tIt->RTPPayloadIDAudio = pPayloadIDAudio;
             tFound = true;
             LOG(LOG_VERBOSE, "...found");
             LOG(LOG_VERBOSE, "...set remote video information to: %s:%u with codec %s", pVideoHost.c_str(), pVideoPort, pVideoCodec.c_str());
@@ -1370,9 +1376,11 @@ bool Meeting::GetSessionInfo(string pParticipant, enum TransportType pParticipan
         pInfo->RemoteVideoHost = "multiple";
         pInfo->RemoteVideoPort = "0";
         pInfo->RemoteVideoCodec = "";
+        pInfo->RTPPayloadIDVideo = 0;
         pInfo->RemoteAudioHost = "multiple";
         pInfo->RemoteAudioPort = "0";
         pInfo->RemoteAudioCodec = "";
+        pInfo->RTPPayloadIDAudio = 0;
         pInfo->LocalVideoPort = "0";
         pInfo->LocalAudioPort = "0";
         pInfo->CallState = "multiple";
@@ -1396,9 +1404,11 @@ bool Meeting::GetSessionInfo(string pParticipant, enum TransportType pParticipan
                 pInfo->RemoteVideoHost = tIt->RemoteVideoHost;
                 pInfo->RemoteVideoPort = toString(tIt->RemoteVideoPort);
                 pInfo->RemoteVideoCodec = tIt->RemoteVideoCodec;
+                pInfo->RTPPayloadIDVideo = tIt->RTPPayloadIDVideo;
                 pInfo->RemoteAudioHost = tIt->RemoteAudioHost;
                 pInfo->RemoteAudioPort = toString(tIt->RemoteAudioPort);
                 pInfo->RemoteAudioCodec = tIt->RemoteAudioCodec;
+                pInfo->RTPPayloadIDAudio = tIt->RTPPayloadIDAudio;
                 pInfo->LocalVideoPort = toString(tIt->VideoReceiveSocket->GetLocalPort());
                 pInfo->LocalAudioPort = toString(tIt->AudioReceiveSocket->GetLocalPort());
                 pInfo->CallState = CallStateAsString(tIt->CallState);
