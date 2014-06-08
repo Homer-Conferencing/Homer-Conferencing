@@ -316,17 +316,17 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
         tResult += "\r\n";
 
         if (tSupportedVideoCodecs & CODEC_H261)
-            tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("h261")) + " h261/90000\r\n";
+            tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("h261")) + " H261/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_H263)
-            tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("h263")) + " h263/90000\r\n";
+            tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("h263")) + " H263/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_MPEG1VIDEO)
             tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("mpeg1video")) + " MPV/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_MPEG2VIDEO)
             tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("mpeg2video")) + " MPV/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_H263P)
-            tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("h263+")) + " h263-1998/90000\r\n";
+            tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("h263+")) + " H263-1998/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_H264)
-            tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("h264")) + " h264/90000\r\n";
+            tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("h264")) + " H264/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_MPEG4)
             tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("mpeg4")) + " MP4V-ES/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_THEORA)
