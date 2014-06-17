@@ -101,16 +101,6 @@ ENDIF()
 SET (PRE_DEFINITIONS_EXECUTED "true")
 
 ##############################################################
-# create config.h
-IF (DEFINED INSIDE_HOMER_BUILD)
-	INCLUDE (CheckIncludeFiles)
-	CONFIGURE_FILE(
-		${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}HomerBuild/resources/config.h.in 
-		${CMAKE_CURRENT_BINARY_DIR}/config.h
-	)
-ENDIF()
-
-##############################################################
 # create Info.plist
 IF (DEFINED INSIDE_HOMER_BUILD)
 	INCLUDE (CheckIncludeFiles)

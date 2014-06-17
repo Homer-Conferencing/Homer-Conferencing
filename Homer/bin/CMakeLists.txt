@@ -33,6 +33,16 @@ SET(QT_USE_QTXML 1)
 INCLUDE(${QT_USE_FILE})
 
 ##############################################################
+# create config.h
+IF (DEFINED INSIDE_HOMER_BUILD)
+    INCLUDE (CheckIncludeFiles)
+    CONFIGURE_FILE(
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}Homer/resources/BuildConfigHomer.h.in 
+        ${CMAKE_CURRENT_BINARY_DIR}/BuildConfigHomer.h
+    )
+ENDIF()
+
+##############################################################
 # include dirs
 SET (INCLUDE_DIRS
 	${INCLUDE_DIRS}
@@ -49,9 +59,10 @@ SET (INCLUDE_DIRS
 	../../../HomerNetworkSimulator/HomerNetworkSimulator/include/
 	/usr/include/ffmpeg
 	${QT_INCLUDE_DIR}
-	${CMAKE_BINARY_DIR}/Homer/bin
-	${CMAKE_BINARY_DIR}/bin
-	${CMAKE_BINARY_DIR}/HomerNetworkSimulator/libHomerNetworkSimulator
+    ${CMAKE_BINARY_DIR}/bin
+    ${CMAKE_BINARY_DIR}/Homer/bin
+    ${CMAKE_BINARY_DIR}/HomerMultimedia/libHomerMultimedia
+    ${CMAKE_BINARY_DIR}/HomerNetworkSimulator/libHomerNetworkSimulator
 )
 
 ##############################################################

@@ -34,12 +34,25 @@ ELSE (LINUX)
 ENDIF (LINUX)
 
 ##############################################################
-# find package "swresample"
+# find library ffmpeg parts
 IF(WINDOWS)
-	SET(HAVE_SWRESAMPLE true)	
+    SET(HAVE_SWRESAMPLE true)
+    SET(HAVE_SWRESAMPLE_H true)    
 ELSE()
-	CHECK_LIBRARY_EXISTS(swresample swresample_version "" HAVE_SWRESAMPLE)
+    CHECK_LIBRARY_EXISTS(swresample swresample_version "" HAVE_SWRESAMPLE)
+    CHECK_INCLUDE_FILES (libswresample/swresample.h HAVE_SWRESAMPLE_H)
+    CHECK_INCLUDE_FILES (libavutil/time.h HAVE_AVUTIL_TIME_H)
 ENDIF() 
+
+##############################################################
+# create config.h
+IF (DEFINED INSIDE_HOMER_BUILD)
+    INCLUDE (CheckIncludeFiles)
+    CONFIGURE_FILE(
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../${RELOCATION_INCLUDES}HomerMultimedia/resources/BuildConfigHomerMultimedia.h.in 
+        ${CMAKE_CURRENT_BINARY_DIR}/BuildConfigHomerMultimedia.h
+    )
+ENDIF()
 
 ##############################################################
 # include dirs
@@ -54,6 +67,8 @@ SET (INCLUDE_DIRS
     /usr/include/ffmpeg
     ${ALSA_INCLUDE_DIRS}
     ${SDL_INCLUDE_DIR}
+    ${CMAKE_BINARY_DIR}/HomerMultimedia/libHomerMultimedia
+    ${CMAKE_BINARY_DIR}/libHomerMultimedia
 )
 
 ##############################################################
@@ -172,6 +187,7 @@ SET (LIBS_APPLE
     HomerNAPI
     HomerMonitor
     HomerSoundOutput
+	iconv
 )
 SET (LIBS_APPLE_STATIC
     avdevice
@@ -233,42 +249,38 @@ IF (${BUILD} MATCHES "Default")
         )
     ENDIF ()
 ELSE ()
-	# USED LIBRARIES for linux environment
-	SET (LIBS_LINUX
-		HomerBase
-		HomerNAPI
-		HomerMonitor
-		asound
-		pthread
-	)
-	SET (LIBS_LINUX_STATIC
-		avdevice
-		avformat
-		avfilter
-		avcodec
-		swresample
-		swscale
-		avutil
-		postproc
-		mp3lame
-		faac
-		opencore-amrnb
-		opencore-amrwb
-		jack
-		theoraenc
-		theoradec
-		ogg
-		x264
-		vpx
-		bz2
-		z		
-		SDL
-		portaudio
-	)
-	SET (LIBS_APPLE
-		${LIBS_APPLE}
-		iconv
-	)
+    # USED LIBRARIES for linux environment
+    SET (LIBS_LINUX
+        HomerBase
+        HomerNAPI
+        HomerMonitor
+        asound
+        pthread
+    )
+    SET (LIBS_LINUX_STATIC
+        avdevice
+        avformat
+        avfilter
+        avcodec
+        swresample
+        swscale
+        avutil
+        postproc
+        mp3lame
+        faac
+        opencore-amrnb
+        opencore-amrwb
+        jack
+        theoraenc
+        theoradec
+        ogg
+        x264
+        vpx
+        bz2
+        z
+        SDL
+        portaudio
+    )
 ENDIF ()
 
 # FEATURE pulseaudio
