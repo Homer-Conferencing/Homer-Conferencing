@@ -152,10 +152,10 @@ ENDIF (LINUX)
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
     avutil-52.dll
-    avcodec-54.dll
-    avdevice-54.dll
-    avfilter-3.dll
-    avformat-54.dll
+    avcodec-55.dll
+    avdevice-55.dll
+    avfilter-4.dll
+    avformat-55.dll
     libgcc_s_dw2-1.dll
     libstdc++-6.dll
     portaudio.dll
