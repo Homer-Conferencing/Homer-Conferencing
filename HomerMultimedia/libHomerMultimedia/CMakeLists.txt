@@ -165,10 +165,10 @@ SET (LIBS_WINDOWS_INSTALL
 )
 SET (LIBS_WINDOWS
     avutil-52
-    avcodec-54
-    avfilter-3
-    avformat-54
-    avdevice-54
+    avcodec-55
+    avfilter-4
+    avformat-55
+    avdevice-55
     HomerBase
     HomerNAPI
     HomerMonitor
