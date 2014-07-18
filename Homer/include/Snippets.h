@@ -31,6 +31,7 @@
 #include <QObject>
 #include <Logger.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <HBReflection.h>
 
