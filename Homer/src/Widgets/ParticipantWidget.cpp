@@ -50,6 +50,7 @@
 #include <QEvent>
 #include <QAction>
 #include <QString>
+#include <QMimeData>
 #include <QWidget>
 #include <QFrame>
 #include <QDockWidget>

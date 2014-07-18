@@ -37,6 +37,7 @@
 #include <QFileDialog>
 #include <QSizePolicy>
 #include <QMenu>
+#include <QMimeData>
 #include <QUrl>
 #include <QNetworkReply>
 #include <QContextMenuEvent>
