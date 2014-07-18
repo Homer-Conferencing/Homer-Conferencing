@@ -2576,69 +2576,69 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>ist im Moment nicht verfügbar für einen Anruf. Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1812"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1822"/>
         <source>in chat</source>
         <translation>im Chat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1815"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1825"/>
         <source>chat</source>
         <translation>Chat</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1820"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1830"/>
         <source>in conference</source>
         <translation>in Konferenz</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1823"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1833"/>
         <source>conference</source>
         <translation>Konferenz</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1828"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1831"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1838"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1841"/>
         <source>ringing</source>
         <translation>Rufen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1955"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1965"/>
         <source>Set file name for video/audio recording</source>
         <translation>Dateinamen für das Aufzeichnen von Video/Audio festlegen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1969"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1979"/>
         <source>Select video recording quality</source>
         <translation>Auswahl der Qualität für die Videoaufzeichnung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1969"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1979"/>
         <source>Record video with quality:</source>
         <translation>Videoaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1989"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1999"/>
         <source>Select audio recording quality</source>
         <translation>Auswahl der Qualität für die Audioaufzeichnung</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1989"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="1999"/>
         <source>Record audio with quality:</source>
         <translation>Audioaufzeichnung mit der Qualität:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2344"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2354"/>
         <source>Video:</source>
         <translation>Video:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2387"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2397"/>
         <source>Audio:</source>
         <translation>Audio:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2353"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2396"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2363"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2406"/>
         <source>MetaData:</source>
         <translation>Metadaten:</translation>
     </message>
@@ -2653,35 +2653,35 @@ Homer Conferencing wird danach gestoppt!</translation>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2364"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2374"/>
         <source>A/V pre-buffering:</source>
         <translation>A/V Vorpufferung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2366"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2375"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2376"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2385"/>
         <source>active</source>
         <translation>aktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2368"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2377"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2378"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2387"/>
         <source>inactive</source>
         <translation>inaktiv</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2371"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2381"/>
         <source>(auto restart)</source>
         <translation>(auto. Neustart)</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2362"/>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2373"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2372"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2383"/>
         <source>A/V synchronization:</source>
         <translation>A/V Synchronisierung:</translation>
     </message>
     <message>
-        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2379"/>
+        <location filename="../src/Widgets/ParticipantWidget.cpp" line="2389"/>
         <source>A/V synchronizations:</source>
         <translation>A/V Synchronisierungen:</translation>
     </message>
