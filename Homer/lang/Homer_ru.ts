@@ -1215,10 +1215,6 @@
         <translation>Библиотеки Qt:</translation>
     </message>
     <message>
-        <source>Could not determine help file which is provided by project server</source>
-        <translation>Не удалось определить файл справки, который обеспечивается Project Server</translation>
-    </message>
-    <message>
         <source>Linked SWScale:</source>
         <translation>Линк для SWScale: </translation>
     </message>
@@ -1264,6 +1260,10 @@
     </message>
     <message>
         <source>Linked glibc:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not download help data on project server</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1517,6 +1517,41 @@ Homer Conferencing will be stopped afterwards!</source>
     <message>
         <source>is not possible!</source>
         <translation>не возможно!</translation>
+    </message>
+</context>
+<context>
+    <name>Homer::Gui::OverviewChannelsWidget</name>
+    <message>
+        <source>Add channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset channel list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save channel list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load channel list</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1828,6 +1863,10 @@ Homer Conferencing will be stopped afterwards!</source>
         <source>Add directory to playlist</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Channel list</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Homer::Gui::OverviewThreadsWidget</name>
@@ -2106,10 +2145,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Скрипт оболочки Linux (*.sh)</translation>
     </message>
     <message>
-        <source>Could not determine changelog file which is provided by project server</source>
-        <translation>Konnte den Änderungsverlauf nicht vom Projektserver beziehen</translation>
-    </message>
-    <message>
         <source>Version data not found on server</source>
         <translation>Данная версия не найдена на сервере</translation>
     </message>
@@ -2134,10 +2169,6 @@ Homer Conferencing will be stopped afterwards!</source>
         <translation>Загрузка обновления Homer update уже началась!</translation>
     </message>
     <message>
-        <source>Could not determine software version which is provided by project server</source>
-        <translation>Не удалось определить версию программного обеспечения, который обеспечивает Project Server</translation>
-    </message>
-    <message>
         <source>Communication with server failed</source>
         <translation>Связь с сервером не удалась</translation>
     </message>
@@ -2152,10 +2183,6 @@ Homer Conferencing will be stopped afterwards!</source>
     <message>
         <source>Unable to store the downloaded Homer installer to</source>
         <translation>Невозможно сохранить загруженный Homer installe в</translation>
-    </message>
-    <message>
-        <source>Changelog data not found on server</source>
-        <translation>Измененых данных не найдено на сервере</translation>
     </message>
     <message>
         <source>Windows executable file (*.exe)</source>
@@ -2176,6 +2203,26 @@ Homer Conferencing will be stopped afterwards!</source>
     <message>
         <source>Unable to download Homer update. The reason is:</source>
         <translation>Невозможно загрузить обновление  Homer update. Причина:</translation>
+    </message>
+    <message>
+        <source>Can not determine the software version on the project server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not determine the software version on the project server (code: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Changelog file not found on server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not download the changelog data from project server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can not download the changelog data from the project server</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3169,6 +3216,29 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Open video/audio player</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OverviewChannelsWidget</name>
+    <message>
+        <source>Channel list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>save contact list</source>
+        <translation type="unfinished">сохранить список контактов</translation>
+    </message>
+    <message>
+        <source>load contact list</source>
+        <translation type="unfinished">загрузить список контактов</translation>
+    </message>
+    <message>
+        <source>Add contact</source>
+        <translation type="unfinished">Добавить контакт</translation>
+    </message>
+    <message>
+        <source>Remove contact(s)</source>
+        <translation type="unfinished">Удалить контакт (ы)</translation>
     </message>
 </context>
 <context>

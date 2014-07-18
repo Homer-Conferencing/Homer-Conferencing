@@ -29,7 +29,7 @@
 
 #include <ui_HelpDialog.h>
 
-#include <QHttp>
+#include <QNetworkAccessManager>
 
 namespace Homer { namespace Gui {
 
@@ -50,12 +50,12 @@ public:
     static QString GetSystemInfo();
 
 private slots:
-    void GotAnswerForHelpRequest(bool pError);
+    void GotAnswerForHelpRequest(QNetworkReply *pReply);
 
 private:
     void initializeGUI();
 
-    QHttp           *mHttpGetHelpUrl;
+    QNetworkAccessManager   *mHttpGetHelpUrl;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

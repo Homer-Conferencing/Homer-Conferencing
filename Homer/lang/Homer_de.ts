@@ -1370,168 +1370,164 @@
 <context>
     <name>Homer::Gui::ConfigurationDialog</name>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="695"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="697"/>
         <source>Restart necessary</source>
         <translation>Neustart erforderlich</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="695"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="697"/>
         <source>You have to</source>
         <translation>Es ist ein</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="695"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="699"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="697"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="701"/>
         <source>restart</source>
         <translation>Neustart</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="695"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="699"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="697"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="701"/>
         <source>Homer Conferencing to apply the new settings!</source>
         <translation>von Homer Conferencing zur Anwendung der neuen Einstellungen erforderlich!</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="699"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="701"/>
         <source>Your new settings are</source>
         <translation>Die neuen Einstellungen werden</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="699"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="701"/>
         <source>not applied for already established sessions</source>
         <translation>nicht für bereits aktive Sitzungen verwendet</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="699"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="701"/>
         <source>They will only be used for new sessions! Otherwise you have to</source>
         <translation>Sie werden nur für neue Sitzungen verwenden. Andernfalls ist ein</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="699"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="701"/>
         <source>Settings will be applied for future sessions</source>
         <translation>Einstellungen werden für neue Sitzungen verwendet</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="736"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="743"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="769"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="739"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="765"/>
         <source>The list with suggested STUN servers from the project server is unavailable</source>
         <translation>Es konnte keine Liste möglicher STUN-Server vom Projektserver geladen werden</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="736"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="743"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="769"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="790"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="797"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="823"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="739"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="765"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="787"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="813"/>
         <source>Communication with server failed</source>
         <translation>Kommunikation mit dem Server fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="778"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="774"/>
         <source>Select a STUN server</source>
         <translation> Auswahl des STUN-Servers </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="778"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="774"/>
         <source>STUN server:</source>
         <translation>STUN-Server:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="790"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="797"/>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="823"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="787"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="813"/>
         <source>The list with suggested SIP servers from the project server is unavailable</source>
         <translation>Es konnte keine Liste möglicher SIP-Server vom Projektserver geladen werden </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="844"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="834"/>
         <source>No SIP server entered</source>
         <translation>Kein SIP-Server eingegeben</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="844"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="834"/>
         <source>You have to enter a SIP server address first!</source>
         <translation>Es muss zuvor ein SIP-Server festgelegt werden!</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="849"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="839"/>
         <source>Web browser opened</source>
         <translation>Webbrowser geöffnet</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="849"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="839"/>
         <source>Your web browser was opened with the url</source>
         <translation>Der Webbrowser wurde geöffnet mit der URL</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="849"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="839"/>
         <source>for your account creation!</source>
         <translation>für die Accounterstellung!</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="865"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="855"/>
         <source>Select sound file for acoustic notification for event </source>
         <translation>Auswahl der Sounddatei für die akustische Benachrichtung für das Ereignis</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="881"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="871"/>
         <source>program start</source>
         <translation>Programmstart</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="892"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="882"/>
         <source>program stop</source>
         <translation>Programmende</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="903"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="893"/>
         <source>new message</source>
         <translation>Neue Nachricht</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="914"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="904"/>
         <source>new call</source>
         <translation>Neuer Anruf</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="925"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="915"/>
         <source>call denied</source>
         <translation>Anruf abgelehnt</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="936"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="926"/>
         <source>call acknowledged</source>
         <translation>Anruf bestätigt</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="947"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="937"/>
         <source>call hangup</source>
         <translation>Anruf aufgelegt</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="958"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="948"/>
         <source>error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="969"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="959"/>
         <source>registration failed</source>
         <translation>Registrierung fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="980"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="970"/>
         <source>registration successful</source>
         <translation>Registrierung erfolgreich</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="993"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="983"/>
         <source>Failed to play file</source>
         <translation>Dateiwiedergabe fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="993"/>
+        <location filename="../src/Dialogs/ConfigurationDialog.cpp" line="983"/>
         <source>Was unable to play the file</source>
         <translation>Wiedergabe fehlgeschlagen für Datei</translation>
     </message>
@@ -1665,18 +1661,18 @@
         <translation>SCTP unterstützt:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="210"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="214"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="217"/>
+        <source>Can not download help data on project server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="217"/>
         <source>Communication with server failed</source>
         <translation>Kommunikation mit Server fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="210"/>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="219"/>
-        <source>Could not determine help file which is provided by project server</source>
-        <translation>Konnte nicht die Hilfsdatei vom Projekt beziehen </translation>
-    </message>
-    <message>
-        <location filename="../src/Dialogs/HelpDialog.cpp" line="219"/>
+        <location filename="../src/Dialogs/HelpDialog.cpp" line="214"/>
         <source>Help data not found on server</source>
         <translation>Hilfedaten konnte nichtgefunden werden auf dem Server</translation>
     </message>
@@ -1700,190 +1696,190 @@ Bitte Konfiguration prüfen!</translation>
 <context>
     <name>Homer::Gui::MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="881"/>
+        <location filename="../src/MainWindow.cpp" line="882"/>
         <source>Update available</source>
         <translation>Aktualisierung verfügbar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="881"/>
+        <location filename="../src/MainWindow.cpp" line="882"/>
         <source>An updated version of Homer Conferencing is available. The new version is</source>
         <translation>Eine aktualisierte Version von Homer Conferencing ist verfügbar. Die neue Version ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="881"/>
+        <location filename="../src/MainWindow.cpp" line="882"/>
         <source>You can download the version via &quot;update check&quot; in the main menu.</source>
         <translation>Sie können die Version via &quot;Aktualisierung überprüfen&quot; im Hauptmenü herunterladen.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1337"/>
+        <location filename="../src/MainWindow.cpp" line="1338"/>
         <source>NAT detection failed</source>
         <translation>NAT Erkennung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1337"/>
+        <location filename="../src/MainWindow.cpp" line="1338"/>
         <source>Could not detect NAT address and type via STUN server. The failure reason is</source>
         <translation>Konnte die NAT-Adresse und -Typ nicht via STUN-Server erkennen. Die Fehlerursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1651"/>
-        <location filename="../src/MainWindow.cpp" line="1655"/>
+        <location filename="../src/MainWindow.cpp" line="1652"/>
+        <location filename="../src/MainWindow.cpp" line="1656"/>
         <source>Registration failed</source>
         <translation>Registrierung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1651"/>
-        <location filename="../src/MainWindow.cpp" line="1655"/>
+        <location filename="../src/MainWindow.cpp" line="1652"/>
+        <location filename="../src/MainWindow.cpp" line="1656"/>
         <source>Could not register</source>
         <translation>Registerung fehlgeschlagen für</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1651"/>
-        <location filename="../src/MainWindow.cpp" line="1655"/>
+        <location filename="../src/MainWindow.cpp" line="1652"/>
+        <location filename="../src/MainWindow.cpp" line="1656"/>
         <source>at the SIP server</source>
         <translation>am SIP-Server</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1651"/>
-        <location filename="../src/MainWindow.cpp" line="1671"/>
+        <location filename="../src/MainWindow.cpp" line="1652"/>
+        <location filename="../src/MainWindow.cpp" line="1672"/>
         <source>The reason is</source>
         <translation>Die Ursache ist</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1652"/>
-        <location filename="../src/MainWindow.cpp" line="1656"/>
-        <location filename="../src/MainWindow.cpp" line="1672"/>
+        <location filename="../src/MainWindow.cpp" line="1653"/>
+        <location filename="../src/MainWindow.cpp" line="1657"/>
+        <location filename="../src/MainWindow.cpp" line="1673"/>
         <source>SIP server runs software</source>
         <translation>Der SIP-Server nutzt die Software</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1655"/>
+        <location filename="../src/MainWindow.cpp" line="1656"/>
         <source>The login name or password is wrong. Check configuration!
 </source>
         <translation>Der Loginname oder das Passwort sind falsch. Bitte die Konfiguration prüfen!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1671"/>
+        <location filename="../src/MainWindow.cpp" line="1672"/>
         <source>Presence publication failed</source>
         <translation>Verfügbarkeitsstatus nicht aktualisiert</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1671"/>
+        <location filename="../src/MainWindow.cpp" line="1672"/>
         <source>Could not publish your new presence state at the SIP server</source>
         <translation>Der Verfügbarkeitsstatus konnte nicht am SIP-Server veröffentlicht werden</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1754"/>
+        <location filename="../src/MainWindow.cpp" line="1755"/>
         <source>Participant already called</source>
         <translation>Teilnehmer bereits angerufen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1754"/>
+        <location filename="../src/MainWindow.cpp" line="1755"/>
         <source>The participant</source>
         <translation>Der Teilnehmer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1754"/>
+        <location filename="../src/MainWindow.cpp" line="1755"/>
         <source>is already called!
 The participant is known as</source>
         <translation>ist bereits angerufen!
 Der Teilnehmer ist bekannt unter</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1793"/>
+        <location filename="../src/MainWindow.cpp" line="1794"/>
         <source>Loop detected</source>
         <translation>Schleife erkannt</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1793"/>
+        <location filename="../src/MainWindow.cpp" line="1794"/>
         <source>You tried to contact yourself!</source>
         <translation>Sie versuchten sich selbst zu kontaktieren!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1850"/>
+        <location filename="../src/MainWindow.cpp" line="1851"/>
         <source>Acknowledge configuration reset</source>
         <translation>Bestätigung der Rücksetzung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1850"/>
+        <location filename="../src/MainWindow.cpp" line="1851"/>
         <source>Do you want to reset the program settings?
 Homer Conferencing will be stopped afterwards!</source>
         <translation>Wollen Sie die Programmeinstellungen zurücksetzen?
 Homer Conferencing wird danach gestoppt!</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2229"/>
-        <location filename="../src/MainWindow.cpp" line="2364"/>
+        <location filename="../src/MainWindow.cpp" line="2230"/>
+        <location filename="../src/MainWindow.cpp" line="2365"/>
         <source>Show window</source>
         <translation>Fenster anzeigen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2232"/>
-        <location filename="../src/MainWindow.cpp" line="2367"/>
+        <location filename="../src/MainWindow.cpp" line="2233"/>
+        <location filename="../src/MainWindow.cpp" line="2368"/>
         <source>Hide window</source>
         <translation>Fenster minimieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2238"/>
+        <location filename="../src/MainWindow.cpp" line="2239"/>
         <source>Main menu</source>
         <translation>Hauptmenü</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2251"/>
+        <location filename="../src/MainWindow.cpp" line="2252"/>
         <source>Tool bars</source>
         <translation>Werkzeugleisten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2263"/>
+        <location filename="../src/MainWindow.cpp" line="2264"/>
         <source>Streaming</source>
         <translation>Übertragung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2274"/>
+        <location filename="../src/MainWindow.cpp" line="2275"/>
         <source>Broadcast data</source>
         <translation>Audio-/Videoverteilung</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2287"/>
+        <location filename="../src/MainWindow.cpp" line="2288"/>
         <source>Mosaic mode</source>
         <translation>Mosaikmodus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2304"/>
-        <location filename="../src/MainWindow.cpp" line="2377"/>
+        <location filename="../src/MainWindow.cpp" line="2305"/>
+        <location filename="../src/MainWindow.cpp" line="2378"/>
         <source>Unmute me</source>
         <translation>Stimme aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2308"/>
-        <location filename="../src/MainWindow.cpp" line="2381"/>
+        <location filename="../src/MainWindow.cpp" line="2309"/>
+        <location filename="../src/MainWindow.cpp" line="2382"/>
         <source>Mute me</source>
         <translation>Stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2314"/>
-        <location filename="../src/MainWindow.cpp" line="2387"/>
+        <location filename="../src/MainWindow.cpp" line="2315"/>
+        <location filename="../src/MainWindow.cpp" line="2388"/>
         <source>Mute others</source>
         <translation>Andere stumm schalten</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2254"/>
-        <location filename="../src/MainWindow.cpp" line="2323"/>
-        <location filename="../src/MainWindow.cpp" line="2396"/>
+        <location filename="../src/MainWindow.cpp" line="2255"/>
+        <location filename="../src/MainWindow.cpp" line="2324"/>
+        <location filename="../src/MainWindow.cpp" line="2397"/>
         <source>Online status</source>
         <translation>Onlinestatus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2330"/>
+        <location filename="../src/MainWindow.cpp" line="2331"/>
         <source>Configuration</source>
         <translation>Konfiguration</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2340"/>
+        <location filename="../src/MainWindow.cpp" line="2341"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2348"/>
+        <location filename="../src/MainWindow.cpp" line="2349"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -2015,6 +2011,57 @@ Homer Conferencing wird danach gestoppt!</translation>
         <location filename="../src/Dialogs/OpenVideoAudioPreviewDialog.cpp" line="323"/>
         <source>The preview of the incoming audio stream at local port</source>
         <translation>Die Vorschau des empfangen Audiostroms ist nicht möglich am lokalen Port</translation>
+    </message>
+</context>
+<context>
+    <name>Homer::Gui::OverviewChannelsWidget</name>
+    <message>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="120"/>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="128"/>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="180"/>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="226"/>
+        <source>Add channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="171"/>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="221"/>
+        <source>Select channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="188"/>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="236"/>
+        <source>Edit channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="194"/>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="231"/>
+        <source>Duplicate channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="199"/>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="241"/>
+        <source>Delete channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="210"/>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="247"/>
+        <source>Reset channel list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="474"/>
+        <source>Save channel list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="491"/>
+        <source>Load channel list</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2451,6 +2498,12 @@ Homer Conferencing wird danach gestoppt!</translation>
         <source>Contact list</source>
         <translation>Kontaktliste</translation>
     </message>
+    <message>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="476"/>
+        <location filename="../src/Widgets/OverviewChannelsWidget.cpp" line="493"/>
+        <source>Channel list</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Homer::Gui::OverviewThreadsWidget</name>
@@ -2782,137 +2835,145 @@ Homer Conferencing wird danach gestoppt!</translation>
 <context>
     <name>Homer::Gui::UpdateCheckDialog</name>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="107"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="175"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="109"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="177"/>
         <source>Download of Homer update running</source>
         <translation>Download des Homer-Updates gestartet</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="107"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="175"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="109"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="177"/>
         <source>A download of a Homer update is already started!</source>
         <translation>Ein Download  eines Homer-Updates ist bereits gestartet!</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="140"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="142"/>
         <source>Save Homer archive to..</source>
         <translation>Speichern des Homer-Archivs nach..</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="155"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="157"/>
         <source>Could not store Homer archive</source>
         <translation>Abspeichern des Homer-Archivs fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="155"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="157"/>
         <source>Unable to store the downloaded Homer archive to</source>
         <translation>Abspeichern des Homer-Archivs war fehlerhaft für </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="187"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="191"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="189"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="193"/>
         <source>Windows executable file (*.exe)</source>
         <translation>Windows ausführbare Datei (*.exe)</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="195"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="197"/>
         <source>Linux shell script (*.sh)</source>
         <translation>Linux Shell-Script (*.sh)</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="202"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="204"/>
         <source>Apple disc image file (*.dmg)</source>
         <translation>Apple Platten-Abbilddatei (*.dmg)</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="207"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="209"/>
         <source>Save Homer installer to..</source>
         <translation>Speichern des Homer-Installers nach.. </translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="222"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="224"/>
         <source>Could not store Homer installer</source>
         <translation>Abspeichern des Homer-Installers fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="222"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="224"/>
         <source>Unable to store the downloaded Homer installer to</source>
         <translation>Abspeichern des heruntergeladenen Homer-Installers war fehlerhaft für</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="272"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="274"/>
         <source>Downloading Homer update</source>
         <translation>Download des Homer-Updates</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="272"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="274"/>
         <source>from</source>
         <translation>von</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="272"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="274"/>
         <source>to</source>
         <translation>nach</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="272"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="274"/>
         <source>Loaded:</source>
         <translation>Geladen:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="272"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="274"/>
         <source>bytes</source>
         <translation>Bytes</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="281"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="283"/>
         <source>Failed to download Homer update</source>
         <translation>Herunterladen der Homeraktualisierung fehlerhaft</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="281"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="283"/>
         <source>Unable to download Homer update. The reason is:</source>
         <translation>Herunterladen der Homeraktualisierung fehlerhaft. Die Urasche ist:</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="329"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="337"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="335"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="338"/>
         <source>check failed</source>
         <translation>Prüfung fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="330"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="359"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="336"/>
+        <source>Can not determine the software version on the project server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="339"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="369"/>
         <source>Communication with server failed</source>
         <translation>Kommunikation mit Server fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="330"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="338"/>
-        <source>Could not determine software version which is provided by project server</source>
-        <translation>Konnte die Softwareversion auf dem Projektserver nicht bestimmen</translation>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="366"/>
+        <source>Changelog file not found on server</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="338"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="366"/>
+        <source>Can not download the changelog data from project server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="369"/>
+        <source>Can not download the changelog data from the project server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="336"/>
         <source>Version data not found on server</source>
         <translation>Versionsdaten wurden nicht auf dem Server gefunden</translation>
     </message>
     <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="358"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="367"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="339"/>
+        <source>Can not determine the software version on the project server (code: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="365"/>
+        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="368"/>
         <source>fetch failed</source>
         <translation>Abfrage fehlgeschlagen</translation>
-    </message>
-    <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="359"/>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="368"/>
-        <source>Could not determine changelog file which is provided by project server</source>
-        <translation>Konnte den Änderungsverlauf nicht vom Projektserver beziehen</translation>
-    </message>
-    <message>
-        <location filename="../src/Dialogs/UpdateCheckDialog.cpp" line="368"/>
-        <source>Changelog data not found on server</source>
-        <translation>Änderungsverlauf wurde auf dem Server nicht gefunden</translation>
     </message>
 </context>
 <context>
@@ -4197,6 +4258,34 @@ datei</translation>
         <location filename="../forms/Dialogs/OpenVideoAudioPreviewDialog.ui" line="1962"/>
         <source>Audio playback enabled</source>
         <translation>Audiowiedergabe aktiv</translation>
+    </message>
+</context>
+<context>
+    <name>OverviewChannelsWidget</name>
+    <message>
+        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="26"/>
+        <source>Channel list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="156"/>
+        <source>save contact list</source>
+        <translation type="unfinished">Speichern der Kontaktliste</translation>
+    </message>
+    <message>
+        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="202"/>
+        <source>load contact list</source>
+        <translation type="unfinished">Laden der Kontaktliste</translation>
+    </message>
+    <message>
+        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="248"/>
+        <source>Add contact</source>
+        <translation type="unfinished">Kontakt hinzufügen</translation>
+    </message>
+    <message>
+        <location filename="../forms/Widgets/OverviewChannelsWidget.ui" line="294"/>
+        <source>Remove contact(s)</source>
+        <translation type="unfinished">Kontakt(e) entfernen</translation>
     </message>
 </context>
 <context>

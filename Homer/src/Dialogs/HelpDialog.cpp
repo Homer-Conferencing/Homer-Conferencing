@@ -32,8 +32,9 @@
 #include <Snippets.h>
 #include <Header_Ffmpeg.h>
 
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QDesktopWidget>
-#include <QHttp>
 #include <QUrl>
 #include <QSysInfo>
 #ifdef LINUX
@@ -52,10 +53,9 @@ HelpDialog::HelpDialog(QWidget* pParent) :
 {
     initializeGUI();
 
-    mHttpGetHelpUrl = new QHttp(this);
-    connect(mHttpGetHelpUrl, SIGNAL(done(bool)), this, SLOT(GotAnswerForHelpRequest(bool)));
-    mHttpGetHelpUrl->setHost(RELEASE_SERVER);
-    mHttpGetHelpUrl->get(PATH_HELP_TXT);
+    QString tUrlHelpLocation = QString("http://" RELEASE_SERVER PATH_HELP_TXT);
+    mHttpGetHelpUrl = new QNetworkAccessManager(this);
+    HttpDownload(mHttpGetHelpUrl, tUrlHelpLocation, GotAnswerForHelpRequest);
 }
 
 HelpDialog::~HelpDialog()
@@ -202,28 +202,29 @@ void HelpDialog::initializeGUI()
         showMaximized();
 }
 
-void HelpDialog::GotAnswerForHelpRequest(bool pError)
+void HelpDialog::GotAnswerForHelpRequest(QNetworkReply *pReply)
 {
-    if (pError)
+    int tErrorCode = pReply->error();
+    if (tErrorCode != QNetworkReply::NoError)
     {
-        mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>fetch failed</b></font>");
-        ShowError(Homer::Gui::HelpDialog::tr("Communication with server failed"), Homer::Gui::HelpDialog::tr("Could not determine help file which is provided by project server"));
-    }else
-    {
-        QString tHelpFile = QString(mHttpGetHelpUrl->readAll().constData());
-        LOG(LOG_VERBOSE, "Loading help from http://"RELEASE_SERVER"%s", tHelpFile.toStdString().c_str());
-
-        if (tHelpFile.contains("404 Not Found"))
+        // catch the 404
+        if(tErrorCode == QNetworkReply::ContentNotFoundError)
         {
             mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>fetch failed</b></font>");
-            ShowError(Homer::Gui::HelpDialog::tr("Help data not found on server"), Homer::Gui::HelpDialog::tr("Could not determine help file which is provided by project server"));
-        }else
-        {
-            mLbWaiting->setVisible(false);
-            mWvHelp->load(QUrl("http://"RELEASE_SERVER + tHelpFile));
-            mWvHelp->show();
-            mWvHelp->setVisible(true);
+            ShowError(Homer::Gui::HelpDialog::tr("Help data not found on server"), Homer::Gui::HelpDialog::tr("Can not download help data on project server"));
+        }else{
+            mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>fetch failed</b></font>");
+            ShowError(Homer::Gui::HelpDialog::tr("Communication with server failed"), Homer::Gui::HelpDialog::tr("Can not download help data on project server"));
         }
+    }else
+    {
+        QString tHelpFile = QString(pReply->readAll().constData());
+        LOG(LOG_VERBOSE, "Loading help from http://"RELEASE_SERVER"%s", tHelpFile.toStdString().c_str());
+
+        mLbWaiting->setVisible(false);
+        mWvHelp->load(QUrl("http://"RELEASE_SERVER + tHelpFile));
+        mWvHelp->show();
+        mWvHelp->setVisible(true);
     }
 }
 

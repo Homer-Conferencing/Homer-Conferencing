@@ -56,7 +56,7 @@
 #include <QSettings>
 #include <QDockWidget>
 #include <QTimer>
-#include <QHttp>
+#include <QNetworkAccessManager>
 #include <QSystemTrayIcon>
 #include <QShortcut>
 #include <QTranslator>
@@ -133,7 +133,7 @@ private slots:
 
     void activatedSysTray(QSystemTrayIcon::ActivationReason pReason);
 
-    void GotAnswerForVersionRequest(bool pError);
+    void GotAnswerForVersionRequest(QNetworkReply *pReply);
     void CreateScreenShot();
 
     void RegisterAtStunSipServer();
@@ -179,7 +179,7 @@ private:
     void GetEventSource(GeneralEvent *pEvent, QString &pSender, QString &pSenderApp);
     virtual void handleMeetingEvent(GeneralEvent *pEvent);
 
-    QHttp           		    *mHttpGetVersionServer;
+    QNetworkAccessManager	    *mHttpGetVersionServer;
     QString		 			    mAbsBinPath;
     AvailabilityWidget 		    *mOnlineStatusWidget;
     StreamingControlWidget 	    *mMediaSourcesControlWidget;
