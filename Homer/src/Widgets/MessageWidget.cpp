@@ -36,6 +36,7 @@
 
 #include <QWidget>
 #include <QMenu>
+#include <QMimeData>
 #include <QTime>
 #include <QFileDialog>
 #include <QInputDialog>
