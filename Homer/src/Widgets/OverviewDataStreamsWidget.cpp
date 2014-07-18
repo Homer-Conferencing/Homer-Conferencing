@@ -91,7 +91,6 @@ void OverviewDataStreamsWidget::initializeGUI()
     // hide id column
     mTwAudio->setColumnHidden(12, true);
     mTwAudio->sortItems(12);
-    mTwAudio->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
     mTwAudio->horizontalHeader()->resizeSection(0, mTwAudio->horizontalHeader()->sectionSize(0) * 3);
     for (int i = 1; i < 5; i++)
         mTwAudio->horizontalHeader()->resizeSection(i, mTwAudio->horizontalHeader()->sectionSize(i) * 2);
@@ -102,13 +101,20 @@ void OverviewDataStreamsWidget::initializeGUI()
     // hide id column
     mTwVideo->setColumnHidden(12, true);
     mTwVideo->sortItems(12);
-    mTwVideo->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
     mTwVideo->horizontalHeader()->resizeSection(0, mTwVideo->horizontalHeader()->sectionSize(0) * 3);
     for (int i = 1; i < 5; i++)
         mTwVideo->horizontalHeader()->resizeSection(i, mTwVideo->horizontalHeader()->sectionSize(i) * 2);
     mTwVideo->horizontalHeader()->resizeSection(7, (int)mTwVideo->horizontalHeader()->sectionSize(7) * 2);
     mTwVideo->horizontalHeader()->resizeSection(10, mTwVideo->horizontalHeader()->sectionSize(9) * 2);
     mTwVideo->horizontalHeader()->resizeSection(11, mTwVideo->horizontalHeader()->sectionSize(10) * 2);
+
+	#ifdef HOMER_QT5
+		mTwAudio->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+	    mTwVideo->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+	#else
+		mTwAudio->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+	    mTwVideo->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+	#endif
 
     UpdateView();
 }

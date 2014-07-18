@@ -114,11 +114,11 @@ void ContactsManager::SavePool(string pContactsFile)
         {
             QDomElement tEntry = tXml.createElement("entry");
 
-            tEntry.setAttribute("Name", QString(tIt->Name.toAscii()));
-            tEntry.setAttribute("User", QString(tIt->User.toAscii()));
-            tEntry.setAttribute("Host", QString(tIt->Host.toAscii()));
-            tEntry.setAttribute("Port", QString(tIt->Port.toAscii()));
-            tEntry.setAttribute("Transport", QString(QString(Socket::TransportType2String(tIt->Transport).c_str()).toAscii()));
+            tEntry.setAttribute("Name", QString(tIt->Name.toLatin1()));
+            tEntry.setAttribute("User", QString(tIt->User.toLatin1()));
+            tEntry.setAttribute("Host", QString(tIt->Host.toLatin1()));
+            tEntry.setAttribute("Port", QString(tIt->Port.toLatin1()));
+            tEntry.setAttribute("Transport", QString(QString(Socket::TransportType2String(tIt->Transport).c_str()).toLatin1()));
             tEntry.setAttribute("Index", QString("%1").arg(tIt->Id));
 
             tRoot.appendChild(tEntry);
@@ -205,15 +205,15 @@ void ContactsManager::LoadPool(string pContactsFile)
 			{
 				ContactDescriptor tContact;
 
-				tContact.User = QString::fromAscii(tEntry.attribute("User", "User").toStdString().c_str());
-                tContact.Name = QString::fromAscii(tEntry.attribute("Name", tContact.User).toStdString().c_str()); // per default use the user name as contact name
-				tContact.Host = QString::fromAscii(tEntry.attribute("Host", "Host").toStdString().c_str());
+				tContact.User = QString::fromLatin1(tEntry.attribute("User", "User").toStdString().c_str());
+                tContact.Name = QString::fromLatin1(tEntry.attribute("Name", tContact.User).toStdString().c_str()); // per default use the user name as contact name
+				tContact.Host = QString::fromLatin1(tEntry.attribute("Host", "Host").toStdString().c_str());
 				tContact.Host = tContact.Host.toLower();
-				tContact.Port = QString::fromAscii(tEntry.attribute("Port", "5060").toStdString().c_str());
+				tContact.Port = QString::fromLatin1(tEntry.attribute("Port", "5060").toStdString().c_str());
 				tContact.Unknown = false;
 				tContact.Software = "";
-				tContact.Transport = Socket::String2TransportType(QString::fromAscii(tEntry.attribute("Transport", "UDP").toStdString().c_str()).toStdString());
-				LOG(LOG_VERBOSE, "Loaded contact: name=%s, address=%s, port=%s, transport=%s", QString(tContact.Name.toAscii()).toStdString().c_str(), QString(tContact.User.toAscii() + "@" + tContact.Host.toAscii()).toStdString().c_str(), tContact.Port.toStdString().c_str(), Socket::TransportType2String(tContact.Transport).c_str());
+				tContact.Transport = Socket::String2TransportType(QString::fromLatin1(tEntry.attribute("Transport", "UDP").toStdString().c_str()).toStdString());
+				LOG(LOG_VERBOSE, "Loaded contact: name=%s, address=%s, port=%s, transport=%s", QString(tContact.Name.toLatin1()).toStdString().c_str(), QString(tContact.User.toLatin1() + "@" + tContact.Host.toLatin1()).toStdString().c_str(), tContact.Port.toStdString().c_str(), Socket::TransportType2String(tContact.Transport).c_str());
 				tContact.Id = tEntry.attribute("Index", "0").toUInt();
 				tContact.State = CONTACT_UNAVAILABLE;
 
@@ -785,12 +785,12 @@ string ContactDescriptor::GetPortStdStr()
 
 void ContactDescriptor::SetUserStdStr(string pUser)
 {
-    User = QString::fromAscii(pUser.c_str());
+    User = QString::fromLatin1(pUser.c_str());
 }
 
 void ContactDescriptor::SetHostStdStr(string pHost)
 {
-    User = QString::fromAscii(pHost.c_str());
+    User = QString::fromLatin1(pHost.c_str());
 }
 
 bool ContactDescriptor::IsOnline()

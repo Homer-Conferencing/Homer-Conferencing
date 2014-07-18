@@ -302,7 +302,11 @@ void OverviewNetworkStreamsWidget::initializeGUI()
     // hide id column
     mTwOutgoingStreams->setColumnHidden(7, true);
     mTwOutgoingStreams->sortItems(7);
-    mTwOutgoingStreams->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+	#ifdef HOMER_QT5
+		mTwOutgoingStreams->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+	#else
+		mTwOutgoingStreams->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+	#endif
     mTwOutgoingStreams->horizontalHeader()->resizeSection(0, mTwOutgoingStreams->horizontalHeader()->sectionSize(0) * 3);
     mTwOutgoingStreams->horizontalHeader()->resizeSection(1, mTwOutgoingStreams->horizontalHeader()->sectionSize(1) * 3);
     mTwOutgoingStreams->horizontalHeader()->resizeSection(4, (int)(mTwOutgoingStreams->horizontalHeader()->sectionSize(4) * 1.5));

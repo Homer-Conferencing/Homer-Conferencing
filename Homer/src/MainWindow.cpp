@@ -58,13 +58,16 @@
 #include <ProcessStatisticService.h>
 #include <Snippets.h>
 
-#include <QPlastiqueStyle>
+#ifndef HOMER_QT5
+	#include <QPlastiqueStyle>
+#endif
 #include <QApplication>
 #include <QTime>
 #include <QFile>
 #include <QTimer>
 #include <QTextEdit>
 #include <QMenu>
+#include <QMimeData>
 #include <QScrollBar>
 #include <QNetworkInterface>
 #include <QHostInfo>
@@ -648,7 +651,11 @@ void MainWindow::initializeWidgetsAndMenus()
 
     #ifndef APPLE
         // set fixed style "plastic"
-        QApplication::setStyle(new QPlastiqueStyle());
+		#ifdef HOMER_QT5
+        	QApplication::setStyle("fusion");
+		#else
+        	QApplication::setStyle(new QPlastiqueStyle());
+		#endif
     #endif
 
     if (CONF.ConferencingEnabled())

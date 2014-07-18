@@ -35,6 +35,10 @@
 #include <signal.h>
 #include <stdlib.h>
 
+#ifdef HOMER_QT5
+	#include <QMessageLogContext>
+#endif
+
 #include <Header_Windows.h>
 
 using namespace Homer::Gui;
@@ -303,7 +307,7 @@ static void showMood()
     }
 }
 
-static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
+static void sQt4DebugMessageOutput(QtMsgType pType, const char *pMsg)
 {
     // ignore buggy Qt warnings about mysterious Qt timers
     string tCurMsg = string(pMsg);
@@ -346,6 +350,13 @@ static void sQtDebugMessageOutput(QtMsgType pType, const char *pMsg)
 				break;
 		}
 	#endif
+}
+
+static void sQt5DebugMessageOutput(QtMsgType pType, const QMessageLogContext &pContext, const QString &pMsg)
+{
+	QByteArray tLocalMsg = pMsg.toLocal8Bit();
+	string tDebugMessage = pContext.function;// + "(" + toString(pContext.line) + "): " + string(tLocalMsg.constData());
+	sQt4DebugMessageOutput(pType, tDebugMessage.c_str());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -560,7 +571,11 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 	HomerApplication *tApp = new HomerApplication(pArgc, pArgv);
 
 	LOGEX(HomerApplication, LOG_VERBOSE, "Setting Qt message handler");
-	qInstallMsgHandler(sQtDebugMessageOutput);
+	#ifdef HOMER_QT5
+		qInstallMessageHandler(sQt5DebugMessageOutput);
+	#else
+		qInstallMsgHandler(sQt4DebugMessageOutput);
+	#endif
 	showMood();
 
     if (tApp != NULL)

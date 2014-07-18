@@ -1206,7 +1206,7 @@ QString Configuration::GetSystemLanguage()
 
 QString Configuration::GetUserName()
 {
-    return mQSettings->value("User/UserName", QString::fromAscii(MEETING.GetUserName().c_str())).toString();
+    return mQSettings->value("User/UserName", QString::fromLatin1(MEETING.GetUserName().c_str())).toString();
 }
 
 QString Configuration::GetUserMail()
@@ -1381,7 +1381,7 @@ int Configuration::GetSipStartPort()
 
 QString Configuration::GetSipUserName()
 {
-    return mQSettings->value("Network/SipUserName", QString::fromAscii(MEETING.GetUserName().c_str())).toString();
+    return mQSettings->value("Network/SipUserName", QString::fromLatin1(MEETING.GetUserName().c_str())).toString();
 }
 
 QString Configuration::GetSipPassword()

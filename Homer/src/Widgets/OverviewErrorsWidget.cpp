@@ -174,7 +174,7 @@ void OverviewErrorsWidget::SaveLog()
     tFile.write("======> Homer Conferencing "RELEASE_VERSION_STRING" <======\n");
     tFile.write("======================================\n");
     mLogBufferMutex.lock();
-    tFile.write(mTeErrorLog->toPlainText().toAscii());
+    tFile.write(mTeErrorLog->toPlainText().toLatin1());
     mLogBufferMutex.unlock();
 
     tFile.close();

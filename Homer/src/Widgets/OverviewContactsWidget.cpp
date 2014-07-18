@@ -757,7 +757,7 @@ QVariant ContactListModel::data(const QModelIndex &pIndex, int pRole) const
                         tResult = QColor(0, 0, 0);
                         break;
                     case 2:
-                        tResult = Qt::gray;
+                        tResult = QColor(Qt::gray);
                         break;
                     default:
                         break;
@@ -912,12 +912,23 @@ void ContactListModel::UpdateView()
 {
 	QModelIndex tIndex = mOverviewContactsWidget->mTvContacts->currentIndex();
 
-    reset();
+	#ifdef HOMER_QT5
+		beginResetModel();
+		endResetModel();
+	#else
+		QAbstractItemModel::reset();
+	#endif
 
     mOverviewContactsWidget->mTvContacts->setCurrentIndex(tIndex);
-    mOverviewContactsWidget->mTvContacts->header()->setResizeMode(0, QHeaderView::Fixed);
-    mOverviewContactsWidget->mTvContacts->header()->setResizeMode(1, QHeaderView::Stretch);
-    mOverviewContactsWidget->mTvContacts->header()->setResizeMode(2, QHeaderView::Stretch);
+	#ifdef HOMER_QT5
+		mOverviewContactsWidget->mTvContacts->header()->setSectionResizeMode(0, QHeaderView::Fixed);
+		mOverviewContactsWidget->mTvContacts->header()->setSectionResizeMode(1, QHeaderView::Stretch);
+		mOverviewContactsWidget->mTvContacts->header()->setSectionResizeMode(2, QHeaderView::Stretch);
+	#else
+		mOverviewContactsWidget->mTvContacts->header()->setResizeMode(0, QHeaderView::Fixed);
+		mOverviewContactsWidget->mTvContacts->header()->setResizeMode(1, QHeaderView::Stretch);
+		mOverviewContactsWidget->mTvContacts->header()->setResizeMode(2, QHeaderView::Stretch);
+	#endif
 }
 
 void ContactListModel::sort (int pColumn, Qt::SortOrder pOrder)

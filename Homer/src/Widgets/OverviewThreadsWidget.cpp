@@ -94,7 +94,11 @@ void OverviewThreadsWidget::initializeGUI()
     // hide id column
     mTwThreads->setColumnHidden(12, true);
     mTwThreads->sortItems(12);
-    mTwThreads->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+	#ifdef HOMER_QT5
+		mTwThreads->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+	#else
+		mTwThreads->horizontalHeader()->setResizeMode(QHeaderView::Interactive);
+	#endif
     mTwThreads->horizontalHeader()->resizeSection(0, mTwThreads->horizontalHeader()->sectionSize(0) * 3);
     mTwThreads->horizontalHeader()->resizeSection(7, mTwThreads->horizontalHeader()->sectionSize(7) * 2);
     mTwThreads->horizontalHeader()->resizeSection(8, mTwThreads->horizontalHeader()->sectionSize(8) * 2);
