@@ -40,6 +40,14 @@ using namespace Homer::Base;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define HttpDownload(pNetworkManager, pUrl, pReplyHandler) {                                                                                                                            \
+                                                                LOG_REMOTE(LOG_VERBOSE, std::string(GetObjectNameStr(this).c_str()), __LINE__, "HTTP download of: %s", pUrl.toStdString().c_str());  \
+                                                                connect(pNetworkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(pReplyHandler(QNetworkReply*)));                  \
+                                                                QNetworkRequest tHttpRequest = QNetworkRequest(QUrl(pUrl));                                                             \
+                                                                tHttpRequest.setRawHeader("User-Agent", "Homer Conferencing/"HOMER_VERSION);                                            \
+                                                                pNetworkManager->get(tHttpRequest);                                                                                     \
+                                                            }
+
 #define ShowMessage(pTitle, pMessage) DoShowMessage(GetObjectNameStr(this).c_str(), __LINE__, this, pTitle, pMessage)
 inline void DoShowMessage(std::string pSource, int pLine, QWidget *pParent, QString pTitle, QString pMessage)
 {

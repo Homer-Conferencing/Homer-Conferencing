@@ -29,17 +29,17 @@
 
 #include <ui_UpdateCheckDialog.h>
 
-#include <QHttp>
+#include <Snippets.h>
+
 #include <QProgressDialog>
 #include <QNetworkReply>
 #include <QFile>
 #include <QNetworkAccessManager>
 
-#define TriggerVersionCheck(pReqObject, pAnswerHandleFunction) {                                                                                         \
-                                                                connect(pReqObject, SIGNAL(done(bool)), this, SLOT(pAnswerHandleFunction(bool)));        \
-                                                                pReqObject->setHost(RELEASE_SERVER);                                                     \
-                                                                pReqObject->get(PATH_VERSION_TXT);                                                       \
-                                                                }
+#define TriggerVersionCheck(pHttpGetVersionServer, pAnswerHandleFunction)   {                                                                                         \
+                                                                                QString tUrlServerVersion = QString("http://" RELEASE_SERVER PATH_VERSION_TXT);       \
+                                                                                HttpDownload(pHttpGetVersionServer, tUrlServerVersion, GotAnswerForVersionRequest);   \
+                                                                            }
 
 namespace Homer { namespace Gui {
 
@@ -61,8 +61,8 @@ public slots:
     int exec();
 
 private slots:
-    void GotAnswerForVersionRequest(bool pError);
-    void GotAnswerForChangelogRequest(bool pError);
+    void GotAnswerForVersionRequest(QNetworkReply *pReply);
+    void GotAnswerForChangelogRequest(QNetworkReply *pReply);
     void DownloadStart();
     void DownloadInstallerStart();
     void DownloadStop();
@@ -75,16 +75,16 @@ private:
     void DownloadFireRequest(QString pTarget);
     QString GetNumericReleaseVersion(QString pServerVersion);
 
-    QHttp           *mHttpGetVersionServer;
-    QHttp           *mHttpGetChangelogUrl;
-    QString         mServerVersion;
-    bool			mDownloadStarted;
-    QProgressDialog *mDownloadProgressDialog;
-    QNetworkAccessManager *mNetworkAccessManager;
-    QFile			*mDownloadHomerUpdateFile;
-    QNetworkReply   *mDownloadReply;
-    QString 		mServerFile;
-    bool            mDownloadAborted;
+    QNetworkAccessManager   *mHttpGetVersionServer;
+    QNetworkAccessManager   *mHttpGetChangelogUrl;
+    QString                 mServerVersion;
+    bool			        mDownloadStarted;
+    QProgressDialog         *mDownloadProgressDialog;
+    QNetworkAccessManager   *mHttpUpdateDownloader;
+    QFile			        *mDownloadHomerUpdateFile;
+    QNetworkReply           *mDownloadReply;
+    QString 		        mServerFile;
+    bool                    mDownloadAborted;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

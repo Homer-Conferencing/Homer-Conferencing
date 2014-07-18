@@ -350,7 +350,7 @@ void MainWindow::triggerUpdateCheck()
     #ifdef RELEASE_VERSION
         if (CONF.GetAutoUpdateCheck())
         {
-                mHttpGetVersionServer = new QHttp(this);
+                mHttpGetVersionServer = new QNetworkAccessManager(this);
                 TriggerVersionCheck(mHttpGetVersionServer, GotAnswerForVersionRequest);
         }
     #endif
@@ -870,13 +870,14 @@ bool MainWindow::GetNetworkInfo(AddressesList &pLocalAddressesList, AddressesLis
     return (pLocalGatewayIp != "");
 }
 
-void MainWindow::GotAnswerForVersionRequest(bool pError)
+void MainWindow::GotAnswerForVersionRequest(QNetworkReply *pReply)
 {
-    if (pError)
-        ShowWarning("Server unavailable", "Could not determine software version which is provided by project server");
-    else
+    int tErrorCode = pReply->error();
+    if (tErrorCode != QNetworkReply::NoError)
     {
-        QString tServerVersion = QString(mHttpGetVersionServer->readAll().constData());
+        ShowWarning("Server unavailable", "Could not determine software version which is provided by project server");
+    }else{
+        QString tServerVersion = QString(pReply->readAll().constData());
         if (tServerVersion != RELEASE_VERSION_STRING)
             ShowInfo(Homer::Gui::MainWindow::tr("Update available"), Homer::Gui::MainWindow::tr("An updated version of Homer Conferencing is available. The new version is") + " <font color='green'><b>" + tServerVersion +"</b></font>. " + Homer::Gui::MainWindow::tr("You can download the version via \"update check\" in the main menu."));
     }

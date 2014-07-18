@@ -35,7 +35,7 @@
 #include <WaveOut.h>
 
 #include <QCloseEvent>
-#include <QHttp>
+#include <QNetworkAccessManager>
 #include <QStringList>
 
 namespace Homer { namespace Gui {
@@ -68,10 +68,10 @@ private slots:
     void ShowFineTuningAudioSilenceSuppresion();
 
     void ShowSuggestionsForStunServer();
-    void GotAnswerForStunServerListRequest(bool pError);
+    void GotAnswerForStunServerListRequest(QNetworkReply *pReply);
 
     void ShowSuggestionsForSipServer();
-    void GotAnswerForSipServerListRequest(bool pError);
+    void GotAnswerForSipServerListRequest(QNetworkReply *pReply);
 
     void CreateAccountAtSipServer();
 
@@ -123,10 +123,10 @@ private:
     VideoWorkerThread       *mVideoWorker;
     AudioWorkerThread       *mAudioWorker;
 
-    QHttp                   *mHttpGetStunServerList;
+    QNetworkAccessManager   *mHttpGetStunServerList;
     static QStringList      mStunServerList;
 
-    QHttp                   *mHttpGetSipServerList;
+    QNetworkAccessManager   *mHttpGetSipServerList;
     static QStringList      mSipServerList;
 
     VideoDevices        mVideoCaptureDevices;

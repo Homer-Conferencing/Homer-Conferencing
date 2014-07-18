@@ -46,6 +46,8 @@
 #include <QToolTip>
 #include <QCursor>
 #include <QString>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QInputDialog>
@@ -729,23 +731,19 @@ void ConfigurationDialog::ShowAudioSinkInfo(QString pCurrentText)
     mLbAudioSinkInfo->setText(tInfoText);
 }
 
-void ConfigurationDialog::GotAnswerForStunServerListRequest(bool pError)
+void ConfigurationDialog::GotAnswerForStunServerListRequest(QNetworkReply *pReply)
 {
-    if (pError)
+    int tErrorCode = pReply->error();
+    if (tErrorCode != QNetworkReply::NoError)
     {
         ShowError(Homer::Gui::ConfigurationDialog::tr("Communication with server failed"), Homer::Gui::ConfigurationDialog::tr("The list with suggested STUN servers from the project server is unavailable"));
     }else
     {
-        QString tListString = QString(mHttpGetStunServerList->readAll().constData());
+        QString tListString = QString(pReply->readAll().constData());
         LOG(LOG_VERBOSE, "Got STUN server list answer from server:\n%s", tListString.toStdString().c_str());
-        if (tListString.contains("404 Not Found"))
-        {
-            ShowError(Homer::Gui::ConfigurationDialog::tr("Communication with server failed"), Homer::Gui::ConfigurationDialog::tr("The list with suggested STUN servers from the project server is unavailable"));
-        }else
-        {
-            mStunServerList = tListString.split("\n",  QString::SkipEmptyParts);
-            LetUserSelectStunServerFromSuggestions();
-        }
+
+        mStunServerList = tListString.split("\n",  QString::SkipEmptyParts);
+        LetUserSelectStunServerFromSuggestions();
     }
 }
 
@@ -754,11 +752,9 @@ void ConfigurationDialog::ShowSuggestionsForStunServer()
     if ((mHttpGetStunServerList == NULL) && (mStunServerList.isEmpty()))
     {
         // load list with suggested STUN servers from web server
-        mHttpGetStunServerList = new QHttp(this);
-
-        connect(mHttpGetStunServerList, SIGNAL(done(bool)), this, SLOT(GotAnswerForStunServerListRequest(bool)));
-        mHttpGetStunServerList->setHost(RELEASE_SERVER);
-        mHttpGetStunServerList->get(PATH_STUN_SERVER_TXT);
+        mHttpGetStunServerList = new QNetworkAccessManager(this);
+        QString tUrlStunServerList = QString("http://" RELEASE_SERVER PATH_STUN_SERVER_TXT);
+        HttpDownload(mHttpGetStunServerList, tUrlStunServerList, GotAnswerForStunServerListRequest);
     }else
     {
         if(!mStunServerList.isEmpty())
@@ -783,23 +779,19 @@ void ConfigurationDialog::LetUserSelectStunServerFromSuggestions()
     mLeStunServer->setText(tStunServer);
 }
 
-void ConfigurationDialog::GotAnswerForSipServerListRequest(bool pError)
+void ConfigurationDialog::GotAnswerForSipServerListRequest(QNetworkReply *pReply)
 {
-    if (pError)
+    int tErrorCode = pReply->error();
+    if (tErrorCode != QNetworkReply::NoError)
     {
         ShowError(Homer::Gui::ConfigurationDialog::tr("Communication with server failed"), Homer::Gui::ConfigurationDialog::tr("The list with suggested SIP servers from the project server is unavailable"));
     }else
     {
-        QString tListString = QString(mHttpGetSipServerList->readAll().constData());
+        QString tListString = QString(pReply->readAll().constData());
         LOG(LOG_VERBOSE, "Got SIP server list answer from server:\n%s", tListString.toStdString().c_str());
-        if (tListString.contains("404 Not Found"))
-        {
-            ShowError(Homer::Gui::ConfigurationDialog::tr("Communication with server failed"), Homer::Gui::ConfigurationDialog::tr("The list with suggested SIP servers from the project server is unavailable"));
-        }else
-        {
-            mSipServerList = tListString.split("\n",  QString::SkipEmptyParts);
-            LetUserSelectSipServerFromSuggestions();
-        }
+
+        mSipServerList = tListString.split("\n",  QString::SkipEmptyParts);
+        LetUserSelectSipServerFromSuggestions();
     }
 }
 
@@ -808,11 +800,9 @@ void ConfigurationDialog::ShowSuggestionsForSipServer()
     if ((mHttpGetSipServerList == NULL) && (mSipServerList.isEmpty()))
     {
         // load list with suggested SIP servers from web server
-        mHttpGetSipServerList = new QHttp(this);
-
-        connect(mHttpGetSipServerList, SIGNAL(done(bool)), this, SLOT(GotAnswerForSipServerListRequest(bool)));
-        mHttpGetSipServerList->setHost(RELEASE_SERVER);
-        mHttpGetSipServerList->get(PATH_SIP_SERVER_TXT);
+        mHttpGetSipServerList = new QNetworkAccessManager(this);
+        QString tUrlSipServerList = QString("http://" RELEASE_SERVER PATH_SIP_SERVER_TXT);
+        HttpDownload(mHttpGetSipServerList, tUrlSipServerList, GotAnswerForSipServerListRequest);
     }else
     {
         if(!mSipServerList.isEmpty())

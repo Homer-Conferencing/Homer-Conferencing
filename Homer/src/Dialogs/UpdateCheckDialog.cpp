@@ -50,22 +50,24 @@ UpdateCheckDialog::UpdateCheckDialog(QWidget* pParent) :
 	mDownloadProgressDialog = NULL;
     initializeGUI();
 
-    mHttpGetVersionServer = new QHttp(this);
+    mHttpGetVersionServer = new QNetworkAccessManager(this);
     TriggerVersionCheck(mHttpGetVersionServer, GotAnswerForVersionRequest);
 
-    mHttpGetChangelogUrl = new QHttp(this);
-    connect(mHttpGetChangelogUrl, SIGNAL(done(bool)), this, SLOT(GotAnswerForChangelogRequest(bool)));
+    QString tUrlChangelog = QString("http://" RELEASE_SERVER PATH_CHANGELOG_TXT);
+    mHttpGetChangelogUrl = new QNetworkAccessManager(this);
+    HttpDownload(mHttpGetChangelogUrl, tUrlChangelog, GotAnswerForChangelogRequest);
+
+    mHttpUpdateDownloader = new QNetworkAccessManager(this);
+
     connect(mTbDownloadUpdate, SIGNAL(clicked()), this, SLOT(DownloadStart()));
     connect(mTbDownloadUpdateInstaller, SIGNAL(clicked()), this, SLOT(DownloadInstallerStart()));
-    mHttpGetChangelogUrl->setHost(RELEASE_SERVER);
-    mHttpGetChangelogUrl->get(PATH_CHANGELOG_TXT);
-
-    mNetworkAccessManager = new QNetworkAccessManager(this);
 }
 
 UpdateCheckDialog::~UpdateCheckDialog()
 {
-	delete mNetworkAccessManager;
+	delete mHttpUpdateDownloader;
+	delete mHttpGetVersionServer;
+	delete mHttpGetChangelogUrl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -239,7 +241,7 @@ void UpdateCheckDialog::DownloadFireRequest(QString pTarget)
 {
     LOG(LOG_VERBOSE, "Triggered download of file %s", pTarget.toStdString().c_str());
 	mServerFile = pTarget;
-	mDownloadReply = mNetworkAccessManager->get(QNetworkRequest(QUrl(pTarget)));
+	mDownloadReply = mHttpUpdateDownloader->get(QNetworkRequest(QUrl(pTarget)));
     connect(mDownloadReply, SIGNAL(finished()), this, SLOT(DownloadFinished()));
     connect(mDownloadReply, SIGNAL(readyRead()), this, SLOT(DownloadNewChunk()));
     connect(mDownloadReply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(DownloadProgress(qint64, qint64)));
@@ -322,57 +324,59 @@ void UpdateCheckDialog::DownloadNewChunk()
     	mDownloadHomerUpdateFile->write(mDownloadReply->readAll());
 }
 
-void UpdateCheckDialog::GotAnswerForVersionRequest(bool pError)
+void UpdateCheckDialog::GotAnswerForVersionRequest(QNetworkReply *pReply)
 {
-    if (pError)
+    int tErrorCode = pReply->error(); 
+    if (tErrorCode != QNetworkReply::NoError)
     {
-        mLbVersionServer->setText("<font bgcolor='yellow' color='red'><b>" + Homer::Gui::UpdateCheckDialog::tr("check failed") + "</b></font>");
-        ShowError(Homer::Gui::UpdateCheckDialog::tr("Communication with server failed"), Homer::Gui::UpdateCheckDialog::tr("Could not determine software version which is provided by project server"));
-    }else
-    {
-        mServerVersion = QString(mHttpGetVersionServer->readAll().constData());
-        LOG(LOG_VERBOSE, "Got version on server: %s", mServerVersion.toStdString().c_str());
-        if (mServerVersion.contains("404 Not Found"))
+        // catch the 404
+        if(tErrorCode == QNetworkReply::ContentNotFoundError)
         {
             mLbVersionServer->setText("<font bgcolor='yellow' color='red'><b>" + Homer::Gui::UpdateCheckDialog::tr("check failed") + "</b></font>");
-            ShowError(Homer::Gui::UpdateCheckDialog::tr("Version data not found on server"), Homer::Gui::UpdateCheckDialog::tr("Could not determine software version which is provided by project server"));
-        }else
-        {
-            if (mServerVersion != RELEASE_VERSION_STRING)
-            {
-                mLbVersionServer->setText("<font color='red'><b>" + mServerVersion + "</b></font>");
-				#if defined(WINDOWS) || defined(LINUX)
-                	mTbDownloadUpdate->show();
-				#endif
-				mTbDownloadUpdateInstaller->show();
-            }else
-                mLbVersionServer->setText("<font color='green'><b>" + mServerVersion + "</b></font>");
+            ShowError(Homer::Gui::UpdateCheckDialog::tr("Version data not found on server"), Homer::Gui::UpdateCheckDialog::tr("Can not determine the software version on the project server"));
+        }else{
+            mLbVersionServer->setText("<font bgcolor='yellow' color='red'><b>" + Homer::Gui::UpdateCheckDialog::tr("check failed") + "</b></font>");
+            ShowError(Homer::Gui::UpdateCheckDialog::tr("Communication with server failed"), Homer::Gui::UpdateCheckDialog::tr("Can not determine the software version on the project server (code: ") + QString("%1").arg(tErrorCode) + ")");
         }
+    }else
+    {
+        mServerVersion = QString(pReply->readAll().constData());
+        LOG(LOG_VERBOSE, "Found release %s on project server", mServerVersion.toStdString().c_str());
+        if (mServerVersion != RELEASE_VERSION_STRING)
+        {
+            mLbVersionServer->setText("<font color='red'><b>" + mServerVersion + "</b></font>");
+            #if defined(WINDOWS) || defined(LINUX)
+                mTbDownloadUpdate->show();
+            #endif
+            mTbDownloadUpdateInstaller->show();
+        }else
+            mLbVersionServer->setText("<font color='green'><b>" + mServerVersion + "</b></font>");
     }
 }
 
-void UpdateCheckDialog::GotAnswerForChangelogRequest(bool pError)
+void UpdateCheckDialog::GotAnswerForChangelogRequest(QNetworkReply *pReply)
 {
-    if (pError)
+    int tErrorCode = pReply->error();
+    if (tErrorCode != QNetworkReply::NoError)
     {
-        mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>" + Homer::Gui::UpdateCheckDialog::tr("fetch failed") + "</b></font>");
-        ShowError(Homer::Gui::UpdateCheckDialog::tr("Communication with server failed"), Homer::Gui::UpdateCheckDialog::tr("Could not determine changelog file which is provided by project server"));
-    }else
-    {
-        QString tChangelog = QString(mHttpGetChangelogUrl->readAll().constData());
-        LOG(LOG_VERBOSE, "Loading changelog from http://"RELEASE_SERVER"%s", tChangelog.toStdString().c_str());
-
-        if (tChangelog.contains("404 Not Found"))
+        // catch the 404
+        if(tErrorCode == QNetworkReply::ContentNotFoundError)
         {
             mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>" + Homer::Gui::UpdateCheckDialog::tr("fetch failed") + "</b></font>");
-            ShowError(Homer::Gui::UpdateCheckDialog::tr("Changelog data not found on server"), Homer::Gui::UpdateCheckDialog::tr("Could not determine changelog file which is provided by project server"));
-        }else
-        {
-            mLbWaiting->setVisible(false);
-            mWvChangelog->load(QUrl("http://"RELEASE_SERVER + tChangelog));
-            mWvChangelog->show();
-            mWvChangelog->setVisible(true);
+            ShowError(Homer::Gui::UpdateCheckDialog::tr("Changelog file not found on server"), Homer::Gui::UpdateCheckDialog::tr("Can not download the changelog data from project server"));
+        }else{
+            mLbWaiting->setText("<font bgcolor='yellow' color='red'><b>" + Homer::Gui::UpdateCheckDialog::tr("fetch failed") + "</b></font>");
+            ShowError(Homer::Gui::UpdateCheckDialog::tr("Communication with server failed"), Homer::Gui::UpdateCheckDialog::tr("Can not download the changelog data from the project server"));
         }
+    }else
+    {
+        QString tChangelog = QString(pReply->readAll().constData());
+        LOG(LOG_VERBOSE, "Got changelog location: http://"RELEASE_SERVER"%s", tChangelog.toStdString().c_str());
+
+        mLbWaiting->setVisible(false);
+        mWvChangelog->load(QUrl("http://"RELEASE_SERVER + tChangelog));
+        mWvChangelog->show();
+        mWvChangelog->setVisible(true);
     }
 }
 
