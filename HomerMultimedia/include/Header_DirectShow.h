@@ -28,7 +28,7 @@
 #define _MULTIMEDIA_HEADER_DIRECTSHOW_
 
 #if defined(WINDOWS)
-#pragma GCC system_header
+//#pragma GCC system_header
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -36,6 +36,7 @@
 #include <initguid.h>
 #include <objbase.h>
 #include <objidl.h>
+#include <strmif.h> // remove this in case of definition conflicts
 
 #define COM_NO_WINDOWS_H
 #include <oaidl.h>
@@ -92,9 +93,6 @@ DEFINE_GUID( KSNODE_IP_SINK, 0x71985f4e, 0x1ca1, 0x11d3, 0x9c, 0xc8, 0x0, 0xc0, 
 DEFINE_GUID( KSPROPSETID_BdaFrequencyFilter, 0x71985f47, 0x1ca1, 0x11d3, 0x9c, 0xc8, 0x0, 0xc0, 0x4f, 0x79, 0x71, 0xe0);
 DEFINE_GUID( KSPROPSETID_BdaDigitalDemodulator, 0xef30f379, 0x985b, 0x4d10, 0xb6, 0x40, 0xa7, 0x9d, 0x5e, 0x4, 0xe1, 0xe0);
 
-// property interface
-DEFINE_GUID( IID_IKsPropertySet, 0x31efac30, 0x515c, 0x11d0, 0xa9, 0xaa, 0x00, 0xaa, 0x00, 0x61, 0xbe, 0x93);
-
 //  Uuids.h filter categories
 DEFINE_GUID( CLSID_VideoInputDeviceCategory, 0x860BB310, 0x5D01, 0x11d0, 0xBD, 0x3B, 0x00, 0xA0, 0xC9, 0x11, 0xCE, 0x86);
 DEFINE_GUID( CLSID_SystemDeviceEnum, 0x62BE5D10, 0x60EB, 0x11d0, 0xBD, 0x3B, 0x00, 0xA0, 0xC9, 0x11, 0xCE, 0x86);
@@ -103,8 +101,13 @@ DEFINE_GUID( CLSID_SampleGrabber, 0xc1f400a0, 0x3f08, 0x11d3, 0x9f, 0x0b, 0x00, 
 DEFINE_GUID( CLSID_NullRenderer,0xc1f400a4, 0x3f08, 0x11d3, 0x9f, 0x0b, 0x00, 0x60, 0x08, 0x03, 0x9e, 0x37);
 DEFINE_GUID( CLSID_VfwCapture, 0x1b544c22, 0xfd0b, 0x11ce, 0x8c, 0x63, 0x0, 0xaa, 0x00, 0x44, 0xb5, 0x1e);
 
-// interface identifiers
+// interface identifiers, old code for compatibility - could be removed in the future
+#ifndef __strmif_h__ // ################################## strmif.h ##############################
+// property interface
+DEFINE_GUID( IID_IKsPropertySet, 0x31efac30, 0x515c, 0x11d0, 0xa9, 0xaa, 0x00, 0xaa, 0x00, 0x61, 0xbe, 0x93);
+
 DEFINE_GUID( IID_IGraphBuilder, 0x56a868a9, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
+DEFINE_GUID( IID_IEnumPins, 0x56a86892, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 DEFINE_GUID( IID_IBaseFilter, 0x56a86895, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 DEFINE_GUID( IID_ICreateDevEnum, 0x29840822, 0x5b84, 0x11d0, 0xbd, 0x3b, 0x00, 0xa0, 0xc9, 0x11, 0xce, 0x86);
 DEFINE_GUID( IID_IEnumFilters, 0x56a86893, 0xad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
@@ -116,6 +119,7 @@ DEFINE_GUID( IID_IAMStreamConfig, 0xc6e13340, 0x30ac, 0x11d0, 0xa1, 0x8c, 0x00, 
 DEFINE_GUID( IID_IVideoProcAmp, 0x4050560e, 0x42a7, 0x413a, 0x85, 0xc2, 0x09, 0x26, 0x9a, 0x2d, 0x0f, 0x44);
 DEFINE_GUID( IID_IFilterGraph, 0x56a8689f, 0x0ad4, 0x11ce, 0xb0, 0x3a, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70);
 DEFINE_GUID( IID_IFilterGraph2, 0x36b73882, 0xc2c8, 0x11cf, 0x8b, 0x46, 0x00, 0x80, 0x5f, 0x6c, 0xef, 0x60);
+#endif // ################################## strmif.h ##############################
 
 // media types
 DEFINE_GUID( MEDIATYPE_Video, 0x73646976, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
@@ -181,6 +185,8 @@ typedef struct tagVIDEOINFOHEADER2 {
         DWORD dwReserved2;
         BITMAPINFOHEADER bmiHeader;
 } VIDEOINFOHEADER2;
+
+#ifndef __strmif_h__ // ################################## strmif.h ##############################
 
 typedef struct _AMMediaType {
         GUID majortype;
@@ -408,6 +414,42 @@ DECLARE_INTERFACE_(IMediaSample,IUnknown)
 };
 #undef INTERFACE
 
+typedef struct {
+    CLSID clsMedium;
+    DWORD dw1;
+    DWORD dw2;
+} REGPINMEDIUM;
+
+MIDL_INTERFACE("31EFAC30-515C-11d0-A9AA-00AA0061BE93")
+IKsPropertySet : public IUnknown
+{
+public:
+    virtual /* [local] */ HRESULT STDMETHODCALLTYPE Set(
+        /* [in] */ REFGUID guidPropSet,
+        /* [in] */ DWORD dwPropID,
+        /* [size_is][in] */ LPVOID pInstanceData,
+        /* [in] */ DWORD cbInstanceData,
+        /* [size_is][in] */ LPVOID pPropData,
+        /* [in] */ DWORD cbPropData) = 0;
+
+    virtual /* [local] */ HRESULT STDMETHODCALLTYPE Get(
+        /* [in] */ REFGUID guidPropSet,
+        /* [in] */ DWORD dwPropID,
+        /* [size_is][in] */ LPVOID pInstanceData,
+        /* [in] */ DWORD cbInstanceData,
+        /* [size_is][out] */ LPVOID pPropData,
+        /* [in] */ DWORD cbPropData,
+        /* [out] */ DWORD *pcbReturned) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE QuerySupported(
+        /* [in] */ REFGUID guidPropSet,
+        /* [in] */ DWORD dwPropID,
+        /* [out] */ DWORD *pTypeSupport) = 0;
+
+};
+
+#endif // ################################## strmif.h ##############################
+
 #define INTERFACE ISampleGrabberCB
 DECLARE_INTERFACE_(ISampleGrabberCB,IUnknown)
 {
@@ -454,13 +496,6 @@ typedef struct _BDA_TEMPLATE_CONNECTION
     ULONG ToNodeType;
     ULONG ToNodePinType;
 }BDA_TEMPLATE_CONNECTION, *PBDA_TEMPLATE_CONNECTION;
-
-// strmif.h
-typedef struct {
-    CLSID clsMedium;
-    DWORD dw1;
-    DWORD dw2;
-} REGPINMEDIUM;
 
 // bdaiface.h
 MIDL_INTERFACE("79B56888-7FEA-4690-B45D-38FD3C7849BE")
@@ -820,36 +855,6 @@ struct KSPROPERTY {
   ULONG Id;
   ULONG Flags;
 };
-
-// strmif.h
-MIDL_INTERFACE("31EFAC30-515C-11d0-A9AA-00AA0061BE93")
-IKsPropertySet : public IUnknown
-{
-public:
-    virtual /* [local] */ HRESULT STDMETHODCALLTYPE Set(
-        /* [in] */ REFGUID guidPropSet,
-        /* [in] */ DWORD dwPropID,
-        /* [size_is][in] */ LPVOID pInstanceData,
-        /* [in] */ DWORD cbInstanceData,
-        /* [size_is][in] */ LPVOID pPropData,
-        /* [in] */ DWORD cbPropData) = 0;
-
-    virtual /* [local] */ HRESULT STDMETHODCALLTYPE Get(
-        /* [in] */ REFGUID guidPropSet,
-        /* [in] */ DWORD dwPropID,
-        /* [size_is][in] */ LPVOID pInstanceData,
-        /* [in] */ DWORD cbInstanceData,
-        /* [size_is][out] */ LPVOID pPropData,
-        /* [in] */ DWORD cbPropData,
-        /* [out] */ DWORD *pcbReturned) = 0;
-
-    virtual HRESULT STDMETHODCALLTYPE QuerySupported(
-        /* [in] */ REFGUID guidPropSet,
-        /* [in] */ DWORD dwPropID,
-        /* [out] */ DWORD *pTypeSupport) = 0;
-
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
