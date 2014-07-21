@@ -27,16 +27,6 @@
 #ifndef _NAPI_EVENTS_
 #define _NAPI_EVENTS_
 
-// to simplify including of all requirements
-//#include <RequirementTransmitLossless.h>
-//#include <RequirementTransmitChunks.h>
-//#include <RequirementTransmitStream.h>
-//#include <RequirementTransmitBitErrors.h>
-//#include <RequirementTargetPort.h>
-//#include <RequirementTransmitOrdered.h>
-//#include <RequirementLimitDelay.h>
-//#include <RequirementLimitDataRate.h>
-
 #include <IEvent.h>
 #include <HBMutex.h>
 
