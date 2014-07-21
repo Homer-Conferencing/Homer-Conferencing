@@ -30,7 +30,6 @@
 #include <Snippets.h>
 
 #include <QProcess>
-#include <QHttp>
 #include <QDesktopWidget>
 #include <QDesktopServices>
 #include <QProgressDialog>
