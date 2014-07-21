@@ -95,7 +95,7 @@ private:
     unsigned int        mListenerPort;
     /* NAPI based transport */
     IConnection         *mNAPIDataSocket;
-    IBinding            *mNAPIBinding;
+    ICEPBinding         *mNAPIBinding;
     bool                mNAPIUsed;
 };
 

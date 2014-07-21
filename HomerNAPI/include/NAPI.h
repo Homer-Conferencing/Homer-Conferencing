@@ -32,7 +32,7 @@
 #include <Name.h>
 #include <ISetup.h>
 #include <IConnection.h>
-#include <IBinding.h>
+#include <ICEPBinding.h>
 
 #include <list>
 
@@ -72,7 +72,7 @@ public:
 
     /* ISetup */
     virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0);
-    virtual IBinding* bind(Name *pName, Requirements *pRequirements = 0);
+    virtual ICEPBinding* bind(Name *pName, Requirements *pRequirements = 0);
     virtual Requirements getCapabilities(Name *pName, Requirements *pImportantRequirements = 0);
 
 private:

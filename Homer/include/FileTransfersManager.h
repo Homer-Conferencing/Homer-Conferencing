@@ -155,7 +155,7 @@ private:
 
     /* NAPI based transport */
     IConnection         *mReceiverSocket;
-    IBinding            *mNAPIBinding;
+    ICEPBinding         *mNAPIBinding;
     std::string         mLocalName;
     Requirements        *mTransportRequirements;
 };

@@ -20,31 +20,33 @@
  *****************************************************************************/
 
 /*
- * Purpose: ISetup
+ * Purpose: ICEPBinding
  * Since:   2011-12-08
  */
 
-#ifndef _NAPI_ISETUP_
-#define _NAPI_ISETUP_
+#ifndef _NAPI_ICEPBINDING_
+#define _NAPI_ICEPBINDING_
 
-#include <Name.h>
 #include <IConnection.h>
-#include <ICEPBinding.h>
-#include <Requirements.h>
 
 namespace Homer { namespace Base {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class ISetup
+class ICEPBinding
 {
 public:
-	ISetup(){ }
-    virtual ~ISetup( ){ }
+	ICEPBinding(){}
+    virtual ~ICEPBinding( ){}
 
-    virtual IConnection* connect(Name *pName, Requirements *pRequirements = 0) = 0;
-    virtual ICEPBinding* bind(Name *pName, Requirements *pRequirements = 0) = 0; //TODO: callback?
-    virtual Requirements getCapabilities(Name *pName, Requirements *pImportantRequirements = 0) = 0;
+    virtual IConnection* readConnection() = 0;
+
+    virtual bool isClosed() = 0;
+    virtual Name* getName() = 0;
+    virtual void cancel() = 0;
+    virtual bool changeRequirements(Requirements *pRequirements) = 0;
+    virtual Requirements* getRequirements() = 0;
+    virtual Events getEvents() = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -39,7 +39,7 @@ namespace Homer { namespace Base {
 ///////////////////////////////////////////////////////////////////////////////
 
 class SocketBinding:
-	public IBinding
+	public ICEPBinding
 {
 public:
 	SocketBinding(std::string pLocalName, Requirements *pRequirements);
