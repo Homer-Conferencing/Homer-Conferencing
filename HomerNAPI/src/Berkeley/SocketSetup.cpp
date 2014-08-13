@@ -55,7 +55,7 @@ IConnection* SocketSetup::connect(Name *pName, Requirements *pRequirements)
 	return new SocketConnection(pName->toString(), pRequirements);
 }
 
-IBinding* SocketSetup::bind(Name *pName, Requirements *pRequirements)
+ICEPBinding* SocketSetup::bind(Name *pName, Requirements *pRequirements)
 {
     return new SocketBinding(pName->toString(), pRequirements);
 }

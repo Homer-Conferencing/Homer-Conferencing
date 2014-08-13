@@ -156,9 +156,9 @@ IConnection* NAPIService::connect(Name *pName, Requirements *pRequirements)
 	return tResult;
 }
 
-IBinding* NAPIService::bind(Name *pName, Requirements *pRequirements)
+ICEPBinding* NAPIService::bind(Name *pName, Requirements *pRequirements)
 {
-	IBinding *tResult = NULL;
+    ICEPBinding *tResult = NULL;
 
 	LOG(LOG_VERBOSE, "Got call to NAPI::bind() with name \"%s\" and requirements \"%s\"", pName->toString().c_str(), (pRequirements != NULL) ? pRequirements->getDescription().c_str() : "none");
 
