@@ -35,7 +35,8 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#ifdef HOMER_QT5
+#if HOMER_QT5
+    #warning "QT5 support enabled"
 	#include <QMessageLogContext>
 #endif
 
@@ -352,12 +353,14 @@ static void sQt4DebugMessageOutput(QtMsgType pType, const char *pMsg)
 	#endif
 }
 
+#if HOMER_QT5
 static void sQt5DebugMessageOutput(QtMsgType pType, const QMessageLogContext &pContext, const QString &pMsg)
 {
 	QByteArray tLocalMsg = pMsg.toLocal8Bit();
 	string tDebugMessage = pContext.function;// + "(" + toString(pContext.line) + "): " + string(tLocalMsg.constData());
 	sQt4DebugMessageOutput(pType, tDebugMessage.c_str());
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(LINUX) || defined(APPLE) || defined(BSD)
@@ -571,7 +574,7 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 	HomerApplication *tApp = new HomerApplication(pArgc, pArgv);
 
 	LOGEX(HomerApplication, LOG_VERBOSE, "Setting Qt message handler");
-	#ifdef HOMER_QT5
+	#if HOMER_QT5
 		qInstallMessageHandler(sQt5DebugMessageOutput);
 	#else
 		qInstallMsgHandler(sQt4DebugMessageOutput);

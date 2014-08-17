@@ -87,7 +87,7 @@ void OverviewFileTransfersWidget::initializeGUI()
     // hide id column
     mTwFiles->setColumnHidden(4, true);
     mTwFiles->sortItems(4);
-	#ifdef HOMER_QT5
+	#if HOMER_QT5
         mTwFiles->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 	#else
         mTwFiles->horizontalHeader()->setResizeMode(QHeaderView::Interactive);

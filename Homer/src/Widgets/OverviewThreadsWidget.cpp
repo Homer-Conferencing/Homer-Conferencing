@@ -94,7 +94,7 @@ void OverviewThreadsWidget::initializeGUI()
     // hide id column
     mTwThreads->setColumnHidden(12, true);
     mTwThreads->sortItems(12);
-	#ifdef HOMER_QT5
+	#if HOMER_QT5
 		mTwThreads->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 	#else
 		mTwThreads->horizontalHeader()->setResizeMode(QHeaderView::Interactive);

@@ -108,7 +108,7 @@ void OverviewDataStreamsWidget::initializeGUI()
     mTwVideo->horizontalHeader()->resizeSection(10, mTwVideo->horizontalHeader()->sectionSize(9) * 2);
     mTwVideo->horizontalHeader()->resizeSection(11, mTwVideo->horizontalHeader()->sectionSize(10) * 2);
 
-	#ifdef HOMER_QT5
+	#if HOMER_QT5
 		mTwAudio->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 	    mTwVideo->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 	#else

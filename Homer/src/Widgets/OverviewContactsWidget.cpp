@@ -912,7 +912,7 @@ void ContactListModel::UpdateView()
 {
 	QModelIndex tIndex = mOverviewContactsWidget->mTvContacts->currentIndex();
 
-	#ifdef HOMER_QT5
+	#if HOMER_QT5
 		beginResetModel();
 		endResetModel();
 	#else
@@ -920,7 +920,7 @@ void ContactListModel::UpdateView()
 	#endif
 
     mOverviewContactsWidget->mTvContacts->setCurrentIndex(tIndex);
-	#ifdef HOMER_QT5
+	#if HOMER_QT5
 		mOverviewContactsWidget->mTvContacts->header()->setSectionResizeMode(0, QHeaderView::Fixed);
 		mOverviewContactsWidget->mTvContacts->header()->setSectionResizeMode(1, QHeaderView::Stretch);
 		mOverviewContactsWidget->mTvContacts->header()->setSectionResizeMode(2, QHeaderView::Stretch);
