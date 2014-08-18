@@ -3540,8 +3540,10 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
             }
 
             mOutputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
+            if(mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num <= 0)
+                mOutputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den / mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num;
 
-            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d", mSourceResX, mSourceResY);
+            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d and frame rate: %.2f", mSourceResX, mSourceResY, mOutputFrameRate);
             break;
 
         case MEDIA_AUDIO:
@@ -3555,6 +3557,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
             break;
 
         default:
+            LOG(LOG_WARN, "Undefined media type");
             break;
     }
 
