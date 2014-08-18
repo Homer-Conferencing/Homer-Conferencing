@@ -1276,6 +1276,7 @@ VideoScaler* MediaSourceMem::CreateVideoScaler()
     tResult = new VideoScaler(this, "Video-Decoder(" + GetSourceTypeStr() + ")");
     if(tResult == NULL)
         LOG(LOG_ERROR, "Invalid video scaler instance, possible out of memory");
+    LOG(LOG_VERBOSE, "Starting video scaler with queue size %d (%f, %f)", CalculateFrameBufferSize(), mDecoderFrameBufferTimeMax, mOutputFrameRate);
     tResult->StartScaler(CalculateFrameBufferSize(), mSourceResX, mSourceResY, mCodecContext->pix_fmt, mTargetResX, mTargetResY, PIX_FMT_RGB32);
 
     return tResult;
@@ -1585,6 +1586,7 @@ void* MediaSourceMem::Run(void* pArgs)
                 // Assign appropriate parts of buffer to image planes in tRGBFrame
                 avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
 
+                LOG(LOG_VERBOSE, "Creating %s media FIFO with %d entries of %d bytes", GetMediaTypeStr().c_str(), CalculateFrameBufferSize(), tChunkBufferSize);
                 mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr());
             }
 
@@ -1601,6 +1603,7 @@ void* MediaSourceMem::Run(void* pArgs)
             // allocate chunk buffer
             tChunkBuffer = (uint8_t*)av_malloc(tChunkBufferSize);
 
+            LOG(LOG_VERBOSE, "Creating %s media FIFO with %d entries of %d bytes", GetMediaTypeStr().c_str(), CalculateFrameBufferSize(), tChunkBufferSize);
             mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr());
 
             break;
