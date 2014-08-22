@@ -1506,7 +1506,7 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
 void* MediaSourceMem::Run(void* pArgs)
 {
     bool                tAlreadyWarnedThatFrameSizeDiffers = false;
-    AVFrame             *tSourceFrame = NULL;
+    AVFrame             *tVideoSourceFrame = NULL;
     AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
     int                 tFrameFinished = 0;
     int                 tDecoderResult = 0;
@@ -1514,6 +1514,7 @@ void* MediaSourceMem::Run(void* pArgs)
     int                 tChunkBufferSize = 0;
     uint8_t             *tChunkBuffer;
     int                 tWaitLoop;
+    bool                tInputIsPicture = false;
     /* current chunk */
     int                 tCurrentChunkSize = 0;
     double              tCurrentInputFrameTimestamp = 0; // input PTS/DTS stream from the packets
@@ -1521,11 +1522,10 @@ void* MediaSourceMem::Run(void* pArgs)
     /* video scaler */
     VideoScaler         *tVideoScaler = NULL;
     /* picture as input */
-    AVFrame             *tRGBFrame = NULL;
-    bool                tInputIsPicture = false;
+    AVFrame             *tVideoPictureFrame = NULL;
     /* audio */
     AVFifoBuffer        *tSampleFifo = NULL;
-    AVFrame                *tAudioFrame = NULL;
+    AVFrame             *tAudioFrame = NULL;
 
     // reset EOF marker
     mEOFReached = false;
@@ -1551,7 +1551,7 @@ void* MediaSourceMem::Run(void* pArgs)
             SVC_PROCESS_STATISTIC.AssignThreadName("Video-Decoder(" + GetSourceTypeStr() + ")");
 
             // Allocate video frame for YUV format
-            if ((tSourceFrame = AllocFrame()) == NULL)
+            if ((tVideoSourceFrame = AllocFrame()) == NULL)
                 LOG(LOG_ERROR, "Out of video memory");
 
             if (!tInputIsPicture)
@@ -1580,11 +1580,11 @@ void* MediaSourceMem::Run(void* pArgs)
                 LOG(LOG_VERBOSE, "Decoder thread does not need the scaler thread because input is a picture");
 
                 // Allocate video frame for RGB format
-                if ((tRGBFrame = AllocFrame()) == NULL)
+                if ((tVideoPictureFrame = AllocFrame()) == NULL)
                     LOG(LOG_ERROR, "Out of video memory");
 
-                // Assign appropriate parts of buffer to image planes in tRGBFrame
-                avpicture_fill((AVPicture *)tRGBFrame, (uint8_t *)tChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
+                // Assign appropriate parts of buffer to image planes in tVideoPictureFrame
+                avpicture_fill((AVPicture *)tVideoPictureFrame, (uint8_t *)tChunkBuffer, PIX_FMT_RGB32, mTargetResX, mTargetResY);
 
                 LOG(LOG_VERBOSE, "Creating %s media FIFO with %d entries of %d bytes", GetMediaTypeStr().c_str(), CalculateFrameBufferSize(), tChunkBufferSize);
                 mDecoderFifo = new MediaFifo(CalculateFrameBufferSize(), tChunkBufferSize, GetMediaTypeStr() + "-MediaSource" + GetSourceTypeStr());
@@ -1729,18 +1729,18 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // ### DECODE FRAME
                                 // ############################
                                 tFrameFinished = 0;
-                                tDecoderResult = HM_avcodec_decode_video(mCodecContext, tSourceFrame, &tFrameFinished, tPacket);
+                                tDecoderResult = HM_avcodec_decode_video(mCodecContext, tVideoSourceFrame, &tFrameFinished, tPacket);
 
                                 #ifdef MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
                                     LOG(LOG_VERBOSE, "New video frame before PTS adaption..");
-                                    LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
-                                    LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tSourceFrame).c_str());
-                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64, tSourceFrame->pts);
-                                    LOG(LOG_VERBOSE, "      ..pkt pts: %"PRId64, tSourceFrame->pkt_pts);
-                                    LOG(LOG_VERBOSE, "      ..pkt dts: %"PRId64, tSourceFrame->pkt_dts);
-//                                    LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
-//                                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-//                                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
+                                    LOG(LOG_VERBOSE, "      ..key frame: %d", tVideoSourceFrame->key_frame);
+                                    LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tVideoSourceFrame).c_str());
+                                    LOG(LOG_VERBOSE, "      ..pts: %"PRId64, tVideoSourceFrame->pts);
+                                    LOG(LOG_VERBOSE, "      ..pkt pts: %"PRId64, tVideoSourceFrame->pkt_pts);
+                                    LOG(LOG_VERBOSE, "      ..pkt dts: %"PRId64, tVideoSourceFrame->pkt_dts);
+//                                    LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tVideoSourceFrame->width, tVideoSourceFrame->height);
+//                                    LOG(LOG_VERBOSE, "      ..coded pic number: %d", tVideoSourceFrame->coded_picture_number);
+//                                    LOG(LOG_VERBOSE, "      ..display pic number: %d", tVideoSourceFrame->display_picture_number);
                                 #endif
 
                                 // ############################
@@ -1750,26 +1750,26 @@ void* MediaSourceMem::Run(void* pArgs)
                                 {
                                     for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
                                     {
-                                        mDecoderSinglePictureData[i] = tSourceFrame->data[i];
-                                        mDecoderSinglePictureLineSize[i] = tSourceFrame->linesize[i];
+                                        mDecoderSinglePictureData[i] = tVideoSourceFrame->data[i];
+                                        mDecoderSinglePictureLineSize[i] = tVideoSourceFrame->linesize[i];
                                     }
                                 }
 
-                                //LOG(LOG_VERBOSE, "New %s source frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", GetMediaTypeStr().c_str(), tSourceFrame->pkt_dts, tSourceFrame->pkt_pts, tSourceFrame->pkt_pos, tSourceFrame->display_picture_number);
+                                //LOG(LOG_VERBOSE, "New %s source frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", GetMediaTypeStr().c_str(), tVideoSourceFrame->pkt_dts, tVideoSourceFrame->pkt_pts, tVideoSourceFrame->pkt_pos, tVideoSourceFrame->display_picture_number);
 
                                 // MPEG2 picture repetition
-                                if (tSourceFrame->repeat_pict != 0)
-                                    LOG(LOG_ERROR, "MPEG2 picture should be repeated for %d times, unsupported feature!", tSourceFrame->repeat_pict);
+                                if (tVideoSourceFrame->repeat_pict != 0)
+                                    LOG(LOG_ERROR, "MPEG2 picture should be repeated for %d times, unsupported feature!", tVideoSourceFrame->repeat_pict);
 
                                 #ifdef MSMEM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "    ..video decoding ended with result %d and %d bytes of output", tFrameFinished, tDecoderResult);
                                 #endif
 
                                 // log lost packets: difference between currently received frame number and the number of locally processed frames
-                                SetLostPacketCount(tSourceFrame->coded_picture_number - mFrameNumber);
+                                SetLostPacketCount(tVideoSourceFrame->coded_picture_number - mFrameNumber);
 
                                 #ifdef MSMEM_DEBUG_PACKETS
-                                    LOG(LOG_VERBOSE, "Video frame %d decoded", tSourceFrame->coded_picture_number);
+                                    LOG(LOG_VERBOSE, "Video frame %d decoded", tVideoSourceFrame->coded_picture_number);
                                 #endif
 
                                 // ############################
@@ -1827,9 +1827,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // ############################
                                 int64_t tDecodedFrameTimestamp = 0;
                                 // save PTS value to deliver it later to the frame grabbing thread
-                                if ((tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) || (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE))
+                                if ((tVideoSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE) || (tVideoSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE))
                                 {// use PTS/DTS
-                                    tDecodedFrameTimestamp = HM_av_frame_get_best_effort_timestamp(tSourceFrame);
+                                    tDecodedFrameTimestamp = HM_av_frame_get_best_effort_timestamp(tVideoSourceFrame);
                                     #ifdef MSMEM_DEBUG_TIMING
                                         LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet BE PTS %"PRId64, tDecodedFrameTimestamp);
                                     #endif
@@ -1844,8 +1844,8 @@ void* MediaSourceMem::Run(void* pArgs)
                                 tCurrentOutputFrameTimestamp = CalculateOutputFrameNumber(tDecodedFrameTimestamp);
 
                                 #ifdef MSMEM_DEBUG_TIMING
-                                    if ((tSourceFrame->pkt_pts != tSourceFrame->pkt_dts) && (tSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
-                                        LOG(LOG_VERBOSE, "PTS(%"PRId64") and DTS(%"PRId64") differ after %s decoding step, using as PTS %"PRId64, tSourceFrame->pkt_pts, tSourceFrame->pkt_dts, GetMediaTypeStr().c_str(), tDecodedFrameTimestamp);
+                                    if ((tVideoSourceFrame->pkt_pts != tVideoSourceFrame->pkt_dts) && (tVideoSourceFrame->pkt_pts != (int64_t)AV_NOPTS_VALUE) && (tVideoSourceFrame->pkt_dts != (int64_t)AV_NOPTS_VALUE))
+                                        LOG(LOG_VERBOSE, "PTS(%"PRId64") and DTS(%"PRId64") differ after %s decoding step, using as PTS %"PRId64, tVideoSourceFrame->pkt_pts, tVideoSourceFrame->pkt_dts, GetMediaTypeStr().c_str(), tDecodedFrameTimestamp);
                                 #endif
                             }else
                             {// reuse the stored picture
@@ -1857,9 +1857,9 @@ void* MediaSourceMem::Run(void* pArgs)
                                 #endif
                                 for (int i = 0; i < AV_NUM_DATA_POINTERS; i++)
                                 {
-                                    tSourceFrame->data[i] = mDecoderSinglePictureData[i];
-                                    tSourceFrame->linesize[i] = mDecoderSinglePictureLineSize[i];
-                                    tSourceFrame->pict_type = AV_PICTURE_TYPE_I;
+                                    tVideoSourceFrame->data[i] = mDecoderSinglePictureData[i];
+                                    tVideoSourceFrame->linesize[i] = mDecoderSinglePictureLineSize[i];
+                                    tVideoSourceFrame->pict_type = AV_PICTURE_TYPE_I;
                                 }
 
                                 // simulate a monotonous increasing PTS value
@@ -1883,27 +1883,27 @@ void* MediaSourceMem::Run(void* pArgs)
                                 {
                                     #ifdef MSMEM_DEBUG_VIDEO_FRAME_RECEIVER
                                         LOG(LOG_VERBOSE, "New video frame..");
-                                        LOG(LOG_VERBOSE, "      ..key frame: %d", tSourceFrame->key_frame);
-                                        LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tSourceFrame).c_str());
-                                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64", original PTS: %.2lf", tSourceFrame->pts, tCurrentOutputFrameTimestamp);
-                                        LOG(LOG_VERBOSE, "      ..pkt pts: %"PRId64, tSourceFrame->pkt_pts);
-                                        LOG(LOG_VERBOSE, "      ..pkt dts: %"PRId64, tSourceFrame->pkt_dts);
-//                                        LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tSourceFrame->width, tSourceFrame->height);
-//                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tSourceFrame->coded_picture_number);
-//                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tSourceFrame->display_picture_number);
+                                        LOG(LOG_VERBOSE, "      ..key frame: %d", tVideoSourceFrame->key_frame);
+                                        LOG(LOG_VERBOSE, "      ..picture type: %s-frame", GetFrameType(tVideoSourceFrame).c_str());
+                                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64", original PTS: %.2lf", tVideoSourceFrame->pts, tCurrentOutputFrameTimestamp);
+                                        LOG(LOG_VERBOSE, "      ..pkt pts: %"PRId64, tVideoSourceFrame->pkt_pts);
+                                        LOG(LOG_VERBOSE, "      ..pkt dts: %"PRId64, tVideoSourceFrame->pkt_dts);
+//                                        LOG(LOG_VERBOSE, "      ..resolution: %d * %d", tVideoSourceFrame->width, tVideoSourceFrame->height);
+//                                        LOG(LOG_VERBOSE, "      ..coded pic number: %d", tVideoSourceFrame->coded_picture_number);
+//                                        LOG(LOG_VERBOSE, "      ..display pic number: %d", tVideoSourceFrame->display_picture_number);
 //                                        LOG(LOG_VERBOSE, "      ..context delay: %d", mCodecContext->delay);
 //                                        LOG(LOG_VERBOSE, "      ..context frame nr.: %d", mCodecContext->frame_number);
                                     #endif
 
                                     // use the PTS value from the packet stream because it refers to the original (without decoder delays) timing
-                                    tSourceFrame->pts = rint(tCurrentOutputFrameTimestamp);
-                                    tSourceFrame->coded_picture_number = rint(tCurrentOutputFrameTimestamp);
-                                    tSourceFrame->display_picture_number = rint(tCurrentOutputFrameTimestamp);
+                                    tVideoSourceFrame->pts = rint(tCurrentOutputFrameTimestamp);
+                                    tVideoSourceFrame->coded_picture_number = rint(tCurrentOutputFrameTimestamp);
+                                    tVideoSourceFrame->display_picture_number = rint(tCurrentOutputFrameTimestamp);
 
                                     // wait for next key frame packets (either an i-frame or a p-frame)
                                     if (mDecoderWaitForNextKeyFrame)
                                     {// we are still waiting for the next key frame after seeking in the input stream
-                                        if (IsKeyFrame(tSourceFrame))
+                                        if (IsKeyFrame(tVideoSourceFrame))
                                         {
                                             mDecoderWaitForNextKeyFrame = false;
                                             mDecoderWaitForNextKeyFrameTimeout = 0;
@@ -1926,7 +1926,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                                 LOG(LOG_VERBOSE, "Dropping %s frame %.2lf because we are waiting for next key frame after seeking", GetMediaTypeStr().c_str(), tCurrentOutputFrameTimestamp);
                                             #endif
                                             #ifdef MSMEM_DEBUG_FRAME_QUEUE
-                                                LOG(LOG_VERBOSE, "No %s frame will be written to frame queue, we ware waiting for the next key frame, current frame type: %s, EOF: %d", GetMediaTypeStr().c_str(), GetFrameType(tSourceFrame).c_str(), mEOFReached);
+                                                LOG(LOG_VERBOSE, "No %s frame will be written to frame queue, we ware waiting for the next key frame, current frame type: %s, EOF: %d", GetMediaTypeStr().c_str(), GetFrameType(tVideoSourceFrame).c_str(), mEOFReached);
                                             #endif
 
                                         }
@@ -1936,14 +1936,14 @@ void* MediaSourceMem::Run(void* pArgs)
                                         // ############################
                                         // ### ANNOUNCE FRAME (statistics)
                                         // ############################
-                                        AnnounceFrame(tSourceFrame);
+                                        AnnounceFrame(tVideoSourceFrame);
 
                                         // ############################
                                         // ### RECORD FRAME
                                         // ############################
                                         // re-encode the frame and write it to file
                                         if (mRecording)
-                                            RecordFrame(tSourceFrame);
+                                            RecordFrame(tVideoSourceFrame);
 
                                         // ############################
                                         // ### SCALE FRAME (CONVERT): is done inside a separate thread
@@ -1952,13 +1952,13 @@ void* MediaSourceMem::Run(void* pArgs)
                                         {// we decode one frame of a stream
                                             #ifdef MSMEM_DEBUG_PACKETS
                                                 LOG(LOG_VERBOSE, "Scale (separate thread) video frame..");
-                                                LOG(LOG_VERBOSE, "Video frame data: %p, %p, %p, %p", tSourceFrame->data[0], tSourceFrame->data[1], tSourceFrame->data[2], tSourceFrame->data[3]);
-                                                LOG(LOG_VERBOSE, "Video frame line size: %d, %d, %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1], tSourceFrame->linesize[2], tSourceFrame->linesize[3]);
+                                                LOG(LOG_VERBOSE, "Video frame data: %p, %p, %p, %p", tVideoSourceFrame->data[0], tVideoSourceFrame->data[1], tVideoSourceFrame->data[2], tVideoSourceFrame->data[3]);
+                                                LOG(LOG_VERBOSE, "Video frame line size: %d, %d, %d, %d", tVideoSourceFrame->linesize[0], tVideoSourceFrame->linesize[1], tVideoSourceFrame->linesize[2], tVideoSourceFrame->linesize[3]);
                                             #endif
 
-                                            //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", GetMediaTypeStr().c_str(), tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+                                            //LOG(LOG_VERBOSE, "New %s RGB frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", GetMediaTypeStr().c_str(), tVideoPictureFrame->pkt_dts, tVideoPictureFrame->pkt_pts, tVideoPictureFrame->pkt_pos, tVideoPictureFrame->display_picture_number);
 
-                                            if ((tRes = avpicture_layout((AVPicture*)tSourceFrame, mCodecContext->pix_fmt, mSourceResX, mSourceResY, tChunkBuffer, tChunkBufferSize)) < 0)
+                                            if ((tRes = avpicture_layout((AVPicture*)tVideoSourceFrame, mCodecContext->pix_fmt, mSourceResX, mSourceResY, tChunkBuffer, tChunkBufferSize)) < 0)
                                             {
                                                 LOG(LOG_WARN, "Couldn't copy AVPicture/AVFrame pixel data into chunk buffer because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
                                             }else
@@ -1971,19 +1971,19 @@ void* MediaSourceMem::Run(void* pArgs)
                                             {
                                                 #ifdef MSMEM_DEBUG_PACKETS
                                                     LOG(LOG_VERBOSE, "Scale (within decoder thread) video frame..");
-                                                    LOG(LOG_VERBOSE, "Video frame data: %p, %p", tSourceFrame->data[0], tSourceFrame->data[1]);
-                                                    LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tSourceFrame->linesize[0], tSourceFrame->linesize[1]);
+                                                    LOG(LOG_VERBOSE, "Video frame data: %p, %p", tVideoSourceFrame->data[0], tVideoSourceFrame->data[1]);
+                                                    LOG(LOG_VERBOSE, "Video frame line size: %d, %d", tVideoSourceFrame->linesize[0], tVideoSourceFrame->linesize[1]);
 
                                                     // scale the video frame
                                                     LOG(LOG_VERBOSE, "Scaling video input picture..");
                                                 #endif
 
-                                                tRes = HM_sws_scale(mVideoScalerContext, tSourceFrame->data, tSourceFrame->linesize, 0, mCodecContext->height, tRGBFrame->data, tRGBFrame->linesize);
+                                                tRes = HM_sws_scale(mVideoScalerContext, tVideoSourceFrame->data, tVideoSourceFrame->linesize, 0, mCodecContext->height, tVideoPictureFrame->data, tVideoPictureFrame->linesize);
                                                 if (tRes == 0)
                                                     LOG(LOG_ERROR, "Failed to scale the video frame");
 
                                                 #ifdef MSMEM_DEBUG_PACKETS
-                                                    LOG(LOG_VERBOSE, "Decoded picture into RGB frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", tRGBFrame->pkt_dts, tRGBFrame->pkt_pts, tRGBFrame->pkt_pos, tRGBFrame->display_picture_number);
+                                                    LOG(LOG_VERBOSE, "Decoded picture into RGB frame: dts: %"PRId64", pts: %"PRId64", pos: %"PRId64", pic. nr.: %d", tVideoPictureFrame->pkt_dts, tVideoPictureFrame->pkt_pts, tVideoPictureFrame->pkt_pos, tVideoPictureFrame->display_picture_number);
                                                 #endif
 
                                                 mDecoderSinglePictureResX = mTargetResX;
@@ -2254,12 +2254,12 @@ void* MediaSourceMem::Run(void* pArgs)
                 {
                     // Free the RGB frame
                     LOG(LOG_VERBOSE, "..releasing RGB frame buffer");
-                    av_free(tRGBFrame);
+                    av_free(tVideoPictureFrame);
                 }
 
                 // Free the YUV frame
                 LOG(LOG_VERBOSE, "..releasing SOURCE frame buffer");
-                av_free(tSourceFrame);
+                av_free(tVideoSourceFrame);
 
                 break;
         case MEDIA_AUDIO:
