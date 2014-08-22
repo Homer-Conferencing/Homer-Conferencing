@@ -2622,38 +2622,6 @@ void MediaSource::RecordSamples(int16_t *pSourceSamples, int pSourceSamplesSize)
     av_free(tAudioFrame);
 }
 
-bool MediaSource::IsKeyFrame(AVFrame *pFrame)
-{
-    bool tResult = false;
-
-    if (mMediaType == MEDIA_VIDEO)
-    {// video
-        switch(pFrame->pict_type)
-        {
-                case AV_PICTURE_TYPE_NONE:
-                    tResult = false;
-                    break;
-                case AV_PICTURE_TYPE_I:
-                    tResult = true;
-                    break;
-                case AV_PICTURE_TYPE_P:
-                    tResult = true;
-                    break;
-                case AV_PICTURE_TYPE_B:
-                    tResult = false;
-                    break;
-                default:
-                    tResult = false;
-                    break;
-        }
-    }else if (mMediaType == MEDIA_AUDIO)
-    {// audio
-        tResult = true;
-    }
-
-    return tResult;
-}
-
 string MediaSource::GetFrameType(AVFrame *pFrame)
 {
     string tResult = "unknown";
@@ -3131,6 +3099,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.num, mFormatContext->streams[mMediaStreamIndex]->time_base.den); // inverse
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den); // inverse
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec caps: %d", mFormatContext->streams[mMediaStreamIndex]->codec->codec->capabilities);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..bit rate: %d bit/s", mCodecContext->bit_rate);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
@@ -3642,7 +3611,10 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     }
 
     if (tCodec->capabilities & CODEC_CAP_DR1)
+    {
+        LOG_REMOTE(LOG_WARN, pSource, pLine, "Enabling support for CODEC_FLAG_EMU_EDGE");
         mCodecContext->flags |= CODEC_FLAG_EMU_EDGE;
+    }
 
     //######################################################
     //### open the selected codec
