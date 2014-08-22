@@ -1500,6 +1500,38 @@ void MediaSourceMem::ReadFrameFromInputStream(AVPacket *pPacket, double &pFrameT
     #endif
 }
 
+bool MediaSourceMem::IsAcceptableStartFrame(AVFrame *pFrame)
+{
+    bool tResult = false;
+
+    if (mMediaType == MEDIA_VIDEO)
+    {// video
+        switch(pFrame->pict_type)
+        {
+                case AV_PICTURE_TYPE_NONE:
+                    tResult = false;
+                    break;
+                case AV_PICTURE_TYPE_I:
+                    tResult = true;
+                    break;
+                case AV_PICTURE_TYPE_P:
+                    tResult = true;
+                    break;
+                case AV_PICTURE_TYPE_B:
+                    tResult = false;
+                    break;
+                default:
+                    tResult = false;
+                    break;
+        }
+    }else if (mMediaType == MEDIA_AUDIO)
+    {// audio
+        tResult = true;
+    }
+
+    return tResult;
+}
+
 //###################################
 //### Decoder thread
 //###################################
@@ -1903,7 +1935,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                     // wait for next key frame packets (either an i-frame or a p-frame)
                                     if (mDecoderWaitForNextKeyFrame)
                                     {// we are still waiting for the next key frame after seeking in the input stream
-                                        if (IsKeyFrame(tVideoSourceFrame))
+                                        if (IsAcceptableStartFrame(tVideoSourceFrame))
                                         {
                                             mDecoderWaitForNextKeyFrame = false;
                                             mDecoderWaitForNextKeyFrameTimeout = 0;

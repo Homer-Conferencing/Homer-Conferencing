@@ -154,6 +154,7 @@ protected:
     static int GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
     virtual void ReadFragment(char *pBuffer, int &pBufferSize, int64_t &pFragmentNumber);
 
+    bool IsAcceptableStartFrame(AVFrame *pFrame);
     virtual bool InputIsPicture();
 
     /* decoder thread */
