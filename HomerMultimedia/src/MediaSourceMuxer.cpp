@@ -540,12 +540,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext->qmax = 2 +(100 - mStreamQuality) / 4; // default is 31
 
     // set max. packet size for RTP based packets
-    //HINT: don't set if we use H261, otherwise ffmpeg internal functions in mpegvideo_enc.c (MPV_*) would get confused because H261 support is missing in ffmpeg's RTP support
-    //TODO: fix packet size limitation here, ffmpegs lacks support for RTP encaps. for H.261 based video streams
-    if (tFormat->video_codec != AV_CODEC_ID_H261)
-        mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
-    else
-        RTP::SetH261PayloadSizeMax(mStreamMaxPacketSize);
+    mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
 
     // set pixel format
     if (tFormat->video_codec == AV_CODEC_ID_MJPEG)

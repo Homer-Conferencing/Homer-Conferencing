@@ -98,7 +98,7 @@ using namespace Homer::Monitor;
 
     Ethernet/WLan frame(1500) - IP(20)-UDP(8)-RTP(12) = 1460 bytes RTP payload limit
  */
-unsigned int RTP::mH261PayloadSizeMax = 0;
+unsigned int RTP::mH261PayloadSizeMax = 1280;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -210,6 +210,11 @@ union H261Header{
 
 // ########################## H 263 ############################################
 union H263Header{
+    /**
+     * mode A:  4 bytes
+     * mode B:  8 bytes
+     * mode C: 12 bytes
+     */
     struct{
         unsigned int dummy0:21;
         unsigned int Src:3;                 /* source format: resolution of current picture */
@@ -286,6 +291,10 @@ union H263Header{
     } __attribute__((__packed__)) ModeC;
     uint32_t Data[3];
 };
+
+#define H263_MODE_A_HEADER_SIZE             4
+#define H263_MODE_B_HEADER_SIZE             8
+#define H263_MODE_C_HEADER_SIZE             12
 
 // ########################## H 263+ ###########################################
 union H263PHeader{
@@ -488,6 +497,8 @@ void RTP::Init()
     mRTPPacketCounter = 0;
     mSyncPTS = 0;
     mSyncNTPTime = 0;
+    mH261H263EndByteBits = 0;
+    mH261H263EndByte = 0;
 }
 
 bool RTP::ResetRrtpParser()
@@ -538,7 +549,8 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
 bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream *pInnerStream, std::string pStreamName)
 {
     AVDictionary        *tOptions = NULL;
-    int                    tRes;
+    int                 tRes;
+    AVOutputFormat      *tFormat;
 
     if (mRtpEncoderOpened)
         return false;
@@ -573,12 +585,6 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     // set SRC ID
     mLocalSourceIdentifier = av_get_random_seed();
-
-    if (mStreamCodecID == AV_CODEC_ID_H261)
-        return OpenRtpEncoderH261(pTargetHost, pTargetPort, pInnerStream);
-
-    int                 tResult;
-    AVOutputFormat      *tFormat;
 
     // allocate new format context
     mRtpFormatContext = AV_NEW_FORMAT_CONTEXT();
@@ -667,11 +673,37 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     OpenRtpPacketStream();
 
     // allocate streams private data buffer and write the streams header, if any
-    avformat_write_header(mRtpFormatContext, &tOptions);
+    if ((tRes = avformat_write_header(mRtpFormatContext, &tOptions)) < 0)
+    {
+        if (mStreamCodecID == AV_CODEC_ID_H261)
+            LOG(LOG_WARN, "Could not initialize default RTP encoder because \"%s\".", strerror(AVUNERROR(tRes)));
+        else
+            LOG(LOG_ERROR, "Could not initialize default RTP encoder because \"%s\".", strerror(AVUNERROR(tRes)));
+    }
 
     // close memory stream
     char *tBuffer = NULL;
     CloseRtpPacketStream(&tBuffer);
+
+    /**
+     * problems with ffmpeg's RTP packetizer?
+     */
+    if(tRes == -1)
+    {
+        /**
+         * fall-back to internal packetizer for H.261
+         */
+        if (mStreamCodecID == AV_CODEC_ID_H261)
+        {
+            //HINT: we use a workaround for problems with old ffmpeg versions
+            //      otherwise ffmpeg internal functions in mpegvideo_enc.c (MPV_*) would cause problems with its rtpm_mode
+            // deactivate rtp_mode in ffmpeg
+            SetH261PayloadSizeMax(pInnerStream->codec->rtp_payload_size);
+            pInnerStream->codec->rtp_payload_size = 0;
+
+            return OpenRtpEncoderH261(pTargetHost, pTargetPort, pInnerStream);
+        }
+    }
 
     int64_t tAVPacketPts = (mRtpEncoderStream->pts.den != 0 ? ((float)mRtpEncoderStream->pts.val + mRtpEncoderStream->pts.num / mRtpEncoderStream->pts.den) : 0);
 
@@ -1978,6 +2010,12 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     unsigned char tH264HeaderType = 0;
     bool tH264HeaderFragmentStart = false;
     char tH264HeaderReconstructed = 0;
+    /********
+     *  H.261/H.263 parsing
+     ********/
+    int tH261H263Sbits = 0;
+    int tH261H263Ebits = 0;
+    bool tH261H263SkipEndByte = false;
 
     switch(mStreamCodecID)
     {
@@ -2087,10 +2125,10 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             break;
             // video
             case AV_CODEC_ID_H261:
-                            #ifdef RTP_DEBUG_PACKET_DECODER
-                                // convert from network to host byte order
-                                tH261Header->Data[0] = ntohl(tH261Header->Data[0]);
+                            // convert from network to host byte order
+                            tH261Header->Data[0] = ntohl(tH261Header->Data[0]);
 
+                            #ifdef RTP_DEBUG_PACKET_DECODER
                                 LOG(LOG_VERBOSE, "################## H261 header ########################");
                                 LOG(LOG_VERBOSE, "Start bit pos.: %d", tH261Header->Sbit);
                                 LOG(LOG_VERBOSE, "End bit pos.: %d", tH261Header->Ebit);
@@ -2107,13 +2145,66 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                 LOG(LOG_VERBOSE, "Quantizer: %d", tH261Header->Quant);
                                 LOG(LOG_VERBOSE, "Horiz. vector data: %d", tH261Header->Hmvd);
                                 LOG(LOG_VERBOSE, "Vert. vector data: %d", tH261Header->Vmvd);
-
-                                // convert from host to network byte order
-                                tH261Header->Data[0] = htonl(tH261Header->Data[0]);
                             #endif
+
+                            /**
+                             * store the s/e-bits
+                             */
+                            tH261H263Sbits = tH261Header->Sbit;
+                            tH261H263Ebits = tH261Header->Ebit;
 
                             // go to the start of the h261 payload
                             pData += H261_HEADER_SIZE;
+
+                            // convert from host to network byte order
+                            tH261Header->Data[0] = htonl(tH261Header->Data[0]);
+
+                            /**
+                             * Support for sbits: most significant bits that should be ignored
+                             *                    in the first data octet
+                             */
+                            if(tH261H263Sbits)
+                            {
+                                if(mH261H263EndByteBits == tH261H263Sbits)
+                                {
+                                    /****************************************************************
+                                     * We have to merge the stored bits from the last byte of the
+                                     * last RTP packet with the ones of the first byte of this
+                                     * current RTP packet.
+                                     ****************************************************************/
+                                    //LOG(LOG_VERBOSE, "first bytes: %hhx %hhx %hhx %hhx", pData[0], pData[1], pData[2], pData[3]);
+                                    //LOG(LOG_VERBOSE, "End byte: %hhx", mH261H263EndByte);
+                                    mH261H263EndByte |= pData[0] & (0xff >> tH261H263Sbits);
+                                    mH261H263EndByteBits = 0;
+                                    pData[0] = mH261H263EndByte;
+                                    //LOG(LOG_VERBOSE, "New first bytes: %hhx %hhx %hhx %hhx", pData[0], pData[1], pData[2], pData[3]);
+                                }else{
+                                    LOG(LOG_ERROR, "Illegal stream fragmentation (last ebits should be equal to new sbits)");
+                                }
+                            }
+                            /**
+                             * Support for ebits: least significant bits that should be ignored
+                             *                    in the last data octet
+                             */
+                            if(tH261H263Ebits)
+                            {
+                                // store the number of valid bytes we have already received for the last byte
+                                mH261H263EndByteBits = 8 - tH261H263Ebits;
+                                // store the content of the last byte
+                                mH261H263EndByte = tRtpPacketStart[pDataSize - 1] & (0xff << tH261H263Ebits);
+                                //LOG(LOG_VERBOSE, "Stored end byte: %hhx", mH261H263EndByte);
+                                if(mIntermediateFragment)
+                                {
+                                    /****************************************************************
+                                     * It's an intermediate packet and we have to skip the last byte
+                                     * until we have received its missing bits in the upcoming next
+                                     * RTP packet. So, we pretend that this data chunk starts 1 byte
+                                     * after its real start.
+                                     ****************************************************************/
+                                    tH261H263SkipEndByte = true;
+                                }
+                            }
+
                             break;
             case AV_CODEC_ID_H263:
             case AV_CODEC_ID_H263P:
@@ -2128,12 +2219,15 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                 #ifdef RTP_DEBUG_PACKET_DECODER
                                     LOG(LOG_VERBOSE, "################## H263 header ######################");
                                     if (!tH263Header->F)
+                                    {
                                         LOG(LOG_VERBOSE, "Header mode: A");
-                                    else
+                                    }else
+                                    {
                                         if (!tH263Header->P)
                                             LOG(LOG_VERBOSE, "Header mode: B");
                                         else
                                             LOG(LOG_VERBOSE, "Header mode: C");
+                                    }
                                     LOG(LOG_VERBOSE, "F bit: %d", tH263Header->F);
                                     LOG(LOG_VERBOSE, "P bit: %d", tH263Header->P);
                                     LOG(LOG_VERBOSE, "Start bit pos.: %d", tH263Header->Sbit);
@@ -2159,16 +2253,74 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                                     LOG(LOG_VERBOSE, "Source format: %d", tH263Header->Src);
                                     }
                                 #endif
+
+                                /**
+                                 * store the s/e-bits
+                                 */
+                                tH261H263Sbits = tH263Header->Sbit;
+                                tH261H263Ebits = tH263Header->Ebit;
+
+                                // go to the start of the h263 payload
                                 if (!tH263Header->F)
-                                    pData += 4; // mode A
-                                else
+                                {
+                                    pData += H263_MODE_A_HEADER_SIZE; // mode A
+                                }else
+                                {
                                     if (!tH263Header->P)
-                                        pData += 8; // mode B
+                                        pData += H263_MODE_B_HEADER_SIZE; // mode B
                                     else
-                                        pData += 12; // mode C
+                                        pData += H263_MODE_C_HEADER_SIZE; // mode C
+                                }
 
                                 // convert from host to network byte order again
                                 tH263Header->Data[0] = htonl(tH263Header->Data[0]);
+
+                                /**
+                                 * Support for sbits: most significant bits that should be ignored
+                                 *                    in the first data octet
+                                 */
+                                if(tH261H263Sbits)
+                                {
+                                    if(mH261H263EndByteBits == tH261H263Sbits)
+                                    {
+                                        /****************************************************************
+                                         * We have to merge the stored bits from the last byte of the
+                                         * last RTP packet with the ones of the first byte of this
+                                         * current RTP packet.
+                                         ****************************************************************/
+                                        //LOG(LOG_VERBOSE, "first bytes: %hhx %hhx %hhx %hhx", pData[0], pData[1], pData[2], pData[3]);
+                                        //LOG(LOG_VERBOSE, "End byte: %hhx", mH261H263EndByte);
+                                        mH261H263EndByte |= pData[0] & (0xff >> tH261H263Sbits);
+                                        mH261H263EndByteBits = 0;
+                                        pData[0] = mH261H263EndByte;
+                                        //LOG(LOG_VERBOSE, "New first bytes: %hhx %hhx %hhx %hhx", pData[0], pData[1], pData[2], pData[3]);
+                                    }else{
+                                        LOG(LOG_ERROR, "Illegal stream fragmentation (last ebits should be equal to new sbits)");
+                                    }
+                                }
+                                /**
+                                 * Support for ebits: least significant bits that should be ignored
+                                 *                    in the last data octet
+                                 */
+                                if(tH261H263Ebits)
+                                {
+                                    // store the number of valid bytes we have already received for the last byte
+                                    mH261H263EndByteBits = 8 - tH261H263Ebits;
+                                    // store the content of the last byte
+                                    mH261H263EndByte = tRtpPacketStart[pDataSize - 1] & (0xff << tH261H263Ebits);
+                                    //LOG(LOG_VERBOSE, "Stored end byte: %hhx", mH261H263EndByte);
+                                    if(mIntermediateFragment)
+                                    {
+                                        /****************************************************************
+                                         * It's an intermediate packet and we have to skip the last byte
+                                         * until we have received its missing bits in the upcoming next
+                                         * RTP packet. So, we pretend that this data chunk starts 1 byte
+                                         * after its real start.
+                                         ****************************************************************/
+                                        tH261H263SkipEndByte = true;
+                                    }
+                                }
+
                             }else
                             {// H263+ rtp scheme
                                 // convert from network to host byte order
@@ -2488,7 +2640,11 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 
         return false;
     }
+
+    // calculate the size of real A/V codec data
     pDataSize -= (pData - tRtpPacketStart);
+    if(tH261H263SkipEndByte)
+        pDataSize--;
 
     // return if packet contains the last fragment of the current frame
     pIsLastFragment = !mIntermediateFragment;
