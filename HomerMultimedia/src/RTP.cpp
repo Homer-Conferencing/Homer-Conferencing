@@ -658,8 +658,13 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
         case AV_CODEC_ID_H263:
                 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(54, 6, 100)
                     // use older rfc2190 for RTP packetizing
-                    if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0)) < 0)
-                        LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
+                    if(mRtpFormatContext->priv_data)
+                    {
+                        if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0)) < 0)
+                            LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
+                    }else{
+                        LOG(LOG_WARN, "Private RTP context for ffmpeg packetizer is undefined");
+                    }
                 #endif
                 break;
         default:
@@ -2007,9 +2012,6 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     H264Header* tH264Header = (H264Header*)pData;
     THEORAHeader* tTHEORAHeader = (THEORAHeader*)pData;
     VP8Header* tVP8Header = (VP8Header*)pData;
-    unsigned char tH264HeaderType = 0;
-    bool tH264HeaderFragmentStart = false;
-    char tH264HeaderReconstructed = 0;
     /********
      *  H.261/H.263 parsing
      ********/
@@ -2382,105 +2384,111 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             }
                             break;
             case AV_CODEC_ID_H264:
-                            // convert from network to host byte order
-                            tH264Header->Data[0] = ntohl(tH264Header->Data[0]);
-
-                            // HINT: convert from network to host byte order not necessary because we have only one byte
-                            #ifdef RTP_DEBUG_PACKET_DECODER
-                                LOG(LOG_VERBOSE, "################## H264 header ########################");
-                                LOG(LOG_VERBOSE, "F bit: %d", tH264Header->F);
-                                LOG(LOG_VERBOSE, "NAL ref. ind.: %d", tH264Header->Nri);
-                                LOG(LOG_VERBOSE, "NAL unit type: %d", tH264Header->Type);
-                                if ((tH264Header->Type == 28 /* Fu-A */) || (tH264Header->Type == 29 /* Fu-B */))
-                                {
-                                    LOG(LOG_VERBOSE, "################## H264FU header #######################");
-                                    LOG(LOG_VERBOSE, "S bit: %d", tH264Header->FuA.S);
-                                    LOG(LOG_VERBOSE, "E bit: %d", tH264Header->FuA.E);
-                                    LOG(LOG_VERBOSE, "R bit: %d", tH264Header->FuA.R);
-                                    LOG(LOG_VERBOSE, "Pl type: %d", tH264Header->FuA.PlType);
-                                }
-                            #endif
-
-                            tH264HeaderType = tH264Header->Type;
-                            if ((tH264Header->Type == 28 /* Fu-A */) || (tH264Header->Type == 29 /* Fu-B */))
-                                tH264HeaderFragmentStart = tH264Header->FuA.S;
-
-                            // convert from host to network byte order
-                            tH264Header->Data[0] = htonl(tH264Header->Data[0]);
-
-                            // go to the start of the payload data
-                            switch(tH264HeaderType)
                             {
-                                        // NAL unit  Single NAL unit packet per H.264
-                                        case 1 ... 23:
-                                                // HINT: RFC3984: The first byte of a NAL unit co-serves as the RTP payload header
-                                                break;
-                                        // STAP-A    Single-time aggregation packet
-                                        case 24:
-                                                pData += 1;
-                                                break;
-                                        // STAP-B    Single-time aggregation packet
-                                        case 25:
-                                        // MTAP16    Multi-time aggregation packet
-                                        case 26:
-                                        // MTAP24    Multi-time aggregation packet
-                                        case 27:
-                                                pData += 3;
-                                                break;
-                                        // FU-B      Fragmentation unit
-                                        case 29:
-                                        // FU-A      Fragmentation unit
-                                        case 28:
-                                                // start fragment?
-                                                if (tH264HeaderFragmentStart)
-                                                {
-                                                    #ifdef RTP_DEBUG_PACKET_DECODER
-                                                        LOG(LOG_VERBOSE, "..H264 start fragment");
-                                                    #endif
-                                                    // use FU header as NAL header, reconstruct the original NAL header
-                                                    if (!pLoggingOnly)
+                                unsigned char tH264HeaderType = 0;
+                                bool tH264HeaderFragmentStart = false;
+                                char tH264HeaderReconstructed = 0;
+
+                                // convert from network to host byte order
+                                tH264Header->Data[0] = ntohl(tH264Header->Data[0]);
+
+                                // HINT: convert from network to host byte order not necessary because we have only one byte
+                                #ifdef RTP_DEBUG_PACKET_DECODER
+                                    LOG(LOG_VERBOSE, "################## H264 header ########################");
+                                    LOG(LOG_VERBOSE, "F bit: %d", tH264Header->F);
+                                    LOG(LOG_VERBOSE, "NAL ref. ind.: %d", tH264Header->Nri);
+                                    LOG(LOG_VERBOSE, "NAL unit type: %d", tH264Header->Type);
+                                    if ((tH264Header->Type == 28 /* Fu-A */) || (tH264Header->Type == 29 /* Fu-B */))
+                                    {
+                                        LOG(LOG_VERBOSE, "################## H264FU header #######################");
+                                        LOG(LOG_VERBOSE, "S bit: %d", tH264Header->FuA.S);
+                                        LOG(LOG_VERBOSE, "E bit: %d", tH264Header->FuA.E);
+                                        LOG(LOG_VERBOSE, "R bit: %d", tH264Header->FuA.R);
+                                        LOG(LOG_VERBOSE, "Pl type: %d", tH264Header->FuA.PlType);
+                                    }
+                                #endif
+
+                                tH264HeaderType = tH264Header->Type;
+                                if ((tH264Header->Type == 28 /* Fu-A */) || (tH264Header->Type == 29 /* Fu-B */))
+                                    tH264HeaderFragmentStart = tH264Header->FuA.S;
+
+                                // convert from host to network byte order
+                                tH264Header->Data[0] = htonl(tH264Header->Data[0]);
+
+                                // go to the start of the payload data
+                                switch(tH264HeaderType)
+                                {
+                                            // NAL unit  Single NAL unit packet per H.264
+                                            case 1 ... 23:
+                                                    // HINT: RFC3984: The first byte of a NAL unit co-serves as the RTP payload header
+                                                    break;
+                                            // STAP-A    Single-time aggregation packet
+                                            case 24:
+                                                    pData += 1;
+                                                    break;
+                                            // STAP-B    Single-time aggregation packet
+                                            case 25:
+                                            // MTAP16    Multi-time aggregation packet
+                                            case 26:
+                                            // MTAP24    Multi-time aggregation packet
+                                            case 27:
+                                                    pData += 3;
+                                                    break;
+                                            // FU-B      Fragmentation unit
+                                            case 29:
+                                            // FU-A      Fragmentation unit
+                                            case 28:
+                                                    // start fragment?
+                                                    if (tH264HeaderFragmentStart)
                                                     {
                                                         #ifdef RTP_DEBUG_PACKET_DECODER
-                                                            LOG(LOG_VERBOSE, "S bit is set: reconstruct NAL header");
-                                                            LOG(LOG_VERBOSE, "..part F+NRI: %d", pData[0] & 0xE0);
-                                                            LOG(LOG_VERBOSE, "..part TYPE: %d", pData[1] & 0x1F);
+                                                            LOG(LOG_VERBOSE, "..H264 start fragment");
                                                         #endif
-                                                        tH264HeaderReconstructed = (pData[0] & 0xE0 /* F + NRI */) + (pData[1] & 0x1F /* TYPE */);
-                                                        pData[1] = tH264HeaderReconstructed;
+                                                        // use FU header as NAL header, reconstruct the original NAL header
+                                                        if (!pLoggingOnly)
+                                                        {
+                                                            #ifdef RTP_DEBUG_PACKET_DECODER
+                                                                LOG(LOG_VERBOSE, "S bit is set: reconstruct NAL header");
+                                                                LOG(LOG_VERBOSE, "..part F+NRI: %d", pData[0] & 0xE0);
+                                                                LOG(LOG_VERBOSE, "..part TYPE: %d", pData[1] & 0x1F);
+                                                            #endif
+                                                            tH264HeaderReconstructed = (pData[0] & 0xE0 /* F + NRI */) + (pData[1] & 0x1F /* TYPE */);
+                                                            pData[1] = tH264HeaderReconstructed;
+                                                        }
+                                                        pData += 1;
+                                                    }else
+                                                    {
+                                                        #ifdef RTP_DEBUG_PACKET_DECODER
+                                                            if (tH264Header->FuA.E)
+                                                                LOG(LOG_VERBOSE, "..H264 end fragment");
+                                                            else
+                                                                LOG(LOG_VERBOSE, "..H264 intermediate fragment");
+                                                        #endif
+                                                        pData += 2;
                                                     }
-                                                    pData += 1;
-                                                }else
-                                                {
-                                                    #ifdef RTP_DEBUG_PACKET_DECODER
-                                                        if (tH264Header->FuA.E)
-                                                            LOG(LOG_VERBOSE, "..H264 end fragment");
-                                                        else
-                                                            LOG(LOG_VERBOSE, "..H264 intermediate fragment");
-                                                    #endif
-                                                    pData += 2;
-                                                }
-                                                break;
-                                        // 0, 30, 31
-                                        default:
-                                                LOG(LOG_ERROR, "Undefined NAL type");
-                                                break;
-                            }
+                                                    break;
+                                            // 0, 30, 31
+                                            default:
+                                                    LOG(LOG_ERROR, "Undefined NAL type");
+                                                    break;
+                                }
 
-                            // in case it is no FU or it is one AND it is the start fragment:
-                            //      create start sequence of [0, 0, 1]
-                            // HINT: inspired by "h264_handle_packet" from rtp_h264.c from ffmpeg package
-                            if (((tH264HeaderType != 28) && (tH264HeaderType != 29)) || (tH264HeaderFragmentStart))
-                            {
-                                #ifdef RTP_DEBUG_PACKET_DECODER
-                                #endif
-                                if (!pLoggingOnly)
+                                // in case it is no FU or it is one AND it is the start fragment:
+                                //      create start sequence of [0, 0, 1]
+                                // HINT: inspired by "h264_handle_packet" from rtp_h264.c from ffmpeg package
+                                if (((tH264HeaderType != 28) && (tH264HeaderType != 29)) || (tH264HeaderFragmentStart))
                                 {
-                                    //HINT: make sure that the byte order is correct here because we abuse the former RTP header memory
-                                    pData -= 3;
-                                    // create the start sequence "001"
-                                    pData[0] = 0;
-                                    pData[1] = 0;
-                                    pData[2] = 1;
+                                    #ifdef RTP_DEBUG_PACKET_DECODER
+                                    #endif
+                                    if (!pLoggingOnly)
+                                    {
+                                        //HINT: make sure that the byte order is correct here because we abuse the former RTP header memory
+                                        pData -= 3;
+                                        // create the start sequence "001"
+                                        pData[0] = 0;
+                                        pData[1] = 0;
+                                        pData[2] = 1;
+                                    }
                                 }
                             }
 
