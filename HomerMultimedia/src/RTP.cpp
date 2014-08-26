@@ -649,27 +649,6 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
             LOG(LOG_ERROR, "Failed to set A/V option \"cname\" because %s(0x%x) [option not found = 0x%x]", strerror(AVUNERROR(tRes)), tRes, AVERROR_OPTION_NOT_FOUND);
         }
     }
-//
-//    if ((tRes = av_dict_set(&tOptions, "ssrc", toString(mLocalSourceIdentifier).c_str(), 0)) < 0)
-//        LOG(LOG_ERROR, "Failed to set A/V option \"ssrc\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
-
-    switch(mStreamCodecID)
-    {
-        case AV_CODEC_ID_H263:
-                #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(54, 6, 100)
-                    // use older rfc2190 for RTP packetizing
-                    if(mRtpFormatContext->priv_data)
-                    {
-                        if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0)) < 0)
-                            LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
-                    }else{
-                        LOG(LOG_WARN, "Private RTP context for ffmpeg packetizer is undefined");
-                    }
-                #endif
-                break;
-        default:
-                break;
-    }
 
     // Dump information about device file
     av_dump_format(mRtpFormatContext, 0, "RTP Encoder", true);
@@ -708,6 +687,28 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
             return OpenRtpEncoderH261(pTargetHost, pTargetPort, pInnerStream);
         }
+    }
+
+    //
+    //    if ((tRes = av_dict_set(&tOptions, "ssrc", toString(mLocalSourceIdentifier).c_str(), 0)) < 0)
+    //        LOG(LOG_ERROR, "Failed to set A/V option \"ssrc\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
+
+    switch(mStreamCodecID)
+    {
+        case AV_CODEC_ID_H263:
+                #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(54, 6, 100)
+                    // use older rfc2190 for RTP packetizing
+                    if(mRtpFormatContext->priv_data)
+                    {
+                        if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0)) < 0)
+                            LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
+                    }else{
+                        LOG(LOG_WARN, "Private RTP context for ffmpeg packetizer is undefined");
+                    }
+                #endif
+                break;
+        default:
+                break;
     }
 
     int64_t tAVPacketPts = (mRtpEncoderStream->pts.den != 0 ? ((float)mRtpEncoderStream->pts.val + mRtpEncoderStream->pts.num / mRtpEncoderStream->pts.den) : 0);
