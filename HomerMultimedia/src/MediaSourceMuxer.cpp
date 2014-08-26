@@ -608,6 +608,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
                         // old codec codext flag CODEC_FLAG_H263P_AIV
                         av_dict_set(&tOptions, "aiv", "1", 0);
         case CODEC_ID_H263:
+                        // emit macroblock info for RFC 2190 packetization
+                        av_dict_set(&tOptions, "mb_info", toString(mStreamMaxPacketSize).c_str(), 0);
         case CODEC_ID_MPEG4:
                         mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
                         break;
