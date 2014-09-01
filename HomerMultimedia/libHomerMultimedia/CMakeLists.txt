@@ -42,6 +42,7 @@ ELSE()
     CHECK_LIBRARY_EXISTS(swresample swresample_version "" HAVE_SWRESAMPLE)
     CHECK_INCLUDE_FILES (libswresample/swresample.h HAVE_SWRESAMPLE_H)
     CHECK_INCLUDE_FILES (libavutil/time.h HAVE_AVUTIL_TIME_H)
+    CHECK_LIBRARY_EXISTS(avresample avresample_version "" HAVE_AVRESAMPLE)
     CHECK_INCLUDE_FILES (libavresample/avresample.h HAVE_AVRESAMPLE_H)    
 ENDIF() 
 
@@ -188,7 +189,7 @@ SET (LIBS_APPLE
     HomerNAPI
     HomerMonitor
     HomerSoundOutput
-	iconv
+    iconv
 )
 SET (LIBS_APPLE_STATIC
     avdevice
@@ -247,6 +248,12 @@ IF (${BUILD} MATCHES "Default")
         SET (LIBS_LINUX
             ${LIBS_LINUX}
             swresample
+        )
+    ENDIF ()
+    IF (HAVE_AVRESAMPLE)
+        SET (LIBS_LINUX
+            ${LIBS_LINUX}
+            avresample
         )
     ENDIF ()
 ELSE ()
