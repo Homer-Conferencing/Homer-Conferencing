@@ -219,8 +219,31 @@ void MediaSource::FfmpegInit()
             LOGEX(MediaSource, LOG_ERROR, "Registration of own lock manager at ffmpeg failed.");
 
         mFfmpegInitiated = true;
+
+        if(IsH265EncodingSupported())
+            LOGEX(MediaSource, LOG_WARN, "Found H.265 encoding support in the linked ffmpeg version, support of H.265 is still experimental..");
+        if(IsH265DecodingSupported())
+            LOGEX(MediaSource, LOG_WARN, "Found H.265 decoding support in the linked ffmpeg version, support of H.265 is still experimental..");
     }
     mFfmpegInitMutex.unlock();
+}
+
+bool MediaSource::IsH265EncodingSupported()
+{
+    AVCodec *tFoundCodec = avcodec_find_encoder_by_name("libx265" /* means h265 */);
+    if(tFoundCodec != NULL)
+        return true;
+    else
+        return false;
+}
+
+bool MediaSource::IsH265DecodingSupported()
+{
+    AVCodec *tFoundCodec = avcodec_find_decoder_by_name("hevc" /* means h265 */);
+    if(tFoundCodec != NULL)
+        return true;
+    else
+        return false;
 }
 
 void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
@@ -245,7 +268,7 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
         {
             bool tDecode = (tCodec->decode != NULL);
             bool tEncode = false;
-            #ifndef FF_API_OLD_ENCODE_AUDIO
+            #if FF_API_OLD_ENCODE_AUDIO
                 tEncode = (tCodec->encode != NULL);
             #else
                 tEncode = (tCodec->encode2 != NULL);
@@ -253,7 +276,7 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
 
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-                #ifndef FF_API_OLD_ENCODE_AUDIO
+                #if FF_API_OLD_ENCODE_AUDIO
                     tEncode |= (tNextCodec->encode != NULL);
                 #else
                     tEncode |= (tNextCodec->encode2 != NULL);
@@ -468,6 +491,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  *        MPEG2                            CODEC_ID_MPEG2VIDEO
  *        H.263+                           CODEC_ID_H263P+
  *        H.264                            CODEC_ID_H264
+ *        H.265                            CODEC_ID_HEVC
  *        MPEG2TS                          CODEC_ID_MPEG2TS
  *        MPEG4                            CODEC_ID_MPEG4
  *        THEORA                           CODEC_ID_THEORA
@@ -489,7 +513,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  ****************************************************/
 enum AVCodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
 {
-    enum AVCodecID tResult = CODEC_ID_NONE;
+    enum AVCodecID tResult = AV_CODEC_ID_NONE;
 
     /* video */
     if (pName == "H.261")
@@ -504,6 +528,8 @@ enum AVCodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
         tResult = AV_CODEC_ID_H263P;
     if (pName == "H.264")
         tResult = AV_CODEC_ID_H264;
+    if (pName == "H.265")
+        tResult = AV_CODEC_ID_HEVC;
     if (pName == "MPEG2TS")
         tResult = AV_CODEC_ID_MPEG2TS;
     if (pName == "MPEG4")
@@ -566,6 +592,9 @@ string MediaSource::GetGuiNameFromCodecID(enum AVCodecID pCodecId)
                 break;
         case AV_CODEC_ID_H264:
                 tResult = "H.264";
+                break;
+        case AV_CODEC_ID_HEVC:
+                tResult = "H.265";
                 break;
         case AV_CODEC_ID_MPEG2TS:
                 tResult = "MPEG2TS";
@@ -638,6 +667,7 @@ string MediaSource::GetGuiNameFromCodecID(enum AVCodecID pCodecId)
  *        AV_CODEC_ID_MPEG2VIDEO           mpeg2video
  *        AV_CODEC_ID_H263P+               h263 // same like H263
  *        AV_CODEC_ID_H264                 h264
+ *        AV_CODEC_ID_HEVC                 hevc
  *        AV_CODEC_ID_MPEG2TS              mpegts
  *        AV_CODEC_ID_MPEG4                m4v
  *        AV_CODEC_ID_MJPEG                mjpeg
@@ -682,6 +712,9 @@ string MediaSource::GetFormatName(enum AVCodecID pCodecId)
                 break;
         case AV_CODEC_ID_H264:
                 tResult = "h264";
+                break;
+        case AV_CODEC_ID_HEVC:
+                tResult = "hevc";
                 break;
         case AV_CODEC_ID_MPEG2TS:
                 tResult = "mpegts";
@@ -2201,7 +2234,9 @@ bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality
     LOG(LOG_INFO, "    ..codec long name: %s", mRecorderCodecContext->codec->long_name);
     LOG(LOG_INFO, "    ..codec flags: 0x%x", mRecorderCodecContext->flags);
     LOG(LOG_INFO, "    ..codec time_base: %d/%d", mRecorderCodecContext->time_base.num, mRecorderCodecContext->time_base.den);
+#if FF_API_R_FRAME_RATE
     LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRecorderEncoderStream->r_frame_rate.num, mRecorderEncoderStream->r_frame_rate.den);
+#endif
     LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRecorderEncoderStream->time_base.num, mRecorderEncoderStream->time_base.den);
     LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRecorderEncoderStream->codec->time_base.num, mRecorderEncoderStream->codec->time_base.den);
     LOG(LOG_INFO, "    ..bit rate: %d", mRecorderCodecContext->bit_rate);
@@ -3096,7 +3131,9 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream ID: %d", mMediaStreamIndex);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start real-time: %"PRId64"", mFormatContext->start_time_realtime);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start time: %"PRId64"", FilterNeg(mFormatContext->streams[mMediaStreamIndex]->start_time));
+#if FF_API_R_FRAME_RATE
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
+#endif
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.num, mFormatContext->streams[mMediaStreamIndex]->time_base.den); // inverse
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den); // inverse
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec caps: %d", mFormatContext->streams[mMediaStreamIndex]->codec->codec->capabilities);
@@ -3348,6 +3385,9 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
                     case AV_CODEC_ID_H264:
                         // we shouldn't limit the analyzing time because the analyzer needs the entire time period to deliver a reliable result
                         break;
+                    case AV_CODEC_ID_HEVC:
+                        mFormatContext->max_analyze_duration = mFormatContext->max_analyze_duration * 8;
+                        break;
                     default:
                         // we may limit the analyzing time to the half
                         mFormatContext->max_analyze_duration = AV_TIME_BASE / 2;
@@ -3372,7 +3412,7 @@ bool MediaSource::FfmpegDetectAllStreams(string pSource, int pLine)
     if ((tRes = avformat_find_stream_info(mFormatContext, NULL)) < 0)
     {
         if (!mGrabbingStopped)
-            LOG_REMOTE(LOG_ERROR, pSource, pLine, "Couldn't find %s stream information for format %s because \"%s\"(%d)", GetMediaTypeStr().c_str(), mFormatContext->iformat->name, strerror(AVUNERROR(tRes)), tRes);
+            LOG_REMOTE(LOG_ERROR, pSource, pLine, "avformat_find_stream_info() could not find %s stream information for format %s because \"%s\"(%d)", GetMediaTypeStr().c_str(), mFormatContext->iformat->name, strerror(AVUNERROR(tRes)), tRes);
         else
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Grabbing was stopped during avformat_find_stream_info()");
 
@@ -3508,8 +3548,11 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
                 mSourceResY = mCodecContext->coded_height;
             }
 
+            mOutputFrameRate = -1;
+#if FF_API_R_FRAME_RATE
             mOutputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
-            if(mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num <= 0)
+#endif
+            if(mOutputFrameRate <= 0)
                 mOutputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den / mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num;
 
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d and frame rate: %.2f", mSourceResX, mSourceResY, mOutputFrameRate);
@@ -3594,19 +3637,19 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "..%s decoder successfully found", GetMediaTypeStr().c_str());
 
     //H.264: force thread count to 1 since the h264 decoder will not extract SPS and PPS to extradata during multi-threaded decoding
-    if (mCodecContext->codec_id == AV_CODEC_ID_H264)
+    if ((mCodecContext->codec_id == AV_CODEC_ID_H264) || (mCodecContext->codec_id == AV_CODEC_ID_HEVC))
     {
             if (strcmp(mFormatContext->filename, "") == 0)
             {// we have a net/mem based media source
-                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Disabling MT during avcodec_open2() for H264 codec");
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Disabling MT during avcodec_open2() for H264/5 codec");
 
-                // disable MT for H264, otherwise the decoder runs into trouble
+                // disable MT for H264/5, otherwise the decoder runs into trouble
                 av_dict_set(&tOptions, "threads", "1", 0);
 
                 mCodecContext->thread_count = 1;
             }else
             {// we have a file based media source and we can try to decode in MT mode
-                LOG_REMOTE(LOG_WARN, pSource, pLine, "Trying to decode H.264 with MT support");
+                LOG_REMOTE(LOG_WARN, pSource, pLine, "Trying to decode H.264/5 with MT support");
             }
     }
 

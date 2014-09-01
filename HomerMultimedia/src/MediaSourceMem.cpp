@@ -523,6 +523,9 @@ bool MediaSourceMem::HasInputStreamChanged()
             case 123:
                     tNewCodecId = AV_CODEC_ID_VP8;
                     break;
+            case 124:
+                    tNewCodecId = AV_CODEC_ID_HEVC;
+                    break;
 
             //audio
             case 0:
@@ -1808,7 +1811,7 @@ void* MediaSourceMem::Run(void* pArgs)
                                 // ### check codec ID
                                 // ############################
                                 // do we have a video codec change at sender side?
-                                if ((mSourceCodecId != 0) && (mSourceCodecId != CODEC_ID_MPEG2TS /* in this case the MPEG2TS is only the transport and carries inside another codec */) && (mSourceCodecId != mCodecContext->codec_id))
+                                if ((mSourceCodecId != 0) && (mSourceCodecId != AV_CODEC_ID_MPEG2TS /* in this case the MPEG2TS is only the transport and carries inside another codec */) && (mSourceCodecId != mCodecContext->codec_id))
                                 {
                                     if ((mCodecContext->codec_id == 5 /* h263 */) && (mSourceCodecId == 20 /* h263+ */))
                                     {// changed from h263+ to h263
@@ -1863,12 +1866,12 @@ void* MediaSourceMem::Run(void* pArgs)
                                 {// use PTS/DTS
                                     tDecodedFrameTimestamp = HM_av_frame_get_best_effort_timestamp(tVideoSourceFrame);
                                     #ifdef MSMEM_DEBUG_TIMING
-                                        LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet BE PTS %"PRId64, tDecodedFrameTimestamp);
+                                        LOG(LOG_VERBOSE, "Setting current frame PTS to frame packet BE PTS: %"PRId64, tDecodedFrameTimestamp);
                                     #endif
                                 }else
                                 {// fall back to packet's PTS value
                                     #ifdef MSMEM_DEBUG_TIMING
-                                        LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS %.2f", (float)tCurrentInputFrameTimestamp);
+                                        LOG(LOG_VERBOSE, "Setting current frame PTS to packet PTS: %.2f", (float)tCurrentInputFrameTimestamp);
                                     #endif
                                     tDecodedFrameTimestamp = tCurrentInputFrameTimestamp;
                                 }
@@ -2506,7 +2509,7 @@ void MediaSourceMem::CalibrateRTGrabbing()
     #endif
     if (tRelativeTime < 0)
     {
-        LOG(LOG_ERROR, "Found invalid relative PTS value of: %.2lf", tRelativeTime);
+        LOG(LOG_ERROR, "Found invalid relative PTS value of: %.2lf for frame index: %.2f", tRelativeTime, tRelativeFrameIndex);
         tRelativeTime = 0;
     }
     mSourceStartTimeForRTGrabbing = av_gettime() - tRelativeTime  + mSourceTimeShiftForRTGrabbing + mDecoderFramePreBufferTime * AV_TIME_BASE;
@@ -2705,7 +2708,7 @@ int64_t MediaSourceMem::GetSynchronizationTimestamp()
                 return 0;
             }
 
-            tReferencePts = (uint64_t)(1000 * CalculateOutputFrameNumber(tReferencePts) / (((GetMediaType() == MEDIA_AUDIO) && (mSourceCodecId != CODEC_ID_MP3)) ? (float)mOutputAudioSampleRate / 1000 /* audio PTS is the play-out time in samples */: 1  /* video PTS is the play-out time in ms */)); // in ms
+            tReferencePts = (uint64_t)(1000 * CalculateOutputFrameNumber(tReferencePts) / (((GetMediaType() == MEDIA_AUDIO) && (mSourceCodecId != AV_CODEC_ID_MP3)) ? (float)mOutputAudioSampleRate / 1000 /* audio PTS is the play-out time in samples */: 1  /* video PTS is the play-out time in ms */)); // in ms
 
             // calculate the current (normalized) frame index of the grabber
             float tNormalizedFrameIndexFromGrabber = mCurrentOutputFrameIndex - CalculateOutputFrameNumber(mInputStartPts); // the normalized frame index
@@ -2772,7 +2775,7 @@ double MediaSourceMem::CalculateFrameNumberFromRTP()
 
     // the following sequence delivers the frame number independent from packet loss because
     // it calculates the frame number based on the current timestamp from the RTP header
-    if ((mMediaType == MEDIA_VIDEO) || (mSourceCodecId == CODEC_ID_MP3 /* for MP3 codec a 90 kHz clock rate is used, similar to video codecs */))
+    if ((mMediaType == MEDIA_VIDEO) || (mSourceCodecId == AV_CODEC_ID_MP3 /* for MP3 codec a 90 kHz clock rate is used, similar to video codecs */))
     {
         double tTimeBetweenFrames = 1000 / tFrameRate;
         tResult = mFirstReceivedFrameTimestampFromRTP / tTimeBetweenFrames;

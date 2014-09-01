@@ -370,6 +370,56 @@ union H264Header{
     uint32_t Data[1];
 };
 
+// ########################## HEVC / H.265 #########################################
+union HEVCHeader{
+    struct{
+        struct{
+            unsigned int Reserved:1;            /* forbidden zero bit */
+            unsigned int Type:6;                /* NAL unit type */
+            unsigned int Nri:6;                 /* NUH layer ID */
+            unsigned int F:3;                   /* NUH temporal ID */
+        } __attribute__((__packed__));
+        struct{
+            unsigned int dummy1:24;
+            unsigned int Type:5;                /* NAL unit type */
+            unsigned int Nri:2;                 /* NAL reference indicator (NRI) */
+            unsigned int F:1;                   /* forbidden zero bit (F) */
+        } __attribute__((__packed__))StapA;
+        struct{
+            unsigned int dummy1:8;
+            unsigned short int Don;             /* decoding order number (DON) */
+            unsigned int Type:5;                /* NAL unit type */
+            unsigned int Nri:2;                 /* NAL reference indicator (NRI) */
+            unsigned int F:1;                   /* forbidden zero bit (F) */
+        } __attribute__((__packed__))StapB, Mtap16, Mtap32;
+        struct{
+            unsigned int dummy1:16;
+
+            unsigned int PlType:5;              /* NAL unit payload type */
+            unsigned int R:1;                   /* reserved bit, must be 0 */
+            unsigned int E:1;                   /* end of a fragmented NAL unit (E) */
+            unsigned int S:1;                   /* start of a fragmented NAL unit (S) */
+
+            unsigned int Type:5;                /* NAL unit type */
+            unsigned int Nri:2;                 /* NAL reference indicator (NRI) */
+            unsigned int F:1;                   /* forbidden zero bit (F) */
+        } __attribute__((__packed__))FuA;
+        struct{
+            unsigned short int Don;             /* decoding order number (DON) */
+
+            unsigned int PlType:5;              /* NAL unit payload type */
+            unsigned int R:1;                   /* reserved bit, must be 0 */
+            unsigned int E:1;                   /* end of a fragmented NAL unit (E) */
+            unsigned int S:1;                   /* start of a fragmented NAL unit (S) */
+
+            unsigned int Type:5;                /* NAL unit type */
+            unsigned int Nri:2;                 /* NAL reference indicator (NRI) */
+            unsigned int F:1;                   /* forbidden zero bit (F) */
+        } __attribute__((__packed__))FuB;
+        uint32_t Data[1];
+    };
+};
+
 // ############################ THEORA) ############################################
 union THEORAHeader{
     struct{
@@ -519,7 +569,9 @@ bool RTP::OpenRtpEncoderH261(string pTargetHost, unsigned int pTargetPort, AVStr
     LOG(LOG_INFO, "    ..codec long name: %s", pInnerStream->codec->codec->long_name);
     LOG(LOG_INFO, "    ..resolution: %d * %d pixels", pInnerStream->codec->width, pInnerStream->codec->height);
 //    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mCodecContext->time_base.num, mCodecContext->time_base.den);
+#if FF_API_R_FRAME_RATE
     LOG(LOG_INFO, "    ..stream rfps: %d/%d", pInnerStream->r_frame_rate.num, pInnerStream->r_frame_rate.den);
+#endif
     LOG(LOG_INFO, "    ..stream time_base: %d/%d", pInnerStream->time_base.num, pInnerStream->time_base.den);
     LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", pInnerStream->codec->time_base.num, pInnerStream->codec->time_base.den);
     LOG(LOG_INFO, "    ..sample rate: %d Hz", pInnerStream->codec->sample_rate);
@@ -574,11 +626,11 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     const char *tCodecName = pInnerStream->codec->codec->name;
     if (mPayloadIdNegotiatedByExternal != RTP_PAYLOAD_TYPE_NONE)
     {
-    	mPayloadId = mPayloadIdNegotiatedByExternal;
-    	LOG(LOG_VERBOSE, "Using externally negotiated payload ID %u for codec %s", mPayloadId, HM_avcodec_get_name(mStreamCodecID));
+        mPayloadId = mPayloadIdNegotiatedByExternal;
+        LOG(LOG_VERBOSE, "Using externally negotiated payload ID %u for codec %s", mPayloadId, HM_avcodec_get_name(mStreamCodecID));
     }else{
-   	 	mPayloadId = GetPreferedRTPPayloadIDForCodec(tCodecName);
-    	LOG(LOG_VERBOSE, "Using prefered payload ID %u for codec %s", mPayloadId, HM_avcodec_get_name(mStreamCodecID));
+        mPayloadId = GetPreferedRTPPayloadIDForCodec(tCodecName);
+        LOG(LOG_VERBOSE, "Using prefered payload ID %u for codec %s", mPayloadId, HM_avcodec_get_name(mStreamCodecID));
     }
 
     Init();
@@ -624,9 +676,9 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mRtpEncoderStream->priv_data = NULL;
     // create monotone timestamps
     mRtpEncoderStream->cur_dts = 0;
-	#ifndef FF_API_REFERENCE_DTS
-    	mRtpEncoderStream->reference_dts = 0;
-	#endif
+    #ifndef FF_API_REFERENCE_DTS
+        mRtpEncoderStream->reference_dts = 0;
+    #endif
 
     // set target coordinates for rtp stream
     snprintf(mRtpFormatContext->filename, sizeof(mRtpFormatContext->filename), "rtp://%s:%u", pTargetHost.c_str(), pTargetPort);
@@ -725,7 +777,9 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     LOG(LOG_INFO, "    ..stream start time: %"PRId64"", mRtpEncoderStream->start_time);
     LOG(LOG_INFO, "    ..max. delay: %d", mRtpFormatContext->max_delay);
     LOG(LOG_INFO, "    ..start A/V PTS: %"PRId64"", tAVPacketPts);
+#if FF_API_R_FRAME_RATE
     LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRtpEncoderStream->r_frame_rate.num, mRtpEncoderStream->r_frame_rate.den);
+#endif
     LOG(LOG_INFO, "    ..stream time_base: %d/%d", mRtpEncoderStream->time_base.num, mRtpEncoderStream->time_base.den);
     LOG(LOG_INFO, "    ..stream codec time_base: %d/%d", mRtpEncoderStream->codec->time_base.num, mRtpEncoderStream->codec->time_base.den);
     LOG(LOG_INFO, "    ..sample rate: %d Hz", mRtpEncoderStream->codec->sample_rate);
@@ -807,6 +861,7 @@ bool RTP::IsPayloadSupported(enum AVCodecID pId)
             case AV_CODEC_ID_H263:
             case AV_CODEC_ID_H263P:
             case AV_CODEC_ID_H264:
+            case AV_CODEC_ID_HEVC:
             case AV_CODEC_ID_MPEG1VIDEO:
             case AV_CODEC_ID_MPEG2VIDEO:
             case AV_CODEC_ID_MPEG4:
@@ -851,6 +906,9 @@ int RTP::GetPayloadHeaderSizeMax(enum AVCodecID pCodec)
                 break;
             case AV_CODEC_ID_H264:
                 tResult = sizeof(H264Header);
+                break;
+            case AV_CODEC_ID_HEVC:
+                tResult = sizeof(HEVCHeader);
                 break;
             case AV_CODEC_ID_MPEG1VIDEO:
             case AV_CODEC_ID_MPEG2VIDEO:
@@ -1169,19 +1227,19 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                 //### MP3 HACK
                 //#################################################################################
                 if (mStreamCodecID == AV_CODEC_ID_MP3){
-					// HACK: some modification of the standard MPA payload header: use MBZ to signalize the size of the original audio packet
-					tMPAHeader = (MPAHeader*)(tRtpPacket + RTP_HEADER_SIZE);
+                    // HACK: some modification of the standard MPA payload header: use MBZ to signalize the size of the original audio packet
+                    tMPAHeader = (MPAHeader*)(tRtpPacket + RTP_HEADER_SIZE);
 
-					// convert from network to host byte order
-					tMPAHeader->Data[0] = ntohl(tMPAHeader->Data[0]);
+                    // convert from network to host byte order
+                    tMPAHeader->Data[0] = ntohl(tMPAHeader->Data[0]);
 
-					#ifdef RTP_DEBUG_PACKET_ENCODER
-						LOG(LOG_VERBOSE, "Set MBZ bytes to message size of %u", tMp3Hack_EntireBufferSize);
-					#endif
-					tMPAHeader->Mbz = (unsigned short int)tMp3Hack_EntireBufferSize;
+                    #ifdef RTP_DEBUG_PACKET_ENCODER
+                        LOG(LOG_VERBOSE, "Set MBZ bytes to message size of %u", tMp3Hack_EntireBufferSize);
+                    #endif
+                    tMPAHeader->Mbz = (unsigned short int)tMp3Hack_EntireBufferSize;
 
-					// convert from host to network byte order
-					tMPAHeader->Data[0] = htonl(tMPAHeader->Data[0]);
+                    // convert from host to network byte order
+                    tMPAHeader->Data[0] = htonl(tMPAHeader->Data[0]);
                 }
 
                 //#################################################################################
@@ -1494,6 +1552,7 @@ float RTP::CalculateClockRateFactor()
         case AV_CODEC_ID_H263:
         case AV_CODEC_ID_H263P:
         case AV_CODEC_ID_H264:
+        case AV_CODEC_ID_HEVC:
         case AV_CODEC_ID_MPEG1VIDEO:
         case AV_CODEC_ID_MPEG2VIDEO:
         case AV_CODEC_ID_MPEG4: //TODO: mpeg 4 is buggy?
@@ -1555,6 +1614,7 @@ bool RTP::ReceivedCorrectPayload(unsigned int pType)
                 case AV_CODEC_ID_AMR_NB:
                 case AV_CODEC_ID_H263P:
                 case AV_CODEC_ID_H264:
+                case AV_CODEC_ID_HEVC:
                 case AV_CODEC_ID_MPEG4:
                 case AV_CODEC_ID_THEORA:
                 case AV_CODEC_ID_VP8:
@@ -1603,6 +1663,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
             case AV_CODEC_ID_H263:
             case AV_CODEC_ID_H263P:
             case AV_CODEC_ID_H264:
+            case AV_CODEC_ID_HEVC:
             case AV_CODEC_ID_MPEG1VIDEO:
             case AV_CODEC_ID_MPEG2VIDEO:
             case AV_CODEC_ID_MPEG4:
@@ -2011,6 +2072,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     H263PHeader* tH263PHeader = (H263PHeader*)pData;
     bool tH263PPictureStart = false;
     H264Header* tH264Header = (H264Header*)pData;
+    HEVCHeader* tHEVCHeader = (HEVCHeader*)pData;
     THEORAHeader* tTHEORAHeader = (THEORAHeader*)pData;
     VP8Header* tVP8Header = (VP8Header*)pData;
     /********
@@ -2494,6 +2556,115 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             }
 
                             break;
+            case AV_CODEC_ID_HEVC:
+                            {
+                                unsigned char tHEVCHeaderType = 0;
+                                bool tHEVCHeaderFragmentStart = false;
+                                char tHEVCHeaderReconstructed = 0;
+
+                                // convert from network to host byte order
+                                tHEVCHeader->Data[0] = ntohl(tHEVCHeader->Data[0]);
+
+                                // HINT: convert from network to host byte order not necessary because we have only one byte
+                                #ifdef RTP_DEBUG_PACKET_DECODER
+                                    LOG(LOG_VERBOSE, "################## HEVC/H.264 header ########################");
+                                    LOG(LOG_VERBOSE, "F bit: %d", tHEVCHeader->F);
+                                    LOG(LOG_VERBOSE, "NAL ref. ind.: %d", tHEVCHeader->Nri);
+                                    LOG(LOG_VERBOSE, "NAL unit type: %d", tHEVCHeader->Type);
+                                    if ((tHEVCHeader->Type == 28 /* Fu-A */) || (tHEVCHeader->Type == 29 /* Fu-B */))
+                                    {
+                                        LOG(LOG_VERBOSE, "################ HEVC/H.264 FU header #####################");
+                                        LOG(LOG_VERBOSE, "S bit: %d", tHEVCHeader->FuA.S);
+                                        LOG(LOG_VERBOSE, "E bit: %d", tHEVCHeader->FuA.E);
+                                        LOG(LOG_VERBOSE, "R bit: %d", tHEVCHeader->FuA.R);
+                                        LOG(LOG_VERBOSE, "Pl type: %d", tHEVCHeader->FuA.PlType);
+                                    }
+                                #endif
+
+                                tHEVCHeaderType = tHEVCHeader->Type;
+                                if ((tHEVCHeader->Type == 28 /* Fu-A */) || (tHEVCHeader->Type == 29 /* Fu-B */))
+                                    tHEVCHeaderFragmentStart = tHEVCHeader->FuA.S;
+
+                                // convert from host to network byte order
+                                tHEVCHeader->Data[0] = htonl(tHEVCHeader->Data[0]);
+
+                                // go to the start of the payload data
+                                switch(tHEVCHeaderType)
+                                {
+                                            // NAL unit  Single NAL unit packet per H.EVC
+                                            case 1 ... 23:
+                                                    // HINT: RFC3984: The first byte of a NAL unit co-serves as the RTP payload header
+                                                    break;
+                                            // STAP-A    Single-time aggregation packet
+                                            case 24:
+                                                    pData += 1;
+                                                    break;
+                                            // STAP-B    Single-time aggregation packet
+                                            case 25:
+                                            // MTAP16    Multi-time aggregation packet
+                                            case 26:
+                                            // MTAP24    Multi-time aggregation packet
+                                            case 27:
+                                                    pData += 3;
+                                                    break;
+                                            // FU-B      Fragmentation unit
+                                            case 29:
+                                            // FU-A      Fragmentation unit
+                                            case 28:
+                                                    // start fragment?
+                                                    if (tHEVCHeaderFragmentStart)
+                                                    {
+                                                        #ifdef RTP_DEBUG_PACKET_DECODER
+                                                            LOG(LOG_VERBOSE, "..HEVC start fragment");
+                                                        #endif
+                                                        // use FU header as NAL header, reconstruct the original NAL header
+                                                        if (!pLoggingOnly)
+                                                        {
+                                                            #ifdef RTP_DEBUG_PACKET_DECODER
+                                                                LOG(LOG_VERBOSE, "S bit is set: reconstruct NAL header");
+                                                                LOG(LOG_VERBOSE, "..part F+NRI: %d", pData[0] & 0xE0);
+                                                                LOG(LOG_VERBOSE, "..part TYPE: %d", pData[1] & 0x1F);
+                                                            #endif
+                                                            tHEVCHeaderReconstructed = (pData[0] & 0xE0 /* F + NRI */) + (pData[1] & 0x1F /* TYPE */);
+                                                            pData[1] = tHEVCHeaderReconstructed;
+                                                        }
+                                                        pData += 1;
+                                                    }else
+                                                    {
+                                                        #ifdef RTP_DEBUG_PACKET_DECODER
+                                                            if (tHEVCHeader->FuA.E)
+                                                                LOG(LOG_VERBOSE, "..HEVC end fragment");
+                                                            else
+                                                                LOG(LOG_VERBOSE, "..HEVC intermediate fragment");
+                                                        #endif
+                                                        pData += 2;
+                                                    }
+                                                    break;
+                                            // 0, 30, 31
+                                            default:
+                                                    LOG(LOG_ERROR, "Undefined NAL type");
+                                                    break;
+                                }
+
+                                // in case it is no FU or it is one AND it is the start fragment:
+                                //      create start sequence of [0, 0, 1]
+                                if (((tHEVCHeaderType != 28) && (tHEVCHeaderType != 29)) || (tHEVCHeaderFragmentStart))
+                                {
+                                    #ifdef RTP_DEBUG_PACKET_DECODER
+                                    #endif
+                                    if (!pLoggingOnly)
+                                    {
+                                        //HINT: make sure that the byte order is correct here because we abuse the former RTP header memory
+                                        pData -= 3;
+                                        // create the start sequence "001"
+                                        pData[0] = 0;
+                                        pData[1] = 0;
+                                        pData[2] = 1;
+                                    }
+                                }
+                            }
+
+                            break;
             case AV_CODEC_ID_MPEG1VIDEO:
             case AV_CODEC_ID_MPEG2VIDEO:
                             // convert from network to host byte order
@@ -2673,6 +2844,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
  *        mpeg4                     121 (HC internal standard)
  *        theora                    122 (HC internal standard)
  *        vp8                       123 (HC internal standard)
+ *        hevc/265                  124 (HC internal standard)
  *
  *
  *  Audio codec name to RTP id mapping:
@@ -2708,6 +2880,8 @@ unsigned int RTP::GetPreferedRTPPayloadIDForCodec(std::string pName)
         tResult = 122;
     if (pName == "vp8")
         tResult = 123;
+    if ((pName == "h265") || (pName == "hevc"))
+        tResult = 124;
 
     //audio
     if (pName == "ulaw")
@@ -2763,6 +2937,9 @@ string RTP::GetCodecFromPreferedPayloadID(int pId)
                 break;
         case 123:
                 tResult = "vp8";
+                break;
+        case 124:
+                tResult = "hevc/h265";
                 break;
 
         //audio

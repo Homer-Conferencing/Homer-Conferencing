@@ -42,6 +42,7 @@ ELSE()
     CHECK_LIBRARY_EXISTS(swresample swresample_version "" HAVE_SWRESAMPLE)
     CHECK_INCLUDE_FILES (libswresample/swresample.h HAVE_SWRESAMPLE_H)
     CHECK_INCLUDE_FILES (libavutil/time.h HAVE_AVUTIL_TIME_H)
+    CHECK_INCLUDE_FILES (libavresample/avresample.h HAVE_AVRESAMPLE_H)    
 ENDIF() 
 
 ##############################################################
@@ -275,6 +276,7 @@ ELSE ()
         theoradec
         ogg
         x264
+        x265
         vpx
         bz2
         z

@@ -1,3 +1,4 @@
 #cmakedefine HAVE_SWRESAMPLE_H
+#cmakedefine HAVE_AVRESAMPLE_H
 #cmakedefine HAVE_AVUTIL_TIME_H
 #define HAVE_SWRESAMPLE  	 	@HAVE_SWRESAMPLE@

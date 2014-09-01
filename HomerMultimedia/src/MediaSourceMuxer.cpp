@@ -199,6 +199,8 @@ bool MediaSourceMuxer::IsOutputCodecSupported(std::string pStreamCodec)
         if(avcodec_find_encoder(tStreamCodecId) != NULL)
         {
             tResult = true;
+        }else{
+            LOGEX(MediaSourceMuxer, LOG_WARN, "Encoder for codec \"%s\" not found, skipping support of it", pStreamCodec.c_str());
         }
     }
 
@@ -359,8 +361,9 @@ void MediaSourceMuxer::ValidateVideoResolutionForEncoderCodec(int &pResX, int &p
 
                 break;
         case AV_CODEC_ID_H264:
+        case AV_CODEC_ID_HEVC:
 
-                // for H.2634 both width and height must be multiples of 2
+                // for H.264/5 both width and height must be multiples of 2
                 pResX += 1;
                 pResX /= 2;
                 pResX *= 2;
@@ -595,22 +598,22 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // add some extra parameters depending on the selected codec
     switch(tFormat->video_codec)
     {
-        case CODEC_ID_MPEG2VIDEO:
+        case AV_CODEC_ID_MPEG2VIDEO:
                         // force low delay
                         if (tCodec->capabilities & CODEC_CAP_DELAY)
                             mCodecContext->flags |= CODEC_FLAG_LOW_DELAY;
                         break;
-        case CODEC_ID_H263P:
+        case AV_CODEC_ID_H263P:
                         // old codec codext flag CODEC_FLAG_H263P_SLICE_STRUCT
                         av_dict_set(&tOptions, "structured_slices", "1", 0);
                         // old codec codext flag CODEC_FLAG_H263P_UMV
                         av_dict_set(&tOptions, "umv", "1", 0);
                         // old codec codext flag CODEC_FLAG_H263P_AIV
                         av_dict_set(&tOptions, "aiv", "1", 0);
-        case CODEC_ID_H263:
+        case AV_CODEC_ID_H263:
                         // emit macroblock info for RFC 2190 packetization
                         av_dict_set(&tOptions, "mb_info", toString(mStreamMaxPacketSize).c_str(), 0);
-        case CODEC_ID_MPEG4:
+        case AV_CODEC_ID_MPEG4:
                         mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
                         break;
     }
@@ -811,7 +814,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     }
 
     // only for MP3 codec we use the 90kHz clock rate like it is used for video streaming
-    if (mCodecContext->codec_id != CODEC_ID_MP3)
+    if (mCodecContext->codec_id != AV_CODEC_ID_MP3)
         mEncoderStream->time_base = (AVRational){1, mOutputAudioSampleRate};
     else
         mEncoderStream->time_base = (AVRational){1, 90000};
@@ -1282,7 +1285,7 @@ int64_t MediaSourceMuxer::CalculateEncoderPts(int pFrameNumber)
 {
     int64_t tResult = 0;
 
-    if ((mMediaType == MEDIA_VIDEO) || (mStreamCodecId == CODEC_ID_MP3 /* for MP3 codec a 90 kHz clock rate is used, similar to video codecs */))
+    if ((mMediaType == MEDIA_VIDEO) || (mStreamCodecId == AV_CODEC_ID_MP3 /* for MP3 codec a 90 kHz clock rate is used, similar to video codecs */))
     {
         tResult = pFrameNumber * 1000 / GetOutputFrameRate(); // frame number * time between frames
     }else
@@ -1723,7 +1726,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         // pts
                                         int64_t tCurPts = av_rescale_q(tEncoderOutputFrameTimestamp, (AVRational){1, mOutputAudioSampleRate}, mCodecContext->time_base);
                                         // for MP3 codec the relative play-out is used like it is done for video streaming
-                                        if (mStreamCodecId == CODEC_ID_MP3)
+                                        if (mStreamCodecId == AV_CODEC_ID_MP3)
                                             tCurPts = tEncoderOutputFrameTimestamp;
 
                                         tAudioFrame->pts = tCurPts;

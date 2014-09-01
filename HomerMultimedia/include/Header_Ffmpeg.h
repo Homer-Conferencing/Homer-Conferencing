@@ -60,8 +60,12 @@ extern "C" {
 #include <libavutil/samplefmt.h>
 #include <libswscale/swscale.h>
 #include <libavdevice/avdevice.h>
-#if (LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 61, 100))
+
+#ifdef HAVE_SWRESAMPLE_H
 #include <libswresample/swresample.h>
+#endif
+#ifdef HAVE_AVRESAMPLE_H
+#include <libavresample/avresample.h>
 #endif
 #if (LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(54, 5, 2))
 #include <libavutil/time.h>
@@ -77,7 +81,19 @@ extern "C" {
 #define CODEC_FLAG2_SHOW_ALL      0x00400000 ///< Show all frames before the first keyframe
 #endif
 
-#if (LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 61, 100))
+#ifndef FF_API_OLD_ENCODE_AUDIO
+#define FF_API_OLD_ENCODE_AUDIO         0
+#endif
+
+#ifndef FF_API_R_FRAME_RATE
+#define FF_API_R_FRAME_RATE             0
+#endif
+
+#ifndef FF_API_REFERENCE_DTS
+#define FF_API_REFERENCE_DTS            0
+#endif
+
+#ifdef HAVE_SWRESAMPLE_H
 
 #define HM_SwrContext                       SwrContext
 
@@ -106,6 +122,34 @@ inline int HM_swr_convert(struct SwrContext *s, uint8_t **out, int out_count,
 inline void HM_swr_free(struct SwrContext **s)
 {
     swr_free(s);
+}
+
+#elif defined(HAVE_AVRESAMPLE_H)
+
+#define HM_SwrContext                       AVAudioResampleContext
+
+inline struct AVAudioResampleContext *HM_swr_alloc_set_opts(struct AVAudioResampleContext *s,
+                                      int64_t out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate,
+                                      int64_t  in_ch_layout, enum AVSampleFormat  in_sample_fmt, int  in_sample_rate,
+                                      int log_offset, void *log_ctx)
+{
+    return NULL; //TODO: implement me
+}
+
+inline int HM_swr_init(struct AVAudioResampleContext *s)
+{
+    return 0;
+}
+
+inline int HM_swr_convert(struct AVAudioResampleContext *s, uint8_t **out, int out_count,
+        const uint8_t **in , int in_count)
+{
+    return -1; //TODO: implement me
+}
+
+inline void HM_swr_free(struct AVAudioResampleContext **s)
+{
+    //TODO: implement me
 }
 
 #else
@@ -198,6 +242,7 @@ inline int64_t HM_av_get_default_channel_layout(int nb_channels)
 
 #if (LIBAVCODEC_VERSION_INT <= AV_VERSION_INT(54, 51, 100))
     #define AVCodecID CodecID
+    #define AV_CODEC_ID_NONE CODEC_ID_NONE
     #define AV_CODEC_ID_AAC CODEC_ID_AAC
     #define AV_CODEC_ID_AC3 CODEC_ID_AC3
     #define AV_CODEC_ID_ADPCM CODEC_ID_ADPCM
@@ -228,10 +273,14 @@ inline int64_t HM_av_get_default_channel_layout(int nb_channels)
     #define AV_CODEC_ID_WMAV2 CODEC_ID_WMAV2
     #define AV_CODEC_ID_WMV3 CODEC_ID_WMV3
 #endif
+#ifndef FF_PROFILE_HEVC_MAIN
+    #define AV_CODEC_ID_HEVC        AV_CODEC_ID_NONE
+    #define AV_CODEC_ID_H265        AV_CODEC_ID_HEVC
+#endif
 
 inline const char *HM_avcodec_get_name(enum AVCodecID id)
 {
-    #if (LIBAVCODEC_VERSION_INT <= AV_VERSION_INT(53, 61, 100))
+    #if ((LIBAVCODEC_VERSION_INT <= AV_VERSION_INT(53, 61, 100)) || !defined(avcodec_get_name))
         return "N/A"; //TODO: add some implementation here?
     #else
         return avcodec_get_name(id);
@@ -301,10 +350,12 @@ inline int HM_avcodec_decode_video(AVCodecContext *avctx, AVFrame *picture, int 
 
 inline int HM_avcodec_decode_audio(AVCodecContext *avctx, int16_t *samples, int *frame_size_ptr, AVPacket *avpkt)
 {
-    #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0))
+    #if ((LIBAVCODEC_VERSION_INT < AV_VERSION_INT(52, 21, 0)) && defined(avcodec_decode_audio2))
         return avcodec_decode_audio2(avctx, samples, frame_size_ptr, avpkt->data, avpkt->size);
-    #else
+    #elif (defined(avcodec_decode_audio3))
         return avcodec_decode_audio3(avctx, samples, frame_size_ptr, avpkt);
+    #elif (defined(avcodec_decode_audio4))
+        //TODO: implement me
     #endif
 }
 
@@ -436,7 +487,7 @@ inline int av_opt_set(void *obj, const char *name, const char *val, int search_f
 
 inline int64_t HM_av_frame_get_best_effort_timestamp(const AVFrame *frame)
 {
-    #if (LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 23, 100))
+    #if ((LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54, 23, 100)) || !defined(av_frame_get_best_effort_timestamp))
         int64_t tResult = 0;
         if (frame->pkt_dts != (int64_t)AV_NOPTS_VALUE)
         {// use DTS value from decoder
