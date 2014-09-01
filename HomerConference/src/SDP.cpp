@@ -182,6 +182,8 @@ int SDP::GetSDPCodecIDFromGuiName(std::string pCodecName)
         tResult = CODEC_H263P;
     if (pCodecName == "H.264")
         tResult = CODEC_H264;
+    if ((pCodecName == "HEVC") || (pCodecName == "H.265"))
+        tResult = CODEC_HEVC;
     if (pCodecName == "MPEG4")
         tResult = CODEC_MPEG4;
     if (pCodecName == "THEORA")
@@ -219,6 +221,7 @@ int SDP::GetSDPCodecIDFromGuiName(std::string pCodecName)
  *        CODEC_MPEG2VIDEO				mpeg2video
  *        CODEC_H263P					h263+
  *        CODEC_H264					h264
+ *        CODEC_HEVC                    hevc
  *        CODEC_MPEG4					mpeg4
  *        CODEC_THEORA					theora
  *        CODEC_VP8						vp8
@@ -306,6 +309,8 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
             tResult += " " + toString(RTP::GetPreferedRTPPayloadIDForCodec("h263+"));
         if (tSupportedVideoCodecs & CODEC_H264)
             tResult += " " + toString(RTP::GetPreferedRTPPayloadIDForCodec("h264"));
+        if (tSupportedVideoCodecs & CODEC_HEVC)
+            tResult += " " + toString(RTP::GetPreferedRTPPayloadIDForCodec("hevc"));
         if (tSupportedVideoCodecs & CODEC_MPEG4)
             tResult += " " + toString(RTP::GetPreferedRTPPayloadIDForCodec("mpeg4"));
         if (tSupportedVideoCodecs & CODEC_THEORA)
@@ -327,6 +332,8 @@ string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
             tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("h263+")) + " H263-1998/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_H264)
             tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("h264")) + " H264/90000\r\n";
+        if (tSupportedVideoCodecs & CODEC_HEVC)
+            tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("hevc")) + " HEVC/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_MPEG4)
             tResult += "a=rtpmap:" + toString(RTP::GetPreferedRTPPayloadIDForCodec("mpeg4")) + " MP4V-ES/90000\r\n";
         if (tSupportedVideoCodecs & CODEC_THEORA)
