@@ -77,15 +77,17 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
         LOG(LOG_ERROR, "Detected requirement conflict between \"Req:Chunks\" and \"Req:Stream\"");
     }
 
-    bool tTcp = (((!pRequirements->contains(RequirementTransmitChunks::type())) &&
-                (pRequirements->contains(RequirementTransmitStream::type()))));
+    bool tTcp =    ((!pRequirements->contains(RequirementTransmitChunks::type())) &&
+                     (pRequirements->contains(RequirementTransmitStream::type())) &&
+                     (!pRequirements->contains(RequirementTransmitBitErrors::type())));
 
-    bool tUdp = ((pRequirements->contains(RequirementTransmitChunks::type())) &&
-                (!pRequirements->contains(RequirementTransmitStream::type())));
+    bool tUdp =     ((pRequirements->contains(RequirementTransmitChunks::type())) &&
+                    (!pRequirements->contains(RequirementTransmitStream::type())) &&
+                    (!pRequirements->contains(RequirementTransmitBitErrors::type())));
 
     bool tUdpLite = ((pRequirements->contains(RequirementTransmitChunks::type())) &&
                     (!pRequirements->contains(RequirementTransmitStream::type())) &&
-                    (pRequirements->contains(RequirementTransmitBitErrors::type())));
+                     (pRequirements->contains(RequirementTransmitBitErrors::type())));
 
     if (tTcp)
     {
@@ -120,6 +122,7 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
     }else
     {
         LOG(LOG_ERROR, "Haven't found correct mapping from application requirements to transport protocol");
+        //TODO: UDP als Standard verwenden
     }
 }
 
