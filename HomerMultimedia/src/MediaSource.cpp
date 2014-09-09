@@ -221,9 +221,9 @@ void MediaSource::FfmpegInit()
         mFfmpegInitiated = true;
 
         if(IsH265EncodingSupported())
-            LOGEX(MediaSource, LOG_WARN, "Found H.265 encoding support in the linked ffmpeg version, support of H.265 is still experimental..");
+            LOGEX(MediaSource, LOG_WARN, "Found H.265 encoding support in the linked avcodec library, support of H.265 is still experimental..");
         if(IsH265DecodingSupported())
-            LOGEX(MediaSource, LOG_WARN, "Found H.265 decoding support in the linked ffmpeg version, support of H.265 is still experimental..");
+            LOGEX(MediaSource, LOG_WARN, "Found H.265 decoding support in the linked avcodec library, support of H.265 is still experimental..");
     }
     mFfmpegInitMutex.unlock();
 }
@@ -320,14 +320,14 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
         {
             bool tDecode = (tCodec->decode != NULL);
             bool tEncode = false;
-            #ifndef FF_API_OLD_ENCODE_AUDIO
+            #if FF_API_OLD_ENCODE_AUDIO
                 tEncode = (tCodec->encode != NULL);
             #else
                 tEncode = (tCodec->encode2 != NULL);
             #endif
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-                #ifndef FF_API_OLD_ENCODE_AUDIO
+                #if FF_API_OLD_ENCODE_AUDIO
                     tEncode |= (tNextCodec->encode != NULL);
                 #else
                     tEncode |= (tNextCodec->encode2 != NULL);
@@ -3128,27 +3128,28 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec long name: %s", mCodecContext->codec->long_name);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec flags: 0x%x", mCodecContext->flags);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec time_base: %d/%d", mCodecContext->time_base.num, mCodecContext->time_base.den); // inverse
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec bit rate: %d bit/s", mCodecContext->bit_rate);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream ID: %d", mMediaStreamIndex);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start real-time: %"PRId64"", mFormatContext->start_time_realtime);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream start time: %"PRId64"", FilterNeg(mFormatContext->streams[mMediaStreamIndex]->start_time));
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream codec time_base: %d/%d", mCodecContext->time_base.num, mCodecContext->time_base.den); // inverse
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream codec caps: %d", mCodecContext->codec->capabilities);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream start real-time: %"PRId64"", mFormatContext->start_time_realtime);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream start time: %"PRId64"", FilterNeg(mFormatContext->streams[mMediaStreamIndex]->start_time));
 #if FF_API_R_FRAME_RATE
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
 #endif
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.num, mFormatContext->streams[mMediaStreamIndex]->time_base.den); // inverse
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num, mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den); // inverse
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream codec caps: %d", mFormatContext->streams[mMediaStreamIndex]->codec->codec->capabilities);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..bit rate: %d bit/s", mCodecContext->bit_rate);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.num, mFormatContext->streams[mMediaStreamIndex]->time_base.den);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream avg fps: %.2f", av_q2d(mFormatContext->streams[mMediaStreamIndex]->avg_frame_rate));
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmin: %d", mCodecContext->qmin);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..qmax: %d", mCodecContext->qmax);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding delay: %d", mCodecContext->delay);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding profile: %d", mCodecContext->profile);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..decoding level: %d", mCodecContext->level);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec caps: 0x%x", mCodecContext->codec->capabilities);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT count: %d", mCodecContext->thread_count);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..MT method: %d", mCodecContext->thread_type);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..frame size: %d", mCodecContext->frame_size);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec qmin: %d", mCodecContext->qmin);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec qmax: %d", mCodecContext->qmax);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec decoding delay: %d", mCodecContext->delay);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec decoding profile: %d", mCodecContext->profile);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec decoding level: %d", mCodecContext->level);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec codec caps: 0x%x", mCodecContext->codec->capabilities);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec MT count: %d", mCodecContext->thread_count);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec MT method: %d", mCodecContext->thread_type);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec frame size: %d", mCodecContext->frame_size);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..duration: %.2f frames", mNumberOfFrames);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..input start PTS: %"PRId64" frames", FilterNeg(mInputStartPts));
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..start CTX PTS: %"PRId64" frames", FilterNeg(mFormatContext->start_time));
@@ -3505,8 +3506,26 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to open %s decoder..", GetMediaTypeStr().c_str());
 
-    // Get a pointer to the codec context for the video stream
-    mCodecContext = mFormatContext->streams[mMediaStreamIndex]->codec;
+    //######################################################
+    //### create decoder context
+    //######################################################
+    mCodecContext = avcodec_alloc_context3(NULL);
+    if(mCodecContext == NULL)
+    {
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Could not allocate decoder context because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+
+        HM_avformat_close_input(mFormatContext);
+
+        return false;
+    }
+    if ((tRes = avcodec_copy_context(mCodecContext, mFormatContext->streams[mMediaStreamIndex]->codec)) < 0)
+    {
+        LOG_REMOTE(LOG_ERROR, pSource, pLine, "Could not create decoder context because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+
+        HM_avformat_close_input(mFormatContext);
+
+        return false;
+    }
 
     // check for VDPAU support
     if (mCodecContext->codec)
@@ -3533,52 +3552,6 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
         LOG_REMOTE(LOG_WARN, pSource, pLine, "Found invalid frame size %d, setting to %d", mCodecContext->frame_size, MEDIA_SOURCE_SAMPLES_PER_BUFFER);
         mCodecContext->frame_size = MEDIA_SOURCE_SAMPLES_PER_BUFFER;
     }
-
-    switch(mMediaType)
-    {
-        case MEDIA_VIDEO:
-            // set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
-            mSourceResX = mCodecContext->width;
-            mSourceResY = mCodecContext->height;
-
-            // fall back method for resolution detection
-            if ((mSourceResX == 0) && (mSourceResY == 0))
-            {
-                mSourceResX = mCodecContext->coded_width;
-                mSourceResY = mCodecContext->coded_height;
-            }
-
-            mOutputFrameRate = -1;
-#if FF_API_R_FRAME_RATE
-            mOutputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num / mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den;
-#endif
-            if(mOutputFrameRate <= 0)
-                mOutputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->codec->time_base.den / mFormatContext->streams[mMediaStreamIndex]->codec->time_base.num;
-
-            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d and frame rate: %.2f", mSourceResX, mSourceResY, mOutputFrameRate);
-            break;
-
-        case MEDIA_AUDIO:
-
-            // set sample rate and bit rate to the resulting ones delivered by opened audio codec
-            mInputAudioSampleRate = mCodecContext->sample_rate;
-            mInputAudioChannels = mCodecContext->channels;
-            mInputAudioFormat = mCodecContext->sample_fmt;
-            mOutputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
-
-            break;
-
-        default:
-            LOG(LOG_WARN, "Undefined media type");
-            break;
-    }
-
-    mInputBitRate = mFormatContext->streams[mMediaStreamIndex]->codec->bit_rate;
-
-    // derive the FPS from the timebase of the selected input stream
-    mInputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
-
-    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", GetInputFrameRate());
 
     if ((mMediaType == MEDIA_VIDEO) && ((mSourceResX == 0) || (mSourceResY == 0)))
     {
@@ -3680,6 +3653,56 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     //HINT: we allow the input bit stream to be truncated at packet boundaries instead of frame boundaries,
     //        otherwise an UDP/TCP based transmission will fail because the decoder expects only complete packets as input
     mCodecContext->flags2 |= CODEC_FLAG2_CHUNKS | CODEC_FLAG2_SHOW_ALL;
+
+    switch(mMediaType)
+    {
+        case MEDIA_VIDEO:
+            // set grabbing resolution and frame-rate to the resulting ones delivered by opened video codec
+            mSourceResX = mCodecContext->width;
+            mSourceResY = mCodecContext->height;
+
+            // fall back method for resolution detection
+            if ((mSourceResX == 0) && (mSourceResY == 0))
+            {
+                mSourceResX = mCodecContext->coded_width;
+                mSourceResY = mCodecContext->coded_height;
+            }
+
+            mOutputFrameRate = -1;
+#if FF_API_R_FRAME_RATE
+            if(mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den > 0)
+            {
+                mOutputFrameRate = av_q2d(mFormatContext->streams[mMediaStreamIndex]->r_frame_rate);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Using r_fps: %.2f", mOutputFrameRate);
+            }
+#endif
+            if (mOutputFrameRate <= 0)
+                mOutputFrameRate = av_q2d(mFormatContext->streams[mMediaStreamIndex]->avg_frame_rate);
+
+            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d and frame rate: %.2f", mSourceResX, mSourceResY, mOutputFrameRate);
+            break;
+
+        case MEDIA_AUDIO:
+
+            // set sample rate and bit rate to the resulting ones delivered by opened audio codec
+            mInputAudioSampleRate = mCodecContext->sample_rate;
+            mInputAudioChannels = mCodecContext->channels;
+            mInputAudioFormat = mCodecContext->sample_fmt;
+            mOutputFrameRate = (float)mOutputAudioSampleRate /* 44100 samples per second */ / MEDIA_SOURCE_SAMPLES_PER_BUFFER /* 1024 samples per frame */;
+
+            break;
+
+        default:
+            LOG(LOG_WARN, "Undefined media type");
+            break;
+    }
+
+    mInputBitRate = mCodecContext->bit_rate;
+
+    // derive the FPS from the timebase of the selected input stream
+    mInputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
+
+    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", GetInputFrameRate());
 
     //set duration
     if (mFormatContext->duration > 0)
