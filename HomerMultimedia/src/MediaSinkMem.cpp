@@ -137,7 +137,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         // do we have monotonously increasing PTS values
         if (mIncomingAVStreamLastPts > pPacketTimestamp)
         {
-            LOG(LOG_WARN, "Incoming AV stream PTS values are not monotonous, resetting the streamer now..");
+            LOG(LOG_WARN, "Incoming AV stream PTS values are not monotonously growing (%"PRId64" > %"PRId64"), resetting the streamer now..", mIncomingAVStreamLastPts, pPacketTimestamp);
             tResetNeeded = true;
         }
         mIncomingAVStreamLastPts = pPacketTimestamp;

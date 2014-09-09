@@ -51,7 +51,7 @@ MediaFifo::MediaFifo(std::string pName)
 
 MediaFifo::MediaFifo(int pFifoSize, int pFifoEntrySize, string pName)
 {
-    LOG(LOG_VERBOSE, "Creating FIFO for %s with %d entries of %d bytes", pName.c_str(), mFifoSize, mFifoEntrySize);
+    LOG(LOG_VERBOSE, "Creating FIFO for %s with %d entries of %d bytes", pName.c_str(), pFifoSize, pFifoEntrySize);
 
     mName = pName;
     mFifoSize = pFifoSize;
