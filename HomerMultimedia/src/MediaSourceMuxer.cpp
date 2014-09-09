@@ -2651,6 +2651,31 @@ bool MediaSourceMuxer::UnregisterMediaSource(MediaSource* pMediaSource, bool pAu
     return tFound;
 }
 
+void MediaSourceMuxer::DeleteAllRegisteredMediaFileSources()
+{
+    MediaSources::iterator tIt;
+
+    // lock
+    mMediaSourcesMutex.lock();
+
+    if (mMediaSources.size() > 0)
+    {
+        for (tIt = mMediaSources.begin(); tIt != mMediaSources.end(); tIt++)
+        {
+            if ((*tIt != mMediaSource) && ((*tIt)->GetSourceType() == SOURCE_FILE))
+            {
+                mMediaSourcesMutex.unlock();
+                UnregisterMediaSource(*tIt, true);
+                mMediaSourcesMutex.lock();
+                tIt = mMediaSources.begin();
+            }
+        }
+    }
+
+    // unlock
+    mMediaSourcesMutex.unlock();
+}
+
 float MediaSourceMuxer::GetInputFrameRate()
 {
     float tResult = -1;
@@ -2770,31 +2795,6 @@ void MediaSourceMuxer::FreeChunkBuffer(void *pChunk)
     }
     // unlock grabbing
     mGrabMutex.unlock();
-}
-
-void MediaSourceMuxer::FreeUnusedRegisteredFileSources()
-{
-    MediaSources::iterator tIt;
-
-    // lock
-    mMediaSourcesMutex.lock();
-
-    if (mMediaSources.size() > 0)
-    {
-        for (tIt = mMediaSources.begin(); tIt != mMediaSources.end(); tIt++)
-        {
-            if ((*tIt != mMediaSource) && ((*tIt)->GetSourceType() == SOURCE_FILE))
-            {
-                mMediaSourcesMutex.unlock();
-                UnregisterMediaSource(*tIt, true);
-                mMediaSourcesMutex.lock();
-                tIt = mMediaSources.begin();
-            }
-        }
-    }
-
-    // unlock
-    mMediaSourcesMutex.unlock();
 }
 
 bool MediaSourceMuxer::SupportsSeeking()

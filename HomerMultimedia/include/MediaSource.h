@@ -387,7 +387,7 @@ public:
     /* default memory management based on ffmpeg */
     virtual void* AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType = MEDIA_UNKNOWN); // allocates a fitting buffer with correct size
     virtual void FreeChunkBuffer(void *pChunk);
-    virtual void FreeUnusedRegisteredFileSources();
+    virtual void DeleteAllRegisteredMediaFileSources();
 
 private:
     /* lock manager for ffmpeg internal mutex usage */

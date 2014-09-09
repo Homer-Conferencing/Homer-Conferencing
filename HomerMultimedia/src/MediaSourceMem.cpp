@@ -2312,6 +2312,10 @@ void* MediaSourceMem::Run(void* pArgs)
     LOG(LOG_VERBOSE, "..releasing chunk buffer");
     av_free(tChunkBuffer);
 
+    LOG(LOG_VERBOSE, "..releasing FIFO buffer");
+    delete mDecoderFifo;
+    mDecoderFifo = NULL;
+
     LOG(LOG_WARN, "%s decoder main loop finished for %s media source <<<<<<<<<<<<<<<<", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
 
     return NULL;
@@ -2379,6 +2383,12 @@ void MediaSourceMem::WriteOutputChunk(char* pChunkBuffer, int pChunkBufferSize, 
     if(!mMediaSourceOpened)
     {
         LOG(LOG_WARN, "%s %s decoder was already closed", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
+        return;
+    }
+
+    if(!mDecoderThreadNeeded)
+    {
+        LOG(LOG_WARN, "%s %s decoder thread was already stopped", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
         return;
     }
 

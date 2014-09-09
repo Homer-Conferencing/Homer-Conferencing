@@ -104,6 +104,10 @@ MediaSourceGrabberThread::MediaSourceGrabberThread(QString pName, MediaSource *p
 
 MediaSourceGrabberThread::~MediaSourceGrabberThread()
 {
+    if(mMediaSource != NULL)
+    {
+        mMediaSource->DeleteAllRegisteredMediaFileSources();
+    }
 }
 
 void MediaSourceGrabberThread::ResetSource()

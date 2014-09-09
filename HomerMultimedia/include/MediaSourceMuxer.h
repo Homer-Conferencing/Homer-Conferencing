@@ -173,6 +173,7 @@ public:
     virtual bool UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete = true);
     virtual bool RegisterMediaSource(MediaSource *pMediaSource);
     virtual bool UnregisterMediaSource(MediaSource *pMediaSource, bool pAutoDelete = true);
+    virtual void DeleteAllRegisteredMediaFileSources();
 
     /* seek interface */
     virtual bool SupportsSeeking();
@@ -200,7 +201,6 @@ public:
     virtual int GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChunk = false);
     virtual void* AllocChunkBuffer(int& pChunkBufferSize, enum MediaType pMediaType = MEDIA_UNKNOWN);
     virtual void FreeChunkBuffer(void *pChunk);
-    virtual void FreeUnusedRegisteredFileSources();
 
 private:
     /* video resolution limitation depending on video codec capabilities */

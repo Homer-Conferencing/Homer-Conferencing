@@ -1134,6 +1134,9 @@ void AudioWorkerThread::DoPlayNewFile()
     // found something?
     if (!tFound)
     {
+        LOG(LOG_VERBOSE, "Unregistering old file sources..");
+        mMediaSource->DeleteAllRegisteredMediaFileSources();
+
         LOG(LOG_VERBOSE, "File is new, going to add..");
     	MediaSourceFile *tASource = new MediaSourceFile(mDesiredFile.toStdString());
         if (tASource != NULL)
@@ -1261,7 +1264,8 @@ void AudioWorkerThread::DoSetCurrentDevice()
         mResetMediaSourceAsap = false;
         mPaused = false;
         mAudioWidget->InformAboutNewSource();
-        mMediaSource->FreeUnusedRegisteredFileSources();
+        LOG(LOG_VERBOSE, "Unregistering old file sources..");
+        mMediaSource->DeleteAllRegisteredMediaFileSources();
     }else
     {
         if (!mSourceAvailable)

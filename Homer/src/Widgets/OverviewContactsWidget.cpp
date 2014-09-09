@@ -56,6 +56,7 @@ OverviewContactsWidget::OverviewContactsWidget(QAction *pAssignedAction, MainWin
 	sOverviewContactsWidget = this;
     mAssignedAction = pAssignedAction;
     mMainWindow = pMainWindow;
+    mTimerId = -1;
 
     mContactListModel = new ContactListModel(this);
 

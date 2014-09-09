@@ -179,6 +179,11 @@ MainWindow::~MainWindow()
 {
     LOG(LOG_VERBOSE, "Destroyed");
 
+    if(mMediaSourceDesktop != NULL)
+        delete mMediaSourceDesktop;
+    if(mMediaSourceLogo != NULL)
+        delete mMediaSourceLogo;
+
     // sometimes the Qt event loops blocks, we force an exit here
     exit(0);
 }

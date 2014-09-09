@@ -2194,6 +2194,8 @@ VideoWorkerThread::VideoWorkerThread(QString pName, MediaSource *pVideoSource, V
     mMissingFrames = 0;
     mResX = 352;
     mResY = 288;
+    mFrameWidthLastGrabbedFrame = -1;
+    mFrameHeightLastGrabbedFrame = -1;
     if (pVideoSource == NULL)
         LOG(LOG_ERROR, "Video source is NULL");
     mVideoWidget = pVideoWidget;
@@ -2306,6 +2308,9 @@ void VideoWorkerThread::DoPlayNewFile()
     // found something?
     if (!tFound)
     {
+        LOG(LOG_VERBOSE, "Unregistering old file sources..");
+        mMediaSource->DeleteAllRegisteredMediaFileSources();
+
         LOG(LOG_VERBOSE, "File is new, going to add..");
     	MediaSourceFile *tVSource = new MediaSourceFile(mDesiredFile.toStdString());
         if (tVSource != NULL)
@@ -2464,7 +2469,8 @@ void VideoWorkerThread::DoSetCurrentDevice()
         mResetMediaSourceAsap = false;
         mPaused = false;
         mVideoWidget->InformAboutNewSource();
-        mMediaSource->FreeUnusedRegisteredFileSources();
+        LOG(LOG_VERBOSE, "Unregistering old file sources..");
+        mMediaSource->DeleteAllRegisteredMediaFileSources();
     }else
     {
         if (!mSourceAvailable)
