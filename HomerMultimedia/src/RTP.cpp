@@ -655,6 +655,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     // set correct output format
     mRtpFormatContext->oformat = tFormat;
+    mRtpFormatContext->flags |= AVFMT_TS_NONSTRICT;
 
     // verbose timestamp debugging
     if (LOGGER.GetLogLevel() == LOG_WORLD)
@@ -673,12 +674,29 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     // copy stream description from original stream description
     memcpy(mRtpEncoderStream, pInnerStream, sizeof(AVStream));
+    mRtpEncoderStream->index = 0;
+    mRtpEncoderStream->id = 0;
     mRtpEncoderStream->priv_data = NULL;
-    // create monotone timestamps
-    mRtpEncoderStream->cur_dts = 0;
+    // create monotonous timestamps
+    mRtpEncoderStream->cur_dts = AV_NOPTS_VALUE;
     #ifndef FF_API_REFERENCE_DTS
         mRtpEncoderStream->reference_dts = 0;
     #endif
+
+    //######################################################
+    //### create decoder context
+    //######################################################
+    mRtpEncoderStream->codec = avcodec_alloc_context3(NULL);
+    if(mRtpEncoderStream->codec == NULL)
+    {
+        LOG(LOG_ERROR, "Could not allocate RTP codec context because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+        return false;
+    }
+    if ((tRes = avcodec_copy_context(mRtpEncoderStream->codec, pInnerStream->codec)) < 0)
+    {
+        LOG(LOG_ERROR, "Could not create RTP codec context because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
+        return false;
+    }
 
     // set target coordinates for rtp stream
     snprintf(mRtpFormatContext->filename, sizeof(mRtpFormatContext->filename), "rtp://%s:%u", pTargetHost.c_str(), pTargetPort);
@@ -745,22 +763,27 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     //    if ((tRes = av_dict_set(&tOptions, "ssrc", toString(mLocalSourceIdentifier).c_str(), 0)) < 0)
     //        LOG(LOG_ERROR, "Failed to set A/V option \"ssrc\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
 
+    string tRtpFlags = "";
     switch(mStreamCodecID)
     {
         case AV_CODEC_ID_H263:
                 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(54, 6, 100)
-                    // use older rfc2190 for RTP packetizing
-                    if(mRtpFormatContext->priv_data)
-                    {
-                        if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "rtpflags", "rfc2190", 0)) < 0)
-                            LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
-                    }else{
-                        LOG(LOG_WARN, "Private RTP context for ffmpeg packetizer is undefined");
-                    }
+                    tRtpFlags = "rfc2190";
                 #endif
                 break;
         default:
                 break;
+    }
+    if(tRtpFlags != "")
+    {
+        // use older rfc2190 for RTP packetizing
+        if(mRtpFormatContext->priv_data)
+        {
+            if ((tRes = av_opt_set(mRtpFormatContext->priv_data, "rtpflags", tRtpFlags.c_str(), 0)) < 0)
+                LOG(LOG_ERROR, "Failed to set A/V option \"rtpflags\" because %s(0x%x)", strerror(AVUNERROR(tRes)), tRes);
+        }else{
+            LOG(LOG_WARN, "Private RTP context for ffmpeg packetizer is undefined");
+        }
     }
 
     int64_t tAVPacketPts = (mRtpEncoderStream->pts.den != 0 ? ((float)mRtpEncoderStream->pts.val + mRtpEncoderStream->pts.num / mRtpEncoderStream->pts.den) : 0);
@@ -769,14 +792,15 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     LOG(LOG_INFO, "    ..rtp target: %s:%u", pTargetHost.c_str(), pTargetPort);
     LOG(LOG_INFO, "    ..rtp header size: %d", RTP_HEADER_SIZE);
     LOG(LOG_INFO, "  Wrapping following codec...");
-    LOG(LOG_INFO, "    ..codec name: %s", mRtpEncoderStream->codec->codec->name);
-    LOG(LOG_INFO, "    ..codec long name: %s", mRtpEncoderStream->codec->codec->long_name);
+    LOG(LOG_INFO, "    ..codec name: %s", pInnerStream->codec->codec->name);
+    LOG(LOG_INFO, "    ..codec long name: %s", pInnerStream->codec->codec->long_name);
+    LOG(LOG_INFO, "    ..stream cur DTS: %"PRId64, pInnerStream->cur_dts);
     LOG(LOG_INFO, "    ..resolution: %d * %d pixels", mRtpEncoderStream->codec->width, mRtpEncoderStream->codec->height);
 //    LOG(LOG_INFO, "    ..codec time_base: %d/%d", mCodecContext->time_base.den, mCodecContext->time_base.num); // inverse
-    LOG(LOG_INFO, "    ..stream start real-time: %"PRId64"", mRtpFormatContext->start_time_realtime);
-    LOG(LOG_INFO, "    ..stream start time: %"PRId64"", mRtpEncoderStream->start_time);
+    LOG(LOG_INFO, "    ..stream start real-time: %"PRId64, mRtpFormatContext->start_time_realtime);
+    LOG(LOG_INFO, "    ..stream start time: %"PRId64, mRtpEncoderStream->start_time);
     LOG(LOG_INFO, "    ..max. delay: %d", mRtpFormatContext->max_delay);
-    LOG(LOG_INFO, "    ..start A/V PTS: %"PRId64"", tAVPacketPts);
+    LOG(LOG_INFO, "    ..start A/V PTS: %"PRId64, tAVPacketPts);
 #if FF_API_R_FRAME_RATE
     LOG(LOG_INFO, "    ..stream rfps: %d/%d", mRtpEncoderStream->r_frame_rate.num, mRtpEncoderStream->r_frame_rate.den);
 #endif
@@ -1120,11 +1144,20 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     OpenRtpPacketStream();
 
     //####################################################################
+    // provide monotonously growing DTS values -> reset the cur_dts field if the value is invalid
+    //####################################################################
+    if(mRtpEncoderStream->cur_dts > tPacket.dts)
+    {
+        LOG(LOG_WARN, "Detected non-monotonously growing DTS values (%d > %d), fixing this", mRtpEncoderStream->cur_dts, tPacket.dts);
+        mRtpEncoderStream->cur_dts = AV_NOPTS_VALUE;
+    }
+
+    //####################################################################
     // send encoded frame to the RTP muxer
     //####################################################################
     if ((tResult = av_write_frame(mRtpFormatContext, &tPacket)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't write encoded %s(%d) frame of %u bytes at %p with PTS %"PRId64" into RTP buffer because \"%s\".", mRtpEncoderStream->codec->codec_name, mStreamCodecID, pDataSize, pData, pPacketPts, strerror(AVUNERROR(tResult)));
+        LOG(LOG_ERROR, "Couldn't write encoded \"%s\" (id: %d/%d) frame of %u bytes at %p with PTS %"PRId64" into RTP buffer because \"%s\" (%d).", mRtpEncoderStream->codec->codec_name, mRtpEncoderStream->codec->codec_id, mStreamCodecID, pDataSize, pData, pPacketPts, strerror(AVUNERROR(tResult)), tResult);
 
         return false;
     }
@@ -2532,7 +2565,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                                     break;
                                             // 0, 30, 31
                                             default:
-                                                    LOG(LOG_ERROR, "Undefined NAL type");
+                                                    LOG(LOG_ERROR, "Unsupported NAL type %d", tH264HeaderType);
                                                     break;
                                 }
 
