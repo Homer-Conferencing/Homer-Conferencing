@@ -457,10 +457,10 @@ bool ContactsManager::FavorizedContact(QString pUser, QString pHost, QString pPo
 
 void ContactsManager::ProbeAvailabilityForAll()
 {
-    LOG(LOG_WARN, "######## PROBING CONTACTS - START ########");
-
     if (!CONF.GetSipContactsProbing())
         return;
+
+    LOG(LOG_WARN, "######## PROBING CONTACTS - START ########");
 
     mContactsMutex.lock();
 
