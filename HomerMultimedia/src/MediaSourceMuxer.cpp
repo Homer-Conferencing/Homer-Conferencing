@@ -554,10 +554,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // activate ffmpeg internal fps emulation
     //mCodecContext->rate_emu = 1;
 
-    // trigger ffmpeg to merge its pkt->side_data before it passes the packets to our lib -> allows the RTP (rfc2190) packetizer to split the side-data again
-    if(tFormat->video_codec == AV_CODEC_ID_H263)
-        mFormatContext->flags |= AVFMT_FLAG_MERGE_SIDE_DATA;
-
     // some formats want stream headers to be separate, but this produces some very small packets!
     if(mFormatContext->oformat->flags & AVFMT_GLOBALHEADER)
         mCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
