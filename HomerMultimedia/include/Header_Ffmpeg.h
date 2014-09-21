@@ -45,6 +45,8 @@ using namespace Homer::Base;
 
 extern "C" {
 #include <libavcodec/avcodec.h>
+#include <libavcodec/version.h>
+#include <libavdevice/avdevice.h>
 #include <libavfilter/avfilter.h>
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
@@ -59,7 +61,6 @@ extern "C" {
 #include <libavutil/random_seed.h>
 #include <libavutil/samplefmt.h>
 #include <libswscale/swscale.h>
-#include <libavdevice/avdevice.h>
 
 #ifdef HAVE_SWRESAMPLE_H
 #include <libswresample/swresample.h>
@@ -91,6 +92,10 @@ extern "C" {
 
 #ifndef FF_API_REFERENCE_DTS
 #define FF_API_REFERENCE_DTS            0
+#endif
+
+#ifndef AVFMT_FLAG_MERGE_SIDE_DATA
+#define AVFMT_FLAG_MERGE_SIDE_DATA 0x80000 ///< Merge side data in packets before passing them to the muxer
 #endif
 
 #ifdef HAVE_SWRESAMPLE_H
