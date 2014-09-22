@@ -221,9 +221,11 @@ private:
 
     void ResetEncoderBuffers();
 
-    static int DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
+    static int FfmpegWriteOneOutputPacket(AVFormatContext *pFormatContext, AVPacket *pAVPacket);
+    static int FfmpegForceOneOutputStream(AVFormatContext *pFormatContext);
 
     MediaSource         *mMediaSource;
+    AVOutputFormat      mMuxerOutFormat;
     enum AVCodecID      mStreamCodecId;
     int                 mStreamMaxPacketSize;
     int                 mStreamQuality;
@@ -241,8 +243,6 @@ private:
     bool                mEncoderThreadNeeded;
     MediaFifo           *mEncoderFifo;
     Mutex				mEncoderFifoState;
-    bool				mEncoderHasKeyFrame;
-    int64_t             mEncoderPacketTimestamp; // timestamp of the currently processed packet
     Mutex               mEncoderFifoAvailableMutex;
     AVStream            *mEncoderStream;
     int					mEncoderBufferedFrames; // in frames

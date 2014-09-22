@@ -1847,7 +1847,7 @@ void MediaSource::RelayChunkToMediaFilters(char* pPacketData, unsigned int pPack
     mMediaFiltersMutex.unlock();
 }
 
-void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame)
+void MediaSource::RelayAVPacketToMediaSinks(AVPacket *pAVPacket)
 {
     MediaSinks::iterator tIt;
 
@@ -1862,7 +1862,7 @@ void MediaSource::RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacke
     {
         for (tIt = mMediaSinks.begin(); tIt != mMediaSinks.end(); tIt++)
         {
-            (*tIt)->ProcessPacket(pPacketData, pPacketSize, pPacketTimestamp, (mFormatContext != NULL ? mFormatContext->streams[0] : NULL), GetCurrentDeviceName(), pIsKeyFrame);
+            (*tIt)->ProcessPacket(pAVPacket, (mFormatContext != NULL ? mFormatContext->streams[0] : NULL), GetCurrentDeviceName());
         }
     }
 
@@ -2390,9 +2390,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
     int                 tEncoderResult = 0;
     int64_t             tCurrentPts = 1;
     int                 tFrameFinished = 0;
-    bool                tKeyFrame;
     int                 tBufferedFrames;
-    int64_t             tCurPacketTimestamp;
 
     if (!mRecording)
     {
@@ -2453,7 +2451,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                     LOG(LOG_VERBOSE, "      ..display pic number: %d", mRecorderFinalFrame->display_picture_number);
                 #endif
 
-                if (EncodeAndWritePacket(mRecorderFormatContext, mRecorderCodecContext, mRecorderFinalFrame, tKeyFrame, tBufferedFrames, tCurPacketTimestamp))
+                if (EncodeAndWritePacket(mRecorderFormatContext, mRecorderCodecContext, mRecorderFinalFrame, tBufferedFrames))
                 {
                     // increase the frame counter (used for PTS generation)
                     mRecorderFrameNumber++;
@@ -2590,7 +2588,7 @@ void MediaSource::RecordFrame(AVFrame *pSourceFrame)
                             LOG(LOG_VERBOSE, "Filling audio frame with buffer size: %d", tReadFifoSize);
                         #endif
 
-                        if (EncodeAndWritePacket(mRecorderFormatContext, mRecorderCodecContext, mRecorderFinalFrame, tKeyFrame, tBufferedFrames, tCurPacketTimestamp))
+                        if (EncodeAndWritePacket(mRecorderFormatContext, mRecorderCodecContext, mRecorderFinalFrame, tBufferedFrames))
                         {
                             // increase the frame counter (used for PTS generation)
                             mRecorderFrameNumber++;
@@ -3922,7 +3920,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
     return true;
 }
 
-bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int &pBufferedFrames, int64_t &pPacketTimestamp)
+bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, int &pBufferedFrames)
 {
     AVPacket            tPacketStruc, *tPacket = &tPacketStruc;
     int                 tEncoderResult;
@@ -3951,9 +3949,6 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
                 break;
     }
 
-    // save timestamp of the current packet and return it to the caller
-    pPacketTimestamp = tPacket->pts;
-
     // #########################################
     // write encoded frame
     // #########################################
@@ -3961,11 +3956,6 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
     {
         if (tFrameFinished == 1)
         {
-            if (tPacket->flags & AV_PKT_FLAG_KEY)
-                pIsKeyFrame = true;
-            else
-                pIsKeyFrame = false;
-
             #ifdef MS_DEBUG_ENCODER_PACKETS
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Writing %s packet..", GetMediaTypeStr().c_str());
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..duration: %d", tPacket->duration);
@@ -3974,7 +3964,7 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..dts: %"PRId64"", tPacket->dts);
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..size: %d", tPacket->size);
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..pos: %"PRId64"", tPacket->pos);
-                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..key frame: %d", pIsKeyFrame);
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..key frame: %d", (tPacket->flags & AV_PKT_FLAG_KEY));
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..codec delay: %d", pCodecContext->delay);
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "      ..codec max. b frames: %d", pCodecContext->max_b_frames);
             #endif

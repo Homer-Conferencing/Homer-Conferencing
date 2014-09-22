@@ -186,7 +186,7 @@ typedef std::vector<MetaDataEntry> MetaData;
 #define OpenFormatConverter()                               FfmpegOpenFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
 #define CloseFormatConverter()                              FfmpegCloseFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
 #define CloseAll()                                          FfmpegCloseAll(GetObjectNameStr(this).c_str(), __LINE__)
-#define EncodeAndWritePacket(FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames, Timestamp) FfmpegEncodeAndWritePacket(GetObjectNameStr(this).c_str(), __LINE__, FormatContext, CodecContext, InputFrame, IsKeyFrame, BufferedFrames, Timestamp)
+#define EncodeAndWritePacket(FormatContext, CodecContext, InputFrame, BufferedFrames) FfmpegEncodeAndWritePacket(GetObjectNameStr(this).c_str(), __LINE__, FormatContext, CodecContext, InputFrame, BufferedFrames)
 #define DetermineMetaData(MetaDataStorage)                  FfmpegDetermineMetaData(GetObjectNameStr(this).c_str(), __LINE__, MetaDataStorage)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -409,7 +409,7 @@ protected:
     friend class VideoScaler; // for access to "RelayChunkToMediaFilters()"
 
     /* internal interface for packet relaying */
-    virtual void RelayPacketToMediaSinks(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, bool pIsKeyFrame = false);
+    virtual void RelayAVPacketToMediaSinks(AVPacket *pAVPacket);
     virtual void RelaySyncTimestampToMediaSinks(int64_t pReferenceNtpTimestamp, int64_t pReferenceFrameTimestamp);
 
     /* internal interface for stream recordring */
@@ -450,7 +450,7 @@ protected:
     bool FfmpegCloseAll(string pSource /* caller source */, int pLine /* caller line */);
 
     /* encoder helpers */
-    bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, bool &pIsKeyFrame, int &pBufferedFrames, int64_t &pPacketTimestamp);
+    bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, int &pBufferedFrames);
 
     void FfmpegDetermineMetaData(string pSource /* caller source */, int pLine /* caller line */, AVDictionary *pMetaData);
 

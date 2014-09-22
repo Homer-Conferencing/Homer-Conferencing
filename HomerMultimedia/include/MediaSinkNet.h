@@ -60,7 +60,7 @@ public:
 
     virtual ~MediaSinkNet();
 
-    virtual void ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream = NULL, std::string pStreamName = "", bool pIsKeyFrame = false);
+    virtual void ProcessPacket(AVPacket *pAVPacket, AVStream *pStream = NULL, std::string pStreamName = "");
 
     /* network oriented ID */
     static std::string CreateId(std::string pHost, std::string pPort, enum TransportType pSocketTransportType = SOCKET_TRANSPORT_TYPE_INVALID, bool pRtpActivated = true);

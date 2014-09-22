@@ -85,7 +85,6 @@ MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     mRelayingSkipAudioSilence = false;
     mRelayingSkipAudioSilenceSkippedChunks = 0;
     mEncoderThreadNeeded = true;
-    mEncoderHasKeyFrame = false;
     mEncoderFifo = NULL;
 }
 
@@ -106,36 +105,46 @@ MediaSourceMuxer::~MediaSourceMuxer()
 
 ///////////////////////////////////////////////////////////////////////////////
 // static call back function for ffmpeg encoder
-int MediaSourceMuxer::DistributePacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
+int MediaSourceMuxer::FfmpegWriteOneOutputPacket(AVFormatContext *pFormatContext, AVPacket *pAVPacket)
 {
-    MediaSourceMuxer *tMuxer = (MediaSourceMuxer*)pOpaque;
-    char *tBuffer = (char*)pBuffer;
+    MediaSourceMuxer *tMuxer = (MediaSourceMuxer*)(*(void**)pFormatContext->priv_data);
 
     // drop write_header packets here
     if (!tMuxer->mEncoderThreadNeeded)
-        return pBufferSize;
+        return 0;
 
     // log statistics
-    tMuxer->AnnouncePacket(pBufferSize);
+    tMuxer->AnnouncePacket(pAVPacket->size);
 
     //####################################################################
     // distribute frame among the registered media sinks
     // ###################################################################
     #ifdef MSM_DEBUG_PACKETS
-        LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute %s packet of size: %d, chunk number: %d", tMuxer->GetMediaTypeStr().c_str(), pBufferSize, tMuxer->mFrameNumber);
-        if (pBufferSize > MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE)
+        LOGEX(MediaSourceMuxer, LOG_VERBOSE, "Distribute %s packet of size: %d, chunk number: %d", tMuxer->GetMediaTypeStr().c_str(), pAVPacket->size, tMuxer->mFrameNumber);
+        if (pAVPacket->size > MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE)
         {
-            LOGEX(MediaSourceMuxer, LOG_WARN, "Encoded %s data of %d bytes is too big for network streaming", tMuxer->GetMediaTypeStr().c_str(), pBufferSize);
+            LOGEX(MediaSourceMuxer, LOG_WARN, "Encoded %s data of %d bytes is too big for network streaming", tMuxer->GetMediaTypeStr().c_str(), pAVPacket->size);
         }
-        if (pBufferSize > tMuxer->mStreamMaxPacketSize)
+        if (pAVPacket->size > tMuxer->mStreamMaxPacketSize)
         {
-            LOGEX(MediaSourceMuxer, LOG_WARN, "Ffmpeg %s packet of %d bytes is bigger than maximum payload size of %d bytes, RTP packetizer will fragment to solve this", tMuxer->GetMediaTypeStr().c_str(), pBufferSize, tMuxer->mStreamMaxPacketSize);
+            LOGEX(MediaSourceMuxer, LOG_WARN, "Ffmpeg %s packet of %d bytes is bigger than maximum payload size of %d bytes, RTP packetizer will fragment to solve this", tMuxer->GetMediaTypeStr().c_str(), pAVPacket->size, tMuxer->mStreamMaxPacketSize);
         }
     #endif
 
-    tMuxer->RelayPacketToMediaSinks(tBuffer, (unsigned int)pBufferSize, tMuxer->mEncoderPacketTimestamp, tMuxer->mEncoderHasKeyFrame);
+    tMuxer->RelayAVPacketToMediaSinks(pAVPacket);
 
-    return pBufferSize;
+    return 0;
+}
+
+int MediaSourceMuxer::FfmpegForceOneOutputStream(AVFormatContext *pFormatContext)
+{
+    if (pFormatContext->nb_streams != 1)
+    {
+        LOGEX(MediaSourceMuxer, LOG_ERROR, "Expected one single stream, got %d stream(s)", pFormatContext->nb_streams);
+        return AVERROR(EINVAL);
+    }
+
+    return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -386,8 +395,6 @@ void MediaSourceMuxer::ValidateVideoResolutionForEncoderCodec(int &pResX, int &p
 bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
 {
     int                 tResult;
-    AVIOContext         *tIoContext;
-    AVOutputFormat      *tFormat;
     AVCodec             *tCodec;
     AVDictionary        *tOptions = NULL;
 
@@ -433,44 +440,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_VIDEO, SOCKET_RAW);
 
-    // build correct IO-context
-    if (!CreateIOContext(mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE, NULL, DistributePacket, this, &tIoContext))
-    {
-        LOG(LOG_ERROR, "Error during I/O context creation");
-        return false;
-    }
-
-    // limit packet size
-    tIoContext->max_packet_size = mStreamMaxPacketSize;
-
     mSourceResX = pResX;
     mSourceResY = pResY;
     mInputFrameRate = pFps;
     mOutputFrameRate = pFps;
-
-    // allocate new format context
-    mFormatContext = AV_NEW_FORMAT_CONTEXT();
-
-    // find format
-    LOG(LOG_VERBOSE, "Guessing VIDEO format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
-    tFormat = AV_GUESS_FORMAT(GetFormatName(mStreamCodecId).c_str(), NULL, NULL);
-    if (tFormat == NULL)
-    {
-        LOG(LOG_ERROR, "Invalid suggested video format");
-
-        // Close the format context
-        av_free(mFormatContext);
-
-        return false;
-    }
-
-    LOG(LOG_VERBOSE, "Using format \"%s\" for VIDEO codec %d", tFormat->name, mStreamCodecId);
-
-    // explicit codec selection for H263, otherwise ffmpeg would use the last H263-selection
-    if (mStreamCodecId == AV_CODEC_ID_H263P)
-        tFormat->video_codec = AV_CODEC_ID_H263P;
-    if (mStreamCodecId == AV_CODEC_ID_H263)
-        tFormat->video_codec = AV_CODEC_ID_H263;
 
     #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(54, 6, 100)
         if(mStreamCodecId == AV_CODEC_ID_H263)
@@ -479,10 +452,11 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         }
     #endif
 
-    // set correct output format
-    mFormatContext->oformat = tFormat;
-    // set correct IO-context
-    mFormatContext->pb = tIoContext;
+    // #########################################
+    // create new format context
+    // #########################################
+    LOG(LOG_VERBOSE, "..creating new format context");
+    mFormatContext = AV_NEW_FORMAT_CONTEXT();
     // verbose timestamp debugging
     if (LOGGER.GetLogLevel() == LOG_WORLD)
     {
@@ -490,18 +464,38 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         mFormatContext->debug = FF_FDEBUG_TS;
     }
 
-    // allocate new stream structure
-    LOG(LOG_VERBOSE, "..allocating new stream");
+    // #########################################
+    // create output format
+    // #########################################
+    LOG(LOG_VERBOSE, "..creating new output format");
+    memset((void*)&mMuxerOutFormat, 0, sizeof(AVOutputFormat));
+    mMuxerOutFormat.name = "MediaSourceMuxer";
+    mMuxerOutFormat.long_name = "raw MediaSourceMuxer";
+    mMuxerOutFormat.mime_type = "";
+    mMuxerOutFormat.extensions = "";
+    mMuxerOutFormat.audio_codec = AV_CODEC_ID_NONE;
+    mMuxerOutFormat.video_codec = mStreamCodecId;
+    mMuxerOutFormat.priv_data_size = sizeof(void*);
+    mMuxerOutFormat.write_header = FfmpegForceOneOutputStream;
+    mMuxerOutFormat.write_packet = FfmpegWriteOneOutputPacket;
+    mMuxerOutFormat.flags = AVFMT_NOTIMESTAMPS;
+    mFormatContext->oformat = &mMuxerOutFormat;
+
+    // #########################################
+    // create new output stream
+    // #########################################
+    LOG(LOG_VERBOSE, "..creating new output stream");
     mMediaStreamIndex = 0;
     mEncoderStream = HM_avformat_new_stream(mFormatContext, 0);
+
+    // #########################################
+    // create new output codec context
+    // #########################################
+    LOG(LOG_VERBOSE, "..creating new output codec context");
     mCodecContext = mEncoderStream->codec;
-    mCodecContext->codec_id = tFormat->video_codec;
+    mCodecContext->codec_id = mStreamCodecId;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
-
-    // put sample parameters
     mCodecContext->bit_rate = mStreamBitRate;
-
-    // resolution
     if (((mRequestedStreamingResX == -1) || (mRequestedStreamingResY == -1)) && (mMediaSource != NULL))
     {
         mMediaSource->GetVideoSourceResolution(mCurrentStreamingResX, mCurrentStreamingResY);
@@ -510,20 +504,12 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         mCurrentStreamingResY = mRequestedStreamingResY;
     }
     ValidateVideoResolutionForEncoderCodec(mCurrentStreamingResX, mCurrentStreamingResY, mStreamCodecId);
-
-    LOG(LOG_VERBOSE, "Using in %s muxer a resolution %d * %d (requested: %d * %d) and %3.2f fps", GetMediaTypeStr().c_str(), mCurrentStreamingResX, mCurrentStreamingResY, mRequestedStreamingResX, mRequestedStreamingResY, pFps);
-
     mCodecContext->width = mCurrentStreamingResX;
     mCodecContext->height = mCurrentStreamingResY;
+    LOG(LOG_VERBOSE, "Using in %s muxer a resolution %d * %d (requested: %d * %d) and %3.2f fps", GetMediaTypeStr().c_str(), mCurrentStreamingResX, mCurrentStreamingResY, mRequestedStreamingResX, mRequestedStreamingResY, pFps);
 
-    /*
-     * time base: this is the fundamental unit of time (in seconds) in terms
-     * of which frame timestamps are represented. for fixed-FrameRate content,
-     * timebase should be 1/framerate and timestamp increments should be
-     * identically to 1.
-     */
     // mpeg1/2 codecs support only non-rational frame rates
-    if (((tFormat->video_codec == AV_CODEC_ID_MPEG1VIDEO) || (tFormat->video_codec == AV_CODEC_ID_MPEG2VIDEO)) && (mInputFrameRate = 29.97))
+    if (((mStreamCodecId == AV_CODEC_ID_MPEG1VIDEO) || (mStreamCodecId == AV_CODEC_ID_MPEG2VIDEO)) && (mInputFrameRate == 29.97))
     {
         //HACK: pretend a frame rate of 30 fps, the actual frame rate corresponds to the frame rate from the base media source
         mCodecContext->time_base = (AVRational){100, (int)(30 * 100)};
@@ -546,7 +532,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext->rtp_payload_size = mStreamMaxPacketSize;
 
     // set pixel format
-    if (tFormat->video_codec == AV_CODEC_ID_MJPEG)
+    if (mStreamCodecId == AV_CODEC_ID_MJPEG)
         mCodecContext->pix_fmt = PIX_FMT_YUVJ420P;
     else
         mCodecContext->pix_fmt = PIX_FMT_YUV420P;
@@ -561,12 +547,13 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // allow ffmpeg its speedup tricks
     mCodecContext->flags2 |= CODEC_FLAG2_FAST;
 
+
     // Dump information about device file
     av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (video)", true);
 
     // Find the encoder for the video stream
     LOG(LOG_VERBOSE, "..finding video encoder");
-    if ((tCodec = avcodec_find_encoder(tFormat->video_codec)) == NULL)
+    if ((tCodec = avcodec_find_encoder(mStreamCodecId)) == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting video codec");
         // free codec and stream 0
@@ -596,7 +583,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     #endif
 
     // add some extra parameters depending on the selected codec
-    switch(tFormat->video_codec)
+    switch(mStreamCodecId)
     {
         case AV_CODEC_ID_MPEG2VIDEO:
                         // force low delay
@@ -653,13 +640,12 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     //######################################################
     mStreamMaxFps_LastFrame_Timestamp = Time::GetTimeStamp();
     MarkOpenGrabDeviceSuccessful();
-    LOG(LOG_INFO, "    ..max packet size: %d bytes", mFormatContext->pb->max_packet_size);
+    LOG(LOG_INFO, "    ..max packet size: %d bytes", mStreamMaxPacketSize);
     LOG(LOG_INFO, "  stream...");
     LOG(LOG_INFO, "    ..AV stream context at: %p", mEncoderStream);
     LOG(LOG_INFO, "    ..AV stream codec is: %s(%d)", mEncoderStream->codec->codec->name, mEncoderStream->codec->codec_id);
     LOG(LOG_INFO, "    ..AV stream codec context at: 0x%p", mEncoderStream->codec);
     LOG(LOG_INFO, "    ..AV stream codec codec context at: 0x%p", mEncoderStream->codec->codec);
-    LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
 
     return true;
 }
@@ -703,8 +689,6 @@ bool MediaSourceMuxer::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
 bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 {
     int                 tResult;
-    AVIOContext         *tIoContext;
-    AVOutputFormat      *tFormat;
     AVCodec             *tCodec;
 
     mMediaType = MEDIA_AUDIO;
@@ -730,38 +714,11 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     // set category for packet statistics
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
-    // build correct IO-context
-    if (!CreateIOContext(mStreamPacketBuffer, MEDIA_SOURCE_MUX_STREAM_PACKET_BUFFER_SIZE, NULL, DistributePacket, this, &tIoContext))
-    {
-        LOG(LOG_ERROR, "Error during I/O context creation");
-        return false;
-    }
-
-    // limit packet size
-    tIoContext->max_packet_size = mStreamMaxPacketSize;
-
-    // allocate new format context
+    // #########################################
+    // create new format context
+    // #########################################
+    LOG(LOG_VERBOSE, "..creating new format context");
     mFormatContext = AV_NEW_FORMAT_CONTEXT();
-
-    // find format
-    LOG(LOG_VERBOSE, "Guessing AUDIO format for codec \"%s\"", GetFormatName(mStreamCodecId).c_str());
-    tFormat = AV_GUESS_FORMAT(GetFormatName(mStreamCodecId).c_str(), NULL, NULL);
-    if (tFormat == NULL)
-    {
-        LOG(LOG_ERROR, "Invalid suggested audio format for codec %d", mStreamCodecId);
-
-        // Close the format context
-        av_free(mFormatContext);
-
-        return false;
-    }
-
-    LOG(LOG_VERBOSE, "Using format \"%s\" for AUDIO codec %d", tFormat->name, mStreamCodecId);
-
-    // set correct output format
-    mFormatContext->oformat = tFormat;
-    // set correct IO-context
-    mFormatContext->pb = tIoContext;
     // verbose timestamp debugging
     if (LOGGER.GetLogLevel() == LOG_WORLD)
     {
@@ -769,11 +726,36 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
         mFormatContext->debug = FF_FDEBUG_TS;
     }
 
-    // allocate new stream structure
+    // #########################################
+    // create output format
+    // #########################################
+    LOG(LOG_VERBOSE, "..creating new output format");
+    memset((void*)&mMuxerOutFormat, 0, sizeof(AVOutputFormat));
+    mMuxerOutFormat.name = "MediaSourceMuxer";
+    mMuxerOutFormat.long_name = "raw MediaSourceMuxer";
+    mMuxerOutFormat.mime_type = "";
+    mMuxerOutFormat.extensions = "";
+    mMuxerOutFormat.audio_codec = mStreamCodecId;
+    mMuxerOutFormat.video_codec = AV_CODEC_ID_NONE;
+    mMuxerOutFormat.priv_data_size = sizeof(void*);
+    mMuxerOutFormat.write_header = FfmpegForceOneOutputStream;
+    mMuxerOutFormat.write_packet = FfmpegWriteOneOutputPacket;
+    mMuxerOutFormat.flags = AVFMT_NOTIMESTAMPS;
+    mFormatContext->oformat = &mMuxerOutFormat;
+
+    // #########################################
+    // create new output stream
+    // #########################################
+    LOG(LOG_VERBOSE, "..creating new output stream");
     mMediaStreamIndex = 0;
     mEncoderStream = HM_avformat_new_stream(mFormatContext, 0);
+
+    // #########################################
+    // create new output codec context
+    // #########################################
+    LOG(LOG_VERBOSE, "..creating new output codec context");
     mCodecContext = mEncoderStream->codec;
-    mCodecContext->codec_id = tFormat->audio_codec;
+    mCodecContext->codec_id = mStreamCodecId;
     mCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
     switch(mCodecContext->codec_id)
     {
@@ -836,7 +818,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (audio)", true);
 
     // Find the encoder for the audio stream
-    if((tCodec = avcodec_find_encoder(tFormat->audio_codec)) == NULL)
+    if((tCodec = avcodec_find_encoder(mStreamCodecId)) == NULL)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting audio codec");
         // free codec and stream 0
@@ -848,11 +830,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 
         return false;
     }
-
-    // Inform the codec that we can handle truncated bitstreams -- i.e.,
-    // bitstreams where sample boundaries can fall in the middle of packets
-//    if(tCodec->capabilities & CODEC_CAP_TRUNCATED)
-//        mCodecContext->flags |= CODEC_FLAG_TRUNCATED;
 
     // allow ffmpeg its speedup tricks
     mCodecContext->flags2 |= CODEC_FLAG2_FAST;
@@ -884,9 +861,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     StartEncoder();
 
     MarkOpenGrabDeviceSuccessful();
-    LOG(LOG_INFO, "    ..max packet size: %d bytes", mFormatContext->pb->max_packet_size);
-    LOG(LOG_INFO, "  stream...");
-    LOG(LOG_INFO, "    ..max. packet size: %d bytes", mStreamMaxPacketSize);
+    LOG(LOG_INFO, "    ..max packet size: %d bytes", mStreamMaxPacketSize);
 
     return true;
 }
@@ -1461,6 +1436,8 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     if ((tResult = avformat_write_header(mFormatContext, &tOptions)) < 0)
         LOG(LOG_ERROR, "Couldn't write %s codec header because \"%s\".", GetMediaTypeStr().c_str(), strerror(AVUNERROR(tResult)));
+    // store the reference to this instance
+    *(void**)mFormatContext->priv_data = this;
 
     // set marker to "active"
     mEncoderThreadNeeded = true;
@@ -1584,7 +1561,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 // ####################################################################
                                 // ### generate new output frame
                                 // ####################################################################
-                                EncodeAndWritePacket(mFormatContext, mCodecContext, tYUVFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames, mEncoderPacketTimestamp);
+                                EncodeAndWritePacket(mFormatContext, mCodecContext, tYUVFrame, mEncoderBufferedFrames);
 
                                 #ifdef MSM_DEBUG_PACKETS
                                     LOG(LOG_VERBOSE, "Encoder buffered frames: %d, flags: 0x%x", mEncoderBufferedFrames, mCodecContext->codec->capabilities);
@@ -1780,7 +1757,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                         // ####################################################################
                                         // ### generate new output frame
                                         // ####################################################################
-                                        EncodeAndWritePacket(mFormatContext, mCodecContext, tAudioFrame, mEncoderHasKeyFrame, mEncoderBufferedFrames, mEncoderPacketTimestamp);
+                                        EncodeAndWritePacket(mFormatContext, mCodecContext, tAudioFrame, mEncoderBufferedFrames);
 
                                         // increase the frame counter (used for PTS generation)
                                         mFrameNumber++;
@@ -1828,7 +1805,7 @@ void* MediaSourceMuxer::Run(void* pArgs)
 
     LOG(LOG_VERBOSE, "..writing %s codec trailer", GetMediaTypeStr().c_str());
 
-    // write the trailer, if any
+    // flush remaining data and close the format context
     av_write_trailer(mFormatContext);
 
     switch(mMediaType)

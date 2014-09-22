@@ -86,9 +86,13 @@ MediaSinkMem::~MediaSinkMem()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, int64_t pPacketTimestamp, AVStream *pStream, string pStreamName, bool pIsKeyFrame)
+void MediaSinkMem::ProcessPacket(AVPacket *pAVPacket, AVStream *pStream, std::string pStreamName)
 {
     bool tResetNeeded = false;
+    bool tIsKeyFrame = pAVPacket->flags & AV_PKT_FLAG_KEY;
+    int64_t tPacketTimestamp = pAVPacket->pts;
+    char *tPacketData = (char*)pAVPacket->data;
+    unsigned int tPacketSize = pAVPacket->size;
 
     #ifdef MSIM_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Sending %d bytes for media sink %s", pPacketSize, GetId().c_str());
@@ -104,7 +108,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
     // check for key frame if we wait for the first key frame
     if (mWaitUntillFirstKeyFrame)
     {
-        if (!pIsKeyFrame)
+        if (!tIsKeyFrame)
         {
             #ifdef MSIM_DEBUG_PACKETS
                 LOG(LOG_VERBOSE, "Still waiting for first key frame");
@@ -131,16 +135,16 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
             LOG(LOG_VERBOSE, "Stream PTS: %lld, packet PTS: %lld", tStreamPts, pPacketTimestamp);
         #endif
 
-        if ((pPacketTimestamp != (int64_t)AV_NOPTS_VALUE) && (pPacketTimestamp < mLastPacketPts))
-            LOG(LOG_ERROR, "Current %s packet pts (%lld) from A/V encoder is lower than last one (%"PRId64")", GetDataTypeStr().c_str(), pPacketTimestamp, mLastPacketPts);
+        if ((tPacketTimestamp != (int64_t)AV_NOPTS_VALUE) && (tPacketTimestamp < mLastPacketPts))
+            LOG(LOG_ERROR, "Current %s packet pts (%lld) from A/V encoder is lower than last one (%"PRId64")", GetDataTypeStr().c_str(), tPacketTimestamp, mLastPacketPts);
 
         // do we have monotonously increasing PTS values
-        if (mIncomingAVStreamLastPts > pPacketTimestamp)
+        if (mIncomingAVStreamLastPts > tPacketTimestamp)
         {
-            LOG(LOG_WARN, "Incoming AV stream PTS values are not monotonously growing (%"PRId64" > %"PRId64"), resetting the streamer now..", mIncomingAVStreamLastPts, pPacketTimestamp);
-            tResetNeeded = true;
+            // incoming AV stream PTS values are not monotonously growing, using stream PTS instead
+            tPacketTimestamp = tStreamPts;
         }
-        mIncomingAVStreamLastPts = pPacketTimestamp;
+        mIncomingAVStreamLastPts = tPacketTimestamp;
 
         //####################################################################
         // check if RTP encoder is valid for the current stream
@@ -200,7 +204,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         //####################################################################
         // limit the outgoing stream to the defined maximum FPS value
         //####################################################################
-        if ((!BelowMaxFps(pStream->nb_frames)) && (!pIsKeyFrame))
+        if ((!BelowMaxFps(pStream->nb_frames)) && (!tIsKeyFrame))
         {
             #ifdef MSIM_DEBUG_PACKETS
                 LOG(LOG_VERBOSE, "Max. FPS reached, packet skipped");
@@ -228,7 +232,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         }
 
         // normalize the PTS values for the RTP packetizer of ffmpeg, otherwise we have synchronization problems at receiver side because of PTS offsets
-        int64_t tRtpPacketPts = pPacketTimestamp - mIncomingAVStreamStartPts;
+        int64_t tRtpPacketPts = tPacketTimestamp - mIncomingAVStreamStartPts;
 
         #ifdef MSIM_DEBUG_PACKETS
             LOG(LOG_VERBOSE, "Processing packet with A/V PTS: %"PRId64" and normalized PTS: %"PRId64", offset: %"PRId64, pPacketTimestamp, tRtpPacketPts, mIncomingAVStreamStartPts);
@@ -236,7 +240,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
 
 
         int64_t tTime = Time::GetTimeStamp();
-        bool tRtpCreationSucceed = RtpCreate(pPacketData, pPacketSize, tRtpPacketPts);
+        bool tRtpCreationSucceed = RtpCreate(tPacketData, tPacketSize, tRtpPacketPts);
         #ifdef MSIM_DEBUG_TIMING
             int64_t tTime2 = Time::GetTimeStamp();
             LOG(LOG_VERBOSE, "               generating RTP envelope took %"PRId64" us", tTime2 - tTime);
@@ -257,12 +261,12 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
         //          the packet size of the following packet in bytes
         // 4..n     RTP packet data (including parts of the encoded frame)
         //####################################################################
-        if ((tRtpCreationSucceed) && (pPacketData != 0) && (pPacketSize > 0))
+        if ((tRtpCreationSucceed) && (tPacketData != 0) && (tPacketSize > 0))
         {
             tTime = Time::GetTimeStamp();
-            char *tRtpPacket = pPacketData + 4;
+            char *tRtpPacket = tPacketData + 4;
             uint32_t tRtpPacketSize = 0;
-            uint32_t tRemainingRtpDataSize = pPacketSize;
+            uint32_t tRemainingRtpDataSize = tPacketSize;
             int tRtpPacketNumber = 0;
 
             do{
@@ -294,7 +298,7 @@ void MediaSinkMem::ProcessPacket(char* pPacketData, unsigned int pPacketSize, in
     }else
     {
         // send final packet
-        WriteFragment(pPacketData, pPacketSize, ++mPacketNumber);
+        WriteFragment(tPacketData, tPacketSize, ++mPacketNumber);
     }
 }
 

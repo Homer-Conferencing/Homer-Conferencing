@@ -166,8 +166,16 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
             // receive a fragment
             tMediaSourceMemInstance->ReadFragment(tFragmentData, tFragmentBufferSize, tFragmentNumber);
 
+            // create new AV packet
+            AVPacket tAVPacket;
+            av_init_packet(&tAVPacket);
+            tAVPacket.data = (uint8_t*)tFragmentData;
+            tAVPacket.size = tFragmentBufferSize;
+            /* assume every frame as key frame, we simply relay hop-by-hop */
+            tAVPacket.flags |= AV_PKT_FLAG_KEY;
+
             // relay the received fragment to registered sinks
-            tMediaSourceMemInstance->RelayPacketToMediaSinks(tFragmentData, tFragmentBufferSize, true /* assume every frame as key frame, we simply relay hop-by-hop */);
+            tMediaSourceMemInstance->RelayAVPacketToMediaSinks(&tAVPacket);
 
             #ifdef MSMEM_DEBUG_PACKET_RECEIVER
                 LOGEX(MediaSourceMem, LOG_VERBOSE, "Got packet fragment of size %d at address %p", tFragmentBufferSize, tFragmentData);
@@ -262,8 +270,14 @@ int MediaSourceMem::GetNextInputFrame(void *pOpaque, uint8_t *pBuffer, int pBuff
             return 0;
         }
 
+        // create new AV packet
+        AVPacket tAVPacket;
+        av_init_packet(&tAVPacket);
+        tAVPacket.data = (uint8_t*)tBuffer;
+        tAVPacket.size = tBufferSize;
+
         // relay the received fragment to registered sinks
-        tMediaSourceMemInstance->RelayPacketToMediaSinks(tBuffer, (unsigned int)tBufferSize, -1);
+        tMediaSourceMemInstance->RelayAVPacketToMediaSinks(&tAVPacket);
     }
 
     #ifdef MSMEM_DEBUG_AUDIO_FRAME_RECEIVER
