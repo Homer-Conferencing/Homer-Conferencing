@@ -172,7 +172,7 @@ public:
 
     /* RTP packetizing/parsing */
     void SetExternallyNegotiatedPayloadID(unsigned int pNewID); //should be called before the first frame packet gets packetized
-    bool RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts);
+    bool RtpCreate(AVPacket *pAVPacket, char *&pResultingOutputData, unsigned int &pResultingOutputDataSize);
 
     unsigned int GetLostPacketsFromRTP();
     static void LogRtpHeader(RtpHeader *pRtpHeader);
@@ -217,7 +217,7 @@ private:
     /* RTP packet stream */
     static int StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize);
     void OpenRtpPacketStream();
-    int CloseRtpPacketStream(char** pBuffer);
+    void CloseRtpPacketStream(char** pBuffer, unsigned int &pBufferSize);
 
     Homer::Monitor::PacketStatistic *mPacketStatistic;
     AVStream            *mRtpEncoderStream;

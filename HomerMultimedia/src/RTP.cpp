@@ -737,7 +737,8 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     // close memory stream
     char *tBuffer = NULL;
-    CloseRtpPacketStream(&tBuffer);
+    unsigned int tBufferSize = 0;
+    CloseRtpPacketStream(&tBuffer, tBufferSize);
 
     /**
      * problems with ffmpeg's RTP packetizer?
@@ -986,10 +987,10 @@ void RTP::OpenRtpPacketStream()
     mRtpPacketStreamPos = mRtpPacketStream;
 }
 
-int RTP::CloseRtpPacketStream(char** pBuffer)
+void RTP::CloseRtpPacketStream(char** pBuffer, unsigned int &pBufferSize)
 {
     *pBuffer = mRtpPacketStream;
-    return (mRtpPacketStreamPos - mRtpPacketStream);
+    pBufferSize = mRtpPacketStreamPos - mRtpPacketStream;
 }
 
 int RTP::StoreRtpPacket(void *pOpaque, uint8_t *pBuffer, int pBufferSize)
@@ -1059,25 +1060,29 @@ void RTP::SetExternallyNegotiatedPayloadID(unsigned int pNewID)
     mPayloadIdNegotiatedByExternal = pNewID;
 }
 
-bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
+bool RTP::RtpCreate(AVPacket *pAVPacket, char *&pResultingOutputData, unsigned int &pResultingOutputDataSize)
 {
-    AVPacket                    tPacket;
-    int                         tResult;
-    unsigned int                tMp3Hack_EntireBufferSize;
+    int tResult = 0;
+    int tRes;
+    unsigned int tMp3Hack_EntireBufferSize;
+    char *tAVBuffer = (char*)pAVPacket->data;
+    unsigned int tAVBufferSize = (unsigned int)pAVPacket->size;
+    int64_t tAVBufferTimestamp = pAVPacket->pts;
+
     if (!mRtpEncoderOpened)
         return false;
 
-    if (pData == NULL)
+    if (pAVPacket->data == NULL)
         return false;
 
-    if (pDataSize <= 0)
+    if (pAVPacket->size <= 0)
         return false;
 
     //####################################################################
     // for H261 use the internal RTP implementation
     //####################################################################
     if (mH261UseInternalEncoder)
-        return RtpCreateH261(pData, pDataSize, pPacketPts);
+        return RtpCreateH261(tAVBuffer, tAVBufferSize, tAVBufferTimestamp);
 
     //####################################################################
     // for all non H261 codec use the ffmpeg RTP implementation
@@ -1098,7 +1103,6 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     if(!IsPayloadSupported(mStreamCodecID))
     {
         LOG(LOG_ERROR, "Codec %s(%d) is unsupported", mRtpEncoderStream->codec->codec_name, mStreamCodecID);
-        pDataSize = 0;
         return true;
     }
 
@@ -1106,23 +1110,18 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     // HINT: we use this to store the size of the original codec packet within MPA header's MBZ entry
     //       later we use this MBZ entry inside of MediaSourceNet to detect the fragment/packet boundaries
     //       without this hack we wouldn't be able to provide correct processing because of buggy rfc for MPA payload definition
-    tMp3Hack_EntireBufferSize = pDataSize;
+    tMp3Hack_EntireBufferSize = tAVBufferSize;
 
-    // adapt clock rate for G.722
-    if (mStreamCodecID == AV_CODEC_ID_ADPCM_G722)
-        pPacketPts /= 2; // transform from 16 kHz to 8kHz
-
-    av_init_packet(&tPacket);
     #ifdef RTP_DEBUG_PACKET_ENCODER_PTS
         LOG(LOG_VERBOSE, "Sending %d bytes packet with PTS: %"PRId64", outgoing RTP-PTS: %.2f", pDataSize, pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
     #endif
 
-    // we only have one stream per media stream
-    tPacket.stream_index = 0;
-    tPacket.data = (uint8_t *)pData;
-    tPacket.size = pDataSize;
-    tPacket.pts = pPacketPts * CalculateClockRateFactor(); // clock rate adaption according to rfc (mpeg uses 90 kHz)
-    tPacket.dts = tPacket.pts;
+	// adapt clock rate for G.722
+    if (mStreamCodecID == AV_CODEC_ID_ADPCM_G722)
+        tAVBufferTimestamp /= 2; // transform from 16 kHz to 8kHz
+    pAVPacket->pts = tAVBufferTimestamp * CalculateClockRateFactor(); // clock rate adaption according to rfc (mpeg uses 90 kHz)
+    pAVPacket->dts = pAVPacket->pts;
+	
 
     #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Encapsulating codec packet:");
@@ -1144,33 +1143,28 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     OpenRtpPacketStream();
 
     //####################################################################
-    // provide monotonously growing DTS values -> reset the cur_dts field if the value is invalid
+    // avoid errors about non-monotonously growing DTS values -> reset the cur_dts field (see compute_pkt_fields2() in mux.c)
     //####################################################################
-    if(mRtpEncoderStream->cur_dts > tPacket.dts)
-    {
-        LOG(LOG_WARN, "Detected non-monotonously growing DTS values (%d > %d), fixing this", mRtpEncoderStream->cur_dts, tPacket.dts);
-        mRtpEncoderStream->cur_dts = AV_NOPTS_VALUE;
-    }
+    mRtpEncoderStream->cur_dts = AV_NOPTS_VALUE;
 
     //####################################################################
     // send encoded frame to the RTP muxer
     //####################################################################
-    if ((tResult = av_write_frame(mRtpFormatContext, &tPacket)) < 0)
+    if ((tRes = av_write_frame(mRtpFormatContext, pAVPacket)) < 0)
     {
-        LOG(LOG_ERROR, "Couldn't write encoded \"%s\" (id: %d/%d) frame of %u bytes at %p with PTS %"PRId64" into RTP buffer because \"%s\" (%d).", mRtpEncoderStream->codec->codec_name, mRtpEncoderStream->codec->codec_id, mStreamCodecID, pDataSize, pData, pPacketPts, strerror(AVUNERROR(tResult)), tResult);
+        LOG(LOG_ERROR, "Couldn't write encoded \"%s\" (id: %d/%d) frame of %u bytes at %p with PTS %"PRId64" into RTP buffer because \"%s\" (%d).", mRtpEncoderStream->codec->codec_name, mRtpEncoderStream->codec->codec_id, mStreamCodecID, tAVBufferSize, tAVBuffer, tAVBufferTimestamp, strerror(AVUNERROR(tRes)), tRes);
 
-        return false;
+        return -1;
     }
 
     // close memory stream and get all the resulting packets for sending
-    char *tData = NULL;
-    pDataSize = CloseRtpPacketStream(&tData);
-    pData = (char*)tData;
+    CloseRtpPacketStream(&pResultingOutputData, pResultingOutputDataSize);
+
     #ifdef RTP_DEBUG_PACKET_ENCODER
         if (pDataSize == 0)
             LOG(LOG_WARN, "Resulting RTP stream is empty");
         else
-            LOG(LOG_VERBOSE, "Resulting RTP stream at %p with size of %d bytes", pData, pDataSize);
+            LOG(LOG_VERBOSE, "Resulting RTP stream at %p with size of %d bytes", tResultingOutputData, tResultingOutputDataSize);
     #endif
 
     //####################################################################
@@ -1178,11 +1172,11 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
     // usually ffmpeg uses an ID from the dynamic ID range (96 in most cases)
     // which confuses my wireshark and makes debugging impossible ;)
     //####################################################################
-    if ((pData != 0) && (pDataSize > 0))
+    if ((pResultingOutputData != NULL) && (pResultingOutputDataSize > 0))
     {
-        char *tRtpPacket = pData + 4;
+        char *tRtpPacket = pResultingOutputData + 4;
         uint32_t tRtpPacketSize = 0;
-        uint32_t tRemainingRtpDataSize = pDataSize;
+        uint32_t tRemainingRtpDataSize = pResultingOutputDataSize;
         MPAHeader* tMPAHeader = NULL;
         bool tFirstOutgoingPacket = true;
 
@@ -1223,7 +1217,7 @@ bool RTP::RtpCreate(char *&pData, unsigned int &pDataSize, int64_t pPacketPts)
                 if (tFirstOutgoingPacket)
                 {
                     tFirstOutgoingPacket = false;
-                    mLocalTimestampOffset = tRtpHeader->Timestamp - tPacket.pts;
+                    mLocalTimestampOffset = tRtpHeader->Timestamp - pAVPacket->pts;
                 }
 
                 #ifdef RTP_DEBUG_PACKET_ENCODER_TIMESTAMPS
@@ -2510,6 +2504,8 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 
                                 // convert from host to network byte order
                                 tH264Header->Data[0] = htonl(tH264Header->Data[0]);
+
+                                //LOG(LOG_VERBOSE, "Received H.264 NAL unit of type %u", (unsigned int)tH264HeaderType);
 
                                 // go to the start of the payload data
                                 switch(tH264HeaderType)

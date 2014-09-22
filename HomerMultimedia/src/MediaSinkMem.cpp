@@ -91,8 +91,6 @@ void MediaSinkMem::ProcessPacket(AVPacket *pAVPacket, AVStream *pStream, std::st
     bool tResetNeeded = false;
     bool tIsKeyFrame = pAVPacket->flags & AV_PKT_FLAG_KEY;
     int64_t tPacketTimestamp = pAVPacket->pts;
-    char *tPacketData = (char*)pAVPacket->data;
-    unsigned int tPacketSize = pAVPacket->size;
 
     #ifdef MSIM_DEBUG_PACKETS
         LOG(LOG_VERBOSE, "Sending %d bytes for media sink %s", pPacketSize, GetId().c_str());
@@ -132,7 +130,7 @@ void MediaSinkMem::ProcessPacket(AVPacket *pAVPacket, AVStream *pStream, std::st
         // the PTS value is used within the RTP packetizer to calculate the resulting timestamp value for the RTP header
         int64_t tStreamPts = (pStream->pts.den != 0 ? ((float)pStream->pts.val + pStream->pts.num / pStream->pts.den) : 0); // result = val + num / den
         #ifdef MSIM_DEBUG_TIMING
-            LOG(LOG_VERBOSE, "Stream PTS: %lld, packet PTS: %lld", tStreamPts, pPacketTimestamp);
+            LOG(LOG_VERBOSE, "Stream PTS: %lld, packet PTS: %lld", tStreamPts, tPacketTimestamp);
         #endif
 
         if ((tPacketTimestamp != (int64_t)AV_NOPTS_VALUE) && (tPacketTimestamp < mLastPacketPts))
@@ -235,18 +233,20 @@ void MediaSinkMem::ProcessPacket(AVPacket *pAVPacket, AVStream *pStream, std::st
         int64_t tRtpPacketPts = tPacketTimestamp - mIncomingAVStreamStartPts;
 
         #ifdef MSIM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Processing packet with A/V PTS: %"PRId64" and normalized PTS: %"PRId64", offset: %"PRId64, pPacketTimestamp, tRtpPacketPts, mIncomingAVStreamStartPts);
+            LOG(LOG_VERBOSE, "Processing packet with A/V PTS: %"PRId64" and normalized PTS: %"PRId64", offset: %"PRId64, tPacketTimestamp, tRtpPacketPts, mIncomingAVStreamStartPts);
         #endif
 
 
         int64_t tTime = Time::GetTimeStamp();
-        bool tRtpCreationSucceed = RtpCreate(tPacketData, tPacketSize, tRtpPacketPts);
+        char *tOutputStreamData = NULL;
+        unsigned int tOutputStreamDataSize = 0;
+        bool tRtpCreationSucceed = RtpCreate(pAVPacket, tOutputStreamData, tOutputStreamDataSize);
         #ifdef MSIM_DEBUG_TIMING
             int64_t tTime2 = Time::GetTimeStamp();
             LOG(LOG_VERBOSE, "               generating RTP envelope took %"PRId64" us", tTime2 - tTime);
         #endif
         #ifdef MSIM_DEBUG_PACKETS
-            LOG(LOG_VERBOSE, "Creation of RTP packets resulted in a buffer at %p with size %u", pPacketData, pPacketSize);
+            LOG(LOG_VERBOSE, "Creation of RTP packets resulted in a buffer at %p with size %u", tOutputStreamData, tOutputStreamDataSize);
         #endif
 
 //        for (unsigned int i = 0; i < 64; i++)
@@ -261,12 +261,12 @@ void MediaSinkMem::ProcessPacket(AVPacket *pAVPacket, AVStream *pStream, std::st
         //          the packet size of the following packet in bytes
         // 4..n     RTP packet data (including parts of the encoded frame)
         //####################################################################
-        if ((tRtpCreationSucceed) && (tPacketData != 0) && (tPacketSize > 0))
+        if ((tRtpCreationSucceed) && (tOutputStreamData != 0) && (tOutputStreamDataSize > 0))
         {
             tTime = Time::GetTimeStamp();
-            char *tRtpPacket = tPacketData + 4;
+            char *tRtpPacket = tOutputStreamData + 4;
             uint32_t tRtpPacketSize = 0;
-            uint32_t tRemainingRtpDataSize = tPacketSize;
+            uint32_t tRemainingRtpDataSize = tOutputStreamDataSize;
             int tRtpPacketNumber = 0;
 
             do{
@@ -298,7 +298,7 @@ void MediaSinkMem::ProcessPacket(AVPacket *pAVPacket, AVStream *pStream, std::st
     }else
     {
         // send final packet
-        WriteFragment(tPacketData, tPacketSize, ++mPacketNumber);
+        WriteFragment((char*)pAVPacket->data, (unsigned int)pAVPacket->size, ++mPacketNumber);
     }
 }
 
