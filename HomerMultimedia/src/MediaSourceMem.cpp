@@ -876,7 +876,7 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
     }
 
     // ffmpeg might have difficulties detecting the correct input format, enforce correct audio parameters
-    AVCodecContext *tCodec = mFormatContext->streams[mMediaStreamIndex]->codec;
+    AVCodecContext *tCodec = mDecoderStream->codec;
     if (mRtpActivated)
     {
         LOG(LOG_VERBOSE, "Setting time base for %s %s RTP stream with codec %s", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str(), HM_avcodec_get_name(mSourceCodecId));
@@ -886,36 +886,36 @@ bool MediaSourceMem::OpenAudioGrabDevice(int pSampleRate, int pChannels)
                 tCodec->channels = 1;
                 tCodec->bit_rate = 7950;
                 tCodec->sample_rate = 8000;
-                mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                mDecoderStream->time_base.den = tCodec->sample_rate;
+                mDecoderStream->time_base.num = 1;
                 break;
             case AV_CODEC_ID_ADPCM_G722:
                 tCodec->channels = 1;
                 tCodec->sample_rate = 16000;
-                mFormatContext->streams[mMediaStreamIndex]->time_base.den = 8000; // different time base as defined in RFC
-                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                mDecoderStream->time_base.den = 8000; // different time base as defined in RFC
+                mDecoderStream->time_base.num = 1;
                 break;
             case AV_CODEC_ID_GSM:
             case AV_CODEC_ID_PCM_ALAW:
             case AV_CODEC_ID_PCM_MULAW:
                 tCodec->channels = 1;
                 tCodec->sample_rate = 8000;
-                mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                mDecoderStream->time_base.den = tCodec->sample_rate;
+                mDecoderStream->time_base.num = 1;
                 break;
             case AV_CODEC_ID_PCM_S16BE:
                 tCodec->channels = 2;
                 tCodec->sample_rate = 44100;
-                mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                mDecoderStream->time_base.den = tCodec->sample_rate;
+                mDecoderStream->time_base.num = 1;
                 break;
             case AV_CODEC_ID_MP3:
-                mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                mDecoderStream->time_base.den = tCodec->sample_rate;
+                mDecoderStream->time_base.num = 1;
                 break;
             default:
-                mFormatContext->streams[mMediaStreamIndex]->time_base.den = tCodec->sample_rate;
-                mFormatContext->streams[mMediaStreamIndex]->time_base.num = 1;
+                mDecoderStream->time_base.den = tCodec->sample_rate;
+                mDecoderStream->time_base.num = 1;
                 break;
         }
     }
@@ -1221,9 +1221,9 @@ bool MediaSourceMem::InputIsPicture()
 
     // do we have a picture?
     if ((mMediaSourceOpened) &&
-        (mFormatContext != NULL) && (mFormatContext->streams[mMediaStreamIndex]) &&
-        (mFormatContext->streams[mMediaStreamIndex]->codec->codec_type == AVMEDIA_TYPE_VIDEO) &&
-        (mFormatContext->streams[mMediaStreamIndex]->duration == 1))
+        (mFormatContext != NULL) && (mDecoderStream) &&
+        (mDecoderStream->codec->codec_type == AVMEDIA_TYPE_VIDEO) &&
+        (mDecoderStream->duration == 1))
         tResult = true;
 
     return tResult;
@@ -1732,12 +1732,12 @@ void* MediaSourceMem::Run(void* pArgs)
                     {
                         LOG(LOG_VERBOSE, "New %s packet..", GetMediaTypeStr().c_str());
                         LOG(LOG_VERBOSE, "      ..duration: %d", tPacket->duration);
-                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64", normalized pts: %lld, start time: %"PRId64, tPacket->pts, tPacket->pts - mFormatContext->streams[mMediaStreamIndex]->start_time, mFormatContext->streams[mMediaStreamIndex]->start_time);
+                        LOG(LOG_VERBOSE, "      ..pts: %"PRId64", normalized pts: %lld, start time: %"PRId64, tPacket->pts, tPacket->pts - mDecoderStream->start_time, mDecoderStream->start_time);
                         LOG(LOG_VERBOSE, "      ..stream: %"PRId64, tPacket->stream_index);
                         LOG(LOG_VERBOSE, "      ..dts: %"PRId64, tPacket->dts);
                         LOG(LOG_VERBOSE, "      ..size: %d", tPacket->size);
                         LOG(LOG_VERBOSE, "      ..pos: %"PRId64, tPacket->pos);
-                        LOG(LOG_VERBOSE, "      ..frame number: %"PRId64, (tPacket->pts - mFormatContext->streams[mMediaStreamIndex]->start_time) / (tPacket->duration > 0 ? tPacket->duration : 1) /* works only for cfr, otherwise duration is variable */);
+                        LOG(LOG_VERBOSE, "      ..frame number: %"PRId64, (tPacket->pts - mDecoderStream->start_time) / (tPacket->duration > 0 ? tPacket->duration : 1) /* works only for cfr, otherwise duration is variable */);
                         LOG(LOG_VERBOSE, "      ..current input frame timestamp: %lf", tCurrentInputFrameTimestamp);
                         if (tPacket->flags == AV_PKT_FLAG_KEY)
                             LOG(LOG_VERBOSE, "      ..flags: key frame");

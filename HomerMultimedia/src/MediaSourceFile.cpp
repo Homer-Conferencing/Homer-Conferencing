@@ -379,7 +379,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
     float tSeekEnd = GetSeekEnd();
     float tNumberOfFrames = mNumberOfFrames;
-    double tStreamStartFrameIndex = mFormatContext->streams[mMediaStreamIndex]->start_time;
+    double tStreamStartFrameIndex = mDecoderStream->start_time;
 
     if (IsSeeking())
     {
@@ -454,7 +454,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                     tResult = false;
                 }else
                 {
-                    LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful, current dts is %"PRId64"", GetMediaTypeStr().c_str(), (float)tFrameIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
+                    LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful, current dts is %"PRId64"", GetMediaTypeStr().c_str(), (float)tFrameIndex, mDecoderStream->cur_dts);
 
                     // seeking was successful
                     tResult = true;
@@ -551,7 +551,7 @@ float MediaSourceFile::GetSeekPos()
             {
                 //HINT: we need the corrected PTS values and the one from the file
                 // correcting PTS value by a possible start PTS value (offset)
-                tStreamStartFrameIndex = mFormatContext->streams[mMediaStreamIndex]->start_time;
+                tStreamStartFrameIndex = mDecoderStream->start_time;
                 if (tStreamStartFrameIndex > 0)
                 {
                     //LOG(LOG_VERBOSE, "Correcting PTS value by offset: %.2f", (float)mSourceStartPts);

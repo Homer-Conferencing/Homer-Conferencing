@@ -94,6 +94,7 @@ MediaSource::MediaSource(string pName):
     mOutputAudioFormat = AV_SAMPLE_FMT_S16;
     mVideoScalerContext = NULL;
     mFormatContext = NULL;
+    mDecoderStream = NULL;
     mRecordingSaveFileName = "";
     mDesiredDevice = "";
     mCurrentDevice = "";
@@ -3491,9 +3492,25 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
         return false;
     }
 
+    mDecoderStream = mFormatContext->streams[mMediaStreamIndex];
+
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Found %s stream at index %d", GetMediaTypeStr().c_str(), mMediaStreamIndex);
 
     return true;
+}
+
+void MediaSource::FfmpegDetermineMetaData(string pSource, int pLine, AVDictionary *pMetaData)
+{
+    AVDictionaryEntry *tEntry=NULL;
+
+    mMetaData.clear();
+
+     while((tEntry = HM_av_dict_get(pMetaData, "", tEntry))) {
+         MetaDataEntry tMetaEntry;
+         tMetaEntry.Key = string(tEntry->key);
+         tMetaEntry.Value = string(tEntry->value);
+         mMetaData.push_back(tMetaEntry);
+     }
 }
 
 bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
@@ -3503,6 +3520,20 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     AVDictionary        *tOptions = NULL;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to open %s decoder..", GetMediaTypeStr().c_str());
+
+    //######################################################
+    //### check if stream was already selected
+    //######################################################
+    if (mDecoderStream == NULL)
+    {
+        if(mMediaStreamIndex >= 0)
+        {
+            mDecoderStream = mFormatContext->streams[mMediaStreamIndex];
+        }else
+        {
+            LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid stream selection via index: %d", mMediaStreamIndex);
+        }
+    }
 
     //######################################################
     //### create decoder context
@@ -3516,7 +3547,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
         return false;
     }
-    if ((tRes = avcodec_copy_context(mCodecContext, mFormatContext->streams[mMediaStreamIndex]->codec)) < 0)
+    if ((tRes = avcodec_copy_context(mCodecContext, mDecoderStream->codec)) < 0)
     {
         LOG_REMOTE(LOG_ERROR, pSource, pLine, "Could not create decoder context because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
 
@@ -3668,14 +3699,14 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
             mOutputFrameRate = -1;
 #if FF_API_R_FRAME_RATE
-            if(mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den > 0)
+            if(mDecoderStream->r_frame_rate.den > 0)
             {
-                mOutputFrameRate = av_q2d(mFormatContext->streams[mMediaStreamIndex]->r_frame_rate);
+                mOutputFrameRate = av_q2d(mDecoderStream->r_frame_rate);
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Using r_fps: %.2f", mOutputFrameRate);
             }
 #endif
             if (mOutputFrameRate <= 0)
-                mOutputFrameRate = av_q2d(mFormatContext->streams[mMediaStreamIndex]->avg_frame_rate);
+                mOutputFrameRate = av_q2d(mDecoderStream->avg_frame_rate);
 
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d and frame rate: %.2f", mSourceResX, mSourceResY, mOutputFrameRate);
             break;
@@ -3698,7 +3729,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     mInputBitRate = mCodecContext->bit_rate;
 
     // derive the FPS from the timebase of the selected input stream
-    mInputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
+    mInputFrameRate = (float)mDecoderStream->time_base.den / mDecoderStream->time_base.num;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", GetInputFrameRate());
 
@@ -3713,8 +3744,8 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
         mNumberOfFrames = 0;
     }
 
-    if (mFormatContext->streams[mMediaStreamIndex]->start_time < 0)
-        mFormatContext->streams[mMediaStreamIndex]->start_time = 0;
+    if (mDecoderStream->start_time < 0)
+        mDecoderStream->start_time = 0;
 
     // set PTS offset
 // TODO: remove the following lines and remove "mInputStartPts" from the source
@@ -3725,9 +3756,9 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 //        LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the format context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
 //    }else
 //    {
-//        if (mFormatContext->streams[mMediaStreamIndex]->start_time > 0)
+//        if (mDecoderStream->start_time > 0)
 //        {
-//            mInputStartPts = mFormatContext->streams[mMediaStreamIndex]->start_time;
+//            mInputStartPts = mDecoderStream->start_time;
 //            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the stream context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
 //        }else
 //        {
@@ -3893,7 +3924,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
         if (mCodecContext != NULL)
         {
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..closing %s codec", GetMediaTypeStr().c_str());
-            mFormatContext->streams[mMediaStreamIndex]->discard = AVDISCARD_ALL;
+            mDecoderStream->discard = AVDISCARD_ALL;
             avcodec_close(mCodecContext);
             mCodecContext = NULL;
         }else
@@ -3992,20 +4023,6 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
     av_free_packet(tPacket);
 
     return tResult;
-}
-
-void MediaSource::FfmpegDetermineMetaData(string pSource, int pLine, AVDictionary *pMetaData)
-{
-    AVDictionaryEntry *tEntry=NULL;
-
-    mMetaData.clear();
-
-     while((tEntry = HM_av_dict_get(pMetaData, "", tEntry))) {
-         MetaDataEntry tMetaEntry;
-         tMetaEntry.Key = string(tEntry->key);
-         tMetaEntry.Value = string(tEntry->value);
-         mMetaData.push_back(tMetaEntry);
-     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
