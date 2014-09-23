@@ -245,7 +245,6 @@ private:
     MediaFifo           *mEncoderFifo;
     Mutex				mEncoderFifoState;
     Mutex               mEncoderFifoAvailableMutex;
-    AVStream            *mEncoderStream;
     int					mEncoderBufferedFrames; // in frames
     int64_t				mEncoderStartTime;
     /* device control */

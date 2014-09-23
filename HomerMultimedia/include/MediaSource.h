@@ -467,7 +467,7 @@ protected:
     enum MediaType      mMediaType;
     enum SourceType     mSourceType;
     AVFormatContext     *mFormatContext;
-    AVStream            *mDecoderStream;
+    AVStream            *mMediaStream;
     AVCodecContext      *mCodecContext;
     int                 mMediaStreamIndex;
     double              mSourceStartTimeForRTGrabbing;
