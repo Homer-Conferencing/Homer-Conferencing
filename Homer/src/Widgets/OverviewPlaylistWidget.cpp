@@ -661,7 +661,15 @@ void OverviewPlaylistWidget::SaveM3U(QString pFileName)
 
 int OverviewPlaylistWidget::GetPlaylistIndexFromGuiRow(int pRow)
 {
-	return mLwFiles->item(pRow)->data(Qt::UserRole).toInt();
+    int tResult = -1;
+
+    QListWidgetItem *tItem = mLwFiles->item(pRow);
+    if (tItem != NULL)
+    {
+        tResult = tItem->data(Qt::UserRole).toInt();
+    }
+
+    return tResult;
 }
 
 void OverviewPlaylistWidget::Play(int pIndex)
