@@ -511,12 +511,11 @@ int64_t MediaSourceFile::GetSynchronizationTimestamp()
     int64_t tResult = 0;
 
     /******************************************
-     * The following lines do the following:
-     *   - use the current play-out position (given in seconds!) and transform it into micro seconds
-     *   - return the calculated play-out time as synchronization timestamp in micro seconds
+     * We use the current play-out position (given in seconds!) and transform it into micro seconds.
+     * The resulting value is returned by this function as synchronization timestamp.
      *
-     *   - when this approach is applied for both the video and audio stream (which is grabbed from the same local/remote file!),
-     *     a time difference can be derived which corresponds to the A/V drift in micro seconds of the video and audio playback on the local(!) machine
+     * If this is applied for both the video and audio stream (which is grabbed from the same local/remote file!),
+     * a time difference can be derived which corresponds to the A/V drift in micro seconds.
      ******************************************/
     // we return the file position in us to allow A/V synchronization based on a file index
     tResult = GetSeekPos() /* in seconds */ * AV_TIME_BASE;
