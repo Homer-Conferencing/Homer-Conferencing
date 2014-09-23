@@ -2889,12 +2889,12 @@ bool MediaSource::SelectDevice(std::string pDeviceName, enum MediaType pMediaTyp
     return tResult;
 }
 
-std::string MediaSource::GetCurrentDevicePeerName()
+std::string MediaSource::GetBroadcasterName()
 {
     return "";
 }
 
-std::string MediaSource::GetPeerDeviceName()
+std::string MediaSource::GetBroadcasterStreamName()
 {
     return "";
 }
@@ -3070,6 +3070,11 @@ void MediaSource::MoveMarker(float pRelX, float pRelY)
 
 MetaData MediaSource::GetMetaData()
 {
+    // update
+    if(mFormatContext != NULL)
+        DetermineMetaData(mFormatContext->metadata, false);
+
+    // return the recent meta data
     return mMetaData;
 }
 
@@ -3499,18 +3504,29 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
     return true;
 }
 
-void MediaSource::FfmpegDetermineMetaData(string pSource, int pLine, AVDictionary *pMetaData)
+void MediaSource::FfmpegDetermineMetaData(string pSource, int pLine, AVDictionary *pMetaData, bool pDebugLog)
 {
     AVDictionaryEntry *tEntry=NULL;
 
     mMetaData.clear();
 
-     while((tEntry = HM_av_dict_get(pMetaData, "", tEntry))) {
-         MetaDataEntry tMetaEntry;
-         tMetaEntry.Key = string(tEntry->key);
-         tMetaEntry.Value = string(tEntry->value);
-         mMetaData.push_back(tMetaEntry);
-     }
+    int i = 0;
+    if(pMetaData != NULL)
+    {
+        while((tEntry = HM_av_dict_get(pMetaData, "", tEntry))) {
+            MetaDataEntry tMetaEntry;
+            tMetaEntry.Key = string(tEntry->key);
+            tMetaEntry.Value = string(tEntry->value);
+            if(pDebugLog)
+            {
+                if (i == 0)
+                    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Found meta data: ");
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "   %d: [%s] -> %s", i, tMetaEntry.Key.c_str(), tMetaEntry.Value.c_str());
+            }
+            mMetaData.push_back(tMetaEntry);
+            i++;
+        }
+    }
 }
 
 bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)

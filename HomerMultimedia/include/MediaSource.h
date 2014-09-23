@@ -187,7 +187,7 @@ typedef std::vector<MetaDataEntry> MetaData;
 #define CloseFormatConverter()                              FfmpegCloseFormatConverter(GetObjectNameStr(this).c_str(), __LINE__)
 #define CloseAll()                                          FfmpegCloseAll(GetObjectNameStr(this).c_str(), __LINE__)
 #define EncodeAndWritePacket(FormatContext, CodecContext, InputFrame, BufferedFrames) FfmpegEncodeAndWritePacket(GetObjectNameStr(this).c_str(), __LINE__, FormatContext, CodecContext, InputFrame, BufferedFrames)
-#define DetermineMetaData(MetaDataStorage)                  FfmpegDetermineMetaData(GetObjectNameStr(this).c_str(), __LINE__, MetaDataStorage)
+#define DetermineMetaData(MetaDataStorage, DebugLog)        FfmpegDetermineMetaData(GetObjectNameStr(this).c_str(), __LINE__, MetaDataStorage, DebugLog)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -346,9 +346,9 @@ public:
     virtual void getVideoDevices(VideoDevices &pVList);
     virtual void getAudioDevices(AudioDevices &pAList);
     virtual bool SelectDevice(std::string pDeviceName, enum MediaType pMediaType, bool &pIsNewDevice);
-    virtual std::string GetPeerDeviceName();
+    virtual std::string GetBroadcasterName();
+    virtual std::string GetBroadcasterStreamName();
     virtual std::string GetCurrentDeviceName();
-    virtual std::string GetCurrentDevicePeerName();
     virtual bool RegisterMediaSource(MediaSource *pMediaSource);
     virtual bool UnregisterMediaSource(MediaSource *pMediaSource, bool pAutoDelete = true);
 
@@ -452,7 +452,7 @@ protected:
     /* encoder helpers */
     bool FfmpegEncodeAndWritePacket(string pSource /* caller source */, int pLine /* caller line */, AVFormatContext *pFormatContext, AVCodecContext *pCodecContext, AVFrame *pInputFrame, int &pBufferedFrames);
 
-    void FfmpegDetermineMetaData(string pSource /* caller source */, int pLine /* caller line */, AVDictionary *pMetaData);
+    void FfmpegDetermineMetaData(string pSource /* caller source */, int pLine /* caller line */, AVDictionary *pMetaData, bool pDebugLog);
 
 
     bool                mMediaSourceOpened;

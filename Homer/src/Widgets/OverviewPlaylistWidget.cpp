@@ -661,7 +661,7 @@ void OverviewPlaylistWidget::SaveM3U(QString pFileName)
 
 int OverviewPlaylistWidget::GetPlaylistIndexFromGuiRow(int pRow)
 {
-    return mLwFiles->item(pRow)->data(Qt::UserRole).toInt();
+	return mLwFiles->item(pRow)->data(Qt::UserRole).toInt();
 }
 
 void OverviewPlaylistWidget::Play(int pIndex)
@@ -756,6 +756,25 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
         	LOG(LOG_VERBOSE, "Desired file %s wasn't started yet both in video and audio widget\naudio = %s\nvideo = %s", mCurrentFile.toStdString().c_str(), mAudioWorker->CurrentFile().toStdString().c_str(), mVideoWorker->CurrentFile().toStdString().c_str());
         	return;
         }
+
+        if (mCurrentFileAudioPlaying)
+        {
+            QString tAudioStation = mAudioWorker->GetSourceBroadcasterName();
+            if(tAudioStation != "")
+            {
+                LOG(LOG_VERBOSE, "Detected station: %s", tAudioStation.toStdString().c_str());
+                UpdateEntryName(mCurrentFile, tAudioStation);
+            }
+        }else if (mCurrentFileVideoPlaying)
+        {
+            QString tVideoStation = mVideoWorker->GetSourceBroadcasterName();
+            if(tVideoStation != "")
+            {
+                LOG(LOG_VERBOSE, "Detected station: %s", tVideoStation.toStdString().c_str());
+                UpdateEntryName(mCurrentFile, tVideoStation);
+            }
+        }
+
 
         //LOG(LOG_VERBOSE, "Video EOF: %d, audio EOF: %d", mVideoWorker->EofReached(), mAudioWorker->EofReached());
 
@@ -1400,10 +1419,43 @@ QString OverviewPlaylistWidget::GetPlaylistEntryName(int pIndex)
     return tResult;
 }
 
+bool OverviewPlaylistWidget::UpdateEntryName(QString pLocation, QString pNewName)
+{
+    Playlist::iterator tIt;
+    bool tUpdatedData = false;
+
+    mPlaylistMutex.lock();
+
+    if (mPlaylist.size() > 0)
+    {
+        for (int i = 0; i < mPlaylist.size(); i++)
+        {
+            if (mPlaylist[i].Location == pLocation)
+            {
+                if(mPlaylist[i].Name != pNewName)
+                {
+                    mPlaylist[i].Name = pNewName;
+                    tUpdatedData = true;
+                }
+            }
+        }
+    }
+
+    mPlaylistMutex.unlock();
+
+    if(tUpdatedData)
+        UpdateView();
+
+    return tUpdatedData;
+}
+
 void OverviewPlaylistWidget::DeletePlaylistEntry(int pIndex)
 {
     int tIndex = 0;
     Playlist::iterator tIt;
+
+    if(pIndex < 0)
+        return;
 
     mPlaylistMutex.lock();
 

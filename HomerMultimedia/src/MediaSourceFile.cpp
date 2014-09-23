@@ -132,7 +132,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!SelectStream())
         return false;
 
-    DetermineMetaData(mFormatContext->metadata);
+    DetermineMetaData(mFormatContext->metadata, true);
 
     if (!OpenDecoder())
         return false;
@@ -295,7 +295,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
         return false;
     }
 
-    DetermineMetaData(mFormatContext->metadata);
+    DetermineMetaData(mFormatContext->metadata, true);
 
     mCurrentInputChannel = mDesiredInputChannel;
 

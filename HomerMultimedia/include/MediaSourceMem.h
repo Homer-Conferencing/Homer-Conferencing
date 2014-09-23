@@ -102,7 +102,8 @@ public:
     virtual void SetFrameBufferPreBufferingTime(float pTime);
 
     /* device control */
-    virtual std::string GetPeerDeviceName();
+    virtual std::string GetBroadcasterName();
+    virtual std::string GetBroadcasterStreamName();
     virtual std::string GetCurrentDeviceName();
 
     /* frame stats */

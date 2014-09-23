@@ -2524,18 +2524,26 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
     return tResult;
 }
 
-string MediaSourceMuxer::GetCurrentDeviceName()
+string MediaSourceMuxer::GetBroadcasterName()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetCurrentDeviceName();
+        return mMediaSource->GetBroadcasterName();
     else
         return "";
 }
 
-string MediaSourceMuxer::GetCurrentDevicePeerName()
+string MediaSourceMuxer::GetBroadcasterStreamName()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetCurrentDevicePeerName();
+        return mMediaSource->GetBroadcasterStreamName();
+    else
+        return "";
+}
+
+string MediaSourceMuxer::GetCurrentDeviceName()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetCurrentDeviceName();
     else
         return "";
 }

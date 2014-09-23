@@ -365,9 +365,50 @@ void MediaSourceMem::ReadFragment(char *pBuffer, int &pBufferSize, int64_t &pFra
     }
 }
 
-std::string MediaSourceMem::GetPeerDeviceName()
+std::string MediaSourceMem::GetBroadcasterName()
 {
-    return mRtcpSenderDescription;
+    string tResult = "";
+
+    /*
+     * use data from the icecast/shoutcast protocol
+     */
+    MetaData tMetaData = GetMetaData();
+    for(unsigned int i = 0; i < tMetaData.size(); i++)
+    {
+        if (tMetaData[i].Key == "icy-name")
+        {
+           tResult = tMetaData[i].Value;
+           break;
+        }
+    }
+
+    return tResult;
+}
+
+std::string MediaSourceMem::GetBroadcasterStreamName()
+{
+    string tResult = "";
+
+    /*
+     * use data from RTCP sender descriptions
+     */
+    if(mRtpActivated)
+        tResult = mRtcpSenderDescription;
+
+    /*
+     * use data from the icecast/shoutcast protocol
+     */
+    MetaData tMetaData = GetMetaData();
+    for(unsigned int i = 0; i < tMetaData.size(); i++)
+    {
+        if (tMetaData[i].Key == "StreamTitle")
+        {
+           tResult = tMetaData[i].Value;
+           break;
+        }
+    }
+
+    return tResult;
 }
 
 std::string MediaSourceMem::GetCurrentDeviceName()
