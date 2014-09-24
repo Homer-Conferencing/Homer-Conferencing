@@ -54,6 +54,10 @@ public:
 
     virtual ~Thread( );
 
+    static void ActiveMemoryDebugger();
+    static void DeactivateMemoryDebugger();
+    static unsigned long GetMemoryAllocationSize(int pThreadID);
+
     virtual void* Run(void* pArgs = NULL) = 0;
     bool StartThread(void* pArgs = NULL);
     bool StartThread(THREAD_MAIN pMain, void* pArgs = NULL);
@@ -64,7 +68,7 @@ public:
     static int GetPId();
     static int GetPPId();
     static std::vector<int> GetTIds();
-    static bool GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned long &pMemPhysical, int &pPid, int &pPPid, float &pLoadUser, float &pLoadSystem, float &pLoadTotal, int &pPriority, int &pNice, int &pThreadCount, unsigned long long &pLastUserTicsThread, unsigned long long &pLastKernelTicsThread, unsigned long long &pLastSystemTime);
+    static bool GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned long &pMemPhysical, unsigned long &pMemAllocs, int &pPid, int &pPPid, float &pLoadUser, float &pLoadSystem, float &pLoadTotal, int &pPriority, int &pNice, int &pThreadCount, unsigned long long &pLastUserTicsThread, unsigned long long &pLastKernelTicsThread, unsigned long long &pLastSystemTime);
 
 private:
     void CloseThread();

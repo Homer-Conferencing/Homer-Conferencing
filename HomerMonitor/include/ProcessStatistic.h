@@ -50,6 +50,7 @@ struct ThreadStatisticDescriptor{
     int ThreadCount;
     unsigned long MemVirtual;
     unsigned long MemPhysical;
+    unsigned long MemAllocs;
 };
 
 typedef std::vector<ThreadStatisticDescriptor> ThreadStatistics;

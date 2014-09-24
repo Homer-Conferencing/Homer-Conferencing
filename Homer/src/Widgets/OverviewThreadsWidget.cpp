@@ -92,8 +92,8 @@ void OverviewThreadsWidget::initializeGUI()
     setupUi(this);
 
     // hide id column
-    mTwThreads->setColumnHidden(12, true);
-    mTwThreads->sortItems(12);
+    mTwThreads->setColumnHidden(13, true);
+    mTwThreads->sortItems(13);
 	#if HOMER_QT5
 		mTwThreads->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 	#else
@@ -102,6 +102,7 @@ void OverviewThreadsWidget::initializeGUI()
     mTwThreads->horizontalHeader()->resizeSection(0, mTwThreads->horizontalHeader()->sectionSize(0) * 3);
     mTwThreads->horizontalHeader()->resizeSection(7, mTwThreads->horizontalHeader()->sectionSize(7) * 2);
     mTwThreads->horizontalHeader()->resizeSection(8, mTwThreads->horizontalHeader()->sectionSize(8) * 2);
+    mTwThreads->horizontalHeader()->resizeSection(9, mTwThreads->horizontalHeader()->sectionSize(9) * 2);
 
     UpdateView();
 }
@@ -190,10 +191,11 @@ void OverviewThreadsWidget::FillRow(int pRow, ProcessStatistic *pStats)
     FillCellText(pRow, 6, QString("%1").arg(tStatValues.Priority));
     FillCellText(pRow, 7, Int2ByteExpression(tStatValues.MemVirtual) + " bytes");
     FillCellText(pRow, 8, Int2ByteExpression(tStatValues.MemPhysical) + " bytes");
-    FillCellText(pRow, 9, QString("%1 %").arg(tStatValues.LoadUser * tScaleFactor, 0, 'f', 2));
-    FillCellText(pRow, 10, QString("%1 %").arg(tStatValues.LoadSystem * tScaleFactor, 0, 'f', 2));
-    FillCellText(pRow, 11, QString("%1 %").arg(tStatValues.LoadTotal * tScaleFactor, 0, 'f', 2));
-    FillCellText(pRow, 12, QString("%1").arg(pRow));
+    FillCellText(pRow, 9, Int2ByteExpression(tStatValues.MemAllocs) + " bytes");
+    FillCellText(pRow, 10, QString("%1 %").arg(tStatValues.LoadUser * tScaleFactor, 0, 'f', 2));
+    FillCellText(pRow, 11, QString("%1 %").arg(tStatValues.LoadSystem * tScaleFactor, 0, 'f', 2));
+    FillCellText(pRow, 12, QString("%1 %").arg(tStatValues.LoadTotal * tScaleFactor, 0, 'f', 2));
+    FillCellText(pRow, 13, QString("%1").arg(pRow));
 }
 
 void OverviewThreadsWidget::UpdateView()
