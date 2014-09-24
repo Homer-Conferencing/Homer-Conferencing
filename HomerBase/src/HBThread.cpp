@@ -31,6 +31,7 @@
 
 #include <Header_Windows.h>
 
+#include <malloc.h>
 #include <string.h>
 #include <stdlib.h>
 #include <cstdio>
@@ -42,7 +43,6 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <errno.h>
-#include <malloc.h>
 #endif
 
 #ifdef APPLE
@@ -78,6 +78,7 @@ static void *(*sOriginalMallocHook)(size_t, const void *);
 std::map<int, unsigned long> sMemAllocations;
 Mutex sMemAllocationsMutex;
 
+#if defined(LINUX)
 static void* malloc_hook(size_t pSize, const void* pCaller)
 {
     int tThreadID = Thread::GetTId();
@@ -127,6 +128,13 @@ void Thread::ActiveMemoryDebugger()
     __malloc_hook = malloc_hook;
 }
 
+#else
+
+void Thread::ActiveMemoryDebugger()
+{
+}
+#endif
+
 void Thread::DeactivateMemoryDebugger()
 {
 
@@ -134,7 +142,7 @@ void Thread::DeactivateMemoryDebugger()
 
 unsigned long Thread::GetMemoryAllocationSize(int pThreadID)
 {
-    std::map<int, uint64_t>::iterator tIt;
+    std::map<int, unsigned long>::iterator tIt;
     uint64_t tResult = 0;
 
     sMemAllocationsMutex.lock();
