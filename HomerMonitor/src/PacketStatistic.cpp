@@ -229,7 +229,7 @@ int PacketStatistic::GetAvgDataRate()
         int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;
 
         if(tMeasuredTimeDifference != 0)
-            tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
+            tDataRate = (double)1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
         else
             tDataRate = 0;
     }else
@@ -259,7 +259,7 @@ int PacketStatistic::GetMomentAvgDataRate()
         int64_t tMeasuredByteCountDifference = mByteCount - tMeasurementStartByteCount;
 
         if (tMeasuredTimeDifference != 0)
-        	tDataRate = 1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
+        	tDataRate = (double)1000000 * tMeasuredByteCountDifference / tMeasuredTimeDifference;
     }
 
     // unlock

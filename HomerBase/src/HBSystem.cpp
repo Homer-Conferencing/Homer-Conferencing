@@ -69,16 +69,20 @@ bool System::GetWindowsKernelVersion(int &pMajor, int &pMinor)
     pMinor = 0;
 
 	#if defined(WINDOWS)
-        OSVERSIONINFOEX tVersionInfo;
-        ZeroMemory(&tVersionInfo, sizeof(OSVERSIONINFOEX));
-        tVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-        if (GetVersionEx((LPOSVERSIONINFO)&tVersionInfo) == 0)
-        {
-            LOGEX(System, LOG_ERROR, "Failed when calling \"GetVersionEx\"");
-            return false;
-        }
-        pMajor = tVersionInfo.dwMajorVersion;
-        pMinor = tVersionInfo.dwMinorVersion;
+		#if (_MSC_VER < 1800)
+			OSVERSIONINFOEX tVersionInfo;
+			ZeroMemory(&tVersionInfo, sizeof(OSVERSIONINFOEX));
+			tVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+			if (GetVersionEx((LPOSVERSIONINFO)&tVersionInfo) == 0)
+			{
+				LOGEX(System, LOG_ERROR, "Failed when calling \"GetVersionEx\"");
+				return false;
+			}
+			pMajor = tVersionInfo.dwMajorVersion;
+			pMinor = tVersionInfo.dwMinorVersion;
+		#else
+			//TODO: implementation for VS2013 and above
+		#endif
     #endif
 
     return true;
@@ -98,20 +102,24 @@ string System::GetKernelVersion()
 				tResult = string(tInfo.release);
 		#endif
 		#if defined(WINDOWS)
-			OSVERSIONINFOEX tVersionInfo;
-			ZeroMemory(&tVersionInfo, sizeof(OSVERSIONINFOEX));
-			tVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-			if (GetVersionEx((LPOSVERSIONINFO)&tVersionInfo) == 0)
-			{
-				LOGEX(System, LOG_ERROR, "Failed when calling \"GetVersionEx\"");
-				return "";
-			}
-			int tMajor = tVersionInfo.dwMajorVersion;
-			int tMinor = tVersionInfo.dwMinorVersion;
-			char tVersionStr[32];
-			sprintf(tVersionStr, "%d.%d", tMajor, tMinor);
+			#if (_MSC_VER < 1800)
+				OSVERSIONINFOEX tVersionInfo;
+				ZeroMemory(&tVersionInfo, sizeof(OSVERSIONINFOEX));
+				tVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+				if (GetVersionEx((LPOSVERSIONINFO)&tVersionInfo) == 0)
+				{
+					LOGEX(System, LOG_ERROR, "Failed when calling \"GetVersionEx\"");
+					return "";
+				}
+				int tMajor = tVersionInfo.dwMajorVersion;
+				int tMinor = tVersionInfo.dwMinorVersion;
+				char tVersionStr[32];
+				sprintf(tVersionStr, "%d.%d", tMajor, tMinor);
 
-			tResult = string(tVersionStr);
+				tResult = string(tVersionStr);
+			#else
+				//TODO: implementation for VS2013 and above
+			#endif
 		#endif
 
 		//LOGEX(System, LOG_VERBOSE, "Found kernel \"%s\"", tResult.c_str());

@@ -38,8 +38,10 @@
 #include <list>
 #include <in_ext.h>
 #include <inet_ext.h>
-#include <unistd.h>
 #include <socket_ext.h>
+#ifndef WINDOWS
+#include <unistd.h>
+#endif
 
 namespace Homer { namespace Base {
 
@@ -678,9 +680,10 @@ bool Socket::Send(string pTargetHost, unsigned int pTargetPort, void *pBuffer, s
 			#endif
 			break;
     }
-    if (tSent < 0 )
+    if (tSent < 0)
+    {
         LOG(LOG_ERROR, "Error when sending data via socket %d because of \"%s\"(%d)", mSocketHandle, strerror(errno), errno);
-    else
+    }else
     {
         if (tSent < (int)pBufferSize)
         {
@@ -1321,7 +1324,7 @@ bool Socket::CreateSocket(enum NetworkType pIpVersion)
         case SOCKET_UDP_LITE:
 			if (IsTransportSupported(SOCKET_UDP_LITE))
 			{
-				if ((mSocketHandle = socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
+				if ((mSocketHandle = (int)socket(tSelectedIPDomain, SOCK_DGRAM, IPPROTO_UDPLITE)) < 0)
 					LOG(LOG_ERROR, "Could not create UDP-Lite socket");
 				else
 					tResult = true;

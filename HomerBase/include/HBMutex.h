@@ -36,7 +36,7 @@
 
 #include <Header_Windows.h>
 
-#if defined(WINDOWS)
+#if defined(WIN32) ||defined(WIN64)
 #define OS_DEP_MUTEX HANDLE
 #endif
 

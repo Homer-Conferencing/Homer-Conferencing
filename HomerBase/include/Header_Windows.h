@@ -32,6 +32,7 @@
 
 // use secured functions instead of old function for string handling
 #ifdef _MSC_VER
+#define SSIZE_T ssize_t
 
 // make sure the 64 bit version is marked as active
 #ifndef WIN64
@@ -65,9 +66,9 @@
 #include <shellapi.h>
 
 // additional definitions for compatibility with gcc
-#ifndef ssize_t
-#define ssize_t SSIZE_T
-#endif
+//#ifndef ssize_t
+//#define ssize_t SSIZE_T
+//#endif
 
 #ifndef __const
 #define __const

@@ -25,7 +25,9 @@
  */
 
 #include <Header_Windows.h>
+#ifndef WINDOWS
 #include <sys/param.h>
+#endif
 
 namespace Homer { namespace Base {
 
