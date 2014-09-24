@@ -486,13 +486,13 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // #########################################
     LOG(LOG_VERBOSE, "..creating new output stream");
     mMediaStreamIndex = 0;
-    mEncoderStream = HM_avformat_new_stream(mFormatContext, 0);
+    mMediaStream = HM_avformat_new_stream(mFormatContext, 0);
 
     // #########################################
     // create new output codec context
     // #########################################
     LOG(LOG_VERBOSE, "..creating new output codec context");
-    mCodecContext = mEncoderStream->codec;
+    mCodecContext = mMediaStream->codec;
     mCodecContext->codec_id = mStreamCodecId;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
     mCodecContext->bit_rate = mStreamBitRate;
@@ -513,11 +513,11 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     {
         //HACK: pretend a frame rate of 30 fps, the actual frame rate corresponds to the frame rate from the base media source
         mCodecContext->time_base = (AVRational){100, (int)(30 * 100)};
-        mEncoderStream->time_base = (AVRational){100, (int)(30 * 100)};
+        mMediaStream->time_base = (AVRational){100, (int)(30 * 100)};
     }else
     {
         mCodecContext->time_base = (AVRational){100, (int)(mInputFrameRate * 100)};
-        mEncoderStream->time_base = (AVRational){100, (int)(mInputFrameRate * 100)};
+        mMediaStream->time_base = (AVRational){100, (int)(mInputFrameRate * 100)};
     }
     // set i frame distance: GOP = group of pictures
     if (mStreamCodecId != AV_CODEC_ID_THEORA)
@@ -557,8 +557,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting video codec");
         // free codec and stream 0
-        av_freep(&mEncoderStream->codec);
-        av_freep(&mEncoderStream);
+        av_freep(&mMediaStream->codec);
+        av_freep(&mMediaStream);
 
         // Close the format context
         av_free(mFormatContext);
@@ -619,8 +619,8 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
             LOG(LOG_ERROR, "Couldn't open video codec because \"%s\".", strerror(AVUNERROR(tResult)));
 
             // free codec and stream 0
-            av_freep(&mEncoderStream->codec);
-            av_freep(&mEncoderStream);
+            av_freep(&mMediaStream->codec);
+            av_freep(&mMediaStream);
 
             // Close the format context
             av_free(mFormatContext);
@@ -642,10 +642,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mStreamMaxPacketSize);
     LOG(LOG_INFO, "  stream...");
-    LOG(LOG_INFO, "    ..AV stream context at: %p", mEncoderStream);
-    LOG(LOG_INFO, "    ..AV stream codec is: %s(%d)", mEncoderStream->codec->codec->name, mEncoderStream->codec->codec_id);
-    LOG(LOG_INFO, "    ..AV stream codec context at: 0x%p", mEncoderStream->codec);
-    LOG(LOG_INFO, "    ..AV stream codec codec context at: 0x%p", mEncoderStream->codec->codec);
+    LOG(LOG_INFO, "    ..AV stream context at: %p", mMediaStream);
+    LOG(LOG_INFO, "    ..AV stream codec is: %s(%d)", mMediaStream->codec->codec->name, mMediaStream->codec->codec_id);
+    LOG(LOG_INFO, "    ..AV stream codec context at: 0x%p", mMediaStream->codec);
+    LOG(LOG_INFO, "    ..AV stream codec codec context at: 0x%p", mMediaStream->codec->codec);
 
     return true;
 }
@@ -748,13 +748,13 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     // #########################################
     LOG(LOG_VERBOSE, "..creating new output stream");
     mMediaStreamIndex = 0;
-    mEncoderStream = HM_avformat_new_stream(mFormatContext, 0);
+    mMediaStream = HM_avformat_new_stream(mFormatContext, 0);
 
     // #########################################
     // create new output codec context
     // #########################################
     LOG(LOG_VERBOSE, "..creating new output codec context");
-    mCodecContext = mEncoderStream->codec;
+    mCodecContext = mMediaStream->codec;
     mCodecContext->codec_id = mStreamCodecId;
     mCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
     switch(mCodecContext->codec_id)
@@ -797,9 +797,9 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
 
     // only for MP3 codec we use the 90kHz clock rate like it is used for video streaming
     if (mCodecContext->codec_id != AV_CODEC_ID_MP3)
-        mEncoderStream->time_base = (AVRational){1, mOutputAudioSampleRate};
+        mMediaStream->time_base = (AVRational){1, mOutputAudioSampleRate};
     else
-        mEncoderStream->time_base = (AVRational){1, 90000};
+        mMediaStream->time_base = (AVRational){1, 90000};
 
     mCodecContext->channels = mOutputAudioChannels;
     mCodecContext->channel_layout = HM_av_get_default_channel_layout(mOutputAudioChannels);
@@ -822,8 +822,8 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     {
         LOG(LOG_ERROR, "Couldn't find a fitting audio codec");
         // free codec and stream 0
-        av_freep(&mEncoderStream->codec);
-        av_freep(&mEncoderStream);
+        av_freep(&mMediaStream->codec);
+        av_freep(&mMediaStream);
 
         // Close the format context
         av_free(mFormatContext);
@@ -839,8 +839,8 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     {
         LOG(LOG_ERROR, "Couldn't open audio codec %s because \"%s\".", tCodec->name, strerror(AVUNERROR(tResult)));
         // free codec and stream 0
-        av_freep(&mEncoderStream->codec);
-        av_freep(&mEncoderStream);
+        av_freep(&mMediaStream->codec);
+        av_freep(&mMediaStream);
 
         // Close the format context
         av_free(mFormatContext);
@@ -920,12 +920,12 @@ bool MediaSourceMuxer::CloseMuxer()
         LOG(LOG_VERBOSE, "..closing %s codec", GetMediaTypeStr().c_str());
 
         // Close the codec
-        mEncoderStream->discard = AVDISCARD_ALL;
+        mMediaStream->discard = AVDISCARD_ALL;
         avcodec_close(mCodecContext);
 
         // free codec and stream 0
-        av_freep(&mEncoderStream->codec);
-        av_freep(mEncoderStream);
+        av_freep(&mMediaStream->codec);
+        av_freep(mMediaStream);
 
         // Close the format context
         av_free(mFormatContext);
@@ -2524,18 +2524,26 @@ bool MediaSourceMuxer::SelectDevice(std::string pDesiredDevice, enum MediaType p
     return tResult;
 }
 
-string MediaSourceMuxer::GetCurrentDeviceName()
+string MediaSourceMuxer::GetBroadcasterName()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetCurrentDeviceName();
+        return mMediaSource->GetBroadcasterName();
     else
         return "";
 }
 
-string MediaSourceMuxer::GetCurrentDevicePeerName()
+string MediaSourceMuxer::GetBroadcasterStreamName()
 {
     if (mMediaSource != NULL)
-        return mMediaSource->GetCurrentDevicePeerName();
+        return mMediaSource->GetBroadcasterStreamName();
+    else
+        return "";
+}
+
+string MediaSourceMuxer::GetCurrentDeviceName()
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetCurrentDeviceName();
     else
         return "";
 }

@@ -32,11 +32,16 @@ SET (INCLUDE_DIRS
 	/usr/include/sofia-sip-1.12
 	/usr/local/include/sofia-sip
 	/usr/local/include/sofia-sip-1.12
-    ../../../Homer-Release/HomerIncludes/sofia-sip/
 	/usr/include/ffmpeg
 	${OPENSSL_INCLUDE_DIR}
     ${CMAKE_BINARY_DIR}/HomerMultimedia/libHomerMultimedia
 )
+IF (NOT ${BUILD} MATCHES "Default")
+SET (INCLUDE_DIRS
+	../../../Homer-Release/HomerIncludes/sofia-sip/
+	${INCLUDE_DIRS}
+)
+ENDIF()
 
 ##############################################################
 # compile flags                                                                                                                                                                                                                                                                   

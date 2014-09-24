@@ -25,6 +25,7 @@
  */
 
 #include <HBThread.h>
+#include <HBMutex.h>
 #include <HBSystem.h>
 #include <Logger.h>
 
@@ -33,6 +34,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <cstdio>
+#include <map>
 
 #if defined(LINUX) || defined(APPLE) || defined(BSD)
 #include <sys/types.h>
@@ -40,6 +42,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <errno.h>
+#include <malloc.h>
 #endif
 
 #ifdef APPLE
@@ -65,6 +68,82 @@ Thread::Thread()
 Thread::~Thread()
 {
     LOG(LOG_VERBOSE, "Destroying thread object");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// store the original malloc hook
+static void *(*sOriginalMallocHook)(size_t, const void *);
+
+std::map<int, unsigned long> sMemAllocations;
+Mutex sMemAllocationsMutex;
+
+static void* malloc_hook(size_t pSize, const void* pCaller)
+{
+    int tThreadID = Thread::GetTId();
+    std::map<int, unsigned long>::iterator tIt;
+    void *tResult;
+
+    // set original malloc hook
+    __malloc_hook = sOriginalMallocHook;
+
+    // re-call malloc()
+    tResult = malloc(pSize);
+
+    // account memory allocation
+    if(tResult != NULL)
+    {
+        /*
+         * update map about memory allocations
+         */
+        unsigned long tAllocatedMemForCurrentThread = 0;
+        sMemAllocationsMutex.lock();
+        tIt = sMemAllocations.find(tThreadID);
+        if (tIt != sMemAllocations.end())
+            tAllocatedMemForCurrentThread = tIt->second;
+        tAllocatedMemForCurrentThread += pSize;
+        sMemAllocations[tThreadID] = tAllocatedMemForCurrentThread;
+        sMemAllocationsMutex.unlock();
+
+        // print debug output
+//        if(pSize > 32768)
+//            LOGEX(Thread, LOG_ERROR, "malloc(%u) called for thread %d from %p returns %p => %lu", (unsigned int) pSize, Thread::GetTId(), pCaller, tResult, tAllocatedMemForCurrentThread);
+    }
+
+    // restore our own hook
+    __malloc_hook = malloc_hook;
+
+    return tResult;
+}
+
+void Thread::ActiveMemoryDebugger()
+{
+    LOGEX(Thread, LOG_WARN, "Activating malloc() hook");
+
+    // store the original malloc hook
+    sOriginalMallocHook = __malloc_hook;
+
+    // set our own malloc hook
+    __malloc_hook = malloc_hook;
+}
+
+void Thread::DeactivateMemoryDebugger()
+{
+
+}
+
+unsigned long Thread::GetMemoryAllocationSize(int pThreadID)
+{
+    std::map<int, uint64_t>::iterator tIt;
+    uint64_t tResult = 0;
+
+    sMemAllocationsMutex.lock();
+    tIt = sMemAllocations.find(pThreadID);
+    if (tIt != sMemAllocations.end())
+        tResult = tIt->second;
+    sMemAllocationsMutex.unlock();
+
+    return tResult;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -260,7 +339,7 @@ vector<int> Thread::GetTIds()
 	return tResult;
 }
 
-bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned long &pMemPhysical, int &pPid, int &pPPid, float &pLoadUser, float &pLoadSystem, float &pLoadTotal, int &pPriority, int &pBasePriority, int &pThreadCount, unsigned long long &pLastUserTicsThread, unsigned long long &pLastKernelTicsThread, unsigned long long &pLastSystemTime)
+bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned long &pMemPhysical, unsigned long &pMemAllocs, int &pPid, int &pPPid, float &pLoadUser, float &pLoadSystem, float &pLoadTotal, int &pPriority, int &pBasePriority, int &pThreadCount, unsigned long long &pLastUserTicsThread, unsigned long long &pLastKernelTicsThread, unsigned long long &pLastSystemTime)
 {
 	bool tResult = false;
 
@@ -272,6 +351,7 @@ bool Thread::GetThreadStatistic(int pTid, unsigned long &pMemVirtual, unsigned l
     pLoadTotal = 0;
     pPriority = 0;
     pBasePriority = 0;
+    pMemAllocs = GetMemoryAllocationSize(pTid);
 
     #if defined(LINUX)
 	    /*

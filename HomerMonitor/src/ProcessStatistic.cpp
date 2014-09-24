@@ -70,7 +70,7 @@ ThreadStatisticDescriptor ProcessStatistic::GetThreadStatistic()
 {
     ThreadStatisticDescriptor tStat;
 
-    Thread::GetThreadStatistic(mThreadId, tStat.MemVirtual, tStat.MemPhysical, tStat.Pid, tStat.PPid, tStat.LoadUser, tStat.LoadSystem, tStat.LoadTotal, tStat.Priority, tStat.PriorityBase, tStat.ThreadCount, mLastUserTicsThread, mLastKernelTicsThread, mLastSystemTime);
+    Thread::GetThreadStatistic(mThreadId, tStat.MemVirtual, tStat.MemPhysical, tStat.MemAllocs, tStat.Pid, tStat.PPid, tStat.LoadUser, tStat.LoadSystem, tStat.LoadTotal, tStat.Priority, tStat.PriorityBase, tStat.ThreadCount, mLastUserTicsThread, mLastKernelTicsThread, mLastSystemTime);
     tStat.Tid = mThreadId;
 
     //LOG(LOG_VERBOSE, "Thread %d => %f total load", mThreadId, tStat.LoadTotal);

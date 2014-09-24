@@ -903,7 +903,7 @@ QStringList VideoWidget::GetVideoInfo()
     //############################################
     //### Line 8: network peer
     QString tLine_Peer = "";
-    QString tPeerName = QString(mVideoSource->GetCurrentDevicePeerName().c_str());
+    QString tPeerName = mVideoWorker->GetSourceBroadcasterStreamName();
     if (tPeerName != "")
     	tLine_Peer = Homer::Gui::VideoWidget::tr("Sender:") + " " + tPeerName;
     int tSynchPackets = mVideoSource->GetSynchronizationPoints();

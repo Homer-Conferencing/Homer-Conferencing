@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>229</width>
-    <height>149</height>
+    <width>988</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -207,6 +207,11 @@
          </column>
          <column>
           <property name="text">
+           <string>Mallocs</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
            <string>User</string>
           </property>
          </column>
@@ -265,14 +270,6 @@
            <set>AlignRight|AlignVCenter</set>
           </property>
          </item>
-         <item row="0" column="9">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="textAlignment">
-           <set>AlignRight|AlignVCenter</set>
-          </property>
-         </item>
          <item row="0" column="10">
           <property name="text">
            <string/>
@@ -290,6 +287,14 @@
           </property>
          </item>
          <item row="0" column="12">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="textAlignment">
+           <set>AlignRight|AlignVCenter</set>
+          </property>
+         </item>
+         <item row="0" column="13">
           <property name="text">
            <string>0</string>
           </property>

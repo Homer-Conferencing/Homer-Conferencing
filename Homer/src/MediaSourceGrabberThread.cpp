@@ -43,6 +43,7 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QTime>
+#include <QPair>
 #include <QMutex>
 #include <QPainter>
 #include <QEvent>
@@ -131,11 +132,6 @@ void MediaSourceGrabberThread::SetStreamName(QString pName)
 QString MediaSourceGrabberThread::GetStreamName()
 {
     return QString(mMediaSource->GetMediaSource()->GetStreamName().c_str());
-}
-
-QString MediaSourceGrabberThread::GetCurrentDevicePeer()
-{
-    return QString(mMediaSource->GetCurrentDevicePeerName().c_str());
 }
 
 QString MediaSourceGrabberThread::GetCurrentDevice()
@@ -447,7 +443,7 @@ void MediaSourceGrabberThread::SetRelayActivation(bool pActive)
 
 QStringList MediaSourceGrabberThread::GetSourceMetaInfo()
 {
-    QStringList tAudioMetaInfo;
+    QStringList tMetaInfo;
 
     if(mMediaSource != NULL)
     {
@@ -459,12 +455,48 @@ QStringList MediaSourceGrabberThread::GetSourceMetaInfo()
             for(int i = 0; i < tEntries; i++)
             {
                 //LOG(LOG_VERBOSE, "  ..entry: %s -> %s", tSourceMetaData[i].Key.c_str(), tSourceMetaData[i].Value.c_str());
-                tAudioMetaInfo.push_back(QString(tSourceMetaData[i].Key.c_str()) + ": " + QString(tSourceMetaData[i].Value.c_str()));
+                tMetaInfo.push_back(QString(tSourceMetaData[i].Key.c_str()) + ": " + QString(tSourceMetaData[i].Value.c_str()));
             }
         }
     }
 
-    return tAudioMetaInfo;
+    return tMetaInfo;
+}
+
+SourceMetaDataList MediaSourceGrabberThread::GetSourceMetaData()
+{
+    SourceMetaDataList tMetaDataList;
+
+    if(mMediaSource != NULL)
+    {
+        LOG(LOG_VERBOSE, "Determining meta data of source");
+
+        int tEntries = mMediaSource->GetMetaData().size();
+        LOG(LOG_VERBOSE, "Got %d entries", tEntries);
+
+        if(tEntries > 0)
+        {
+            Homer::Multimedia::MetaData tSourceMetaData = mMediaSource->GetMetaData();
+            //LOG(LOG_VERBOSE, "Found %d meta data entries");
+            for(int i = 0; i < tEntries; i++)
+            {
+                //LOG(LOG_VERBOSE, "  ..entry: %s -> %s", tSourceMetaData[i].Key.c_str(), tSourceMetaData[i].Value.c_str());
+                tMetaDataList.push_back(QPair<QString, QString>(QString(tSourceMetaData[i].Key.c_str()), QString(tSourceMetaData[i].Value.c_str())));
+            }
+        }
+    }
+
+    return tMetaDataList;
+}
+
+QString MediaSourceGrabberThread::GetSourceBroadcasterName()
+{
+    return QString(mMediaSource->GetBroadcasterName().c_str());
+}
+
+QString MediaSourceGrabberThread::GetSourceBroadcasterStreamName()
+{
+    return QString(mMediaSource->GetBroadcasterStreamName().c_str());
 }
 
 void MediaSourceGrabberThread::StartRecorder(std::string pSaveFileName, int pQuality)

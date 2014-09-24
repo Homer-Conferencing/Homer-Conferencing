@@ -132,7 +132,7 @@ bool MediaSourceFile::OpenVideoGrabDevice(int pResX, int pResY, float pFps)
     if (!SelectStream())
         return false;
 
-    DetermineMetaData(mFormatContext->metadata);
+    DetermineMetaData(mFormatContext->metadata, true);
 
     if (!OpenDecoder())
         return false;
@@ -295,7 +295,7 @@ bool MediaSourceFile::OpenAudioGrabDevice(int pSampleRate, int pChannels)
         return false;
     }
 
-    DetermineMetaData(mFormatContext->metadata);
+    DetermineMetaData(mFormatContext->metadata, true);
 
     mCurrentInputChannel = mDesiredInputChannel;
 
@@ -379,7 +379,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
 
     float tSeekEnd = GetSeekEnd();
     float tNumberOfFrames = mNumberOfFrames;
-    double tStreamStartFrameIndex = mFormatContext->streams[mMediaStreamIndex]->start_time;
+    double tStreamStartFrameIndex = mMediaStream->start_time;
 
     if (IsSeeking())
     {
@@ -454,7 +454,7 @@ bool MediaSourceFile::Seek(float pSeconds, bool pOnlyKeyFrames)
                     tResult = false;
                 }else
                 {
-                    LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful, current dts is %"PRId64"", GetMediaTypeStr().c_str(), (float)tFrameIndex, mFormatContext->streams[mMediaStreamIndex]->cur_dts);
+                    LOG(LOG_VERBOSE, "Seeking in %s file to frame index %.2f was successful, current dts is %"PRId64"", GetMediaTypeStr().c_str(), (float)tFrameIndex, mMediaStream->cur_dts);
 
                     // seeking was successful
                     tResult = true;
@@ -511,12 +511,11 @@ int64_t MediaSourceFile::GetSynchronizationTimestamp()
     int64_t tResult = 0;
 
     /******************************************
-     * The following lines do the following:
-     *   - use the current play-out position (given in seconds!) and transform it into micro seconds
-     *   - return the calculated play-out time as synchronization timestamp in micro seconds
+     * We use the current play-out position (given in seconds!) and transform it into micro seconds.
+     * The resulting value is returned by this function as synchronization timestamp.
      *
-     *   - when this approach is applied for both the video and audio stream (which is grabbed from the same local/remote file!),
-     *     a time difference can be derived which corresponds to the A/V drift in micro seconds of the video and audio playback on the local(!) machine
+     * If this is applied for both the video and audio stream (which is grabbed from the same local/remote file!),
+     * a time difference can be derived which corresponds to the A/V drift in micro seconds.
      ******************************************/
     // we return the file position in us to allow A/V synchronization based on a file index
     tResult = GetSeekPos() /* in seconds */ * AV_TIME_BASE;
@@ -551,7 +550,7 @@ float MediaSourceFile::GetSeekPos()
             {
                 //HINT: we need the corrected PTS values and the one from the file
                 // correcting PTS value by a possible start PTS value (offset)
-                tStreamStartFrameIndex = mFormatContext->streams[mMediaStreamIndex]->start_time;
+                tStreamStartFrameIndex = mMediaStream->start_time;
                 if (tStreamStartFrameIndex > 0)
                 {
                     //LOG(LOG_VERBOSE, "Correcting PTS value by offset: %.2f", (float)mSourceStartPts);

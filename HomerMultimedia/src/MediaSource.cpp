@@ -94,6 +94,7 @@ MediaSource::MediaSource(string pName):
     mOutputAudioFormat = AV_SAMPLE_FMT_S16;
     mVideoScalerContext = NULL;
     mFormatContext = NULL;
+    mMediaStream = NULL;
     mRecordingSaveFileName = "";
     mDesiredDevice = "";
     mCurrentDevice = "";
@@ -2888,12 +2889,12 @@ bool MediaSource::SelectDevice(std::string pDeviceName, enum MediaType pMediaTyp
     return tResult;
 }
 
-std::string MediaSource::GetCurrentDevicePeerName()
+std::string MediaSource::GetBroadcasterName()
 {
     return "";
 }
 
-std::string MediaSource::GetPeerDeviceName()
+std::string MediaSource::GetBroadcasterStreamName()
 {
     return "";
 }
@@ -3069,6 +3070,11 @@ void MediaSource::MoveMarker(float pRelX, float pRelY)
 
 MetaData MediaSource::GetMetaData()
 {
+    // update
+    if(mFormatContext != NULL)
+        DetermineMetaData(mFormatContext->metadata, false);
+
+    // return the recent meta data
     return mMetaData;
 }
 
@@ -3131,12 +3137,12 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream codec time_base: %d/%d", mCodecContext->time_base.num, mCodecContext->time_base.den); // inverse
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream codec caps: %d", mCodecContext->codec->capabilities);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream start real-time: %"PRId64"", mFormatContext->start_time_realtime);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream start time: %"PRId64"", FilterNeg(mFormatContext->streams[mMediaStreamIndex]->start_time));
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream start time: %"PRId64"", FilterNeg(mMediaStream->start_time));
 #if FF_API_R_FRAME_RATE
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream rfps: %d/%d", mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.num, mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream rfps: %d/%d", mMediaStream->r_frame_rate.num, mMediaStream->r_frame_rate.den);
 #endif
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream time_base: %d/%d", mFormatContext->streams[mMediaStreamIndex]->time_base.num, mFormatContext->streams[mMediaStreamIndex]->time_base.den);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream avg fps: %.2f", av_q2d(mFormatContext->streams[mMediaStreamIndex]->avg_frame_rate));
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream time_base: %d/%d", mMediaStream->time_base.num, mMediaStream->time_base.den);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream avg fps: %.2f", av_q2d(mMediaStream->avg_frame_rate));
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec qmin: %d", mCodecContext->qmin);
@@ -3155,9 +3161,9 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..format context duration: %"PRId64" seconds (exact value: %"PRId64")", FilterNeg(mFormatContext->duration) / AV_TIME_BASE, mFormatContext->duration);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..input frame rate: %.2f fps", GetInputFrameRate());
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..output frame rate: %.2f fps", GetOutputFrameRate());
-        int64_t tStreamDuration = FilterNeg(mFormatContext->streams[mMediaStreamIndex]->duration);
+        int64_t tStreamDuration = FilterNeg(mMediaStream->duration);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context duration: %"PRId64" frames (%.0f seconds), nr. of frames: %"PRId64"", tStreamDuration, (float)tStreamDuration / GetInputFrameRate());
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %"PRId64"", mFormatContext->streams[mMediaStreamIndex]->nb_frames);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..stream context frames: %"PRId64"", mMediaStream->nb_frames);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..max. delay: %d", mFormatContext->max_delay);
         switch(mMediaType)
         {
@@ -3491,9 +3497,36 @@ bool MediaSource::FfmpegSelectStream(string pSource, int pLine)
         return false;
     }
 
+    mMediaStream = mFormatContext->streams[mMediaStreamIndex];
+
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Found %s stream at index %d", GetMediaTypeStr().c_str(), mMediaStreamIndex);
 
     return true;
+}
+
+void MediaSource::FfmpegDetermineMetaData(string pSource, int pLine, AVDictionary *pMetaData, bool pDebugLog)
+{
+    AVDictionaryEntry *tEntry=NULL;
+
+    mMetaData.clear();
+
+    int i = 0;
+    if(pMetaData != NULL)
+    {
+        while((tEntry = HM_av_dict_get(pMetaData, "", tEntry))) {
+            MetaDataEntry tMetaEntry;
+            tMetaEntry.Key = string(tEntry->key);
+            tMetaEntry.Value = string(tEntry->value);
+            if(pDebugLog)
+            {
+                if (i == 0)
+                    LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Found meta data: ");
+                LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "   %d: [%s] -> %s", i, tMetaEntry.Key.c_str(), tMetaEntry.Value.c_str());
+            }
+            mMetaData.push_back(tMetaEntry);
+            i++;
+        }
+    }
 }
 
 bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
@@ -3503,6 +3536,20 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     AVDictionary        *tOptions = NULL;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Going to open %s decoder..", GetMediaTypeStr().c_str());
+
+    //######################################################
+    //### check if stream was already selected
+    //######################################################
+    if (mMediaStream == NULL)
+    {
+        if(mMediaStreamIndex >= 0)
+        {
+            mMediaStream = mFormatContext->streams[mMediaStreamIndex];
+        }else
+        {
+            LOG_REMOTE(LOG_ERROR, pSource, pLine, "Invalid stream selection via index: %d", mMediaStreamIndex);
+        }
+    }
 
     //######################################################
     //### create decoder context
@@ -3516,7 +3563,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
         return false;
     }
-    if ((tRes = avcodec_copy_context(mCodecContext, mFormatContext->streams[mMediaStreamIndex]->codec)) < 0)
+    if ((tRes = avcodec_copy_context(mCodecContext, mMediaStream->codec)) < 0)
     {
         LOG_REMOTE(LOG_ERROR, pSource, pLine, "Could not create decoder context because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
 
@@ -3668,14 +3715,14 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 
             mOutputFrameRate = -1;
 #if FF_API_R_FRAME_RATE
-            if(mFormatContext->streams[mMediaStreamIndex]->r_frame_rate.den > 0)
+            if(mMediaStream->r_frame_rate.den > 0)
             {
-                mOutputFrameRate = av_q2d(mFormatContext->streams[mMediaStreamIndex]->r_frame_rate);
+                mOutputFrameRate = av_q2d(mMediaStream->r_frame_rate);
                 LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Using r_fps: %.2f", mOutputFrameRate);
             }
 #endif
             if (mOutputFrameRate <= 0)
-                mOutputFrameRate = av_q2d(mFormatContext->streams[mMediaStreamIndex]->avg_frame_rate);
+                mOutputFrameRate = av_q2d(mMediaStream->avg_frame_rate);
 
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d and frame rate: %.2f", mSourceResX, mSourceResY, mOutputFrameRate);
             break;
@@ -3698,7 +3745,7 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
     mInputBitRate = mCodecContext->bit_rate;
 
     // derive the FPS from the timebase of the selected input stream
-    mInputFrameRate = (float)mFormatContext->streams[mMediaStreamIndex]->time_base.den / mFormatContext->streams[mMediaStreamIndex]->time_base.num;
+    mInputFrameRate = (float)mMediaStream->time_base.den / mMediaStream->time_base.num;
 
     LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected frame rate: %f", GetInputFrameRate());
 
@@ -3713,8 +3760,8 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
         mNumberOfFrames = 0;
     }
 
-    if (mFormatContext->streams[mMediaStreamIndex]->start_time < 0)
-        mFormatContext->streams[mMediaStreamIndex]->start_time = 0;
+    if (mMediaStream->start_time < 0)
+        mMediaStream->start_time = 0;
 
     // set PTS offset
 // TODO: remove the following lines and remove "mInputStartPts" from the source
@@ -3725,9 +3772,9 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
 //        LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the format context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
 //    }else
 //    {
-//        if (mFormatContext->streams[mMediaStreamIndex]->start_time > 0)
+//        if (mDecoderStream->start_time > 0)
 //        {
-//            mInputStartPts = mFormatContext->streams[mMediaStreamIndex]->start_time;
+//            mInputStartPts = mDecoderStream->start_time;
 //            LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Setting %s start time (based on the stream context) to %"PRId64, GetMediaTypeStr().c_str(), mInputStartPts);
 //        }else
 //        {
@@ -3893,7 +3940,7 @@ bool MediaSource::FfmpegCloseAll(string pSource, int pLine)
         if (mCodecContext != NULL)
         {
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "    ..closing %s codec", GetMediaTypeStr().c_str());
-            mFormatContext->streams[mMediaStreamIndex]->discard = AVDISCARD_ALL;
+            mMediaStream->discard = AVDISCARD_ALL;
             avcodec_close(mCodecContext);
             mCodecContext = NULL;
         }else
@@ -3992,20 +4039,6 @@ bool MediaSource::FfmpegEncodeAndWritePacket(string pSource, int pLine, AVFormat
     av_free_packet(tPacket);
 
     return tResult;
-}
-
-void MediaSource::FfmpegDetermineMetaData(string pSource, int pLine, AVDictionary *pMetaData)
-{
-    AVDictionaryEntry *tEntry=NULL;
-
-    mMetaData.clear();
-
-     while((tEntry = HM_av_dict_get(pMetaData, "", tEntry))) {
-         MetaDataEntry tMetaEntry;
-         tMetaEntry.Key = string(tEntry->key);
-         tMetaEntry.Value = string(tEntry->value);
-         mMetaData.push_back(tMetaEntry);
-     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

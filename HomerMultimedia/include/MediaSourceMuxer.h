@@ -167,8 +167,9 @@ public:
     virtual void getVideoDevices(VideoDevices &pVList);
     virtual void getAudioDevices(AudioDevices &pAList);
     virtual bool SelectDevice(std::string pDesiredDevice, enum MediaType pMediaType, bool &pIsNewDevice); // returns if the new device should be reseted
+    virtual std::string GetBroadcasterName();
+    virtual std::string GetBroadcasterStreamName();
     virtual std::string GetCurrentDeviceName();
-    virtual std::string GetCurrentDevicePeerName();
     virtual void RegisterMediaFilter(MediaFilter *pMediaFilter);
     virtual bool UnregisterMediaFilter(MediaFilter *pMediaFilter, bool pAutoDelete = true);
     virtual bool RegisterMediaSource(MediaSource *pMediaSource);
@@ -244,7 +245,6 @@ private:
     MediaFifo           *mEncoderFifo;
     Mutex				mEncoderFifoState;
     Mutex               mEncoderFifoAvailableMutex;
-    AVStream            *mEncoderStream;
     int					mEncoderBufferedFrames; // in frames
     int64_t				mEncoderStartTime;
     /* device control */

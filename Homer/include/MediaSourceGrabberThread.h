@@ -65,6 +65,9 @@ using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+typedef QPair<QString, QString>         SourceMetaDataEntry;
+typedef QList<SourceMetaDataEntry>      SourceMetaDataList;
+
 class MediaSourceGrabberThread:
     public QThread
 {
@@ -122,6 +125,9 @@ public:
 
     /* meta data*/
     QStringList GetSourceMetaInfo();
+    SourceMetaDataList GetSourceMetaData();
+    QString GetSourceBroadcasterName();
+    QString GetSourceBroadcasterStreamName();
 
 protected:
     /* recording */

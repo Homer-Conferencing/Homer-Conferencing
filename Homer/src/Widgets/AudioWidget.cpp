@@ -620,7 +620,7 @@ QStringList AudioWidget::GetAudioInfo()
     //############################################
     //### Line 7: network peer
     QString tLine_Peer = "";
-    QString tPeerName = QString(mAudioSource->GetCurrentDevicePeerName().c_str());
+    QString tPeerName = mAudioWorker->GetSourceBroadcasterStreamName();
     if (tPeerName != "")
     	tLine_Peer = Homer::Gui::AudioWidget::tr("Sender:") + " " + tPeerName;
     int tSynchPackets = mAudioSource->GetSynchronizationPoints();

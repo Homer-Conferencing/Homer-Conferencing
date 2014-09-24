@@ -144,6 +144,7 @@ private:
 
     QString GetPlaylistEntry(int pIndex);
     QString GetPlaylistEntryName(int pIndex);
+    bool UpdateEntryName(QString pLocation, QString pNewName);
     void DeletePlaylistEntry(int pIndex);
     void RenamePlaylistEntry(int pIndex, QString pName);
     void ResetList();

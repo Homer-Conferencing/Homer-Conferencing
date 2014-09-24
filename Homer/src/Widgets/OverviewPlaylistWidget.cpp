@@ -57,7 +57,7 @@ namespace Homer { namespace Gui {
 ///////////////////////////////////////////////////////////////////////////////
 
 #define IS_SUPPORTED_WEB_LINK(x)						((x.toLower().startsWith("http://")) || (x.toLower().startsWith("mms://")) || (x.toLower().startsWith("mmst://")) || (x.toLower().startsWith("icyx://")))
-#define IS_SUPPORTED_PLAYLIST(x)                        ((x.toLower().endsWith(".m3u")) || (x.toLower().endsWith(".wmx")) || (x.toLower().endsWith(".pls")))
+#define IS_SUPPORTED_PLAYLIST(x)                        ((x.toLower().endsWith(".m3u")) || (x.toLower().endsWith(".m3u8")) || (x.toLower().endsWith(".wmx")) || (x.toLower().endsWith(".pls")))
 #define IS_DOT_DIRECTORY(x)                             (x.toLower().endsWith("."))
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ OverviewPlaylistWidget::~OverviewPlaylistWidget()
 /// some static helpers
 ///////////////////////////////////////////////////////////////////////////////
 
-static QString sAllLoadVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.divx *.dv *.flv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.ts *.vob *.wmv *.wmx *.3gp)";
+static QString sAllLoadVideoFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.divx *.dv *.flv *.jpg *.jpeg *.m4v *.mkv *.mov *.mpg *.mpeg *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.m3u8 *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.ts *.vob *.wmv *.wmx *.3gp)";
 static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi *.divx);;"\
@@ -144,7 +144,7 @@ static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Matroska Format (*.mkv);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "MPEG-2 Transport Stream (*.m2ts *.m2t *.ts);;"\
-                    "M3U Playlist File (*.m3u);;"\
+                    "M3U Playlist File (*.m3u *.m3u8);;"\
                     "OGG Container format (*.ogg *.ogv);;"\
                     "PLS Playlist File (*.pls);;"\
                     "Portable Network Graphics (*.png);;"\
@@ -180,6 +180,10 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
     if(pFileName == "")
         return false;
 
+    // explicitly allow A/V streams
+    if (IS_SUPPORTED_WEB_LINK(pFileName))
+        return true;
+
     pFileName = QString(pFileName.toLocal8Bit());
 
     int tPos = pFileName.lastIndexOf('.', -1);
@@ -203,13 +207,13 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
     }
 }
 
-static QString sAllLoadAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.3gp *.asf *.avi *.divx *.flv *.m2ts *.m2t *.m3u *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.ogg *.ogv *.pls *.rm *.rmvb *.ts *.vob *.wav *.wmv *.wmx)";
+static QString sAllLoadAudioFilter =  (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.3gp *.asf *.avi *.divx *.flv *.m2ts *.m2t *.m3u *.m3u8 *.m4v *.mka *.mkv *.mov *.mp3 *.mp4 *.mp4a *.mpg *.mpeg *.ogg *.ogv *.pls *.rm *.rmvb *.ts *.vob *.wav *.wmv *.wmx)";
 static QString sLoadAudioFilters =  sAllLoadAudioFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi *.divx);;"\
 					"Flash Video Format (*.flv);;"\
                     "MPEG-2 Transport Stream (*.m2ts *.m2t *.ts);;"\
-                    "M3U Playlist File (*.m3u);;"\
+                    "M3U Playlist File (*.m3u *.m3u8);;"\
                     "Matroska Format (*.mka *.mkv);;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
@@ -283,7 +287,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
     if(pFileName == "")
         return false;
 
-    // explicitly allow audio streams
+    // explicitly allow A/V streams
     if (IS_SUPPORTED_WEB_LINK(pFileName))
         return true;
 
@@ -310,7 +314,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
     }
 }
 
-static QString sAllLoadMediaFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.divx *.dv *.flv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.ts *.vob *.wav *.wmv *.wmx *.3gp)";
+static QString sAllLoadMediaFilter = (QString)QT_TRANSLATE_NOOP("Homer::Gui::OverviewPlaylistWidget", "All supported formats") + " (*.asf *.avi *.bmp *.divx *.dv *.flv *.jpg *.jpeg *.m4v *.mka *.mkv *.mov *.mpg *.mpeg *.mp3 *.mp4 *.mp4a *.m2ts *.m2t *.m3u *.m3u8 *.ogg *.ogv *.pls *.png *.rm *.rmvb *.swf *.ts *.vob *.wav *.wmv *.wmx *.3gp)";
 static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "Advanced Systems Format (*.asf);;"\
                     "Audio Video Interleave Format (*.avi *.divx);;"\
@@ -321,7 +325,7 @@ static QString sLoadMediaFilters = sAllLoadMediaFilter + ";;"\
                     "MPEG Audio Layer 2/3 Format (*.mp3);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "MPEG-2 Transport Stream (*.m2ts *.m2t *.ts);;"\
-                    "M3U Playlist File (*.m3u);;"\
+                    "M3U Playlist File (*.m3u *.m3u8);;"\
                     "OGG Container format (*.ogg *.ogv);;"\
                     "Portable Network Graphics Format (*.png);;"\
                     "PLS Playlist File (*.pls);;"\
@@ -657,7 +661,15 @@ void OverviewPlaylistWidget::SaveM3U(QString pFileName)
 
 int OverviewPlaylistWidget::GetPlaylistIndexFromGuiRow(int pRow)
 {
-    return mLwFiles->item(pRow)->data(Qt::UserRole).toInt();
+    int tResult = -1;
+
+    QListWidgetItem *tItem = mLwFiles->item(pRow);
+    if (tItem != NULL)
+    {
+        tResult = tItem->data(Qt::UserRole).toInt();
+    }
+
+    return tResult;
 }
 
 void OverviewPlaylistWidget::Play(int pIndex)
@@ -752,6 +764,25 @@ void OverviewPlaylistWidget::timerEvent(QTimerEvent *pEvent)
         	LOG(LOG_VERBOSE, "Desired file %s wasn't started yet both in video and audio widget\naudio = %s\nvideo = %s", mCurrentFile.toStdString().c_str(), mAudioWorker->CurrentFile().toStdString().c_str(), mVideoWorker->CurrentFile().toStdString().c_str());
         	return;
         }
+
+        if (mCurrentFileAudioPlaying)
+        {
+            QString tAudioStation = mAudioWorker->GetSourceBroadcasterName();
+            if(tAudioStation != "")
+            {
+                LOG(LOG_VERBOSE, "Detected station: %s", tAudioStation.toStdString().c_str());
+                UpdateEntryName(mCurrentFile, tAudioStation);
+            }
+        }else if (mCurrentFileVideoPlaying)
+        {
+            QString tVideoStation = mVideoWorker->GetSourceBroadcasterName();
+            if(tVideoStation != "")
+            {
+                LOG(LOG_VERBOSE, "Detected station: %s", tVideoStation.toStdString().c_str());
+                UpdateEntryName(mCurrentFile, tVideoStation);
+            }
+        }
+
 
         //LOG(LOG_VERBOSE, "Video EOF: %d, audio EOF: %d", mVideoWorker->EofReached(), mAudioWorker->EofReached());
 
@@ -925,7 +956,7 @@ void OverviewPlaylistWidget::ReceivedFileFromServer(QNetworkReply *pServerAnswer
 
             // add the received content to the playlist
             Playlist tPlaylist;
-            if (tReceivedFileName.endsWith(".m3u"))
+            if ((tReceivedFileName.endsWith(".m3u")) || (tReceivedFileName.endsWith(".m3u8")))
             {// an M3U playlist file
                 LOG(LOG_VERBOSE, " ..identified as M3U playlist");
                 tPlaylist = ParseM3U(tTmpFileName, true, true);
@@ -991,7 +1022,7 @@ Playlist OverviewPlaylistWidget::Parse(QString pLocation, QString pName, bool pA
                 if (QDir(pLocation).exists())
                 {// a directory
                     tResult += ParseDIR(pLocation, pAcceptVideo, pAcceptAudio);
-                }else if (pLocation.endsWith(".m3u"))
+                }else if ((pLocation.endsWith(".m3u")) || (pLocation.endsWith(".m3u8")))
                 {// an M3U playlist file
                     tResult += ParseM3U(pLocation, pAcceptVideo, pAcceptAudio);
                 }else if (pLocation.endsWith(".pls"))
@@ -1396,10 +1427,43 @@ QString OverviewPlaylistWidget::GetPlaylistEntryName(int pIndex)
     return tResult;
 }
 
+bool OverviewPlaylistWidget::UpdateEntryName(QString pLocation, QString pNewName)
+{
+    Playlist::iterator tIt;
+    bool tUpdatedData = false;
+
+    mPlaylistMutex.lock();
+
+    if (mPlaylist.size() > 0)
+    {
+        for (int i = 0; i < mPlaylist.size(); i++)
+        {
+            if (mPlaylist[i].Location == pLocation)
+            {
+                if(mPlaylist[i].Name != pNewName)
+                {
+                    mPlaylist[i].Name = pNewName;
+                    tUpdatedData = true;
+                }
+            }
+        }
+    }
+
+    mPlaylistMutex.unlock();
+
+    if(tUpdatedData)
+        UpdateView();
+
+    return tUpdatedData;
+}
+
 void OverviewPlaylistWidget::DeletePlaylistEntry(int pIndex)
 {
     int tIndex = 0;
     Playlist::iterator tIt;
+
+    if(pIndex < 0)
+        return;
 
     mPlaylistMutex.lock();
 

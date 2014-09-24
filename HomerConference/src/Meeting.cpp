@@ -82,6 +82,7 @@ Meeting::Meeting() :
     MeetingObservable()
 {
     mMeetingInitiated = false;
+    mVideoAudioStartPort = 0;
 }
 
 Meeting::~Meeting()
