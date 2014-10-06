@@ -2375,7 +2375,7 @@ void SIP::PrintOutgoingMessageInfo(nua_handle_t *pNuaHandle, GeneralEvent *pEven
     LOG(LOG_INFO, "Sending%sHandle: %p", pEventName.c_str(), pNuaHandle);
 }
 
-void SIP::initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, string &pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport, string &pUser, string &pHost, string &pPort)
+void SIP::initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, string &pSourceIp, unsigned int &pSourcePort, enum TransportType pSourcePortTransport, string &pUser, string &pHost, string &pPort)
 {
     pUser = "";
     pHost = "";
