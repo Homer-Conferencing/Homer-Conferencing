@@ -2660,8 +2660,6 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                     return false;
                                 }
 
-                                LOG(LOG_VERBOSE, "New HEVC packet of NAL unit type: %d", tHEVCNALUnitType);
-
                                 // go to the start of the payload data
                                 switch(tHEVCNALUnitType)
                                 {
