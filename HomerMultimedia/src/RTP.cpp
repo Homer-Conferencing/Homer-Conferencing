@@ -199,7 +199,7 @@ union H261Header{
     uint32_t Data[1];
 };
 
-#define H261_HEADER_SIZE                    sizeof(H261Header)
+#define RTP_H261_PAYLOAD_HEADER_SIZE        4
 
 // **** H261/RTP payload limitation workaround ***********************************
 // HINT: workaround, but static value: RTP_MAX_PAYLOAD_SIZE - H261_HEADER_SIZE,
@@ -491,7 +491,7 @@ RTP::~RTP()
 
 void RTP::SetH261PayloadSizeMax(unsigned int pMaxSize)
 {//workaround for separation of RTP packetizer and the payload limit problem which is caused by the missing RTP support for H261 within ffmpeg
-    mH261PayloadSizeMax = pMaxSize - RTP_HEADER_SIZE - H261_HEADER_SIZE;
+    mH261PayloadSizeMax = pMaxSize - RTP_HEADER_SIZE - RTP_H261_PAYLOAD_HEADER_SIZE;
 }
 
 unsigned int RTP::GetH261PayloadSizeMax()
@@ -1389,7 +1389,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
             tChunkSize = pDataSize;
         }
 
-        tRtpStreamDataSize += 4 + RTP_HEADER_SIZE + H261_HEADER_SIZE + tChunkSize;
+        tRtpStreamDataSize += 4 + RTP_HEADER_SIZE + RTP_H261_PAYLOAD_HEADER_SIZE + tChunkSize;
         if (tRtpStreamDataSize > MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE)
         {
             LOG(LOG_ERROR, "RTP stream buffer is too small, stopping RTP encapsulation here");
@@ -1400,7 +1400,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         // set the current rtp packet's size within the resulting packet buffer
         // HINT: convert from host to network byte order to pretend ffmpeg behavior
         unsigned int *tRtpPacketSize = (unsigned int*)tCurrentRtpStreamData;
-        *tRtpPacketSize = htonl((uint32_t) RTP_HEADER_SIZE + H261_HEADER_SIZE + tChunkSize);
+        *tRtpPacketSize = htonl((uint32_t) RTP_HEADER_SIZE + RTP_H261_PAYLOAD_HEADER_SIZE + tChunkSize);
 
         // go to the start of the rtp packet
         tCurrentRtpStreamData += 4;
@@ -1447,7 +1447,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         tH261Header->Data[0] = htonl(tH261Header->Data[0]);
 
         // go to the start of the h261 header
-        tCurrentRtpStreamData += H261_HEADER_SIZE;
+        tCurrentRtpStreamData += RTP_H261_PAYLOAD_HEADER_SIZE;
 
         // #############################################################
         // PAYLOAD: copy PAYLOAD to packet buffer
@@ -1462,7 +1462,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
 
         //increase packet counter
         mH261SentPackets++;
-        mH261SentOctets+= H261_HEADER_SIZE + tChunkSize;
+        mH261SentOctets+= RTP_H261_PAYLOAD_HEADER_SIZE + tChunkSize;
     }
     pData = mRtpPacketStream;
     pDataSize = tRtpStreamDataSize;
@@ -2218,6 +2218,12 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             break;
             // video
             case AV_CODEC_ID_H261:
+                            if (tRemainingDataSize < RTP_H261_PAYLOAD_HEADER_SIZE + 1)
+                            {
+                                AnnounceLostPackets(1);
+                                return false;
+                            }
+
                             // convert from network to host byte order
                             tH261Header->Data[0] = ntohl(tH261Header->Data[0]);
 
@@ -2247,7 +2253,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             tH261H263Ebits = tH261Header->Ebit;
 
                             // go to the start of the h261 payload
-                            pData += H261_HEADER_SIZE;
+                            pData += RTP_H261_PAYLOAD_HEADER_SIZE;
 
                             // convert from host to network byte order
                             tH261Header->Data[0] = htonl(tH261Header->Data[0]);
