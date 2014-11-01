@@ -958,7 +958,7 @@ const char* Meeting::GetSdpData(std::string pParticipant, enum TransportType pPa
             tIt->Sdp = CreateSdpData(tLocalAudioPort, tLocalVideoPort);
 
             tResult = tIt->Sdp.c_str();
-            LOG(LOG_VERBOSE, "VPort: %d\n APort: %d\n SDP: %s\n", tLocalVideoPort, tLocalAudioPort, tResult);
+            //LOG(LOG_VERBOSE, "VPort: %d\n APort: %d\n SDP: %s\n", tLocalVideoPort, tLocalAudioPort, tResult);
         }
     }
 
