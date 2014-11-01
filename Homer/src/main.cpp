@@ -223,7 +223,7 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
                     free(tFuncnName);
 
                     LOGEX(MainWindow, LOG_ERROR, "");
-                    LOGEX(MainWindow, LOG_ERROR, "Homer Conferencing will exit now. Please, report this to the Homer development team.", tSignalName.c_str(), tSignalDescription.c_str());
+                    LOGEX(MainWindow, LOG_ERROR, "Homer Conferencing will exit now. Please, report this to the Homer development team.");
                     LOGEX(MainWindow, LOG_ERROR, "-");
                     LOGEX(MainWindow, LOG_ERROR, "Restart Homer Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
                     LOGEX(MainWindow, LOG_ERROR, "Afterwards attach the file debug.log to your bug report and send both by mail to homer@homer-conferencing.com.");
