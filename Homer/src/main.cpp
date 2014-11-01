@@ -132,6 +132,8 @@ void GetSignalDescription(int pSignal, string &pSignalName, string &pSignalDescr
     }
 }
 
+#include <cxxabi.h>
+
 int64_t sStopTime = -1;
 static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
 {
@@ -146,19 +148,81 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
             case SIGSEGV:
                 {
                     LOGEX(MainWindow, LOG_ERROR, "The segmentation fault was caused at memory location: %p", pSignalInfo->si_addr);
-                    void *tBtArray[64];
-                    int tBtSize;
-                    char **tBtStrings;
+                    void *tStackTrace[128];
+                    int tStackTraceSize;
+                    char **tStackTraceList;
+                    int tStackTraceStep = 0;
 
-                    tBtSize = backtrace(tBtArray, 64);
-                    tBtStrings = backtrace_symbols(tBtArray, tBtSize);
+                    tStackTraceSize = backtrace(tStackTrace, 128);
+                    tStackTraceList = backtrace_symbols(tStackTrace, tStackTraceSize);
 
-                    LOGEX(MainWindow, LOG_ERROR, "Resolved a backtrace with %d entries:", (int)tBtSize);
+                    LOGEX(MainWindow, LOG_ERROR, "Resolved a backtrace with %d entries:", (int)tStackTraceSize);
 
-                    for (int i = 0; i < tBtSize; i++)
-                        LOGEX(MainWindow, LOG_ERROR, "#%2d %s", i, tBtStrings[i]);
+                    size_t tFuncNameSize = 256;
+                    char* tFuncnName = (char*)malloc(tFuncNameSize);
 
-                    free(tBtStrings);
+                    for (int i = 0; i < tStackTraceSize; i++)
+                    {
+                        // get the pointers to the name, offset and end of offset
+                        char *tBeginFuncName = 0;
+                        char *tBeginFuncOffset = 0;
+                        char *tEndFuncOffset = 0;
+                        char *tBeginBinaryName = tStackTraceList[i];
+                        char *tBeginBinaryOffset = 0;
+                        char *tEndBinaryOffset = 0;
+                        for (char *tEntryPointer = tStackTraceList[i]; *tEntryPointer; ++tEntryPointer)
+                        {
+                            if (*tEntryPointer == '(')
+                            {
+                                tBeginFuncName = tEntryPointer;
+                            }else if (*tEntryPointer == '+')
+                            {
+                                tBeginFuncOffset = tEntryPointer;
+                            }else if (*tEntryPointer == ')' && tBeginFuncOffset)
+                            {
+                                tEndFuncOffset = tEntryPointer;
+                            }else if (*tEntryPointer == '[')
+                            {
+                                tBeginBinaryOffset = tEntryPointer;
+                            }else if (*tEntryPointer == ']' && tBeginBinaryOffset)
+                            {
+                                tEndBinaryOffset = tEntryPointer;
+                                break;
+                            }
+                        }
+
+                        if (tBeginFuncName && tBeginFuncOffset && tEndFuncOffset && tBeginFuncName < tBeginFuncOffset)
+                        {
+                            // terminate the C strings
+                            *tBeginFuncName++ = '\0';
+                            *tBeginFuncOffset++ = '\0';
+                            *tEndFuncOffset = '\0';
+                            *tBeginBinaryOffset++ = '\0';
+                            *tEndBinaryOffset = '\0';
+
+                            int tDemanglingRes;
+                            char* tFuncnName = abi::__cxa_demangle(tBeginFuncName, tFuncnName, &tFuncNameSize, &tDemanglingRes);
+                            long tBinaryOffset = strtoul(tBeginBinaryOffset, NULL, 16);
+                            if (tDemanglingRes == 0)
+                            {
+                                LOGEX(MainWindow, LOG_ERROR, "#%02d 0x%016x in %s:[%s] from %s", tStackTraceStep, tBinaryOffset, tFuncnName, tBeginFuncOffset, tBeginBinaryName);
+                                tStackTraceStep++;
+                            }else{
+                                if(strlen(tBeginFuncName))
+                                {
+                                    LOGEX(MainWindow, LOG_ERROR, "#%02d 0x%016x in %s:[%s] from %s:[%s]", tStackTraceStep, tBinaryOffset, tBeginFuncName, tBeginFuncOffset, tBeginBinaryName);
+                                    tStackTraceStep++;
+                                }
+                            }
+                        }else{
+                            //LOGEX(MainWindow, LOG_ERROR, "?? #%2d %s", i, tStackTraceList[i]);
+                        }
+                    }
+
+                    free(tStackTraceList);
+                    free(tFuncnName);
+
+                    LOGEX(MainWindow, LOG_ERROR, "");
                     LOGEX(MainWindow, LOG_ERROR, "Homer Conferencing will exit now. Please, report this to the Homer development team.", tSignalName.c_str(), tSignalDescription.c_str());
                     LOGEX(MainWindow, LOG_ERROR, "-");
                     LOGEX(MainWindow, LOG_ERROR, "Restart Homer Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
