@@ -28,6 +28,8 @@
 #include <Dialogs/ConfigurationAudioSilenceDialog.h>
 #include <Widgets/OverviewPlaylistWidget.h>
 
+#include <MediaSource.h>
+
 #include <Configuration.h>
 #include <Meeting.h>
 #include <HBSocket.h>
@@ -125,6 +127,10 @@ ConfigurationDialog::~ConfigurationDialog()
 void ConfigurationDialog::initializeGUI()
 {
     setupUi(this);
+
+    // add H.265 only if it is supported by the used ffmpeg version
+    if(MediaSource::IsH265EncodingSupported())
+        mCbVideoCodec->insertItem(4, "H.265");
 }
 
 int ConfigurationDialog::exec()

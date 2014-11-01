@@ -261,6 +261,8 @@ private:
     /* H.261/H.263 RTP parser */
     int                 mH261H263EndByteBits;
     char                mH261H263EndByte;
+    /* HEVC parser */
+    bool                mHEVCIsUsingDonFields; //TODO: support this via SDP
     /* H261 RTP encoder */
     static unsigned int mH261PayloadSizeMax;
     bool                mH261UseInternalEncoder;
