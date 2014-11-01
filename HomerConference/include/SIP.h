@@ -139,7 +139,7 @@ protected:
 
     void PrintIncomingMessageInfo(const sip_to_t *pRemote, const sip_to_t *pLocal, sip_t const *pSip);
     void PrintOutgoingMessageInfo(nua_handle_t *pNuaHandle, GeneralEvent *pEvent, std::string pEventName);
-    void initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, std::string &pSourceIp, unsigned int pSourcePort, enum TransportType pSourcePortTransport, std::string &pUser, std::string &pHost, std::string &pPort);
+    void initParticipantTriplet(const sip_to_t *pRemote, sip_t const *pSip, std::string &pSourceIp, unsigned int &pSourcePort, enum TransportType pSourcePortTransport, std::string &pUser, std::string &pHost, std::string &pPort);
 
     /* identify participant session */
     bool IsThisParticipant(string pParticipantUser, string pParticipantHost, string pParticipantPort, enum TransportType pParticipantTransport, string pUser, string pHost, string pPort, enum TransportType pTransport);

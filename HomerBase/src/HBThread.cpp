@@ -72,13 +72,13 @@ Thread::~Thread()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#if defined(LINUX)
 // store the original malloc hook
 static void *(*sOriginalMallocHook)(size_t, const void *);
 
 std::map<int, unsigned long> sMemAllocations;
 Mutex sMemAllocationsMutex;
 
-#if defined(LINUX)
 static void* malloc_hook(size_t pSize, const void* pCaller)
 {
     int tThreadID = Thread::GetTId();
@@ -128,18 +128,6 @@ void Thread::ActiveMemoryDebugger()
     __malloc_hook = malloc_hook;
 }
 
-#else
-
-void Thread::ActiveMemoryDebugger()
-{
-}
-#endif
-
-void Thread::DeactivateMemoryDebugger()
-{
-
-}
-
 unsigned long Thread::GetMemoryAllocationSize(int pThreadID)
 {
     std::map<int, unsigned long>::iterator tIt;
@@ -152,6 +140,23 @@ unsigned long Thread::GetMemoryAllocationSize(int pThreadID)
     sMemAllocationsMutex.unlock();
 
     return tResult;
+}
+
+#else
+
+void Thread::ActiveMemoryDebugger()
+{
+
+}
+unsigned long Thread::GetMemoryAllocationSize(int pThreadID)
+{
+	return 0;
+}
+#endif
+
+void Thread::DeactivateMemoryDebugger()
+{
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
