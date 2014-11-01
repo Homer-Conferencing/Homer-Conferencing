@@ -269,19 +269,11 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
         {
             bool tDecode = (tCodec->decode != NULL);
             bool tEncode = false;
-            #if FF_API_OLD_ENCODE_AUDIO
-                tEncode = (tCodec->encode != NULL);
-            #else
-                tEncode = (tCodec->encode2 != NULL);
-            #endif
+            tEncode = (tCodec->encode2 != NULL);
 
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-                #if FF_API_OLD_ENCODE_AUDIO
-                    tEncode |= (tNextCodec->encode != NULL);
-                #else
-                    tEncode |= (tNextCodec->encode2 != NULL);
-                #endif
+                tEncode |= (tNextCodec->encode2 != NULL);
                 tDecode |= (tNextCodec->decode != NULL);
                 tCodec = tNextCodec;
             }
@@ -321,18 +313,10 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
         {
             bool tDecode = (tCodec->decode != NULL);
             bool tEncode = false;
-            #if FF_API_OLD_ENCODE_AUDIO
-                tEncode = (tCodec->encode != NULL);
-            #else
-                tEncode = (tCodec->encode2 != NULL);
-            #endif
+            tEncode = (tCodec->encode2 != NULL);
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-                #if FF_API_OLD_ENCODE_AUDIO
-                    tEncode |= (tNextCodec->encode != NULL);
-                #else
-                    tEncode |= (tNextCodec->encode2 != NULL);
-                #endif
+                tEncode |= (tNextCodec->encode2 != NULL);
                 tDecode |= (tNextCodec->decode != NULL);
                 tCodec = tNextCodec;
             }

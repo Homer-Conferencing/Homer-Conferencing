@@ -81,10 +81,6 @@ extern "C" {
 #define CODEC_FLAG2_SHOW_ALL      0x00400000 ///< Show all frames before the first keyframe
 #endif
 
-#ifndef FF_API_OLD_ENCODE_AUDIO
-#define FF_API_OLD_ENCODE_AUDIO         0
-#endif
-
 #ifndef FF_API_R_FRAME_RATE
 #define FF_API_R_FRAME_RATE             0
 #endif
