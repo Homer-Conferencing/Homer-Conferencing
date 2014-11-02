@@ -42,8 +42,8 @@ using namespace Homer::Multimedia;
 
 SDP::SDP()
 {
-    mVideoCodecsSupport = 0;
-    mAudioCodecsSupport = 0;
+    mVideoCodec = 0;
+    mAudioCodec = 0;
     mVideoTransportType = MEDIA_TRANSPORT_RTP_UDP;
     mAudioTransportType = MEDIA_TRANSPORT_RTP_UDP;
 }
@@ -54,26 +54,26 @@ SDP::~SDP()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void SDP::SetVideoCodecsSupport(int pSelectedCodecs)
+void SDP::SetVideoCodec(int pSelectedCodec)
 {
-    LOG(LOG_VERBOSE, "Setting video codec support to: %d", pSelectedCodecs);
-    mVideoCodecsSupport = pSelectedCodecs;
+    LOG(LOG_VERBOSE, "Setting video codec support to: %d", pSelectedCodec);
+    mVideoCodec = pSelectedCodec;
 }
 
-int SDP::GetVideoCodecsSupport()
+int SDP::GetVideoCodec()
 {
-    return mVideoCodecsSupport;
+    return mVideoCodec;
 }
 
-void SDP::SetAudioCodecsSupport(int pSelectedCodecs)
+void SDP::SetAudioCodec(int pSelectedCodec)
 {
-    LOG(LOG_VERBOSE, "Setting audio codec support to: %d", pSelectedCodecs);
-    mAudioCodecsSupport = pSelectedCodecs;
+    LOG(LOG_VERBOSE, "Setting audio codec support to: %d", pSelectedCodec);
+    mAudioCodec = pSelectedCodec;
 }
 
-int SDP::GetAudioCodecsSupport()
+int SDP::GetAudioCodec()
 {
-    return mAudioCodecsSupport;
+    return mAudioCodec;
 }
 
 enum MediaTransportType SDP::CreateMediaTransportType(TransportType pSocketType, bool pRtp)
@@ -242,8 +242,8 @@ int SDP::GetSDPCodecIDFromGuiName(std::string pCodecName)
 string SDP::CreateSdpData(int pAudioPort, int pVideoPort)
 {
     string tResult = "";
-    unsigned int tSupportedAudioCodecs = GetAudioCodecsSupport();
-    unsigned int tSupportedVideoCodecs = GetVideoCodecsSupport();
+    unsigned int tSupportedAudioCodecs = GetAudioCodec();
+    unsigned int tSupportedVideoCodecs = GetVideoCodec();
 
     LOG(LOG_VERBOSE, "Create SDP packet for audio port: %d and video port: %d", pAudioPort, pVideoPort);
     LOG(LOG_VERBOSE, "Supported audio codecs: %d and video codecs: %d", tSupportedAudioCodecs, tSupportedVideoCodecs);

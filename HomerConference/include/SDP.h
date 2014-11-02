@@ -78,10 +78,10 @@ public:
     static enum MediaTransportType CreateMediaTransportType(TransportType pSocketType, bool pRtp);
     static enum TransportType GetSocketTypeFromMediaTransportType(enum MediaTransportType pType);
     static int GetSDPCodecIDFromGuiName(std::string pCodecName);
-    void SetVideoCodecsSupport(int pSelectedCodecs);
-    int GetVideoCodecsSupport();
-    void SetAudioCodecsSupport(int pSelectedCodecs);
-    int GetAudioCodecsSupport();
+    void SetVideoCodec(int pSelectedCodec);
+    int GetVideoCodec();
+    void SetAudioCodec(int pSelectedCodec);
+    int GetAudioCodec();
     void SetVideoTransportType(enum MediaTransportType pType = MEDIA_TRANSPORT_RTP_UDP);
     void SetAudioTransportType(enum MediaTransportType pType = MEDIA_TRANSPORT_RTP_UDP);
     enum MediaTransportType GetVideoTransportType();
@@ -93,8 +93,8 @@ private:
 protected:
     std::string CreateSdpData(int pAudioPort, int pVideoPort);
 
-    int             			mVideoCodecsSupport;
-    int             			mAudioCodecsSupport;
+    int             			mVideoCodec;
+    int             			mAudioCodec;
     enum MediaTransportType 	mVideoTransportType;
     enum MediaTransportType 	mAudioTransportType;
 };

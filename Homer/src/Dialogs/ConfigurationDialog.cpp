@@ -472,7 +472,7 @@ void ConfigurationDialog::SaveConfiguration()
     //### VIDEO configuration
     //######################################################################
     CONF.SetVideoActivation(mGrpVideo->isChecked());
-    MEETING.SetVideoCodecsSupport(SDP::GetSDPCodecIDFromGuiName(mCbVideoCodec->currentText().toStdString()));
+    MEETING.SetVideoCodec(SDP::GetSDPCodecIDFromGuiName(mCbVideoCodec->currentText().toStdString()));
 
     //### capture source
     CONF.SetLocalVideoSource(mCbVideoSource->currentText());
@@ -508,7 +508,7 @@ void ConfigurationDialog::SaveConfiguration()
     //### AUDIO configuration
     //######################################################################
     CONF.SetAudioActivation(mGrpAudio->isChecked());
-    MEETING.SetAudioCodecsSupport(SDP::GetSDPCodecIDFromGuiName(mCbAudioCodec->currentText().toStdString()));
+    MEETING.SetAudioCodec(SDP::GetSDPCodecIDFromGuiName(mCbAudioCodec->currentText().toStdString()));
 
     //### capture source
     CONF.SetLocalAudioSource(mCbAudioSource->currentText());

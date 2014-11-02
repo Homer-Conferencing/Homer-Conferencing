@@ -934,13 +934,13 @@ void MainWindow::loadSettings()
     // init video codec for network streaming, but only support ONE codec and not multiple
     QString tVideoStreamCodec = CONF.GetVideoCodec();
     // set settings within meeting management
-    MEETING.SetVideoCodecsSupport(SDP::GetSDPCodecIDFromGuiName(tVideoStreamCodec.toStdString()));
+    MEETING.SetVideoCodec(SDP::GetSDPCodecIDFromGuiName(tVideoStreamCodec.toStdString()));
     MEETING.SetVideoTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     // init audio codec for network streaming, but only support ONE codec and not multiple
     QString tAudioStreamCodec = CONF.GetAudioCodec();
     // set settings within meeting management
-    MEETING.SetAudioCodecsSupport(SDP::GetSDPCodecIDFromGuiName(tAudioStreamCodec.toStdString()));
+    MEETING.SetAudioCodec(SDP::GetSDPCodecIDFromGuiName(tAudioStreamCodec.toStdString()));
     MEETING.SetAudioTransportType(MEDIA_TRANSPORT_RTP_UDP); // always use RTP/AVP as profile (RTP/UDP)
 
     LOG(LOG_VERBOSE, "..video/audio settings");
