@@ -693,6 +693,8 @@ bool Meeting::SendCallAccept(string pParticipant, enum TransportType pParticipan
     nua_handle_t **tHandlePtr = NULL;
     ParticipantList::iterator tIt;
     string tDestinationAddress = "";
+    bool tNeedLoopbackMediaUpdate = false;
+    CallMediaUpdateEvent *tCMUEvent = NULL;
 
     // lock
     mParticipantsMutex.lock();
@@ -701,6 +703,44 @@ bool Meeting::SendCallAccept(string pParticipant, enum TransportType pParticipan
     {
         if ((IsThisParticipant(pParticipant, pParticipantTransport, tIt->User, tIt->Host, tIt->Port, tIt->Transport)) && (tIt->CallState == CALLSTATE_RINGING))
         {
+            unsigned int tCurRTPVideoPayloadID = GetRTPVideoPayloadID(GetVideoCodec());
+            unsigned int tCurRTPAudioPayloadID = GetRTPAudioPayloadID(GetAudioCodec());
+
+            // update A/V payload IDs
+            if(tIt->RTPPayloadIDVideo != tCurRTPVideoPayloadID)
+            {
+                LOG(LOG_WARN, "RTP video payload ID has changed from %d to %d, updating local data..", tIt->RTPPayloadIDVideo, tCurRTPVideoPayloadID);
+                tIt->RTPPayloadIDVideo = tCurRTPVideoPayloadID;
+                tNeedLoopbackMediaUpdate = true;
+            }
+            if(tIt->RTPPayloadIDAudio != tCurRTPAudioPayloadID)
+            {
+                LOG(LOG_WARN, "RTP audio payload ID has changed from %d to %d, updating local data..", tIt->RTPPayloadIDAudio, tCurRTPAudioPayloadID);
+                tIt->RTPPayloadIDAudio = tCurRTPAudioPayloadID;
+                tNeedLoopbackMediaUpdate = true;
+            }
+
+            // prepare loopback media update signaling if needed
+            if(tNeedLoopbackMediaUpdate)
+            {
+                tCMUEvent = new CallMediaUpdateEvent();
+
+                tCMUEvent->Receiver = "";
+                tCMUEvent->Sender = SipCreateId(tIt->User, tIt->Host, tIt->Port);
+                tCMUEvent->SenderName = "";
+                tCMUEvent->SenderComment = "";
+                tCMUEvent->SenderApplication = "LOOPBACK";
+
+                tCMUEvent->RemoteAudioAddress = tIt->RemoteAudioHost;
+                tCMUEvent->RemoteAudioPort = tIt->RemoteAudioPort;
+                tCMUEvent->NegotiatedRTPAudioPayloadID = tIt->RTPPayloadIDAudio;
+                tCMUEvent->RemoteAudioCodec = tIt->RemoteAudioCodec;
+                tCMUEvent->RemoteVideoAddress = tIt->RemoteVideoHost;
+                tCMUEvent->RemoteVideoPort = tIt->RemoteVideoPort;
+                tCMUEvent->NegotiatedRTPVideoPayloadID = tIt->RTPPayloadIDVideo;
+                tCMUEvent->RemoteVideoCodec = tIt->RemoteVideoCodec;
+            }
+
             tFound = true;
             tHandlePtr = &tIt->SipNuaHandleForCalls;
             tDestinationAddress = tIt->Host;
@@ -711,6 +751,15 @@ bool Meeting::SendCallAccept(string pParticipant, enum TransportType pParticipan
     // unlock
     mParticipantsMutex.unlock();
 
+    // do the loopback media update signaling if needed
+    if(tNeedLoopbackMediaUpdate)
+    {
+        LOG(LOG_WARN, "Doing loopback media update signaling now..");
+        SearchParticipantAndSetRemoteMediaInformation(tCMUEvent->Sender, tCMUEvent->Transport, tCMUEvent->RemoteVideoAddress, tCMUEvent->RemoteVideoPort, tCMUEvent->RemoteVideoCodec, tCMUEvent->NegotiatedRTPVideoPayloadID, tCMUEvent->RemoteAudioAddress, tCMUEvent->RemoteAudioPort, tCMUEvent->RemoteAudioCodec, tCMUEvent->NegotiatedRTPAudioPayloadID);
+        notifyObservers(tCMUEvent);
+    }
+
+    // inform the remote side about the local decision
     if (tFound)
     {
         CallAcceptEvent *tCAEvent = new CallAcceptEvent();

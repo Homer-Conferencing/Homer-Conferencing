@@ -82,6 +82,8 @@ public:
     int GetVideoCodec();
     void SetAudioCodec(int pSelectedCodec);
     int GetAudioCodec();
+    static unsigned int GetRTPVideoPayloadID(int pCodecID);
+    static unsigned int GetRTPAudioPayloadID(int pCodecID);
     void SetVideoTransportType(enum MediaTransportType pType = MEDIA_TRANSPORT_RTP_UDP);
     void SetAudioTransportType(enum MediaTransportType pType = MEDIA_TRANSPORT_RTP_UDP);
     enum MediaTransportType GetVideoTransportType();
