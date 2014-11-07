@@ -77,13 +77,15 @@ Thread::~Thread()
 static void *(*sOriginalMallocHook)(size_t, const void *);
 
 std::map<int, unsigned long> sMemAllocations;
-Mutex sMemAllocationsMutex;
+Mutex sMallocDebuggerMutex("MallocDebuggerMutex");
 
 static void* malloc_hook(size_t pSize, const void* pCaller)
 {
     int tThreadID = Thread::GetTId();
     std::map<int, unsigned long>::iterator tIt;
     void *tResult;
+
+    sMallocDebuggerMutex.lock();
 
     // set original malloc hook
     __malloc_hook = sOriginalMallocHook;
@@ -98,13 +100,11 @@ static void* malloc_hook(size_t pSize, const void* pCaller)
          * update map about memory allocations
          */
         unsigned long tAllocatedMemForCurrentThread = 0;
-        sMemAllocationsMutex.lock();
         tIt = sMemAllocations.find(tThreadID);
         if (tIt != sMemAllocations.end())
             tAllocatedMemForCurrentThread = tIt->second;
         tAllocatedMemForCurrentThread += pSize;
         sMemAllocations[tThreadID] = tAllocatedMemForCurrentThread;
-        sMemAllocationsMutex.unlock();
 
         // print debug output
 //        if(pSize > 32768)
@@ -113,6 +113,8 @@ static void* malloc_hook(size_t pSize, const void* pCaller)
 
     // restore our own hook
     __malloc_hook = malloc_hook;
+
+    sMallocDebuggerMutex.unlock();
 
     return tResult;
 }
@@ -133,11 +135,11 @@ unsigned long Thread::GetMemoryAllocationSize(int pThreadID)
     std::map<int, unsigned long>::iterator tIt;
     uint64_t tResult = 0;
 
-    sMemAllocationsMutex.lock();
+    sMallocDebuggerMutex.lock();
     tIt = sMemAllocations.find(pThreadID);
     if (tIt != sMemAllocations.end())
         tResult = tIt->second;
-    sMemAllocationsMutex.unlock();
+    sMallocDebuggerMutex.unlock();
 
     return tResult;
 }
