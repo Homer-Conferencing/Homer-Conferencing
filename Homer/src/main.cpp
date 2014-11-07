@@ -136,6 +136,7 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
 {
     string tSignalName;
     string tSignalDescription;
+
     GetSignalDescription(pSignal, tSignalName, tSignalDescription);
     LOGEX(MainWindow, LOG_WARN, "Signal \"%s\"(%d: %s) detected.", tSignalName.c_str(), pSignal, tSignalDescription.c_str());
     if (pSignalInfo != NULL)
