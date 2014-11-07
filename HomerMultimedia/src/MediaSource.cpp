@@ -477,6 +477,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  *        H.263+                           CODEC_ID_H263P+
  *        H.264                            CODEC_ID_H264
  *        H.265                            CODEC_ID_HEVC
+ *        HEVC                             CODEC_ID_HEVC
  *        MPEG2TS                          CODEC_ID_MPEG2TS
  *        MPEG4                            CODEC_ID_MPEG4
  *        THEORA                           CODEC_ID_THEORA
@@ -513,7 +514,7 @@ enum AVCodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
         tResult = AV_CODEC_ID_H263P;
     if (pName == "H.264")
         tResult = AV_CODEC_ID_H264;
-    if (pName == "H.265")
+    if ((pName == "H.265") || (pName == "HEVC"))
         tResult = AV_CODEC_ID_HEVC;
     if (pName == "MPEG2TS")
         tResult = AV_CODEC_ID_MPEG2TS;
@@ -579,7 +580,7 @@ string MediaSource::GetGuiNameFromCodecID(enum AVCodecID pCodecId)
                 tResult = "H.264";
                 break;
         case AV_CODEC_ID_HEVC:
-                tResult = "H.265";
+                tResult = "HEVC";
                 break;
         case AV_CODEC_ID_MPEG2TS:
                 tResult = "MPEG2TS";

@@ -85,7 +85,7 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
 
     // add H.265 only if it is supported by the used ffmpeg version
     if(MediaSource::IsH265DecodingSupported())
-        mCbCodecVideo->insertItem(4, "H.265");
+        mCbCodecVideo->insertItem(4, "HEVC");
 
     LoadConfiguration();
 }
