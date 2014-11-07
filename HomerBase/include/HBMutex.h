@@ -54,7 +54,7 @@ namespace Homer { namespace Base {
 class Mutex
 {
 public:
-    Mutex( );
+    Mutex(std::string pName = "");
 
     virtual ~Mutex( );
 
