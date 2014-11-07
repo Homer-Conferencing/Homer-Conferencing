@@ -48,6 +48,8 @@ public:
     static std::string GetTargetMachineType();
     static int64_t GetMachineMemoryPhysical();
     static int64_t GetMachineMemorySwap();
+    static std::string GetStackTrace();
+
 private:
 };
 
