@@ -95,7 +95,7 @@ SocketConnection::SocketConnection(std::string pTarget, Requirements *pRequireme
         tFoundTransport = true;
     }
 
-    if (tUdp)
+    if ((tUdp) || (tUdpLite))
     {
         if(!tFoundTransport)
         {
