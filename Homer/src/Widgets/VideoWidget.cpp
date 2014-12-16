@@ -847,8 +847,11 @@ QStringList VideoWidget::GetVideoInfo()
     QString tCodecName = QString(mVideoSource->GetSourceCodecStr().c_str());
     int tSourceResX = 0, tSourceResY = 0;
     mVideoSource->GetVideoSourceResolution(tSourceResX, tSourceResY);
+    int tDARHoriz, tDARVert;
+    mVideoSource->GetVideoDisplayAspectRation(tDARHoriz, tDARVert);
     tLine_InputCodec = Homer::Gui::VideoWidget::tr("Source codec:")+ " " + ((tCodecName != "") ? tCodecName : Homer::Gui::VideoWidget::tr("unknown"));
     tLine_InputCodec += " (" + QString("%1").arg(tSourceResX) + "*" + QString("%1").arg(tSourceResY);
+    tLine_InputCodec += (tDARHoriz > 0 ? ", " + QString("%1").arg(tDARHoriz) + ":" + QString("%1").arg(tDARVert) : "");
     tLine_InputCodec += (tInputBitRate > 0 ? ", " + QString("%1 kbit/s").arg(tInputBitRate / 1000) : "");
     tLine_InputCodec += ", " + QString("%1").arg(mVideoSource->GetDecoderOutputFrameDelay()) + " " + Homer::Gui::VideoWidget::tr("frames delay") + ")";
 
