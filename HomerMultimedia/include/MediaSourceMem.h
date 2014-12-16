@@ -119,6 +119,7 @@ public:
     virtual float GetRelativeLoss();
 
     /* video grabbing control */
+    virtual void GetVideoDisplayAspectRation(int &pHoriz, int &pVert);
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
     virtual bool IsSeeking();
 

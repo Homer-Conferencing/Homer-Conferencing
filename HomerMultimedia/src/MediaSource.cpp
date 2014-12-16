@@ -1157,6 +1157,12 @@ void MediaSource::GetVideoSourceResolution(int &pResX, int &pResY)
     pResY = mSourceResY;
 }
 
+void MediaSource::GetVideoDisplayAspectRation(int &pHoriz, int &pVert)
+{
+    pHoriz = 0;
+    pVert = 0;
+}
+
 GrabResolutions MediaSource::GetSupportedVideoGrabResolutions()
 {
     if (mMediaType == MEDIA_AUDIO)
