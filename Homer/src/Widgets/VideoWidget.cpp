@@ -116,6 +116,8 @@ using namespace Homer::Monitor;
 
 struct AspectRatioEntry{
     float ratio;
+    float horz;
+    float vert;
     string name;
 };
 
@@ -124,16 +126,16 @@ struct AspectRatioEntry{
 #define ASPECT_RATIO_INDEX_WINDOW                       (VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS -1)
 
 AspectRatioEntry SupportedAspectRatios[VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS] = {
-        {    0, "Original" },
-        {    1, "   1 : 1" },
-        { 1.33, "   4 : 3" },
-        { 1.25, "   5 : 4" },
-        { 1.77, "  16 : 9" },
-        {  1.6, "  16 : 10"},
-        { 2.21, "2.21 : 1" },
-        { 2.35, "2.35 : 1" },
-        { 2.39, "2.39 : 1" },
-        {   -1, QT_TRANSLATE_NOOP("Homer::Gui::VideoWidget", "Window")}
+        {    0,    0,  0, "Original" },
+        {    1,    1,  1, "   1 : 1" },
+        { 1.33,    4,  3, "   4 : 3" },
+        { 1.25,    5,  4, "   5 : 4" },
+        { 1.77,   16,  9, "  16 : 9" },
+        {  1.6,   16, 10, "  16 : 10"},
+        { 2.21, 2.21,  1, "2.21 : 1" },
+        { 2.35, 2.35,  1, "2.35 : 1" },
+        { 2.39, 2.39,  1, "2.39 : 1" },
+        {   -1,   -1, -1, QT_TRANSLATE_NOOP("Homer::Gui::VideoWidget", "Window")}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -195,6 +197,8 @@ VideoWidget::VideoWidget(QWidget* pParent):
     mRecorderStarted = false;
     mVideoPaused = false;
     mAspectRatio = ASPECT_RATIO_INDEX_ORIGINAL;
+    mVideoSourceDARHoriz = -1;
+    mVideoSourceDARVert = -1;
     mVideoMirroredHorizontal = false;
     mVideoMirroredVertical = false;
     mCurrentApplicationFocusedWidget = NULL;
@@ -966,6 +970,32 @@ void VideoWidget::ShowFrame(void* pBuffer)
         return;
 
     setUpdatesEnabled(false);
+
+
+    //#############################################################
+    //### auto-update aspect ratio based on source DAR value
+    //#############################################################
+    int tDARHoriz, tDARVert;
+    mVideoSource->GetVideoDisplayAspectRation(tDARHoriz, tDARVert);
+    if ((tDARHoriz > 0) && (tDARVert > 0))
+    {
+        if((tDARHoriz != mVideoSourceDARHoriz) || (tDARVert != mVideoSourceDARVert))
+        {
+            // change in DAR value detected
+            for (int i = 0; i < VIDEO_WIDGET_SUPPORTED_ASPECT_RATIOS; i++)
+            {
+                if((tDARHoriz == SupportedAspectRatios[i].horz) && (tDARVert == SupportedAspectRatios[i].vert))
+                {
+                    LOG(LOG_WARN, "Auto-applying new DAR value: %d:%d", tDARHoriz, tDARVert);
+                    mAspectRatio = i;
+                    mNeedBackgroundUpdatesUntillNextFrame = true;
+                }
+            }
+
+            mVideoSourceDARHoriz = tDARHoriz;
+            mVideoSourceDARVert = tDARVert;
+        }
+    }
 
     //#############################################################
     //### get frame from media source and mirror it if selected
