@@ -3128,6 +3128,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
 #endif
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream time_base: %d/%d", mMediaStream->time_base.num, mMediaStream->time_base.den);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream avg fps: %.2f", av_q2d(mMediaStream->avg_frame_rate));
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream sample AR: %d/%d", mMediaStream->sample_aspect_ratio.num, mMediaStream->sample_aspect_ratio.den);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec qmin: %d", mCodecContext->qmin);
@@ -3710,6 +3711,12 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
                 mOutputFrameRate = av_q2d(mMediaStream->avg_frame_rate);
 
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d and frame rate: %.2f", mSourceResX, mSourceResY, mOutputFrameRate);
+
+            // display the DAR
+            AVRational tDAR;
+            av_reduce(&tDAR.num, &tDAR.den, mCodecContext->width  * mCodecContext->sample_aspect_ratio.num, mCodecContext->height * mCodecContext->sample_aspect_ratio.den, 1024 * 1024);
+            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..DAR: %d/%d", tDAR.num, tDAR.den);
+
             break;
 
         case MEDIA_AUDIO:
