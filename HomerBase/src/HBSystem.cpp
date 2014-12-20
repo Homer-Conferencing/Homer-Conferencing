@@ -34,6 +34,10 @@
 
 #if defined(LINUX)
 #include <sys/sysinfo.h>
+
+//TODO: available in OSX?
+#include <execinfo.h>
+#include <cxxabi.h>
 #endif
 
 #if defined(APPLE) || defined(BSD)
@@ -50,6 +54,9 @@
 namespace Homer { namespace Base {
 
 using namespace std;
+
+#define MAX_STACK_TRACE_DEPTH             200
+#define MAX_STACK_TRACE_STEP_LENGTH       256
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -301,6 +308,97 @@ int64_t System::GetMachineMemorySwap()
 
     //LOGEX(System, LOG_VERBOSE, "Found machine memory (swap.): %"PRId64" MB", tResult / 1024 / 1024);
     return tResult;
+}
+
+string System::GetStackTrace()
+{
+    string tResult;
+
+#ifdef LINUX
+    void *tStackTrace[MAX_STACK_TRACE_DEPTH];
+    int tStackTraceSize;
+    char **tStackTraceList;
+    int tStackTraceStep = 0;
+    char *tStringBuf = (char*)malloc(MAX_STACK_TRACE_STEP_LENGTH);
+
+    tStackTraceSize = backtrace(tStackTrace, MAX_STACK_TRACE_DEPTH);
+    tStackTraceList = backtrace_symbols(tStackTrace, tStackTraceSize);
+
+    size_t tFuncNameSize = MAX_STACK_TRACE_STEP_LENGTH / 2;
+    char* tFuncnName = (char*)malloc(tFuncNameSize);
+
+    for (int i = 0; i < tStackTraceSize; i++)
+    {
+        // get the pointers to the name, offset and end of offset
+        char *tBeginFuncName = 0;
+        char *tBeginFuncOffset = 0;
+        char *tEndFuncOffset = 0;
+        char *tBeginBinaryName = tStackTraceList[i];
+        char *tBeginBinaryOffset = 0;
+        char *tEndBinaryOffset = 0;
+        for (char *tEntryPointer = tStackTraceList[i]; *tEntryPointer; ++tEntryPointer)
+        {
+            if (*tEntryPointer == '(')
+            {
+                tBeginFuncName = tEntryPointer;
+            }else if (*tEntryPointer == '+')
+            {
+                tBeginFuncOffset = tEntryPointer;
+            }else if (*tEntryPointer == ')' && tBeginFuncOffset)
+            {
+                tEndFuncOffset = tEntryPointer;
+            }else if (*tEntryPointer == '[')
+            {
+                tBeginBinaryOffset = tEntryPointer;
+            }else if (*tEntryPointer == ']' && tBeginBinaryOffset)
+            {
+                tEndBinaryOffset = tEntryPointer;
+                break;
+            }
+        }
+
+        if (tBeginFuncName && tBeginFuncOffset && tEndFuncOffset && tBeginFuncName < tBeginFuncOffset)
+        {
+            // terminate the C strings
+            *tBeginFuncName++ = '\0';
+            *tBeginFuncOffset++ = '\0';
+            *tEndFuncOffset = '\0';
+            *tBeginBinaryOffset++ = '\0';
+            *tEndBinaryOffset = '\0';
+
+            int tDemanglingRes;
+            char* tFuncnName = abi::__cxa_demangle(tBeginFuncName, tFuncnName, &tFuncNameSize, &tDemanglingRes);
+            unsigned int tBinaryOffset = strtoul(tBeginBinaryOffset, NULL, 16);
+            if (tDemanglingRes == 0)
+            {
+                if(tBeginBinaryName && strlen(tBeginBinaryName))
+                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s] from %s\n", tStackTraceStep, tBinaryOffset, tFuncnName, tBeginFuncOffset, tBeginBinaryName);
+                else
+                    sprintf(tStringBuf, "#%02d 0x%016x in %s from %s\n", tStackTraceStep, tBinaryOffset, tFuncnName, tBeginFuncOffset);
+                tStackTraceStep++;
+            }else{
+                if(tBeginBinaryName && strlen(tBeginBinaryName))
+                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s] from %s\n", tStackTraceStep, tBinaryOffset, tBeginFuncName, tBeginFuncOffset, tBeginBinaryName);
+                else
+                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s]\n", tStackTraceStep, tBinaryOffset, tBeginFuncName, tBeginFuncOffset);
+                tStackTraceStep++;
+            }
+        }else{
+            sprintf(tStringBuf, "#%02d %s\n", tStackTraceStep, tStackTraceList[i]);
+            tStackTraceStep++;
+        }
+
+        // append the line to the result
+        tResult += string(tStringBuf);
+    }
+
+    // memory cleanup
+    free(tStackTraceList);
+    free(tFuncnName);
+#endif
+
+    return tResult;
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

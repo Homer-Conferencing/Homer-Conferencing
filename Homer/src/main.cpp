@@ -46,7 +46,6 @@ using namespace Homer::Gui;
 using namespace std;
 
 #if defined(LINUX) || defined(APPLE)
-#include <execinfo.h>
 void GetSignalDescription(int pSignal, string &pSignalName, string &pSignalDescription)
 {
     switch(pSignal)
@@ -137,6 +136,7 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
 {
     string tSignalName;
     string tSignalDescription;
+
     GetSignalDescription(pSignal, tSignalName, tSignalDescription);
     LOGEX(MainWindow, LOG_WARN, "Signal \"%s\"(%d: %s) detected.", tSignalName.c_str(), pSignal, tSignalDescription.c_str());
     if (pSignalInfo != NULL)
@@ -145,21 +145,15 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
         {
             case SIGSEGV:
                 {
-                    LOGEX(MainWindow, LOG_ERROR, "The segmentation fault was caused at memory location: %p", pSignalInfo->si_addr);
-                    void *tBtArray[64];
-                    int tBtSize;
-                    char **tBtStrings;
+                    if(pSignalInfo->si_addr != NULL)
+                        LOGEX(MainWindow, LOG_ERROR, "Segmentation fault detected - referenced memory at location: %p", pSignalInfo->si_addr);
+                    else
+                        LOGEX(MainWindow, LOG_ERROR, "Segmentation fault detected - null pointer reference");
 
-                    tBtSize = backtrace(tBtArray, 64);
-                    tBtStrings = backtrace_symbols(tBtArray, tBtSize);
-
-                    LOGEX(MainWindow, LOG_ERROR, "Resolved a backtrace with %d entries:", (int)tBtSize);
-
-                    for (int i = 0; i < tBtSize; i++)
-                        LOGEX(MainWindow, LOG_ERROR, "#%2d %s", i, tBtStrings[i]);
-
-                    free(tBtStrings);
-                    LOGEX(MainWindow, LOG_ERROR, "Homer Conferencing will exit now. Please, report this to the Homer development team.", tSignalName.c_str(), tSignalDescription.c_str());
+                    std::string tStackTrace = System::GetStackTrace();
+                    LOGEX(MainWindow, LOG_ERROR, "Stack trace:\n%s", tStackTrace.c_str());
+                    LOGEX(MainWindow, LOG_ERROR, "");
+                    LOGEX(MainWindow, LOG_ERROR, "Homer Conferencing will exit now. Please, report this to the Homer development team.");
                     LOGEX(MainWindow, LOG_ERROR, "-");
                     LOGEX(MainWindow, LOG_ERROR, "Restart Homer Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
                     LOGEX(MainWindow, LOG_ERROR, "Afterwards attach the file debug.log to your bug report and send both by mail to homer@homer-conferencing.com.");
@@ -210,18 +204,6 @@ static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
 
 static void SetHandlers()
 {
-    // set handler
-    struct sigaction tSigAction;
-    memset(&tSigAction, 0, sizeof(tSigAction));
-    sigemptyset(&tSigAction.sa_mask);
-    tSigAction.sa_sigaction = HandlerSignal;
-    tSigAction.sa_flags   = SA_SIGINFO; // Invoke signal-catching function with three arguments instead of one
-    sigaction(SIGINT, &tSigAction, NULL);
-    sigaction(SIGTERM, &tSigAction, NULL);
-    sigaction(SIGTSTP, &tSigAction, NULL);
-    sigaction(SIGCONT, &tSigAction, NULL);
-    sigaction(SIGSEGV, &tSigAction, NULL);
-
     // set handler stack
     stack_t tStack;
     tStack.ss_sp = malloc(SIGSTKSZ);
@@ -237,6 +219,18 @@ static void SetHandlers()
         LOGEX(MainWindow, LOG_ERROR, "Could not set signal handler stack");
         exit(1);
     }
+
+    // set handler
+    struct sigaction tSigAction;
+    memset(&tSigAction, 0, sizeof(tSigAction));
+    sigemptyset(&tSigAction.sa_mask);
+    tSigAction.sa_sigaction = HandlerSignal;
+    tSigAction.sa_flags   = SA_SIGINFO | SA_ONSTACK;
+    sigaction(SIGINT, &tSigAction, NULL);
+    sigaction(SIGTERM, &tSigAction, NULL);
+    sigaction(SIGTSTP, &tSigAction, NULL);
+    sigaction(SIGCONT, &tSigAction, NULL);
+    sigaction(SIGSEGV, &tSigAction, NULL);
 }
 #else
 static void SetHandlers(){ }

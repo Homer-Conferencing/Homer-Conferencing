@@ -276,6 +276,7 @@ public:
     virtual void GetVideoGrabResolution(int &pResX, int &pResY);
     virtual GrabResolutions GetSupportedVideoGrabResolutions();
     virtual void GetVideoSourceResolution(int &pResX, int &pResY);
+    virtual void GetVideoDisplayAspectRation(int &pHoriz, int &pVert);
     virtual bool HasVariableOutputFrameRate(); // frame duration can change?
     virtual bool IsSeeking();
 

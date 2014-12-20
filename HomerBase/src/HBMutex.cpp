@@ -27,6 +27,7 @@
 #include <Logger.h>
 #include <HBMutex.h>
 #include <HBThread.h>
+#include <HBSystem.h>
 
 #ifdef APPLE
 // to get current time stamp
@@ -40,9 +41,9 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Mutex::Mutex()
+Mutex::Mutex(string pName)
 {
-    mName = "";
+    mName = pName;
     mOwnerThreadId = -1;
     bool tResult = false;
     #if defined(LINUX) || defined(APPLE) || defined(BSD)
@@ -81,6 +82,8 @@ bool Mutex::lock(int pTimeout)
             LOG(LOG_ERROR, "Recursive locking of mutex \"%s\" in thread %d detected", mName.c_str(), tThreadId);
         else
             LOG(LOG_ERROR, "Recursive locking in thread %d detected", tThreadId);
+        string tStackTrace = System::GetStackTrace();
+        LOG(LOG_ERROR, "Stack trace:\n%s", tStackTrace.c_str());
         LOG(LOG_ERROR, "Program execution will end now..");
         exit(1);
     }

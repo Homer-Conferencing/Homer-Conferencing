@@ -57,7 +57,9 @@ using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Mutex sWindowsSocketsLayerInitiatedMutex;
+#if defined(WINDOWS)
+Mutex sWindowsSocketsLayerInitiatedMutex("WINSocketLayerInitiatedMutex");
+#endif
 bool sWindowsSocketsLayerInitiated = false;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -400,7 +402,7 @@ bool Socket::GetQoS(QoSSettings &pQoSSettings)
 }
 
 static list<QoSProfileDescriptor*> sQoSProfiles;
-static Mutex sQoSProfileMutex;
+static Mutex sQoSProfileMutex("QoSProfileMutex");
 
 bool Socket::CreateQoSProfile(const std::string &pProfileName, const QoSSettings &pQoSSettings)
 {

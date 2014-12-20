@@ -2103,6 +2103,12 @@ void MediaSourceMuxer::GetVideoSourceResolution(int &pResX, int &pResY)
         mMediaSource->GetVideoSourceResolution(pResX, pResY);
 }
 
+void MediaSourceMuxer::GetVideoDisplayAspectRation(int &pHoriz, int &pVert)
+{
+    if (mMediaSource != NULL)
+        return mMediaSource->GetVideoDisplayAspectRation(pHoriz, pVert);
+}
+
 GrabResolutions MediaSourceMuxer::GetSupportedVideoGrabResolutions()
 {
     GrabResolutions tResult;

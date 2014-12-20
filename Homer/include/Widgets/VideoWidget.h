@@ -189,10 +189,12 @@ private:
     bool				mVideoMirroredVertical;
     int                 mLastFrameNumber;
     VideoWorkerThread   *mVideoWorker;
-    MediaSource         *mVideoSource;
     int                 mPendingNewFrameSignals;
     ParticipantWidget   *mParticipantWidget;
     int64_t 			mPaintEventCounter;
+    /* media source */
+    int                 mVideoSourceDARHoriz, mVideoSourceDARVert;
+    MediaSource         *mVideoSource;
     /* statistics */
     int                 mCurrentFrameNumber;
     float				mCurrentFrameRate;

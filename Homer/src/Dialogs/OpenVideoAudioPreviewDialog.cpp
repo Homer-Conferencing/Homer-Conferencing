@@ -34,6 +34,7 @@
 #include <MediaSourceAlsa.h>
 #include <MediaSourceNet.h>
 #include <MediaSourceFile.h>
+#include <MediaSource.h>
 #include <WaveOutPulseAudio.h>
 #include <Snippets.h>
 #include <HBSocket.h>
@@ -46,6 +47,7 @@
 namespace Homer { namespace Gui {
 
 using namespace Homer::Conference;
+using namespace Homer::Multimedia;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -80,6 +82,10 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
 
     connect(mCbNAPIImplVideo, SIGNAL(currentIndexChanged(QString)), this, SLOT(NAPIVideoSelectionChanged(QString)));
     connect(mCbNAPIImplAudio, SIGNAL(currentIndexChanged(QString)), this, SLOT(NAPIAudioSelectionChanged(QString)));
+
+    // add H.265 only if it is supported by the used ffmpeg version
+    if(MediaSource::IsH265DecodingSupported())
+        mCbCodecVideo->insertItem(4, "HEVC");
 
     LoadConfiguration();
 }

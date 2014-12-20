@@ -269,19 +269,11 @@ void MediaSource::LogSupportedVideoCodecs(bool pSendToLoggerOnly)
         {
             bool tDecode = (tCodec->decode != NULL);
             bool tEncode = false;
-            #if FF_API_OLD_ENCODE_AUDIO
-                tEncode = (tCodec->encode != NULL);
-            #else
-                tEncode = (tCodec->encode2 != NULL);
-            #endif
+            tEncode = (tCodec->encode2 != NULL);
 
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-                #if FF_API_OLD_ENCODE_AUDIO
-                    tEncode |= (tNextCodec->encode != NULL);
-                #else
-                    tEncode |= (tNextCodec->encode2 != NULL);
-                #endif
+                tEncode |= (tNextCodec->encode2 != NULL);
                 tDecode |= (tNextCodec->decode != NULL);
                 tCodec = tNextCodec;
             }
@@ -321,18 +313,10 @@ void MediaSource::LogSupportedAudioCodecs(bool pSendToLoggerOnly)
         {
             bool tDecode = (tCodec->decode != NULL);
             bool tEncode = false;
-            #if FF_API_OLD_ENCODE_AUDIO
-                tEncode = (tCodec->encode != NULL);
-            #else
-                tEncode = (tCodec->encode2 != NULL);
-            #endif
+            tEncode = (tCodec->encode2 != NULL);
             if ((tNextCodec != NULL) && (strcmp(tCodec->name, tNextCodec->name) == 0))
             {
-                #if FF_API_OLD_ENCODE_AUDIO
-                    tEncode |= (tNextCodec->encode != NULL);
-                #else
-                    tEncode |= (tNextCodec->encode2 != NULL);
-                #endif
+                tEncode |= (tNextCodec->encode2 != NULL);
                 tDecode |= (tNextCodec->decode != NULL);
                 tCodec = tNextCodec;
             }
@@ -493,6 +477,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  *        H.263+                           CODEC_ID_H263P+
  *        H.264                            CODEC_ID_H264
  *        H.265                            CODEC_ID_HEVC
+ *        HEVC                             CODEC_ID_HEVC
  *        MPEG2TS                          CODEC_ID_MPEG2TS
  *        MPEG4                            CODEC_ID_MPEG4
  *        THEORA                           CODEC_ID_THEORA
@@ -529,7 +514,7 @@ enum AVCodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
         tResult = AV_CODEC_ID_H263P;
     if (pName == "H.264")
         tResult = AV_CODEC_ID_H264;
-    if (pName == "H.265")
+    if ((pName == "H.265") || (pName == "HEVC"))
         tResult = AV_CODEC_ID_HEVC;
     if (pName == "MPEG2TS")
         tResult = AV_CODEC_ID_MPEG2TS;
@@ -595,7 +580,7 @@ string MediaSource::GetGuiNameFromCodecID(enum AVCodecID pCodecId)
                 tResult = "H.264";
                 break;
         case AV_CODEC_ID_HEVC:
-                tResult = "H.265";
+                tResult = "HEVC";
                 break;
         case AV_CODEC_ID_MPEG2TS:
                 tResult = "MPEG2TS";
@@ -1170,6 +1155,12 @@ void MediaSource::GetVideoSourceResolution(int &pResX, int &pResY)
 
     pResX = mSourceResX;
     pResY = mSourceResY;
+}
+
+void MediaSource::GetVideoDisplayAspectRation(int &pHoriz, int &pVert)
+{
+    pHoriz = 0;
+    pVert = 0;
 }
 
 GrabResolutions MediaSource::GetSupportedVideoGrabResolutions()
@@ -3143,6 +3134,7 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
 #endif
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream time_base: %d/%d", mMediaStream->time_base.num, mMediaStream->time_base.den);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream avg fps: %.2f", av_q2d(mMediaStream->avg_frame_rate));
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..fmt stream sample AR: %d/%d", mMediaStream->sample_aspect_ratio.num, mMediaStream->sample_aspect_ratio.den);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..desired device: %s", mDesiredDevice.c_str());
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec qmin: %d", mCodecContext->qmin);
@@ -3725,6 +3717,12 @@ bool MediaSource::FfmpegOpenDecoder(string pSource, int pLine)
                 mOutputFrameRate = av_q2d(mMediaStream->avg_frame_rate);
 
             LOG_REMOTE(LOG_VERBOSE, pSource, pLine, "Detected video resolution: %d*%d and frame rate: %.2f", mSourceResX, mSourceResY, mOutputFrameRate);
+
+            // display the DAR
+            AVRational tDAR;
+            av_reduce(&tDAR.num, &tDAR.den, mCodecContext->width  * mCodecContext->sample_aspect_ratio.num, mCodecContext->height * mCodecContext->sample_aspect_ratio.den, 1024 * 1024);
+            LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..DAR: %d/%d", tDAR.num, tDAR.den);
+
             break;
 
         case MEDIA_AUDIO:

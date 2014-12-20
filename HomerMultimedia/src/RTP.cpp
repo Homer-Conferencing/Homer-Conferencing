@@ -199,7 +199,7 @@ union H261Header{
     uint32_t Data[1];
 };
 
-#define H261_HEADER_SIZE                    sizeof(H261Header)
+#define RTP_H261_PAYLOAD_HEADER_SIZE        4
 
 // **** H261/RTP payload limitation workaround ***********************************
 // HINT: workaround, but static value: RTP_MAX_PAYLOAD_SIZE - H261_HEADER_SIZE,
@@ -371,53 +371,48 @@ union H264Header{
 };
 
 // ########################## HEVC / H.265 #########################################
+#define RTP_HEVC_PAYLOAD_HEADER_SIZE  2
+#define RTP_HEVC_FU_HEADER_SIZE       1
+#define RTP_HEVC_DONL_FIELD_SIZE      2
+#define HEVC_SPECIFIED_NAL_UNIT_TYPES 48
+
+/*
+    Payload header
+         0                   1
+         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        |F|   Type    |  LayerId  | TID |
+        +-------------+-----------------+
+
+           Forbidden zero (F): 1 bit
+           NAL unit type (Type): 6 bits
+           NUH layer ID (LayerId): 6 bits
+           NUH temporal ID plus 1 (TID): 3 bits
+
+    FU header
+          0 1 2 3 4 5 6 7
+         +-+-+-+-+-+-+-+-+
+         |S|E|  FuType   |
+         +---------------+
+
+            Start fragment (S): 1 bit
+            End fragment (E): 1 bit
+            FuType: 6 bits
+
+ */
 union HEVCHeader{
     struct{
-        struct{
-            unsigned int Reserved:1;            /* forbidden zero bit */
-            unsigned int Type:6;                /* NAL unit type */
-            unsigned int Nri:6;                 /* NUH layer ID */
-            unsigned int F:3;                   /* NUH temporal ID */
-        } __attribute__((__packed__));
-        struct{
-            unsigned int dummy1:24;
-            unsigned int Type:5;                /* NAL unit type */
-            unsigned int Nri:2;                 /* NAL reference indicator (NRI) */
-            unsigned int F:1;                   /* forbidden zero bit (F) */
-        } __attribute__((__packed__))StapA;
-        struct{
-            unsigned int dummy1:8;
-            unsigned short int Don;             /* decoding order number (DON) */
-            unsigned int Type:5;                /* NAL unit type */
-            unsigned int Nri:2;                 /* NAL reference indicator (NRI) */
-            unsigned int F:1;                   /* forbidden zero bit (F) */
-        } __attribute__((__packed__))StapB, Mtap16, Mtap32;
-        struct{
-            unsigned int dummy1:16;
-
-            unsigned int PlType:5;              /* NAL unit payload type */
-            unsigned int R:1;                   /* reserved bit, must be 0 */
-            unsigned int E:1;                   /* end of a fragmented NAL unit (E) */
-            unsigned int S:1;                   /* start of a fragmented NAL unit (S) */
-
-            unsigned int Type:5;                /* NAL unit type */
-            unsigned int Nri:2;                 /* NAL reference indicator (NRI) */
-            unsigned int F:1;                   /* forbidden zero bit (F) */
-        } __attribute__((__packed__))FuA;
-        struct{
-            unsigned short int Don;             /* decoding order number (DON) */
-
-            unsigned int PlType:5;              /* NAL unit payload type */
-            unsigned int R:1;                   /* reserved bit, must be 0 */
-            unsigned int E:1;                   /* end of a fragmented NAL unit (E) */
-            unsigned int S:1;                   /* start of a fragmented NAL unit (S) */
-
-            unsigned int Type:5;                /* NAL unit type */
-            unsigned int Nri:2;                 /* NAL reference indicator (NRI) */
-            unsigned int F:1;                   /* forbidden zero bit (F) */
-        } __attribute__((__packed__))FuB;
-        uint32_t Data[1];
-    };
+        unsigned int dummy: 8;
+        unsigned int FUType:6;              /* FU type */
+        unsigned int Ebit:1;                /* end fragment */
+        unsigned int Sbit:1;                /* start fragment */
+        unsigned int TID:3;                 /* NUH temporal ID (is always +1) */
+        unsigned int LayerID:6;             /* NAL layer ID */
+        unsigned int Type:6;                /* NAL unit type */
+        unsigned int F:1;                   /* forbidden zero bit */
+    } __attribute__((__packed__));
+    uint32_t Data[1];
+    uint8_t Chars[4];
 };
 
 // ############################ THEORA) ############################################
@@ -496,7 +491,7 @@ RTP::~RTP()
 
 void RTP::SetH261PayloadSizeMax(unsigned int pMaxSize)
 {//workaround for separation of RTP packetizer and the payload limit problem which is caused by the missing RTP support for H261 within ffmpeg
-    mH261PayloadSizeMax = pMaxSize - RTP_HEADER_SIZE - H261_HEADER_SIZE;
+    mH261PayloadSizeMax = pMaxSize - RTP_HEADER_SIZE - RTP_H261_PAYLOAD_HEADER_SIZE;
 }
 
 unsigned int RTP::GetH261PayloadSizeMax()
@@ -549,6 +544,7 @@ void RTP::Init()
     mSyncNTPTime = 0;
     mH261H263EndByteBits = 0;
     mH261H263EndByte = 0;
+    mHEVCIsUsingDonFields = false;
 }
 
 bool RTP::ResetRrtpParser()
@@ -933,7 +929,7 @@ int RTP::GetPayloadHeaderSizeMax(enum AVCodecID pCodec)
                 tResult = sizeof(H264Header);
                 break;
             case AV_CODEC_ID_HEVC:
-                tResult = sizeof(HEVCHeader);
+                tResult = RTP_HEVC_PAYLOAD_HEADER_SIZE + RTP_HEVC_FU_HEADER_SIZE;
                 break;
             case AV_CODEC_ID_MPEG1VIDEO:
             case AV_CODEC_ID_MPEG2VIDEO:
@@ -1393,7 +1389,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
             tChunkSize = pDataSize;
         }
 
-        tRtpStreamDataSize += 4 + RTP_HEADER_SIZE + H261_HEADER_SIZE + tChunkSize;
+        tRtpStreamDataSize += 4 + RTP_HEADER_SIZE + RTP_H261_PAYLOAD_HEADER_SIZE + tChunkSize;
         if (tRtpStreamDataSize > MEDIA_SOURCE_AV_CHUNK_BUFFER_SIZE)
         {
             LOG(LOG_ERROR, "RTP stream buffer is too small, stopping RTP encapsulation here");
@@ -1404,7 +1400,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         // set the current rtp packet's size within the resulting packet buffer
         // HINT: convert from host to network byte order to pretend ffmpeg behavior
         unsigned int *tRtpPacketSize = (unsigned int*)tCurrentRtpStreamData;
-        *tRtpPacketSize = htonl((uint32_t) RTP_HEADER_SIZE + H261_HEADER_SIZE + tChunkSize);
+        *tRtpPacketSize = htonl((uint32_t) RTP_HEADER_SIZE + RTP_H261_PAYLOAD_HEADER_SIZE + tChunkSize);
 
         // go to the start of the rtp packet
         tCurrentRtpStreamData += 4;
@@ -1451,7 +1447,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
         tH261Header->Data[0] = htonl(tH261Header->Data[0]);
 
         // go to the start of the h261 header
-        tCurrentRtpStreamData += H261_HEADER_SIZE;
+        tCurrentRtpStreamData += RTP_H261_PAYLOAD_HEADER_SIZE;
 
         // #############################################################
         // PAYLOAD: copy PAYLOAD to packet buffer
@@ -1466,7 +1462,7 @@ bool RTP::RtpCreateH261(char *&pData, unsigned int &pDataSize, int64_t pPacketPt
 
         //increase packet counter
         mH261SentPackets++;
-        mH261SentOctets+= H261_HEADER_SIZE + tChunkSize;
+        mH261SentOctets+= RTP_H261_PAYLOAD_HEADER_SIZE + tChunkSize;
     }
     pData = mRtpPacketStream;
     pDataSize = tRtpStreamDataSize;
@@ -1668,6 +1664,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
 
     bool tOldH263PayloadDetected = false;
     char *tRtpPacketStart = pData;
+    int tRemainingDataSize = pDataSize;
 
     if ((mStreamCodecID != AV_CODEC_ID_NONE) && (mStreamCodecID != pCodecId))
         LOG(LOG_WARN, "Codec change from %d(%s) to %d(%s) in inout stream detected", mStreamCodecID, HM_avcodec_get_name(mStreamCodecID), pCodecId, HM_avcodec_get_name(pCodecId));
@@ -1876,8 +1873,12 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
     // HINT: header size = standard header size + amount of CSRCs * size of one CSRC
     // go to the start of the codec header
     pData += RTP_HEADER_SIZE;
+    tRemainingDataSize -= RTP_HEADER_SIZE;
     for (unsigned int j = 1; j < tCsrcCount; j++)
+    {
         pData += sizeof(unsigned int);
+        tRemainingDataSize -= sizeof(unsigned int);
+    }
 
     // do we have old h263 style rtp packets?
     if (tRtpHeader->PayloadType == 34)
@@ -2217,6 +2218,12 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             break;
             // video
             case AV_CODEC_ID_H261:
+                            if (tRemainingDataSize < RTP_H261_PAYLOAD_HEADER_SIZE + 1)
+                            {
+                                AnnounceLostPackets(1);
+                                return false;
+                            }
+
                             // convert from network to host byte order
                             tH261Header->Data[0] = ntohl(tH261Header->Data[0]);
 
@@ -2246,7 +2253,7 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             tH261H263Ebits = tH261Header->Ebit;
 
                             // go to the start of the h261 payload
-                            pData += H261_HEADER_SIZE;
+                            pData += RTP_H261_PAYLOAD_HEADER_SIZE;
 
                             // convert from host to network byte order
                             tH261Header->Data[0] = htonl(tH261Header->Data[0]);
@@ -2574,9 +2581,8 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                     #endif
                                     if (!pLoggingOnly)
                                     {
-                                        //HINT: make sure that the byte order is correct here because we abuse the former RTP header memory
+                                        // create the start sequence "0x00 0x00 0x01"
                                         pData -= 3;
-                                        // create the start sequence "001"
                                         pData[0] = 0;
                                         pData[1] = 0;
                                         pData[2] = 1;
@@ -2587,22 +2593,32 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                             break;
             case AV_CODEC_ID_HEVC:
                             {
-                                unsigned char tHEVCHeaderType = 0;
-                                bool tHEVCHeaderFragmentStart = false;
-                                char tHEVCHeaderReconstructed = 0;
+                                unsigned int tHEVCNALUnitType = 0;
+                                bool tHEVCHeaderStartFragment = false;
+                                bool tHEVCHeaderEndFragment = false;
+                                unsigned int tHEVCFUHeaderType = 0;
+                                unsigned char tHEVCNewNALHeader[2];
+                                unsigned char tHEVCLayerID = 0;
+                                unsigned char tHEVCTemporalID = 0;
+
+                                if (tRemainingDataSize < RTP_HEVC_PAYLOAD_HEADER_SIZE + 1)
+                                {
+                                    AnnounceLostPackets(1);
+                                    return false;
+                                }
 
                                 // convert from network to host byte order
                                 tHEVCHeader->Data[0] = ntohl(tHEVCHeader->Data[0]);
 
                                 // HINT: convert from network to host byte order not necessary because we have only one byte
                                 #ifdef RTP_DEBUG_PACKET_DECODER
-                                    LOG(LOG_VERBOSE, "################## HEVC/H.264 header ########################");
+                                    LOG(LOG_VERBOSE, "################## HEVC/H.265 header ########################");
                                     LOG(LOG_VERBOSE, "F bit: %d", tHEVCHeader->F);
                                     LOG(LOG_VERBOSE, "NAL ref. ind.: %d", tHEVCHeader->Nri);
                                     LOG(LOG_VERBOSE, "NAL unit type: %d", tHEVCHeader->Type);
                                     if ((tHEVCHeader->Type == 28 /* Fu-A */) || (tHEVCHeader->Type == 29 /* Fu-B */))
                                     {
-                                        LOG(LOG_VERBOSE, "################ HEVC/H.264 FU header #####################");
+                                        LOG(LOG_VERBOSE, "################ HEVC/H.265 FU header #####################");
                                         LOG(LOG_VERBOSE, "S bit: %d", tHEVCHeader->FuA.S);
                                         LOG(LOG_VERBOSE, "E bit: %d", tHEVCHeader->FuA.E);
                                         LOG(LOG_VERBOSE, "R bit: %d", tHEVCHeader->FuA.R);
@@ -2610,86 +2626,129 @@ bool RTP::RtpParse(char *&pData, int &pDataSize, bool &pIsLastFragment, enum Rtc
                                     }
                                 #endif
 
-                                tHEVCHeaderType = tHEVCHeader->Type;
-                                if ((tHEVCHeader->Type == 28 /* Fu-A */) || (tHEVCHeader->Type == 29 /* Fu-B */))
-                                    tHEVCHeaderFragmentStart = tHEVCHeader->FuA.S;
+                                tHEVCNALUnitType = tHEVCHeader->Type;
+                                tHEVCFUHeaderType = tHEVCHeader->FUType;
+                                tHEVCHeaderStartFragment = tHEVCHeader->Sbit;
+                                tHEVCHeaderEndFragment = tHEVCHeader->Ebit;
+                                tHEVCLayerID = tHEVCHeader->LayerID;
+                                tHEVCTemporalID = tHEVCHeader->TID;
 
                                 // convert from host to network byte order
                                 tHEVCHeader->Data[0] = htonl(tHEVCHeader->Data[0]);
 
-                                // go to the start of the payload data
-                                switch(tHEVCHeaderType)
+                                tHEVCNewNALHeader[0] = (tHEVCHeader->Chars[0] & 0x81) | (tHEVCFUHeaderType << 1);
+                                tHEVCNewNALHeader[1] = tHEVCHeader->Chars[1];
+
+                                /* sanity check for correct layer ID */
+                                if (tHEVCLayerID)
                                 {
-                                            // NAL unit  Single NAL unit packet per H.EVC
-                                            case 1 ... 23:
-                                                    // HINT: RFC3984: The first byte of a NAL unit co-serves as the RTP payload header
-                                                    break;
-                                            // STAP-A    Single-time aggregation packet
-                                            case 24:
-                                                    pData += 1;
-                                                    break;
-                                            // STAP-B    Single-time aggregation packet
-                                            case 25:
-                                            // MTAP16    Multi-time aggregation packet
-                                            case 26:
-                                            // MTAP24    Multi-time aggregation packet
-                                            case 27:
-                                                    pData += 3;
-                                                    break;
-                                            // FU-B      Fragmentation unit
-                                            case 29:
-                                            // FU-A      Fragmentation unit
-                                            case 28:
-                                                    // start fragment?
-                                                    if (tHEVCHeaderFragmentStart)
-                                                    {
-                                                        #ifdef RTP_DEBUG_PACKET_DECODER
-                                                            LOG(LOG_VERBOSE, "..HEVC start fragment");
-                                                        #endif
-                                                        // use FU header as NAL header, reconstruct the original NAL header
-                                                        if (!pLoggingOnly)
-                                                        {
-                                                            #ifdef RTP_DEBUG_PACKET_DECODER
-                                                                LOG(LOG_VERBOSE, "S bit is set: reconstruct NAL header");
-                                                                LOG(LOG_VERBOSE, "..part F+NRI: %d", pData[0] & 0xE0);
-                                                                LOG(LOG_VERBOSE, "..part TYPE: %d", pData[1] & 0x1F);
-                                                            #endif
-                                                            tHEVCHeaderReconstructed = (pData[0] & 0xE0 /* F + NRI */) + (pData[1] & 0x1F /* TYPE */);
-                                                            pData[1] = tHEVCHeaderReconstructed;
-                                                        }
-                                                        pData += 1;
-                                                    }else
-                                                    {
-                                                        #ifdef RTP_DEBUG_PACKET_DECODER
-                                                            if (tHEVCHeader->FuA.E)
-                                                                LOG(LOG_VERBOSE, "..HEVC end fragment");
-                                                            else
-                                                                LOG(LOG_VERBOSE, "..HEVC intermediate fragment");
-                                                        #endif
-                                                        pData += 2;
-                                                    }
-                                                    break;
-                                            // 0, 30, 31
-                                            default:
-                                                    LOG(LOG_ERROR, "Undefined NAL type");
-                                                    break;
+                                    // future scalable or 3D video coding extensions
+                                    LOG(LOG_WARN, "Multi-layer HEVC coding");
+                                    return false;
+                                }
+                                // sanity check for correct temporal ID
+                                if (!tHEVCTemporalID)
+                                {
+                                    LOG(LOG_ERROR, "Illegal temporal ID in RTP/HEVC packet");
+                                    return false;
                                 }
 
-                                // in case it is no FU or it is one AND it is the start fragment:
-                                //      create start sequence of [0, 0, 1]
-                                if (((tHEVCHeaderType != 28) && (tHEVCHeaderType != 29)) || (tHEVCHeaderFragmentStart))
+                                // sanity check for correct NAL unit type
+                                if (tHEVCNALUnitType > 50)
                                 {
-                                    #ifdef RTP_DEBUG_PACKET_DECODER
-                                    #endif
-                                    if (!pLoggingOnly)
-                                    {
-                                        //HINT: make sure that the byte order is correct here because we abuse the former RTP header memory
+                                    LOG(LOG_ERROR, "Unsupported (HEVC) NAL type (%d)", tHEVCNALUnitType);
+                                    return false;
+                                }
+
+                                // go to the start of the payload data
+                                switch(tHEVCNALUnitType)
+                                {
+                                    // aggregated packets (AP)
+                                    case 48:
+                                        // pass the HEVC payload header
+                                        pData += RTP_HEVC_PAYLOAD_HEADER_SIZE;
+                                        tRemainingDataSize -= RTP_HEVC_PAYLOAD_HEADER_SIZE;
+
+                                        /* pass the HEVC DONL field */
+                                        if (mHEVCIsUsingDonFields) {
+                                            pData += RTP_HEVC_DONL_FIELD_SIZE;
+                                            tRemainingDataSize -= RTP_HEVC_DONL_FIELD_SIZE;
+                                        }
+
+                                        // fall-through
+                                    // video parameter set (VPS)
+                                    case 32:
+                                    // sequence parameter set (SPS)
+                                    case 33:
+                                    // picture parameter set (PPS)
+                                    case 34:
+                                    //  supplemental enhancement information (SEI)
+                                    case 39:
+                                    // single NAL unit packet
+                                    default:
+                                        // sanity check for size of input packet: 1 byte payload at least
+                                        if (tRemainingDataSize < 1) {
+                                            AnnounceLostPackets(1);
+                                            LOG(LOG_ERROR, "Too short RTP/HEVC packet, got %d bytes of NAL unit type %d", tRemainingDataSize, tHEVCNALUnitType);
+                                            return false;
+                                        }
+
+                                        // create A/V packet: start sequence "0x00 0x00 0x01" before the A/V data
                                         pData -= 3;
-                                        // create the start sequence "001"
                                         pData[0] = 0;
                                         pData[1] = 0;
                                         pData[2] = 1;
-                                    }
+
+                                        break;
+                                    // fragmentation unit (FU)
+                                    case 49:
+                                        // pass the HEVC payload header
+                                        pData += RTP_HEVC_PAYLOAD_HEADER_SIZE;
+                                        tRemainingDataSize -= RTP_HEVC_PAYLOAD_HEADER_SIZE;
+
+                                        // pass the HEVC FU header
+                                        pData += RTP_HEVC_FU_HEADER_SIZE;
+                                        tRemainingDataSize -= RTP_HEVC_FU_HEADER_SIZE;
+
+                                        // pass the HEVC DONL field
+                                        if (mHEVCIsUsingDonFields) {
+                                            pData += RTP_HEVC_DONL_FIELD_SIZE;
+                                            tRemainingDataSize -= RTP_HEVC_DONL_FIELD_SIZE;
+                                        }
+
+                                        // sanity check for size of input packet: 1 byte payload at least
+                                        if (tRemainingDataSize > 0) {
+                                            // start fragment vs. subsequent fragments
+                                            if (tHEVCHeaderStartFragment) {
+                                                if (!tHEVCHeaderEndFragment) {
+                                                    // create A/V packet: start sequence "0x00 0x00 0x01" before the A/V data, new NAL header, the original NAL unit data
+                                                    pData -= 5;
+                                                    pData[0] = 0;
+                                                    pData[1] = 0;
+                                                    pData[2] = 1;
+                                                    pData[3] = tHEVCNewNALHeader[0];
+                                                    pData[4] = tHEVCNewNALHeader[1];
+                                                } else {
+                                                    LOG(LOG_ERROR, "Illegal combination of S and E bit in RTP/HEVC packet");
+                                                    return false;
+                                                }
+                                            } else {
+                                                // A/V packet: the original NAL unit data
+                                            }
+                                        } else {
+                                            if (tRemainingDataSize < 0) {
+                                                LOG(LOG_ERROR, "Too short RTP/HEVC packet, got %d bytes of NAL unit type %d", tRemainingDataSize, tHEVCNALUnitType);
+                                            } else {
+                                            }
+                                            return false;
+                                        }
+
+                                        break;
+                                    /* PACI packet */
+                                    case 50:
+                                        /* Temporal scalability control information (TSCI) */
+                                        LOG(LOG_WARN, "PACI packets for RTP/HEVC");
+                                        return false;
                                 }
                             }
 

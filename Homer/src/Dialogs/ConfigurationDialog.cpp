@@ -28,6 +28,8 @@
 #include <Dialogs/ConfigurationAudioSilenceDialog.h>
 #include <Widgets/OverviewPlaylistWidget.h>
 
+#include <MediaSource.h>
+
 #include <Configuration.h>
 #include <Meeting.h>
 #include <HBSocket.h>
@@ -125,6 +127,10 @@ ConfigurationDialog::~ConfigurationDialog()
 void ConfigurationDialog::initializeGUI()
 {
     setupUi(this);
+
+    // add H.265 only if it is supported by the used ffmpeg version
+    if(MediaSource::IsH265EncodingSupported())
+        mCbVideoCodec->insertItem(4, "HEVC");
 }
 
 int ConfigurationDialog::exec()
@@ -466,7 +472,7 @@ void ConfigurationDialog::SaveConfiguration()
     //### VIDEO configuration
     //######################################################################
     CONF.SetVideoActivation(mGrpVideo->isChecked());
-    MEETING.SetVideoCodecsSupport(SDP::GetSDPCodecIDFromGuiName(mCbVideoCodec->currentText().toStdString()));
+    MEETING.SetVideoCodec(SDP::GetSDPCodecIDFromGuiName(mCbVideoCodec->currentText().toStdString()));
 
     //### capture source
     CONF.SetLocalVideoSource(mCbVideoSource->currentText());
@@ -502,7 +508,7 @@ void ConfigurationDialog::SaveConfiguration()
     //### AUDIO configuration
     //######################################################################
     CONF.SetAudioActivation(mGrpAudio->isChecked());
-    MEETING.SetAudioCodecsSupport(SDP::GetSDPCodecIDFromGuiName(mCbAudioCodec->currentText().toStdString()));
+    MEETING.SetAudioCodec(SDP::GetSDPCodecIDFromGuiName(mCbAudioCodec->currentText().toStdString()));
 
     //### capture source
     CONF.SetLocalAudioSource(mCbAudioSource->currentText());
