@@ -351,8 +351,11 @@ static void sQt4DebugMessageOutput(QtMsgType pType, const char *pMsg)
 static void sQt5DebugMessageOutput(QtMsgType pType, const QMessageLogContext &pContext, const QString &pMsg)
 {
 	QByteArray tLocalMsg = pMsg.toLocal8Bit();
-	string tDebugMessage = pContext.function;// + "(" + toString(pContext.line) + "): " + string(tLocalMsg.constData());
-	sQt4DebugMessageOutput(pType, tDebugMessage.c_str());
+	if(pContext.function != NULL)
+	{
+		string tDebugMessage = pContext.function;// + "(" + toString(pContext.line) + "): " + string(tLocalMsg.constData());
+		sQt4DebugMessageOutput(pType, tDebugMessage.c_str());
+	}
 }
 #endif
 
