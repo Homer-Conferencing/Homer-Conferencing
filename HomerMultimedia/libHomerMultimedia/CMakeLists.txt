@@ -153,30 +153,30 @@ ENDIF (LINUX)
 ##############################################################
 # USED LIBRARIES for win32 environment
 SET (LIBS_WINDOWS_INSTALL
-    avutil-52.dll
-    avcodec-55.dll
-    avdevice-55.dll
-    avfilter-4.dll
-    avformat-55.dll
+    avcodec-56.dll
+    avdevice-56.dll
+    avfilter-5.dll
+    avformat-56.dll
+    avutil-54.dll
     libgcc_s_dw2-1.dll
     libstdc++-6.dll
     portaudio.dll
-    postproc-52.dll
-    swresample-0.dll
-    swscale-2.dll
+    postproc-53.dll
+    swresample-1.dll
+    swscale-3.dll
 )
 SET (LIBS_WINDOWS
-    avutil-52
-    avcodec-55
-    avfilter-4
-    avformat-55
-    avdevice-55
+    avcodec-56
+    avfilter-5
+    avformat-56
+    avdevice-56
+    avutil-54
     HomerBase
     HomerNAPI
     HomerMonitor
     portaudio
-    swscale-2
-    swresample-0
+    swresample-1
+    swscale-3
     ws2_32
     Avicap32
     Winmm
