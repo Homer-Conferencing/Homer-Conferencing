@@ -207,8 +207,8 @@ public:
 
     static void FfmpegInit();
 
-    static bool IsH265EncodingSupported();
-    static bool IsH265DecodingSupported();
+    static bool IsHEVCEncodingSupported();
+    static bool IsHEVCDecodingSupported();
 
     static void LogSupportedVideoCodecs(bool pSendToLoggerOnly = false);
     static void LogSupportedAudioCodecs(bool pSendToLoggerOnly = false);

@@ -221,15 +221,15 @@ void MediaSource::FfmpegInit()
 
         mFfmpegInitiated = true;
 
-        if(IsH265EncodingSupported())
-            LOGEX(MediaSource, LOG_WARN, "Found H.265 encoding support in the linked avcodec library, support of H.265 is still experimental..");
-        if(IsH265DecodingSupported())
-            LOGEX(MediaSource, LOG_WARN, "Found H.265 decoding support in the linked avcodec library, support of H.265 is still experimental..");
+        if(IsHEVCEncodingSupported())
+            LOGEX(MediaSource, LOG_WARN, "Found HEVC encoder in the linked avcodec library, support of H.265 is still experimental..");
+        if(IsHEVCDecodingSupported())
+            LOGEX(MediaSource, LOG_WARN, "Found HEVC decoder in the linked avcodec library, support of H.265 is still experimental..");
     }
     mFfmpegInitMutex.unlock();
 }
 
-bool MediaSource::IsH265EncodingSupported()
+bool MediaSource::IsHEVCEncodingSupported()
 {
     AVCodec *tFoundCodec = avcodec_find_encoder_by_name("libx265" /* means h265 */);
     if(tFoundCodec != NULL)
@@ -238,7 +238,7 @@ bool MediaSource::IsH265EncodingSupported()
         return false;
 }
 
-bool MediaSource::IsH265DecodingSupported()
+bool MediaSource::IsHEVCDecodingSupported()
 {
     AVCodec *tFoundCodec = avcodec_find_decoder_by_name("hevc" /* means h265 */);
     if(tFoundCodec != NULL)
