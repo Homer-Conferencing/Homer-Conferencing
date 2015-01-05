@@ -29,9 +29,6 @@
 
 #if defined(WINDOWS)
 #include <stdio.h>
-#ifndef ssize_t
-#define ssize_t SSIZE_T
-#endif
 #endif
 
 #pragma GCC system_header //suppress warnings from sofia-sip
