@@ -285,7 +285,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
                         tDeviceIsUsable = true;
 
                         if (tFirstCall)
-                            LOG(LOG_VERBOSE, "  ..supported media tyoe: Video, video info format: %d, video resolution: %d*%d (sub type: %s)", tFormatType, tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
+                            LOG(LOG_VERBOSE, "  ..supported media type: Video, video info format: %d, video resolution: %d*%d (sub type: %s)", tFormatType, tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
                     }else
                     {
                         if (tFirstCall)
