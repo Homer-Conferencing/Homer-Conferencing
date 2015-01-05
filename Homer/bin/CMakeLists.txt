@@ -366,14 +366,14 @@ IF (NOT (${BUILD} MATCHES "Default"))
 		Qt5Xml.dll
 		Qt5XmlPatterns.dll
 		phonon4.dll
-		plugins/imageformats/qgif.dll
-		plugins/imageformats/qico.dll
-		plugins/imageformats/qjpeg.dll
-		plugins/imageformats/qmng.dll
-		plugins/imageformats/qsvg.dll
-		plugins/imageformats/qtga.dll
-		plugins/imageformats/qtiff.dll
-		plugins/platforms/qwindows.dll
+		imageformats/qgif.dll
+		imageformats/qico.dll
+		imageformats/qjpeg.dll
+		imageformats/qmng.dll
+		imageformats/qsvg.dll
+		imageformats/qtga.dll
+		imageformats/qtiff.dll
+		platforms/qwindows.dll
 	)
 ENDIF()
 SET (LIBS_WINDOWS	
