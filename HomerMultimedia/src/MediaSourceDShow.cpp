@@ -139,6 +139,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
     while(tClassEnumerator->Next (1, &tMoniker, NULL) == S_OK)
     {
         tDeviceIsUsable = false;
+        tDeviceIsVFW = false;
         memset(tDeviceName, 0, sizeof(tDeviceName));
         memset(tDeviceDescription, 0, sizeof(tDeviceDescription));
         memset(tDevicePath, 0, sizeof(tDevicePath));
@@ -154,14 +155,19 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 
         // retrieve the device's name
         tRes = tPropertyBag->Read(L"FriendlyName", &tVariant, 0);
+        if (SUCCEEDED(tRes))
+        {
+            WideCharToMultiByte(CP_ACP, 0, tVariant.bstrVal, -1, tDeviceName, sizeof(tDeviceName), 0, 0);
+            if (tFirstCall)
+                LOG(LOG_INFO, "Found DirectShow device %d with name: %s", tCount, tDeviceName);
+        }
+        VariantClear(&tVariant);
         if (FAILED(tRes))
         {
             LOG(LOG_ERROR, "Could not get property \"FriendlyName\" for device \"%d\"", tCount);
             tPropertyBag->Release();
             continue;
         }
-        WideCharToMultiByte(CP_ACP, 0, tVariant.bstrVal, -1, tDeviceName, sizeof(tDeviceName), 0, 0);
-        VariantClear(&tVariant);
 
         // retrieve the device's description
         tRes = tPropertyBag->Read(L"Description", &tVariant, 0);
@@ -179,17 +185,23 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
             LOG(LOG_WARN, "Could not get property \"DevicePath\" for device \"%d\"", tCount);
         VariantClear(&tVariant);
 
-
         // bint to object
         string tDeviceNameStr = string(tDeviceName);
-        LOG(LOG_VERBOSE, "Will try to detect supported video resolutions for device \"%s\"", tDeviceNameStr.c_str());
-        tMoniker->BindToObject( 0, 0, IID_IBaseFilter, (void **)&tSource);
-
-        tRes = tSource->GetClassID(&tClassId);
-        if (tClassId == CLSID_VfwCapture)
-            tDeviceIsVFW = true;
-        else
-            tDeviceIsVFW = false;
+        LOG(LOG_VERBOSE, "Will try to detect the class for device \"%s\"", tDeviceNameStr.c_str());
+        tRes = tMoniker->BindToObject( 0, 0, IID_IBaseFilter, (void **)&tSource);
+        if (SUCCEEDED(tRes))
+        {
+            LOG(LOG_VERBOSE, " ..determining the class for device \"%s\"", tDeviceNameStr.c_str());
+			tRes = tSource->GetClassID(&tClassId);
+	        if (SUCCEEDED(tRes))
+	        {
+				if (tClassId == CLSID_VfwCapture)
+				{
+		            LOG(LOG_VERBOSE, " ..detected VFW device");
+					tDeviceIsVFW = true;
+				}
+	        }
+        }
 
         //####################################
         //### verbose output and store device description
@@ -201,7 +213,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 
         if (tFirstCall)
         {
-            LOG(LOG_INFO, "Found active DirectShow device %d", tCount);
+            LOG(LOG_INFO, "..detected as suitable DirectShow device %d", tCount);
             LOG(LOG_INFO, "  ..device name: %s", tDeviceName);
             LOG(LOG_INFO, "  ..description: %s", tDeviceDescription);
             LOG(LOG_INFO, "  ..path: %s", tDevicePath);
@@ -238,7 +250,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 
                 int tCount, tSize;
                 tRes = tStreamConfig->GetNumberOfCapabilities( &tCount, &tSize);
-                LOG(LOG_VERBOSE, "Found %d capability entries", tCount);
+                LOG(LOG_VERBOSE, "..found %d capability entries", tCount);
                 if (FAILED(tRes))
                 {
                     LOG(LOG_ERROR, "Could not get number of caps");
@@ -280,7 +292,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
                         }else
                         {
                             if (tFirstCall)
-                                LOG(LOG_WARN, "Unsupported format type detected: %s", GUID2String(tMT->formattype).c_str());
+                                LOG(LOG_WARN, "  ..unsupported format type detected: %s", GUID2String(tMT->formattype).c_str());
                         }
                         tDeviceIsUsable = true;
 
@@ -731,9 +743,17 @@ GrabResolutions MediaSourceDShow::GetSupportedVideoGrabResolutions()
         if (tDeviceNameStr == mCurrentDeviceName)
         {
             LOG(LOG_VERBOSE, "Will try to detect supported video resolutions for device %s", tDeviceNameStr.c_str());
-            // bint to object
-            tMoniker->BindToObject( 0, 0, IID_IBaseFilter, (void **)&tSource);
 
+            // bint to object
+            tRes = tMoniker->BindToObject( 0, 0, IID_IBaseFilter, (void **)&tSource);
+            if (FAILED(tRes))
+            {
+                LOG(LOG_ERROR, "Could not bind to IBaseFilter object");
+                tPropertyBag->Release();
+                break;
+            }
+
+            // enumerate pins
             tRes = tSource->EnumPins(&tPinsEnum);
             if (FAILED(tRes))
             {
