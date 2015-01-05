@@ -191,7 +191,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
         tRes = tMoniker->BindToObject( 0, 0, IID_IBaseFilter, (void **)&tSource);
         if (SUCCEEDED(tRes))
         {
-            LOG(LOG_VERBOSE, " ..determining the class for device \"%s\"", tDeviceNameStr.c_str());
+            LOG(LOG_WORLD, " ..determining the class for device \"%s\"", tDeviceNameStr.c_str());
 			tRes = tSource->GetClassID(&tClassId);
 	        if (SUCCEEDED(tRes))
 	        {
@@ -221,6 +221,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
         }
 
         // enumerate all supported video resolutions
+        LOG(LOG_WORLD, "..enumerating the pins for device \"%s\"", tDeviceNameStr.c_str());
         tRes = tSource->EnumPins(&tPinsEnum);
         if (FAILED(tRes))
         {
@@ -231,6 +232,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 
         while (tPinsEnum->Next(1, &tPin, 0) == S_OK)
         {
+            LOG(LOG_WORLD, "..querying the direction for pins of device \"%s\"", tDeviceNameStr.c_str());
             tRes = tPin->QueryDirection(&tPinDir);
             if (FAILED(tRes))
             {
@@ -240,6 +242,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 
             if (tPinDir == PINDIR_OUTPUT)
             {
+                LOG(LOG_WORLD, "..querying the interface for device \"%s\"", tDeviceNameStr.c_str());
                 tRes = tPin->QueryInterface(IID_IAMStreamConfig, (void **)&tStreamConfig);
                 if (FAILED(tRes))
                 {
@@ -249,6 +252,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
                 }
 
                 int tCount, tSize;
+                LOG(LOG_WORLD, "..querying the number of caps for device \"%s\"", tDeviceNameStr.c_str());
                 tRes = tStreamConfig->GetNumberOfCapabilities( &tCount, &tSize);
                 LOG(LOG_VERBOSE, "..found %d capability entries", tCount);
                 if (FAILED(tRes))
@@ -263,6 +267,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 
                 for ( int i = 0; i < tCount; i++)
                 {
+                    LOG(LOG_WORLD, "..getting the stream caps for device \"%s\"", tDeviceNameStr.c_str());
                     tRes = tStreamConfig->GetStreamCaps(i, &tMT, tCaps);
                     if (FAILED(tRes))
                     {
@@ -305,9 +310,13 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
                     }
                 }
                 delete [] tCaps;
+            }else{
+                LOG(LOG_WORLD, "..ignoring pin - has wrong direction");
             }
+            LOG(LOG_WORLD, "..releasing the pin object");
             tPin->Release();
         }
+        LOG(LOG_WORLD, "..releasing the pins enumerator object");
         tPinsEnum->Release();
 
         //###############################################
@@ -318,9 +327,12 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
         else
             LOG(LOG_WARN, "Ignoring device %s", tDevice.Name.c_str());
 
+        LOG(LOG_WORLD, "..releasing the property bag object");
         tPropertyBag->Release();
+        LOG(LOG_WORLD, "..releasing the moniker object");
         tMoniker->Release();
     }
+    LOG(LOG_WORLD, "..releasing the class enumerator object");
     tClassEnumerator->Release();
 
     tFirstCall = false;
