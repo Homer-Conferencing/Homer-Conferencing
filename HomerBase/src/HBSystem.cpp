@@ -312,7 +312,7 @@ int64_t System::GetMachineMemorySwap()
 
 string System::GetStackTrace()
 {
-    string tResult;
+    string tResult = "";
 
 #ifdef LINUX
     void *tStackTrace[MAX_STACK_TRACE_DEPTH];
@@ -395,6 +395,8 @@ string System::GetStackTrace()
     // memory cleanup
     free(tStackTraceList);
     free(tFuncnName);
+#else
+	//TODO
 #endif
 
     return tResult;
