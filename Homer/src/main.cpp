@@ -45,7 +45,6 @@
 using namespace Homer::Gui;
 using namespace std;
 
-#if defined(LINUX) || defined(APPLE)
 void GetSignalDescription(int pSignal, string &pSignalName, string &pSignalDescription)
 {
     switch(pSignal)
@@ -131,75 +130,60 @@ void GetSignalDescription(int pSignal, string &pSignalName, string &pSignalDescr
     }
 }
 
-int64_t sStopTime = -1;
-static void HandlerSignal(int pSignal, siginfo_t *pSignalInfo, void *pArg)
+void LogExceptionSignal(int pSignal)
 {
     string tSignalName;
     string tSignalDescription;
 
     GetSignalDescription(pSignal, tSignalName, tSignalDescription);
-    LOGEX(MainWindow, LOG_WARN, "Signal \"%s\"(%d: %s) detected.", tSignalName.c_str(), pSignal, tSignalDescription.c_str());
+    LOGEX(MainWindow, LOG_ERROR, "Signal \"%s\(%d): %s\" detected.", tSignalName.c_str(), pSignal, tSignalDescription.c_str());
+}
+
+void HandleExceptionSignal(int pSignal)
+{
+    switch(pSignal)
+    {
+        case SIGILL:
+        case SIGFPE:
+        case SIGSEGV:
+        case SIGTERM:
+            {
+                std::string tStackTrace = System::GetStackTrace();
+                LOGEX(MainWindow, LOG_ERROR, "Stack trace:\n%s", tStackTrace.c_str());
+                LOGEX(MainWindow, LOG_ERROR, "");
+                LOGEX(MainWindow, LOG_ERROR, "Homer Conferencing will exit now. Please, report this to the Homer development team.");
+                LOGEX(MainWindow, LOG_ERROR, "-");
+                LOGEX(MainWindow, LOG_ERROR, "Restart Homer Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
+                LOGEX(MainWindow, LOG_ERROR, "Afterwards attach the file debug.log to your bug report and send both by mail to homer@homer-conferencing.com.");
+                LOGEX(MainWindow, LOG_ERROR, " ");
+                exit(0);
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+#if defined(LINUX) || defined(APPLE)
+// POSIX based exception catching
+static void CatchSignalLinux(int pSignal, siginfo_t *pSignalInfo, void *pArg)
+{
+	LogExceptionSignal(pSignal);
     if (pSignalInfo != NULL)
     {
-        switch(pSignal)
-        {
-            case SIGSEGV:
-                {
-                    if(pSignalInfo->si_addr != NULL)
-                        LOGEX(MainWindow, LOG_ERROR, "Segmentation fault detected - referenced memory at location: %p", pSignalInfo->si_addr);
-                    else
-                        LOGEX(MainWindow, LOG_ERROR, "Segmentation fault detected - null pointer reference");
-
-                    std::string tStackTrace = System::GetStackTrace();
-                    LOGEX(MainWindow, LOG_ERROR, "Stack trace:\n%s", tStackTrace.c_str());
-                    LOGEX(MainWindow, LOG_ERROR, "");
-                    LOGEX(MainWindow, LOG_ERROR, "Homer Conferencing will exit now. Please, report this to the Homer development team.");
-                    LOGEX(MainWindow, LOG_ERROR, "-");
-                    LOGEX(MainWindow, LOG_ERROR, "Restart Homer Conferencing via \"Homer -DebugOutputFile=debug.log\" to generate verbose debug data.");
-                    LOGEX(MainWindow, LOG_ERROR, "Afterwards attach the file debug.log to your bug report and send both by mail to homer@homer-conferencing.com.");
-                    LOGEX(MainWindow, LOG_ERROR, " ");
-                    exit(0);
-                }
-                break;
-            case SIGINT:
-				{
-					LOGEX(MainWindow, LOG_WARN, "Homer Conferencing will exit now...");
-					exit(0);
-				}
-				break;
-            case SIGTERM:
-				{
-					LOGEX(MainWindow, LOG_WARN, "Homer Conferencing will exit now...");
-					exit(0);
-				}
-				break;
-            case SIGTSTP:
-            	{
-            		LOGEX(MainWindow, LOG_WARN, "Suspending Homer Conferencing now...");
-            		sStopTime = Time::GetTimeStamp();
-            		kill(Thread::GetPId(), SIGSTOP);
-            	}
-				break;
-            case SIGCONT:
-            	{
-            		//TODO: re-sync. RT - grabbing and all time measurements
-            		LOGEX(MainWindow, LOG_WARN, "Continuing Homer Conferencing now...");
-            		if (sStopTime != -1)
-            		{
-            			float tSuspendTime = ((float)(Time::GetTimeStamp() - sStopTime)) / 1000 / 1000;
-						LOGEX(MainWindow, LOG_WARN, "Homer Conferencing was suspended for %.2f seconds.", tSuspendTime);
-            		}else
-                		LOGEX(MainWindow, LOG_ERROR, "Invalid timestamp found as start time of suspend mode");
-            	}
-				break;
-            default:
-                break;
-        }
+    	if(pSignal == SIGSEGV)
+		{
+			if(pSignalInfo->si_addr != NULL)
+				LOGEX(MainWindow, LOG_ERROR, "Segmentation fault detected - faulty memory reference at location: %p", pSignalInfo->si_addr);
+			else
+				LOGEX(MainWindow, LOG_ERROR, "Segmentation fault detected - null pointer reference");
+		}
         if (pSignalInfo->si_errno != 0)
             LOGEX(MainWindow, LOG_VERBOSE, "This signal occurred because \"%s\"(%d)", strerror(pSignalInfo->si_errno), pSignalInfo->si_errno);
         if (pSignalInfo->si_code != 0)
             LOGEX(MainWindow, LOG_VERBOSE, "Signal code is %d", pSignalInfo->si_code);
     }
+	HandleExceptionSignal(pSignal);
 }
 
 static void SetHandlers()
@@ -224,16 +208,29 @@ static void SetHandlers()
     struct sigaction tSigAction;
     memset(&tSigAction, 0, sizeof(tSigAction));
     sigemptyset(&tSigAction.sa_mask);
-    tSigAction.sa_sigaction = HandlerSignal;
+    tSigAction.sa_sigaction = CatchSignalLinux;
     tSigAction.sa_flags   = SA_SIGINFO | SA_ONSTACK;
-    sigaction(SIGINT, &tSigAction, NULL);
-    sigaction(SIGTERM, &tSigAction, NULL);
-    sigaction(SIGTSTP, &tSigAction, NULL);
-    sigaction(SIGCONT, &tSigAction, NULL);
+    sigaction(SIGILL, &tSigAction, NULL);
+    sigaction(SIGFPE, &tSigAction, NULL);
     sigaction(SIGSEGV, &tSigAction, NULL);
+    sigaction(SIGTERM, &tSigAction, NULL);
 }
 #else
-static void SetHandlers(){ }
+
+// C99 based exception catching
+void CatchSignalWindows(int pSignal)
+{
+	LogExceptionSignal(pSignal);
+	HandleExceptionSignal(pSignal);
+}
+
+static void SetHandlers()
+{
+    signal(SIGILL, CatchSignalWindows);
+    signal(SIGFPE, CatchSignalWindows);
+    signal(SIGSEGV, CatchSignalWindows);
+    signal(SIGTERM, CatchSignalWindows);
+}
 #endif
 
 const char* sCandle = ""
