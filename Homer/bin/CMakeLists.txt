@@ -339,24 +339,41 @@ ENDIF()
 ##############################################################
 # USED LIBRARIES for win32 environment
 IF (NOT (${BUILD} MATCHES "Default"))
-	SET (LIBS_WINDOWS_INSTALL   
+	SET (LIBS_WINDOWS_INSTALL
+		icudt53.dll
+		icuin53.dll
+		icuuc53.dll
 		libgcc_s_dw2-1.dll
 		libstdc++-6.dll
+		libwinpthread-1.dll
 		mingwm10.dll
 		Qt5Core.dll
 		Qt5Gui.dll
+		Qt5Multimedia.dll
+		Qt5MultimediaWidgets.dll
 		Qt5Network.dll
+		Qt5OpenGL.dll
+		Qt5Positioning.dll
+		Qt5PrintSupport.dll
+		Qt5Qml.dll
+		Qt5Quick.dll
+		Qt5Sensors.dll
+		Qt5Sql.dll
+		Qt5WebChannel.dll
 		Qt5WebKit.dll
+		Qt5WebKitWidgets.dll
+		Qt5Widgets.dll
 		Qt5Xml.dll
 		Qt5XmlPatterns.dll
 		phonon4.dll
-		plugins/imageformats/qgif4.dll
-		plugins/imageformats/qico4.dll
-		plugins/imageformats/qjpeg4.dll
-		plugins/imageformats/qmng4.dll
-		plugins/imageformats/qsvg4.dll
-		plugins/imageformats/qtga4.dll
-		plugins/imageformats/qtiff4.dll
+		plugins/imageformats/qgif.dll
+		plugins/imageformats/qico.dll
+		plugins/imageformats/qjpeg.dll
+		plugins/imageformats/qmng.dll
+		plugins/imageformats/qsvg.dll
+		plugins/imageformats/qtga.dll
+		plugins/imageformats/qtiff.dll
+		plugins/platforms/qwindows.dll
 	)
 ENDIF()
 SET (LIBS_WINDOWS	
