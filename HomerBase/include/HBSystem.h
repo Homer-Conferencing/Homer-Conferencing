@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <list>
 
 namespace Homer { namespace Base {
 
@@ -48,7 +49,7 @@ public:
     static std::string GetTargetMachineType();
     static int64_t GetMachineMemoryPhysical();
     static int64_t GetMachineMemorySwap();
-    static std::string GetStackTrace();
+    static std::list<std::string> GetStackTrace();
 
 private:
 };

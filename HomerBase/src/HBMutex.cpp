@@ -82,8 +82,12 @@ bool Mutex::lock(int pTimeout)
             LOG(LOG_ERROR, "Recursive locking of mutex \"%s\" in thread %d detected", mName.c_str(), tThreadId);
         else
             LOG(LOG_ERROR, "Recursive locking in thread %d detected", tThreadId);
-        string tStackTrace = System::GetStackTrace();
-        LOG(LOG_ERROR, "Stack trace:\n%s", tStackTrace.c_str());
+        list<string> tStackTrace = System::GetStackTrace();
+        list<string>::iterator tIt;
+        LOG(LOG_ERROR, "Stack trace:");
+        for(tIt = tStackTrace.begin(); tIt != tStackTrace.end(); tIt++)
+        	LOG(LOG_ERROR, "   %s", tIt->c_str());
+
         LOG(LOG_ERROR, "Program execution will end now..");
         exit(1);
     }

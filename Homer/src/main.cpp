@@ -149,8 +149,11 @@ void HandleExceptionSignal(int pSignal)
         case SIGTERM:
     	case SIGABRT:
             {
-                std::string tStackTrace = System::GetStackTrace();
-                LOGEX(MainWindow, LOG_ERROR, "Stack trace:\n%s", tStackTrace.c_str());
+                list<string> tStackTrace = System::GetStackTrace();
+                list<string>::iterator tIt;
+                LOGEX(MainWindow, LOG_ERROR, "Stack trace:");
+                for(tIt = tStackTrace.begin(); tIt != tStackTrace.end(); tIt++)
+                	LOGEX(MainWindow, LOG_ERROR, "   %s", tIt->c_str());
                 LOGEX(MainWindow, LOG_ERROR, "");
                 LOGEX(MainWindow, LOG_ERROR, "Homer Conferencing will exit now. Please, report this to the Homer development team.");
                 LOGEX(MainWindow, LOG_ERROR, "-");
