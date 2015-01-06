@@ -147,6 +147,7 @@ void HandleExceptionSignal(int pSignal)
         case SIGFPE:
         case SIGSEGV:
         case SIGTERM:
+    	case SIGABRT:
             {
                 std::string tStackTrace = System::GetStackTrace();
                 LOGEX(MainWindow, LOG_ERROR, "Stack trace:\n%s", tStackTrace.c_str());
@@ -214,6 +215,7 @@ static void SetHandlers()
     sigaction(SIGFPE, &tSigAction, NULL);
     sigaction(SIGSEGV, &tSigAction, NULL);
     sigaction(SIGTERM, &tSigAction, NULL);
+    sigaction(SIGABRT, &tSigAction, NULL);
 }
 #else
 
@@ -230,6 +232,7 @@ static void SetHandlers()
     signal(SIGFPE, CatchSignalWindows);
     signal(SIGSEGV, CatchSignalWindows);
     signal(SIGTERM, CatchSignalWindows);
+    signal(SIGABRT, CatchSignalWindows);
 }
 #endif
 
