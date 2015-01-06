@@ -85,23 +85,23 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 {
     static bool             tFirstCall = true;
     VARIANT                 tVariant;
-    TCHAR                     tDeviceName[256];
-    TCHAR                     tDevicePath[256];
-    TCHAR                     tDeviceDescription[256];
-    VideoDeviceDescriptor     tDevice;
+    TCHAR                   tDeviceName[256];
+    TCHAR                   tDevicePath[256];
+    TCHAR                   tDeviceDescription[256];
+    VideoDeviceDescriptor   tDevice;
     HRESULT                 tRes = S_OK;
     IMoniker                *tMoniker =NULL;
-    ICreateDevEnum             *tDeviceEnumerator =NULL;
-    IEnumMoniker             *tClassEnumerator = NULL;
-    CLSID                     tClassId;
+    ICreateDevEnum          *tDeviceEnumerator =NULL;
+    IEnumMoniker            *tClassEnumerator = NULL;
+    CLSID                   tClassId;
     bool                    tDeviceIsVFW;
     bool                    tDeviceIsUsable;
-    IBaseFilter                *tSource;
-    IPropertyBag             *tPropertyBag;
+    IBaseFilter             *tSource;
+    IPropertyBag            *tPropertyBag;
     IAMStreamConfig         *tStreamConfig = NULL;
-    IEnumPins                  *tPinsEnum = NULL;
+    IEnumPins               *tPinsEnum = NULL;
     IPin                    *tPin = NULL;
-    PIN_DIRECTION            tPinDir;
+    PIN_DIRECTION           tPinDir;
 
     #ifdef MSDS_DEBUG_PACKETS
         tFirstCall = true;
@@ -140,6 +140,7 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
     {
         tDeviceIsUsable = false;
         tDeviceIsVFW = false;
+        tSource = NULL;
         memset(tDeviceName, 0, sizeof(tDeviceName));
         memset(tDeviceDescription, 0, sizeof(tDeviceDescription));
         memset(tDevicePath, 0, sizeof(tDevicePath));
@@ -201,10 +202,111 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
 					tDeviceIsVFW = true;
 				}
 	        }
+
+	        //###############################################
+	        //### enumerate all supported video resolutions
+	        //###############################################
+	        LOG(LOG_WORLD, "..enumerating the pins for device \"%s\"", tDeviceNameStr.c_str());
+	        tRes = tSource->EnumPins(&tPinsEnum);
+	        if (FAILED(tRes))
+	        {
+	            LOG(LOG_ERROR, "Could not enumerate pins");
+	            tPropertyBag->Release();
+	            break;
+	        }
+
+	        while (tPinsEnum->Next(1, &tPin, 0) == S_OK)
+	        {
+	            LOG(LOG_WORLD, "..querying the direction for pins of device \"%s\"", tDeviceNameStr.c_str());
+	            tRes = tPin->QueryDirection(&tPinDir);
+	            if (FAILED(tRes))
+	            {
+	                LOG(LOG_ERROR, "Could not query pin direction");
+	                break;
+	            }
+
+	            if (tPinDir == PINDIR_OUTPUT)
+	            {
+	                LOG(LOG_WORLD, "..querying the interface for device \"%s\"", tDeviceNameStr.c_str());
+	                tRes = tPin->QueryInterface(IID_IAMStreamConfig, (void **)&tStreamConfig);
+	                if (FAILED(tRes))
+	                {
+	                    LOG(LOG_ERROR, "Could not query pin interface");
+	                    tPin->Release();
+	                    break;
+	                }
+
+	                int tCount, tSize;
+	                LOG(LOG_WORLD, "..querying the number of caps for device \"%s\"", tDeviceNameStr.c_str());
+	                tRes = tStreamConfig->GetNumberOfCapabilities( &tCount, &tSize);
+	                LOG(LOG_VERBOSE, "..found %d capability entries", tCount);
+	                if (FAILED(tRes))
+	                {
+	                    LOG(LOG_ERROR, "Could not get number of caps");
+	                    tPin->Release();
+	                    break;
+	                }
+
+	                AM_MEDIA_TYPE *tMT;
+	                BYTE *tCaps = new BYTE[tSize]; // VIDEO_STREAM_CONFIG_CAPS
+
+	                for ( int i = 0; i < tCount; i++)
+	                {
+	                    LOG(LOG_WORLD, "..getting the stream caps for device \"%s\"", tDeviceNameStr.c_str());
+	                    tRes = tStreamConfig->GetStreamCaps(i, &tMT, tCaps);
+	                    if (FAILED(tRes))
+	                    {
+	                        #ifdef MSDS_DEBUG_RESOLUTIONS
+	                            LOG(LOG_ERROR, "Could not get stream cap %d", i);
+	                        #endif
+	                        break;
+	                    }
+
+	                    if ((tMT->majortype == MEDIATYPE_Video) && (tMT->pbFormat !=0))
+	                    {
+	                        int tFormatType = -1;
+	                        int tWidth = -1;
+	                        int tHeight = -1;
+	                        if (tMT->formattype == FORMAT_VideoInfo)
+	                        {// VideoInfo
+	                            VIDEOINFOHEADER *tVInfoHeader = (VIDEOINFOHEADER*)tMT->pbFormat;
+	                            tWidth = tVInfoHeader->bmiHeader.biWidth;
+	                            tHeight = tVInfoHeader->bmiHeader.biHeight;
+	                            tFormatType = 1;
+	                        }else if (tMT->formattype == FORMAT_VideoInfo2)
+	                        {// VideoInfo2
+	                            VIDEOINFOHEADER2 *tVInfoHeader2 = (VIDEOINFOHEADER2*)tMT->pbFormat;
+	                            tWidth = tVInfoHeader2->bmiHeader.biWidth;
+	                            tHeight = tVInfoHeader2->bmiHeader.biHeight;
+	                            tFormatType = 2;
+	                        }else
+	                        {
+	                            if (tFirstCall)
+	                                LOG(LOG_WARN, "  ..unsupported format type detected: %s", GUID2String(tMT->formattype).c_str());
+	                        }
+	                        tDeviceIsUsable = true;
+
+	                        if (tFirstCall)
+	                            LOG(LOG_VERBOSE, "  ..supported media type: Video, video info format: %d, video resolution: %d*%d (sub type: %s)", tFormatType, tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
+	                    }else
+	                    {
+	                        if (tFirstCall)
+	                            LOG(LOG_VERBOSE, "  ..additional media type: %s", GetMediaTypeName(tMT->majortype).c_str());
+	                    }
+	                }
+	                delete [] tCaps;
+	            }else{
+	                LOG(LOG_WORLD, "..ignoring pin - has wrong direction");
+	            }
+	            LOG(LOG_WORLD, "..releasing the pin object");
+	            tPin->Release();
+	        }
+	        LOG(LOG_WORLD, "..releasing the pins enumerator object");
+	        tPinsEnum->Release();
         }
 
         //####################################
-        //### verbose output and store device description
+        //### verbose output and store device data
         //####################################
         tDevice.Name = string(tDeviceName);
         tDevice.Card = "video=" + string(tDeviceName);
@@ -219,105 +321,6 @@ void MediaSourceDShow::getVideoDevices(VideoDevices &pVList)
             LOG(LOG_INFO, "  ..path: %s", tDevicePath);
             LOG(LOG_INFO, "  ..type: %s", tDeviceIsVFW ? "VFW device" : "DirectShow device");
         }
-
-        // enumerate all supported video resolutions
-        LOG(LOG_WORLD, "..enumerating the pins for device \"%s\"", tDeviceNameStr.c_str());
-        tRes = tSource->EnumPins(&tPinsEnum);
-        if (FAILED(tRes))
-        {
-            LOG(LOG_ERROR, "Could not enumerate pins");
-            tPropertyBag->Release();
-            break;
-        }
-
-        while (tPinsEnum->Next(1, &tPin, 0) == S_OK)
-        {
-            LOG(LOG_WORLD, "..querying the direction for pins of device \"%s\"", tDeviceNameStr.c_str());
-            tRes = tPin->QueryDirection(&tPinDir);
-            if (FAILED(tRes))
-            {
-                LOG(LOG_ERROR, "Could not query pin direction");
-                break;
-            }
-
-            if (tPinDir == PINDIR_OUTPUT)
-            {
-                LOG(LOG_WORLD, "..querying the interface for device \"%s\"", tDeviceNameStr.c_str());
-                tRes = tPin->QueryInterface(IID_IAMStreamConfig, (void **)&tStreamConfig);
-                if (FAILED(tRes))
-                {
-                    LOG(LOG_ERROR, "Could not query pin interface");
-                    tPin->Release();
-                    break;
-                }
-
-                int tCount, tSize;
-                LOG(LOG_WORLD, "..querying the number of caps for device \"%s\"", tDeviceNameStr.c_str());
-                tRes = tStreamConfig->GetNumberOfCapabilities( &tCount, &tSize);
-                LOG(LOG_VERBOSE, "..found %d capability entries", tCount);
-                if (FAILED(tRes))
-                {
-                    LOG(LOG_ERROR, "Could not get number of caps");
-                    tPin->Release();
-                    break;
-                }
-
-                AM_MEDIA_TYPE *tMT;
-                BYTE *tCaps = new BYTE[tSize]; // VIDEO_STREAM_CONFIG_CAPS
-
-                for ( int i = 0; i < tCount; i++)
-                {
-                    LOG(LOG_WORLD, "..getting the stream caps for device \"%s\"", tDeviceNameStr.c_str());
-                    tRes = tStreamConfig->GetStreamCaps(i, &tMT, tCaps);
-                    if (FAILED(tRes))
-                    {
-                        #ifdef MSDS_DEBUG_RESOLUTIONS
-                            LOG(LOG_ERROR, "Could not get stream cap %d", i);
-                        #endif
-                        break;
-                    }
-
-                    if ((tMT->majortype == MEDIATYPE_Video) && (tMT->pbFormat !=0))
-                    {
-                        int tFormatType = -1;
-                        int tWidth = -1;
-                        int tHeight = -1;
-                        if (tMT->formattype == FORMAT_VideoInfo)
-                        {// VideoInfo
-                            VIDEOINFOHEADER *tVInfoHeader = (VIDEOINFOHEADER*)tMT->pbFormat;
-                            tWidth = tVInfoHeader->bmiHeader.biWidth;
-                            tHeight = tVInfoHeader->bmiHeader.biHeight;
-                            tFormatType = 1;
-                        }else if (tMT->formattype == FORMAT_VideoInfo2)
-                        {// VideoInfo2
-                            VIDEOINFOHEADER2 *tVInfoHeader2 = (VIDEOINFOHEADER2*)tMT->pbFormat;
-                            tWidth = tVInfoHeader2->bmiHeader.biWidth;
-                            tHeight = tVInfoHeader2->bmiHeader.biHeight;
-                            tFormatType = 2;
-                        }else
-                        {
-                            if (tFirstCall)
-                                LOG(LOG_WARN, "  ..unsupported format type detected: %s", GUID2String(tMT->formattype).c_str());
-                        }
-                        tDeviceIsUsable = true;
-
-                        if (tFirstCall)
-                            LOG(LOG_VERBOSE, "  ..supported media type: Video, video info format: %d, video resolution: %d*%d (sub type: %s)", tFormatType, tWidth, tHeight, GetSubTypeName(tMT->subtype).c_str());
-                    }else
-                    {
-                        if (tFirstCall)
-                            LOG(LOG_VERBOSE, "  ..additional media type: %s", GetMediaTypeName(tMT->majortype).c_str());
-                    }
-                }
-                delete [] tCaps;
-            }else{
-                LOG(LOG_WORLD, "..ignoring pin - has wrong direction");
-            }
-            LOG(LOG_WORLD, "..releasing the pin object");
-            tPin->Release();
-        }
-        LOG(LOG_WORLD, "..releasing the pins enumerator object");
-        tPinsEnum->Release();
 
         //###############################################
         //### finally add this device to the result list
