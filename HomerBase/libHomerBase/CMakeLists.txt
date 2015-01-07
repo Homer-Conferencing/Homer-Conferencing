@@ -57,7 +57,6 @@ SET (SOURCES
 SET (LIBS_WINDOWS_INSTALL
     libgcc_s_dw2-1.dll
     libstdc++-6.dll
-    DbgHelp.dll
 )
 SET (LIBS_WINDOWS
 	ws2_32
