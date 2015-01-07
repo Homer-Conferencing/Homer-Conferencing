@@ -30,6 +30,8 @@ if(HOMER_QT5)
 	include_directories(${Qt5Xml_INCLUDE_DIRS})
 	
 	add_definitions(${Qt5Widgets_DEFINITIONS})
+ELSE()
+	MESSAGE("##### Using library Qt4")
 ENDIF()
 
 ##############################################################
