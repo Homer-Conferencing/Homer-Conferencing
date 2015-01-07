@@ -152,6 +152,9 @@ void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, in
                     case LOG_VERBOSE:
                                 printf("\033[22;36m(%s)\033[01;30m VERBOSE: %s(%d):\033[01;37m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                                 break;
+                    case LOG_WORLD:
+								printf("\033[22;36m(%s)\033[01;30m WORLD: %s(%d):\033[01;37m %s\033[00;22;35m\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+								break;
                 }
             #endif
             #ifdef WINDOWS
@@ -179,6 +182,11 @@ void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, in
                                 printf("VERBOSE: %s(%d): ", pSource.c_str(), pLine);
                                 SetConsoleTextAttribute(sConsoleHandle, 15);
                                 break;
+                    case LOG_WORLD:
+                                SetConsoleTextAttribute(sConsoleHandle, 8);
+                                printf("WORLD: %s(%d): ", pSource.c_str(), pLine);
+                                SetConsoleTextAttribute(sConsoleHandle, 15);
+                                break;
                 }
                 printf("%s\n", pMessage.c_str());
                 SetConsoleTextAttribute(sConsoleHandle, 7);
@@ -198,6 +206,9 @@ void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, in
                             break;
                 case LOG_VERBOSE:
                             printf("(%s) VERBOSE: %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                            break;
+                case LOG_WORLD:
+                            printf("(%s) WORLD: %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                             break;
             }
         }

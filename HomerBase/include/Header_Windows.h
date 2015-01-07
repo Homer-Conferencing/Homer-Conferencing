@@ -64,6 +64,7 @@
 #include <Tlhelp32.h>
 #include <stdlib.h>
 #include <shellapi.h>
+#include <DbgHelp.h> // for getting stack trace
 
 // additional definitions for compatibility with gcc
 //#ifndef ssize_t

@@ -61,6 +61,7 @@ SET (LIBS_WINDOWS_INSTALL
 SET (LIBS_WINDOWS
 	ws2_32
 	Psapi
+	DbgHelp
 )
 	
 # USED LIBRARIES for BSD environment

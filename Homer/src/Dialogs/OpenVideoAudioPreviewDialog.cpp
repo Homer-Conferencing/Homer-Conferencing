@@ -84,7 +84,7 @@ void OpenVideoAudioPreviewDialog::initializeGUI()
     connect(mCbNAPIImplAudio, SIGNAL(currentIndexChanged(QString)), this, SLOT(NAPIAudioSelectionChanged(QString)));
 
     // add H.265 only if it is supported by the used ffmpeg version
-    if(MediaSource::IsH265DecodingSupported())
+    if(MediaSource::IsHEVCDecodingSupported())
         mCbCodecVideo->insertItem(4, "HEVC");
 
     LoadConfiguration();

@@ -28,16 +28,17 @@
 
 #include <Logger.h>
 #include <HBSystem.h>
+#include <HBThread.h>
 
 #include <string.h>
 #include <stdlib.h>
+#include <cxxabi.h>
 
 #if defined(LINUX)
 #include <sys/sysinfo.h>
 
 //TODO: available in OSX?
 #include <execinfo.h>
-#include <cxxabi.h>
 #endif
 
 #if defined(APPLE) || defined(BSD)
@@ -56,7 +57,7 @@ namespace Homer { namespace Base {
 using namespace std;
 
 #define MAX_STACK_TRACE_DEPTH             200
-#define MAX_STACK_TRACE_STEP_LENGTH       256
+#define MAX_STACK_TRACE_STEP_LENGTH       512
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -310,92 +311,259 @@ int64_t System::GetMachineMemorySwap()
     return tResult;
 }
 
-string System::GetStackTrace()
+list<string> System::GetStackTrace()
 {
-    string tResult;
+    list<string> tResult;
+	int tStackTraceStep = 0;
+    char tStringBuf[MAX_STACK_TRACE_STEP_LENGTH];
 
-#ifdef LINUX
-    void *tStackTrace[MAX_STACK_TRACE_DEPTH];
-    int tStackTraceSize;
-    char **tStackTraceList;
-    int tStackTraceStep = 0;
-    char *tStringBuf = (char*)malloc(MAX_STACK_TRACE_STEP_LENGTH);
+	#ifdef LINUX
+	    void *tStackTrace[MAX_STACK_TRACE_DEPTH];
+	    int tStackTraceSize;
+	    char **tStackTraceList;
 
-    tStackTraceSize = backtrace(tStackTrace, MAX_STACK_TRACE_DEPTH);
-    tStackTraceList = backtrace_symbols(tStackTrace, tStackTraceSize);
+	    tStackTraceSize = backtrace(tStackTrace, MAX_STACK_TRACE_DEPTH);
+	    tStackTraceList = backtrace_symbols(tStackTrace, tStackTraceSize);
 
-    size_t tFuncNameSize = MAX_STACK_TRACE_STEP_LENGTH / 2;
-    char* tFuncnName = (char*)malloc(tFuncNameSize);
+	    size_t tFuncNameSize = MAX_STACK_TRACE_STEP_LENGTH / 2;
+	    char* tFuncName = (char*)malloc(tFuncNameSize);
 
-    for (int i = 0; i < tStackTraceSize; i++)
-    {
-        // get the pointers to the name, offset and end of offset
-        char *tBeginFuncName = 0;
-        char *tBeginFuncOffset = 0;
-        char *tEndFuncOffset = 0;
-        char *tBeginBinaryName = tStackTraceList[i];
-        char *tBeginBinaryOffset = 0;
-        char *tEndBinaryOffset = 0;
-        for (char *tEntryPointer = tStackTraceList[i]; *tEntryPointer; ++tEntryPointer)
-        {
-            if (*tEntryPointer == '(')
-            {
-                tBeginFuncName = tEntryPointer;
-            }else if (*tEntryPointer == '+')
-            {
-                tBeginFuncOffset = tEntryPointer;
-            }else if (*tEntryPointer == ')' && tBeginFuncOffset)
-            {
-                tEndFuncOffset = tEntryPointer;
-            }else if (*tEntryPointer == '[')
-            {
-                tBeginBinaryOffset = tEntryPointer;
-            }else if (*tEntryPointer == ']' && tBeginBinaryOffset)
-            {
-                tEndBinaryOffset = tEntryPointer;
-                break;
-            }
-        }
+	    for (int i = 0; i < tStackTraceSize; i++)
+	    {
+	        // get the pointers to the name, offset and end of offset
+	        char *tBeginFuncName = 0;
+	        char *tBeginFuncOffset = 0;
+	        char *tEndFuncOffset = 0;
+	        char *tBeginBinaryName = tStackTraceList[i];
+	        char *tBeginBinaryOffset = 0;
+	        char *tEndBinaryOffset = 0;
+	        for (char *tEntryPointer = tStackTraceList[i]; *tEntryPointer; ++tEntryPointer)
+	        {
+	            if (*tEntryPointer == '(')
+	            {
+	                tBeginFuncName = tEntryPointer;
+	            }else if (*tEntryPointer == '+')
+	            {
+	                tBeginFuncOffset = tEntryPointer;
+	            }else if (*tEntryPointer == ')' && tBeginFuncOffset)
+	            {
+	                tEndFuncOffset = tEntryPointer;
+	            }else if (*tEntryPointer == '[')
+	            {
+	                tBeginBinaryOffset = tEntryPointer;
+	            }else if (*tEntryPointer == ']' && tBeginBinaryOffset)
+	            {
+	                tEndBinaryOffset = tEntryPointer;
+	                break;
+	            }
+	        }
 
-        if (tBeginFuncName && tBeginFuncOffset && tEndFuncOffset && tBeginFuncName < tBeginFuncOffset)
-        {
-            // terminate the C strings
-            *tBeginFuncName++ = '\0';
-            *tBeginFuncOffset++ = '\0';
-            *tEndFuncOffset = '\0';
-            *tBeginBinaryOffset++ = '\0';
-            *tEndBinaryOffset = '\0';
+	        if (tBeginFuncName && tBeginFuncOffset && tEndFuncOffset && tBeginFuncName < tBeginFuncOffset)
+	        {
+	            // terminate the C strings
+	            *tBeginFuncName++ = '\0';
+	            *tBeginFuncOffset++ = '\0';
+	            *tEndFuncOffset = '\0';
+	            *tBeginBinaryOffset++ = '\0';
+	            *tEndBinaryOffset = '\0';
 
-            int tDemanglingRes;
-            char* tFuncnName = abi::__cxa_demangle(tBeginFuncName, tFuncnName, &tFuncNameSize, &tDemanglingRes);
-            unsigned int tBinaryOffset = strtoul(tBeginBinaryOffset, NULL, 16);
-            if (tDemanglingRes == 0)
-            {
-                if(tBeginBinaryName && strlen(tBeginBinaryName))
-                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s] from %s\n", tStackTraceStep, tBinaryOffset, tFuncnName, tBeginFuncOffset, tBeginBinaryName);
-                else
-                    sprintf(tStringBuf, "#%02d 0x%016x in %s from %s\n", tStackTraceStep, tBinaryOffset, tFuncnName, tBeginFuncOffset);
-                tStackTraceStep++;
-            }else{
-                if(tBeginBinaryName && strlen(tBeginBinaryName))
-                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s] from %s\n", tStackTraceStep, tBinaryOffset, tBeginFuncName, tBeginFuncOffset, tBeginBinaryName);
-                else
-                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s]\n", tStackTraceStep, tBinaryOffset, tBeginFuncName, tBeginFuncOffset);
-                tStackTraceStep++;
-            }
-        }else{
-            sprintf(tStringBuf, "#%02d %s\n", tStackTraceStep, tStackTraceList[i]);
-            tStackTraceStep++;
-        }
+	            int tDemanglingRes;
+	            char* tFuncName = abi::__cxa_demangle(tBeginFuncName, tFuncName, &tFuncNameSize, &tDemanglingRes);
+	            unsigned int tBinaryOffset = strtoul(tBeginBinaryOffset, NULL, 16);
+	            if (tDemanglingRes == 0)
+	            {
+	                if(tBeginBinaryName && strlen(tBeginBinaryName))
+	                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s] from %s", tStackTraceStep, tBinaryOffset, tFuncName, tBeginFuncOffset, tBeginBinaryName);
+	                else
+	                    sprintf(tStringBuf, "#%02d 0x%016x in %s from %s", tStackTraceStep, tBinaryOffset, tFuncName, tBeginFuncOffset);
+	                tStackTraceStep++;
+	            }else{
+	                if(tBeginBinaryName && strlen(tBeginBinaryName))
+	                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s] from %s", tStackTraceStep, tBinaryOffset, tBeginFuncName, tBeginFuncOffset, tBeginBinaryName);
+	                else
+	                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s]", tStackTraceStep, tBinaryOffset, tBeginFuncName, tBeginFuncOffset);
+	                tStackTraceStep++;
+	            }
+	        }else{
+	            sprintf(tStringBuf, "#%02d %s\n", tStackTraceStep, tStackTraceList[i]);
+	            tStackTraceStep++;
+	        }
 
-        // append the line to the result
-        tResult += string(tStringBuf);
-    }
+	        // append the line to the result
+	        tResult.push_back(string(tStringBuf));
+	    }
 
-    // memory cleanup
-    free(tStackTraceList);
-    free(tFuncnName);
-#endif
+	    // memory cleanup
+	    free(tStackTraceList);
+	    free(tFuncName);
+	#else
+    	// inspired from: http://www.codeproject.com/Articles/11132/Walking-the-callstack
+
+		HANDLE          tProcess = GetCurrentProcess();
+		HANDLE          tThread = GetCurrentThread();
+		CONTEXT         tProcessContext;
+		STACKFRAME64    tStackFrame;
+		SYMBOL_INFO 	*tSymDesc = NULL;
+		char 			tNameBuffer[MAX_STACK_TRACE_STEP_LENGTH];
+		unsigned int 	tNameBufferSize = MAX_STACK_TRACE_STEP_LENGTH;
+
+	    // set symbol style
+		SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_FAIL_CRITICAL_ERRORS | SYMOPT_INCLUDE_32BIT_MODULES);
+
+		// init process symbols
+	    if(!SymInitialize(tProcess, NULL, TRUE))
+	    {
+	    	LOGEX(System, LOG_ERROR, "Failed to initialize the process symbols");
+	        return tResult;
+	    }
+
+		// prepare the buffer for the symbol descriptor
+		size_t tSymDescSize = sizeof(SYMBOL_INFO) + MAX_STACK_TRACE_STEP_LENGTH * sizeof(TCHAR);
+		tSymDesc = (SYMBOL_INFO*)malloc(tSymDescSize);
+		memset(tSymDesc, 0, tSymDescSize);
+
+		// prepare the buffer for the module info
+		IMAGEHLP_MODULE64 tModuleInfo;
+		memset(&tModuleInfo, 0, sizeof(tModuleInfo));
+		tModuleInfo.SizeOfStruct = sizeof(tModuleInfo);
+
+		// prepare the buffer for the module line number
+		IMAGEHLP_LINE64 tLineInfo;
+		memset(&tLineInfo, 0, sizeof(tLineInfo));
+		tLineInfo.SizeOfStruct = sizeof(tLineInfo);
+
+		// iterate over all thread IDs
+		vector<int> tThreadIds = Thread::GetTIds();
+		vector<int>::iterator tIt;
+		for(tIt = tThreadIds.begin(); tIt != tThreadIds.end(); tIt++)
+		{
+			tThread = OpenThread(THREAD_ALL_ACCESS, false, *tIt);
+			if(tThread != NULL)
+			{
+				tStackTraceStep = 0;
+
+		    	memset(&tProcessContext, 0, sizeof(CONTEXT));
+		    	tProcessContext.ContextFlags = CONTEXT_FULL;
+			    if (tThread == GetCurrentThread())
+			    {
+			    	sprintf(tStringBuf, "Call stack for current thread %d:", *tIt);
+			        // append the line to the result
+			        tResult.push_back(string(tStringBuf));
+
+				    // get process context of the current thread
+					RtlCaptureContext(&tProcessContext);
+			    }
+			    else
+			    {
+			    	sprintf(tStringBuf, "Call stack for thread %d:", *tIt);
+			        // append the line to the result
+			        tResult.push_back(string(tStringBuf));
+
+				    // get process context of the foreign thread
+			    	//SuspendThread(tThread);
+			    	if (GetThreadContext(tThread, &tProcessContext) == FALSE)
+			    	{
+			    		ResumeThread(tThread);
+			    		continue;
+			    	}
+			    }
+
+				// prepare the buffer for the stack trace
+				memset(&tStackFrame, 0, sizeof(STACKFRAME64));
+				tStackFrame.AddrPC.Offset    = tProcessContext.Eip;
+				tStackFrame.AddrPC.Mode      = AddrModeFlat;
+				tStackFrame.AddrStack.Offset = tProcessContext.Esp;
+				tStackFrame.AddrStack.Mode   = AddrModeFlat;
+				tStackFrame.AddrFrame.Offset = tProcessContext.Ebp;
+				tStackFrame.AddrFrame.Mode   = AddrModeFlat;
+
+				// walk through the stack trace of the currently selected thread
+				while(StackWalk64(IMAGE_FILE_MACHINE_I386, tProcess, tThread, &tStackFrame, &tProcessContext, NULL, SymFunctionTableAccess64, SymGetModuleBase64, NULL))
+				{
+					string tFileName = "";
+					string tModuleName = "";
+					int tFileLine = 0;
+					string tFuncName = "??";
+
+					// get the function name
+					tSymDesc->SizeOfStruct = sizeof(SYMBOL_INFO);
+					tSymDesc->MaxNameLen = MAX_STACK_TRACE_STEP_LENGTH;
+					if(SymFromAddr(tProcess, (ULONG64)tStackFrame.AddrPC.Offset, 0, tSymDesc))
+					{
+						if(tSymDesc->Name != NULL)
+							tFuncName = string(tSymDesc->Name);
+					}else
+					{
+						//LOGEX(System, LOG_WARN, "Can not determine the symbol at address %p", tStackFrame.AddrPC.Offset);
+					}
+
+					// get the file name
+					if(SymGetModuleInfo64(tProcess, tStackFrame.AddrPC.Offset, &tModuleInfo))
+					{
+						if(tModuleInfo.ModuleName != NULL)
+							tModuleName = tModuleInfo.ModuleName;
+					}else
+					{
+						//LOGEX(System, LOG_WARN, "Can not determine the module info for address %p", tStackFrame.AddrPC.Offset);
+					}
+
+					// get the file line
+					if(SymGetLineFromAddr64(tProcess, tStackFrame.AddrPC.Offset, 0, &tLineInfo))
+					{
+						if(tLineInfo.FileName != NULL)
+							tFileName = tLineInfo.FileName;
+						tFileLine = tLineInfo.LineNumber;
+					}else
+					{
+						//LOGEX(System, LOG_WARN, "Can not determine the module line number for address %p because of code \"%d\"", tStackFrame.AddrFrame.Offset, GetLastError());
+					}
+
+//					printf(
+//						"Frame %d:\n"
+//						"    Symbol:    	 %s, %s, %s, %d\n"
+//						"    PC address:     0x%08LX\n"
+//						"    Stack address:  0x%08LX\n"
+//						"    Frame address:  0x%08LX\n"
+//						"\n",
+//						tStackTraceStep,
+//						tModuleName.c_str(), tFileName.c_str(), tFuncName.c_str(), tFileLine,
+//						( ULONG64 )tStackFrame.AddrPC.Offset,
+//						( ULONG64 )tStackFrame.AddrStack.Offset,
+//						( ULONG64 )tStackFrame.AddrFrame.Offset
+//					);
+
+					int tDemanglingRes;
+					char *tDemangledFuncName = abi::__cxa_demangle(("_" /* fix the universe */ + tFuncName).c_str(), tNameBuffer, &tNameBufferSize, &tDemanglingRes);
+					if(tFileName != "")
+					{
+						if (tDemanglingRes == 0)
+						{
+							sprintf(tStringBuf, "  #%02d 0x%08x in %s at %s:%d from %s", tStackTraceStep, (unsigned long)tStackFrame.AddrPC.Offset, tDemangledFuncName, tFileName.c_str(), tFileLine, tModuleName.c_str());
+						}else{
+							sprintf(tStringBuf, "  #%02d 0x%08x in %s() at %s:%d from %s", tStackTraceStep, (unsigned long)tStackFrame.AddrPC.Offset, tFuncName.c_str(), tFileName.c_str(), tFileLine, tModuleName.c_str());
+						}
+					}else{
+						if (tDemanglingRes == 0)
+						{
+							sprintf(tStringBuf, "  #%02d 0x%08x in %s from %s", tStackTraceStep, (unsigned long)tStackFrame.AddrPC.Offset, tDemangledFuncName, tModuleName.c_str());
+						}else{
+							sprintf(tStringBuf, "  #%02d 0x%08x in %s() from %s", tStackTraceStep, (unsigned long)tStackFrame.AddrPC.Offset, tFuncName.c_str(), tModuleName.c_str());
+						}
+					}
+			        // append the line to the result
+			        if(strlen(tStringBuf) > 0)
+			        {
+				        tResult.push_back(string(tStringBuf));
+			        }
+
+					tStackTraceStep++;
+				}
+			}
+			CloseHandle(tThread);
+		}
+
+		free(tSymDesc);
+	#endif
 
     return tResult;
 

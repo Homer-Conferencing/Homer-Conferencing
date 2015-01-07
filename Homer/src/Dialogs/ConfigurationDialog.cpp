@@ -129,7 +129,7 @@ void ConfigurationDialog::initializeGUI()
     setupUi(this);
 
     // add H.265 only if it is supported by the used ffmpeg version
-    if(MediaSource::IsH265EncodingSupported())
+    if(MediaSource::IsHEVCEncodingSupported())
         mCbVideoCodec->insertItem(4, "HEVC");
 }
 
