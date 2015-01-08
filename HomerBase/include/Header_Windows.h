@@ -65,6 +65,7 @@
 #include <stdlib.h>
 #include <shellapi.h>
 #include <DbgHelp.h> // for getting stack trace
+#include <crtdbg.h> // for _CrtSetReportMode
 
 // additional definitions for compatibility with gcc
 //#ifndef ssize_t

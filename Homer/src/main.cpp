@@ -222,6 +222,14 @@ static void SetHandlers()
 }
 #else
 
+
+void CatchInvalidParameterExceptionWindows(const wchar_t* pExpression, const wchar_t* pFunction, const wchar_t* pFile, unsigned int pLine, uintptr_t pReserved)
+{
+	LOGEX(MainWindow, LOG_ERROR, "Invalid parameter detected in function %s, file: %s, line: %d\n", pFunction, pFile, pLine);
+	LOGEX(MainWindow, LOG_ERROR, "Expression: %s\n", pExpression);
+	HandleExceptionSignal(SIGILL);
+}
+
 // C99 based exception catching
 void CatchSignalWindows(int pSignal)
 {
@@ -231,11 +239,16 @@ void CatchSignalWindows(int pSignal)
 
 static void SetHandlers()
 {
+	// activate signal handler
     signal(SIGILL, CatchSignalWindows);
     signal(SIGFPE, CatchSignalWindows);
     signal(SIGSEGV, CatchSignalWindows);
     signal(SIGTERM, CatchSignalWindows);
     signal(SIGABRT, CatchSignalWindows);
+	_set_invalid_parameter_handler((_invalid_parameter_handler)CatchInvalidParameterExceptionWindows);
+
+    // disable the message box for assertions
+	_CrtSetReportMode(_CRT_ASSERT, 0);
 }
 #endif
 
