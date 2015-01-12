@@ -280,8 +280,8 @@ SET (QT_QRC_SOURCES
 ##############################################################
 # multi-language support
 SET(QT_LANG_FILES
-#    ../lang/Homer_ru.ts
-#    ../lang/Homer_de.ts
+    ../lang/Homer_ru.ts
+    ../lang/Homer_de.ts
 )
 
 file (GLOB HEADER_FILES 
