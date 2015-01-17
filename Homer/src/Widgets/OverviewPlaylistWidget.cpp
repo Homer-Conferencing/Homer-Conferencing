@@ -56,7 +56,7 @@ namespace Homer { namespace Gui {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IS_SUPPORTED_WEB_LINK(x)						((x.toLower().startsWith("http://")) || (x.toLower().startsWith("mms://")) || (x.toLower().startsWith("mmst://")) || (x.toLower().startsWith("icyx://")))
+#define IS_SUPPORTED_WEB_LINK(x)						((x.toLower().startsWith("http://")) || (x.toLower().startsWith("mms://")) || (x.toLower().startsWith("mmst://")) || (x.toLower().startsWith("icyx://")) || (x.toLower().startsWith("rtmp://")))
 #define IS_SUPPORTED_PLAYLIST(x)                        ((x.toLower().endsWith(".m3u")) || (x.toLower().endsWith(".m3u8")) || (x.toLower().endsWith(".wmx")) || (x.toLower().endsWith(".pls")))
 #define IS_DOT_DIRECTORY(x)                             (x.toLower().endsWith("."))
 
@@ -141,6 +141,7 @@ static QString sLoadVideoFilters = sAllLoadVideoFilter + ";;"\
                     "Digital Video Format (*.dv);;"\
 					"Flash Video Format (*.flv);;"\
                     "Joint Photographic Experts Group (*.jpg *.jpeg);;"\
+                    "H.264 raw data (*.h264);;"\
                     "Matroska Format (*.mkv);;"\
                     "MPEG-Program Stream Format (*.mpg *.mpeg);;"\
                     "MPEG-2 Transport Stream (*.m2ts *.m2t *.ts);;"\
