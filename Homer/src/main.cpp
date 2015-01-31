@@ -170,7 +170,7 @@ void HandleExceptionSignal(int pSignal)
 
 #if defined(LINUX) || defined(APPLE)
 // POSIX based exception catching
-static void CatchSignalLinux(int pSignal, siginfo_t *pSignalInfo, void *pArg)
+static void HandleSignalLinux(int pSignal, siginfo_t *pSignalInfo, void *pArg)
 {
 	LogExceptionSignal(pSignal);
     if (pSignalInfo != NULL)
@@ -212,7 +212,7 @@ static void SetHandlers()
     struct sigaction tSigAction;
     memset(&tSigAction, 0, sizeof(tSigAction));
     sigemptyset(&tSigAction.sa_mask);
-    tSigAction.sa_sigaction = CatchSignalLinux;
+    tSigAction.sa_sigaction = HandleSignalLinux;
     tSigAction.sa_flags   = SA_SIGINFO | SA_ONSTACK;
     sigaction(SIGILL, &tSigAction, NULL);
     sigaction(SIGFPE, &tSigAction, NULL);
@@ -231,7 +231,7 @@ void CatchInvalidParameterExceptionWindows(const wchar_t* pExpression, const wch
 }
 
 // C99 based exception catching
-void CatchSignalWindows(int pSignal)
+void HandleSignalWindows(int pSignal)
 {
 	LogExceptionSignal(pSignal);
 	HandleExceptionSignal(pSignal);
@@ -240,11 +240,11 @@ void CatchSignalWindows(int pSignal)
 static void SetHandlers()
 {
 	// activate signal handler
-    signal(SIGILL, CatchSignalWindows);
-    signal(SIGFPE, CatchSignalWindows);
-    signal(SIGSEGV, CatchSignalWindows);
-    signal(SIGTERM, CatchSignalWindows);
-    signal(SIGABRT, CatchSignalWindows);
+    signal(SIGILL, HandleSignalWindows);
+    signal(SIGFPE, HandleSignalWindows);
+    signal(SIGSEGV, HandleSignalWindows);
+    signal(SIGTERM, HandleSignalWindows);
+    signal(SIGABRT, HandleSignalWindows);
 	_set_invalid_parameter_handler((_invalid_parameter_handler)CatchInvalidParameterExceptionWindows);
 
     // disable the message box for assertions
