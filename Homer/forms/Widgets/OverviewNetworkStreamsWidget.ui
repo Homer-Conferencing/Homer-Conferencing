@@ -19,9 +19,7 @@
   <property name="font">
    <font>
     <family>Arial</family>
-    <pointsize>10</pointsize>
-    <weight>75</weight>
-    <bold>true</bold>
+    <pointsize>11</pointsize>
    </font>
   </property>
   <property name="styleSheet">
@@ -36,7 +34,16 @@
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout_2">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>3</number>
+    </property>
+    <property name="topMargin">
+     <number>3</number>
+    </property>
+    <property name="rightMargin">
+     <number>3</number>
+    </property>
+    <property name="bottomMargin">
      <number>3</number>
     </property>
     <item row="0" column="0">
@@ -58,7 +65,16 @@
        <bool>false</bool>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>3</number>
+       </property>
+       <property name="topMargin">
+        <number>3</number>
+       </property>
+       <property name="rightMargin">
+        <number>3</number>
+       </property>
+       <property name="bottomMargin">
         <number>3</number>
        </property>
        <item row="0" column="0">
