@@ -707,6 +707,10 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mRtpFormatContext->pb->max_packet_size = mAVIOContext->max_packet_size;
 
     mRtpFormatContext->start_time_realtime = av_gettime();
+    
+    // make sure that the RTP packetizer for H.261 gets started by ffmpeg
+    if (mStreamCodecID == AV_CODEC_ID_H261)
+	    mRtpFormatContext->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
 
     if(mStreamName != "")
     {
@@ -724,12 +728,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     // allocate streams private data buffer and write the streams header, if any
     if ((tRes = avformat_write_header(mRtpFormatContext, &tOptions)) < 0)
-    {
-        if (mStreamCodecID == AV_CODEC_ID_H261)
-            LOG(LOG_WARN, "Could not initialize default RTP encoder because \"%s\".", strerror(AVUNERROR(tRes)));
-        else
-            LOG(LOG_ERROR, "Could not initialize default RTP encoder because \"%s\".", strerror(AVUNERROR(tRes)));
-    }
+		LOG(LOG_ERROR, "Could not initialize default RTP encoder because \"%s\"(%d).", strerror(AVUNERROR(tRes)), tRes);
 
     // close memory stream
     char *tBuffer = NULL;
