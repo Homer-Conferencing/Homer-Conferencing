@@ -2279,10 +2279,10 @@ int MediaSourceMuxer::GetChunkBufferCounter()
         return 0;
 }
 
-bool MediaSourceMuxer::StartRecording(std::string pSaveFileName, int pSaveFileQuality, bool pRealTime)
+bool MediaSourceMuxer::StartRecording(std::string pSaveFileName, int pSaveFileQuality)
 {
     if (mMediaSource != NULL)
-        return mMediaSource->StartRecording(pSaveFileName, pSaveFileQuality, pRealTime);
+        return mMediaSource->StartRecording(pSaveFileName, pSaveFileQuality);
     else
         return false;
 

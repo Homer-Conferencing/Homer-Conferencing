@@ -1885,7 +1885,7 @@ void MediaSource::RelaySyncTimestampToMediaSinks(int64_t pReferenceNtpTimestamp,
     mMediaSinksMutex.unlock();
 }
 
-bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality, bool pRealTime /*TODO: delete this*/)
+bool MediaSource::StartRecording(std::string pSaveFileName, int pSaveFileQuality)
 {
     int                 tResult;
     AVOutputFormat      *tFormat;

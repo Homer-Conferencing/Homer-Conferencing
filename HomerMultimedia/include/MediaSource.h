@@ -333,7 +333,7 @@ public:
     virtual int GetEncoderBufferedFrames();
 
     /* recording control WITH reencoding but WITHOUT rtp support */
-    virtual bool StartRecording(std::string pSaveFileName, int SaveFileQuality = 100, bool pRealTime = true /* 1 = frame rate emulation, 0 = no pts adaption */); // needs valid mCodecContext, otherwise RGB32 pictures are assumed as input; source resolution must not change during recording is activated
+    virtual bool StartRecording(std::string pSaveFileName, int SaveFileQuality = 100); // needs valid mCodecContext, otherwise RGB32 pictures are assumed as input; source resolution must not change during recording is activated
     virtual void StopRecording();
     virtual bool SupportsRecording();
     virtual bool IsRecording();
