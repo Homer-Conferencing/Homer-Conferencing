@@ -63,6 +63,9 @@ namespace Homer { namespace Multimedia {
 #define H264_DEFAULT_PRESET             "faster"
 #define H264_DEFAULT_PROFILE            FF_PROFILE_H264_MAIN
 
+//HEVC default settings
+#define HEVC_DEFAULT_PRESET             "faster"
+
 ///////////////////////////////////////////////////////////////////////////////
 
 MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
@@ -625,6 +628,11 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         	            if ((tResult = av_opt_set(mCodecContext->priv_data, "preset", H264_DEFAULT_PRESET, 0)) < 0)
         	                LOG(LOG_ERROR, "Failed to set A/V option \"preset\" because %s(0x%x)", strerror(AVUNERROR(tResult)), tResult);
         				break;
+        case AV_CODEC_ID_HEVC:
+                        LOG(LOG_WARN, "Setting HEVC preset to: %s", HEVC_DEFAULT_PRESET);
+                        if ((tResult = av_opt_set(mCodecContext->priv_data, "preset", HEVC_DEFAULT_PRESET, 0)) < 0)
+                            LOG(LOG_ERROR, "Failed to set A/V option \"preset\" because %s(0x%x)", strerror(AVUNERROR(tResult)), tResult);
+                        break;
     }
 
     // Open codec
