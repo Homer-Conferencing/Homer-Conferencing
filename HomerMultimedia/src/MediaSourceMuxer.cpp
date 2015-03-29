@@ -1361,9 +1361,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
     int                 tFrameFinished = 0;
     int64_t             tLastInputFrameTimestamp = -1;
     int64_t             tInputFrameTimestamp = 0;
-    int64_t                tOutputFrameTimestamp = 0;
-    int64_t                tEncoderOutputFrameTimestamp = 0;
-    int64_t                tLastVideoEncoderFrameTimestamp = 0;
+    int64_t             tOutputFrameTimestamp = 0;
+    int64_t             tEncoderOutputFrameTimestamp = 0;
+    int64_t             tLastVideoEncoderFrameTimestamp = 0;
     AVDictionary        *tOptions = NULL;
 
     LOG(LOG_WARN, ">>>>>>>>>>>>>>>> %s-Encoding thread for %s media source started", GetMediaTypeStr().c_str(), GetSourceTypeStr().c_str());
