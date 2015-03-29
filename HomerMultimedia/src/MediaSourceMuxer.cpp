@@ -623,11 +623,11 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
                         mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
                         break;
         case AV_CODEC_ID_H264:
-        				mCodecContext->profile = H264_DEFAULT_PROFILE;
-        				LOG(LOG_WARN, "Setting H.264 preset to: %s", H264_DEFAULT_PRESET);
-        	            if ((tResult = av_opt_set(mCodecContext->priv_data, "preset", H264_DEFAULT_PRESET, 0)) < 0)
-        	                LOG(LOG_ERROR, "Failed to set A/V option \"preset\" because %s(0x%x)", strerror(AVUNERROR(tResult)), tResult);
-        				break;
+                        mCodecContext->profile = H264_DEFAULT_PROFILE;
+                        LOG(LOG_WARN, "Setting H.264 preset to: %s", H264_DEFAULT_PRESET);
+                        if ((tResult = av_opt_set(mCodecContext->priv_data, "preset", H264_DEFAULT_PRESET, 0)) < 0)
+                            LOG(LOG_ERROR, "Failed to set A/V option \"preset\" because %s(0x%x)", strerror(AVUNERROR(tResult)), tResult);
+                        break;
         case AV_CODEC_ID_HEVC:
                         LOG(LOG_WARN, "Setting HEVC preset to: %s", HEVC_DEFAULT_PRESET);
                         if ((tResult = av_opt_set(mCodecContext->priv_data, "preset", HEVC_DEFAULT_PRESET, 0)) < 0)
