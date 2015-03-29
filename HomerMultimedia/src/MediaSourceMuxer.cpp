@@ -59,6 +59,12 @@ namespace Homer { namespace Multimedia {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+//H.264 default settings
+#define H264_DEFAULT_PRESET             "faster"
+#define H264_DEFAULT_PROFILE            FF_PROFILE_H264_MAIN
+
+///////////////////////////////////////////////////////////////////////////////
+
 MediaSourceMuxer::MediaSourceMuxer(MediaSource *pMediaSource):
     MediaSource("Muxer: encoder output")
 {
@@ -453,6 +459,17 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     #endif
 
     // #########################################
+    // find the encoder for the video stream
+    // #########################################
+    LOG(LOG_VERBOSE, "..finding video encoder");
+    if ((tCodec = avcodec_find_encoder(mStreamCodecId)) == NULL)
+    {
+        LOG(LOG_ERROR, "Couldn't find a fitting video codec");
+
+        return false;
+    }
+
+    // #########################################
     // create new format context
     // #########################################
     LOG(LOG_VERBOSE, "..creating new format context");
@@ -495,6 +512,20 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     mCodecContext = mMediaStream->codec;
     mCodecContext->codec_id = mStreamCodecId;
     mCodecContext->codec_type = AVMEDIA_TYPE_VIDEO;
+    // set defaults and update them later with explicit values
+    if ((tResult = avcodec_get_context_defaults3(mCodecContext, tCodec)) < 0)
+    {
+        LOG(LOG_ERROR, "Could not set defaults for codec context because \"%s\".", strerror(AVUNERROR(tResult)));
+
+        // free codec and stream 0
+        av_freep(&mMediaStream->codec);
+        av_freep(&mMediaStream);
+
+        // Close the format context
+        av_free(mFormatContext);
+
+        return false;
+    }
     mCodecContext->bit_rate = mStreamBitRate;
     if (((mRequestedStreamingResX == -1) || (mRequestedStreamingResY == -1)) && (mMediaSource != NULL))
     {
@@ -551,21 +582,6 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // Dump information about device file
     av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (video)", true);
 
-    // Find the encoder for the video stream
-    LOG(LOG_VERBOSE, "..finding video encoder");
-    if ((tCodec = avcodec_find_encoder(mStreamCodecId)) == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find a fitting video codec");
-        // free codec and stream 0
-        av_freep(&mMediaStream->codec);
-        av_freep(&mMediaStream);
-
-        // Close the format context
-        av_free(mFormatContext);
-
-        return false;
-    }
-
     #ifdef MEDIA_SOURCE_MUX_MULTI_THREADED_VIDEO_ENCODING
         if (tCodec->capabilities & (CODEC_CAP_FRAME_THREADS | CODEC_CAP_SLICE_THREADS))
         {// threading supported
@@ -604,9 +620,10 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
                         mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
                         break;
         case AV_CODEC_ID_H264:
-        				mCodecContext->profile = FF_PROFILE_H264_MAIN;
-//        	            if ((tResult = av_opt_set(mCodecContext->priv_data, "preset", "faster", 0)) < 0)
-//        	                LOG(LOG_ERROR, "Failed to set A/V option \"preset\" because %s(0x%x)", strerror(AVUNERROR(tResult)), tResult);
+        				mCodecContext->profile = H264_DEFAULT_PROFILE;
+        				LOG(LOG_WARN, "Setting H.264 preset to: %s", H264_DEFAULT_PRESET);
+        	            if ((tResult = av_opt_set(mCodecContext->priv_data, "preset", H264_DEFAULT_PRESET, 0)) < 0)
+        	                LOG(LOG_ERROR, "Failed to set A/V option \"preset\" because %s(0x%x)", strerror(AVUNERROR(tResult)), tResult);
         				break;
     }
 
