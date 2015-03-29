@@ -426,7 +426,8 @@ void MediaSourceMem::GetVideoDisplayAspectRation(int &pHoriz, int &pVert)
     if(GetMediaType() == MEDIA_VIDEO)
     {
         AVRational tDAR;
-        av_reduce(&tDAR.num, &tDAR.den, mCodecContext->width * mCodecContext->sample_aspect_ratio.num, mCodecContext->height * mCodecContext->sample_aspect_ratio.den, 1024 * 1024);
+        if(mCodecContext != NULL)
+            av_reduce(&tDAR.num, &tDAR.den, mCodecContext->width * mCodecContext->sample_aspect_ratio.num, mCodecContext->height * mCodecContext->sample_aspect_ratio.den, 1024 * 1024);
         pHoriz = tDAR.num;
         pVert = tDAR.den;
     }else{
