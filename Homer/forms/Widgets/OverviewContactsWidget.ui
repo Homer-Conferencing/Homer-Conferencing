@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>175</width>
-    <height>173</height>
+    <height>172</height>
    </rect>
   </property>
   <property name="font">
    <font>
     <family>Arial</family>
-    <pointsize>11</pointsize>
+    <pointsize>10</pointsize>
    </font>
   </property>
   <property name="styleSheet">

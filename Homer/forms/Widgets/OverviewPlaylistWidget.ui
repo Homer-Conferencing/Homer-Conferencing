@@ -13,7 +13,7 @@
   <property name="font">
    <font>
     <family>Arial</family>
-    <pointsize>11</pointsize>
+    <pointsize>10</pointsize>
    </font>
   </property>
   <property name="acceptDrops">
