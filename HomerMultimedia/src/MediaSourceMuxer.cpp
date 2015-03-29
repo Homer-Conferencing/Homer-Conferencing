@@ -603,6 +603,11 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
         case AV_CODEC_ID_MPEG4:
                         mCodecContext->flags |= CODEC_FLAG_4MV | CODEC_FLAG_AC_PRED;
                         break;
+        case AV_CODEC_ID_H264:
+        				mCodecContext->profile = FF_PROFILE_H264_MAIN;
+//        	            if ((tResult = av_opt_set(mCodecContext->priv_data, "preset", "faster", 0)) < 0)
+//        	                LOG(LOG_ERROR, "Failed to set A/V option \"preset\" because %s(0x%x)", strerror(AVUNERROR(tResult)), tResult);
+        				break;
     }
 
     // Open codec
