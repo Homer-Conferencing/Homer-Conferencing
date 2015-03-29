@@ -85,10 +85,6 @@ extern "C" {
 #define FF_API_R_FRAME_RATE             0
 #endif
 
-#ifndef FF_API_REFERENCE_DTS
-#define FF_API_REFERENCE_DTS            0
-#endif
-
 #ifdef HAVE_SWRESAMPLE_H
 
 #define HM_SwrContext                       SwrContext

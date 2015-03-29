@@ -675,9 +675,6 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     mRtpEncoderStream->priv_data = NULL;
     // create monotonous timestamps
     mRtpEncoderStream->cur_dts = AV_NOPTS_VALUE;
-    #ifndef FF_API_REFERENCE_DTS
-        mRtpEncoderStream->reference_dts = 0;
-    #endif
 
     //######################################################
     //### create decoder context
