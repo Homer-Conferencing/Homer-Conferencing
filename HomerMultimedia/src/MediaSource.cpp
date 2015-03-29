@@ -3139,9 +3139,9 @@ void MediaSource::EventOpenGrabDeviceSuccessful(string pSource, int pLine)
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..current device: %s", mCurrentDevice.c_str());
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec qmin: %d", mCodecContext->qmin);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec qmax: %d", mCodecContext->qmax);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec decoding delay: %d", mCodecContext->delay);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec decoding profile: %d", mCodecContext->profile);
-        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec decoding level: %d", mCodecContext->level);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec delay: %d", mCodecContext->delay);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec profile: %d", mCodecContext->profile);
+        LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec level: %d", mCodecContext->level);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec codec caps: 0x%x", mCodecContext->codec->capabilities);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec MT count: %d", mCodecContext->thread_count);
         LOG_REMOTE(LOG_INFO, pSource, pLine, "    ..codec MT method: %d", mCodecContext->thread_type);
