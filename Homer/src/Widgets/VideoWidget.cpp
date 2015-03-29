@@ -41,6 +41,8 @@
 #include <Widgets/ParticipantWidget.h>
 #include <Widgets/VideoWidget.h>
 #include <ProcessStatisticService.h>
+#include <MainWindow.h>
+
 #include <MediaSource.h>
 #include <MediaSourceFile.h>
 #include <MediaSourceLogo.h>
@@ -762,6 +764,7 @@ void VideoWidget::contextMenuEvent(QContextMenuEvent *pEvent)
     }else{
         QMenu tMenu(this);
         InitializeMenuVideoSettings(&tMenu);
+        ((MainWindow*)mMainWindow)->AddGlobalContextMenu(&tMenu);
 
         //###############################################################################
         //### RESULTING REACTION

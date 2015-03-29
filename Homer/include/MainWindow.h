@@ -95,6 +95,8 @@ public:
     MediaSourceMuxer* GetVideoMuxer();
     MediaSourceMuxer* GetAudioMuxer();
 
+    void AddGlobalContextMenu(QMenu *pMenu);
+
     static void removeArguments(QStringList &pArguments, QString pFilter);
 
     ParticipantWidget* GetParticipantWidget(QString pParticipant, enum TransportType pTransport);
@@ -164,6 +166,7 @@ private:
     virtual void dropEvent(QDropEvent *pEvent);
     virtual void changeEvent (QEvent *pEvent);
     virtual void customEvent(QEvent* pEvent);
+    virtual QMenu* createPopupMenu();
 
     void triggerUpdateCheck();
 

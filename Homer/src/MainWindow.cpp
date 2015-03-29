@@ -2441,6 +2441,26 @@ void MainWindow::activatedSysTray(QSystemTrayIcon::ActivationReason pReason)
     }
 }
 
+void MainWindow::AddGlobalContextMenu(QMenu *pMenu)
+{
+    pMenu->addSeparator();
+    pMenu->addAction(mActionMainMenu);
+    pMenu->addMenu(mMenuToolBars);
+    pMenu->addAction(mActionMonitorBroadcastWidget);
+    pMenu->addAction(mActionStautsBarWidget);
+}
+
+QMenu* MainWindow::createPopupMenu()
+{
+    LOG(LOG_WORLD, "Creating context menu..");
+
+    QMenu *tResult = QMainWindow::createPopupMenu();
+
+    AddGlobalContextMenu(tResult);
+
+    return tResult;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 }}
