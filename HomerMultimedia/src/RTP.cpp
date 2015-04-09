@@ -661,30 +661,16 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     }
 
     // allocate new stream structure
-    mRtpEncoderStream = HM_avformat_new_stream(mRtpFormatContext, 0);
+    mRtpEncoderStream = HM_avformat_new_stream(mRtpFormatContext, pInnerStream->codec->codec);
     if (mRtpEncoderStream == NULL)
     {
         LOG(LOG_ERROR, "Memory allocation failed");
         return false;
     }
 
-    // copy stream description from original stream description
-    memcpy(mRtpEncoderStream, pInnerStream, sizeof(AVStream));
-    mRtpEncoderStream->index = 0;
-    mRtpEncoderStream->id = 0;
-    mRtpEncoderStream->priv_data = NULL;
-    // create monotonous timestamps
-    mRtpEncoderStream->cur_dts = AV_NOPTS_VALUE;
-
     //######################################################
-    //### create decoder context
+    //### finalize decoder context
     //######################################################
-    mRtpEncoderStream->codec = avcodec_alloc_context3(NULL);
-    if(mRtpEncoderStream->codec == NULL)
-    {
-        LOG(LOG_ERROR, "Could not allocate RTP codec context because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);
-        return false;
-    }
     if ((tRes = avcodec_copy_context(mRtpEncoderStream->codec, pInnerStream->codec)) < 0)
     {
         LOG(LOG_ERROR, "Could not create RTP codec context because \"%s\"(%d)", strerror(AVUNERROR(tRes)), tRes);

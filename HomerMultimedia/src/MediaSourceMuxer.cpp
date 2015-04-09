@@ -506,7 +506,7 @@ bool MediaSourceMuxer::OpenVideoMuxer(int pResX, int pResY, float pFps)
     // #########################################
     LOG(LOG_VERBOSE, "..creating new output stream");
     mMediaStreamIndex = 0;
-    mMediaStream = HM_avformat_new_stream(mFormatContext, 0);
+    mMediaStream = HM_avformat_new_stream(mFormatContext, tCodec);
 
     // #########################################
     // create new output codec context
@@ -778,7 +778,7 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     // #########################################
     LOG(LOG_VERBOSE, "..creating new output stream");
     mMediaStreamIndex = 0;
-    mMediaStream = HM_avformat_new_stream(mFormatContext, 0);
+    mMediaStream = HM_avformat_new_stream(mFormatContext, tCodec);
 
     // #########################################
     // create new output codec context
