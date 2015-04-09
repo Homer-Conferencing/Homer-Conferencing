@@ -121,13 +121,16 @@ static void* malloc_hook(size_t pSize, const void* pCaller)
 
 void Thread::ActiveMemoryDebugger()
 {
-    LOGEX(Thread, LOG_WARN, "Activating malloc() hook");
+    #ifdef DEBUG_VERSION
+        LOGEX(Thread, LOG_WARN, "Activating malloc() hook");
+        printf("Activating malloc() hook\n");
 
-    // store the original malloc hook
-    sOriginalMallocHook = __malloc_hook;
+        // store the original malloc hook
+        sOriginalMallocHook = __malloc_hook;
 
-    // set our own malloc hook
-    __malloc_hook = malloc_hook;
+        // set our own malloc hook
+        __malloc_hook = malloc_hook;
+    #endif
 }
 
 unsigned long Thread::GetMemoryAllocationSize(int pThreadID)
