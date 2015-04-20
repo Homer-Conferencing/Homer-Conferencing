@@ -1350,11 +1350,11 @@ void MediaSourceMuxer::ResetEncoderBuffers()
     mEncoderSeekMutex.lock();
 
     // flush ffmpeg internal buffers
-    LOG(LOG_VERBOSE, "Reseting %s encoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Resetting %s encoder internal buffers after seeking in input stream", GetMediaTypeStr().c_str());
     avcodec_flush_buffers(mCodecContext);
 
     // reset the library internal frame FIFO
-    LOG(LOG_VERBOSE, "Reseting %s encoder internal FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+    LOG(LOG_VERBOSE, "Resetting %s encoder internal FIFO after seeking in input stream", GetMediaTypeStr().c_str());
     if (mEncoderFifo != NULL)
         mEncoderFifo->ClearFifo();
 
@@ -1364,7 +1364,7 @@ void MediaSourceMuxer::ResetEncoderBuffers()
         {
             if ((mResampleFifo[i] != NULL) && (av_fifo_size(mResampleFifo[i]) > 0))
             {
-                LOG(LOG_VERBOSE, "Reseting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
+                LOG(LOG_VERBOSE, "Resetting %s decoder internal buffers resample FIFO after seeking in input stream", GetMediaTypeStr().c_str());
                 av_fifo_drain(mResampleFifo[i], av_fifo_size(mResampleFifo[i]));
             }
         }
