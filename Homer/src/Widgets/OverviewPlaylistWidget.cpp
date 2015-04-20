@@ -190,7 +190,7 @@ bool OverviewPlaylistWidget::IsVideoFile(QString pFileName)
     int tPos = pFileName.lastIndexOf('.', -1);
     if (tPos == -1)
     {
-        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Video file %s name lacks a correct format selecting end", pFileName.toStdString().c_str());
+        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Video file \"%s\" name lacks a correct format selecting end", pFileName.toStdString().c_str());
         return false;
     }
 
@@ -297,7 +297,7 @@ bool OverviewPlaylistWidget::IsAudioFile(QString pFileName)
     int tPos = pFileName.lastIndexOf('.', -1);
     if (tPos == -1)
     {
-        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Audio file %s name lacks a correct format selecting end", pFileName.toStdString().c_str());
+        LOGEX(OverviewPlaylistWidget, LOG_ERROR, "Audio file \"%s\" name lacks a correct format selecting end", pFileName.toStdString().c_str());
         return false;
     }
 
