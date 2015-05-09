@@ -156,6 +156,9 @@ QString HelpDialog::GetSystemInfo()
             case QSysInfo::WV_WINDOWS7:
                         tOs = "Windows 7/Server 2008 R2";
                         break;
+            case QSysInfo::WV_WINDOWS8:
+						tOs = "Windows 8/Server 2012";
+						break;
             default:
                         tOs = Homer::Gui::HelpDialog::tr("Windows unknown version");
                         break;
