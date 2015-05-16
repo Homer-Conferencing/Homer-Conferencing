@@ -44,6 +44,7 @@ LogSinkFile::LogSinkFile(string pFileName)
 {
     mFileName = pFileName;
     mLogSinkId = "FILE: " + mFileName;
+    mFile = fopen((__const char *)mFileName.c_str(), "a");
     ProcessMessage(LOG_VERBOSE, "", "", 0, "");
     ProcessMessage(LOG_VERBOSE, "", "", 0, "======================================");
     ProcessMessage(LOG_VERBOSE, "", "", 0, "========> LOGGING START POINT <=======");
@@ -53,35 +54,35 @@ LogSinkFile::LogSinkFile(string pFileName)
 
 LogSinkFile::~LogSinkFile()
 {
+	if(mFile != NULL)
+		fclose(mFile);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void LogSinkFile::ProcessMessage(int pLevel, string pTime, string pSource, int pLine, string pMessage)
 {
-
-    FILE *tFile = fopen((__const char *)mFileName.c_str(), "a");
-    if (tFile != NULL)
+    if (mFile != NULL)
     {
         switch(pLevel)
         {
             case LOG_ERROR:
-                    fprintf(tFile, "(%s) ERROR:   %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                    fprintf(mFile, "(%s) ERROR:   %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                     break;
             case LOG_WARN:
-                    fprintf(tFile, "(%s) WARN:    %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                    fprintf(mFile, "(%s) WARN:    %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                     break;
             case LOG_INFO:
-                    fprintf(tFile, "(%s) INFO:    %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                    fprintf(mFile, "(%s) INFO:    %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                     break;
             case LOG_VERBOSE:
-                    fprintf(tFile, "(%s) VERBOSE: %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                    fprintf(mFile, "(%s) VERBOSE: %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                     break;
             case LOG_WORLD:
-                    fprintf(tFile, "(%s) WORLD: %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
+                    fprintf(mFile, "(%s) WORLD: %s(%d): %s\n", pTime.c_str(), pSource.c_str(), pLine, pMessage.c_str());
                     break;
         }
-        fclose(tFile);
+        fflush(mFile);
     }
 }
 
