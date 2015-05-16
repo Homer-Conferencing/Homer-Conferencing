@@ -109,6 +109,8 @@ union SocketAddressDescriptor
 #define UDP_LITE_HEADER_SIZE					8 // fixed size
 
 #define IS_IPV6_ADDRESS(x) (x.find(':') != string::npos)
+#define IS_IPV4_MAPPED_IPV6_ADDRESS(x) (IS_IPV6_ADDRESS(x) && (x.find('::fff:') == 0))
+#define IS_ANY_ADDRESS(x) ((x == "0.0.0.0") || (x = "'::ffff:0.0.0.0") || (x == "::"))
 
 ///////////////////////////////////////////////////////////////////////////////
 
