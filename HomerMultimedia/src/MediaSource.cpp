@@ -120,6 +120,9 @@ MediaSource::MediaSource(string pName):
     mMediaType = MEDIA_UNKNOWN;
     for (int i = 0; i < MEDIA_SOURCE_MAX_AUDIO_CHANNELS; i++)
         mResampleFifo[i] = NULL;
+    mGrabMutex.AssignName("GrabMutex");
+	mMediaSinksMutex.AssignName("MediaSinksMutex");
+	mMediaFiltersMutex.AssignName("MediaFiltersMutex");
 
     FfmpegInit();
 

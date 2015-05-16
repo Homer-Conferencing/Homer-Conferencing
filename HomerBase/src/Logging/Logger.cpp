@@ -67,6 +67,8 @@ Logger::Logger()
     mLastLine = 0;
     mRepetitionCount = 0;
 	sLoggerReady = true;
+	mLoggerMutex.AssignName("LoggerMutex");
+	mLogSinksMutex.AssignName("LogSinksMutex");
     mLogSinkConsole = new LogSinkConsole();
 }
 
