@@ -75,7 +75,7 @@ bool EventManager::Fire(GeneralEvent* pEvent)
 {
     bool tResult = false;
 
-    LOG(LOG_VERBOSE, "Firing new meeting event");
+    LOG(LOG_WORLD, "Firing new meeting event");
 
     // lock
     mEventsMutex.lock();
@@ -90,7 +90,7 @@ bool EventManager::Fire(GeneralEvent* pEvent)
 
     // unlock
     mEventsMutex.unlock();
-    LOG(LOG_VERBOSE, "Successful event fire");
+    LOG(LOG_WORLD, "Successful event fire");
 
     return true;
 }
