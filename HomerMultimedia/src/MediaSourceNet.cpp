@@ -366,6 +366,7 @@ bool NetworkListener::ReceivePacket(std::string &pSourceHost, unsigned int &pSou
         {
             ssize_t tBufferSize = (ssize_t)pSize;
             tResult =  mDataSocket->Receive(pSourceHost, pSourcePort, (void*)pData, tBufferSize);
+            //LOG(LOG_WORLD, "Received %d bytes of %s data via the network socket", (int)tBufferSize, mMediaSourceNet->GetMediaTypeStr().c_str());
             pSize = (int) tBufferSize;
         }else
             LOG(LOG_ERROR, "Invalid socket association");
@@ -417,7 +418,7 @@ void* NetworkListener::Run(void* pArgs)
     int                 tDataSize;
     int64_t             tReceivedPackets = 0;
 
-    LOG(LOG_VERBOSE, "%s Socket-Listener for port %u started", mMediaSourceNet->GetMediaTypeStr().c_str(), GetListenerPort());
+    LOG(LOG_WARN, "%s Socket-Listener for port %u started", mMediaSourceNet->GetMediaTypeStr().c_str(), GetListenerPort());
     mListenerStopped = false;
 
     tPacketBuffer = (char*)malloc(MEDIA_SOURCE_MEM_FRAGMENT_BUFFER_SIZE);
