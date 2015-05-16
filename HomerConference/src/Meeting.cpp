@@ -910,26 +910,26 @@ bool Meeting::SendAvailabilityProbe(std::string pUser, std::string pHost, std::s
     nua_handle_t **tHandlePtr = NULL;
     ParticipantList::iterator tIt;
 
-    LOG(LOG_VERBOSE, "Probing: %s@%s:%s[%s]", pUser.c_str(), pHost.c_str(), pPort.c_str(), Socket::TransportType2String(pParticipantTransport).c_str());
+    LOG(LOG_WORLD, "Probing: %s@%s:%s[%s]", pUser.c_str(), pHost.c_str(), pPort.c_str(), Socket::TransportType2String(pParticipantTransport).c_str());
 
     // is participant user of the registered SIP server then acknowledge directly
     if ((pHost == mSipRegisterServerAddress) && (pPort == mSipRegisterServerPort) && (GetServerRegistrationState()))
     {
-        LOG(LOG_VERBOSE, "OPTIONS based probing of %s skipped", pHost.c_str());
+        LOG(LOG_WORLD, "OPTIONS based probing of %s skipped", pHost.c_str());
 
         OpenParticipantSession(pUser, pHost, pPort, pParticipantTransport);
 
-        LOG(LOG_VERBOSE, "Search matching database entry for SendAvailabilityProbe()");
+        LOG(LOG_WORLD, "Search matching database entry for SendAvailabilityProbe()");
 
         // lock
         mParticipantsMutex.lock();
 
         for (tIt = mParticipants.begin(); tIt != mParticipants.end(); tIt++)
         {
-            LOG(LOG_WARN, "Found %s@%s:%s, transport=%d", tIt->User.c_str(), tIt->Host.c_str(), tIt->Port.c_str(), (int)tIt->Transport);
+            LOG(LOG_WORLD, "Found %s@%s:%s, transport=%d", tIt->User.c_str(), tIt->Host.c_str(), tIt->Port.c_str(), (int)tIt->Transport);
             if ((pUser == tIt->User) && (pHost == tIt->Host))
             {
-                LOG(LOG_VERBOSE, "...found");
+                LOG(LOG_WORLD, "...found");
                 tFound = true;
                 tHandlePtr = &tIt->SipNuaHandleForPresenceSubscription;
                 break;
