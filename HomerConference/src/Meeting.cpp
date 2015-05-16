@@ -1229,11 +1229,11 @@ bool Meeting::IsLocalAddress(string pHost, string pPort, enum TransportType pTra
 
     for (tIt = mLocalAddresses.begin(); tIt != mLocalAddresses.end(); tIt++)
     {
-        LOG(LOG_VERBOSE, "CompareForLocalUser: \"%s\" with \"%s\"", (pHost + ":" + pPort).c_str(), ((*tIt) + ":" + tLocalPort).c_str());
+        LOG(LOG_WORLD, "CompareForLocalUser: \"%s\" with \"%s\"", (pHost + ":" + pPort).c_str(), ((*tIt) + ":" + tLocalPort).c_str());
         if ((pHost == (*tIt)) && (pPort == tLocalPort) && ((pTransport == mSipHostPortTransport) || (mSipHostPortTransport == SOCKET_TRANSPORT_AUTO)))
         {
             tFound = true;
-            LOG(LOG_VERBOSE, "...found");
+            LOG(LOG_WORLD, "...found");
         }
     }
 
