@@ -460,7 +460,7 @@ void ContactsManager::ProbeAvailabilityForAll()
     if (!CONF.GetSipContactsProbing())
         return;
 
-    LOG(LOG_WARN, "######## PROBING CONTACTS - START ########");
+    LOG(LOG_WORLD, "######## PROBING CONTACTS - START ########");
 
     mContactsMutex.lock();
 
@@ -482,7 +482,7 @@ void ContactsManager::ProbeAvailabilityForAll()
          * The following generates a storm of PROBE packets.
          * TODO: maybe we should limit this!?
          */
-        LOG(LOG_INFO, "Detecting unknown contacts...");
+        LOG(LOG_WORLD, "Detecting unknown contacts...");
         QList<QNetworkInterface> tLocalInterfaces = QNetworkInterface::allInterfaces ();
         QNetworkInterface tLocalInterface;
         foreach(tLocalInterface, tLocalInterfaces)
@@ -506,7 +506,7 @@ void ContactsManager::ProbeAvailabilityForAll()
                         QHostAddress tCurrentProbeAddressNetwork;
                         QHostAddress tNextProbeAddressNetwork;// to ignore broadcast addresses
 
-                        LOG(LOG_INFO, "  ..local address: %s [%s]", tAddress.toStdString().c_str(), tNetmask.toStdString().c_str());
+                        LOG(LOG_WORLD, "  ..local address: %s [%s]", tAddress.toStdString().c_str(), tNetmask.toStdString().c_str());
                         if(tHostAddress.protocol() == QAbstractSocket::IPv4Protocol)
                         {
                             quint32 tIPv4AddrNumber = tHostAddress.toIPv4Address();
@@ -525,13 +525,13 @@ void ContactsManager::ProbeAvailabilityForAll()
                                 if(tCurrentProbeAddressNetwork.toString() == tHostAddressNetwork.toString())
                                 {
                                     tFoundAddresses++;
-                                    LOG(LOG_INFO, "   ..probing: %s (%u)", tCurrentProbeAddress.toString().toStdString().c_str(), tIPv4AddrCurrentNumber);
+                                    LOG(LOG_WORLD, "   ..probing: %s (%u)", tCurrentProbeAddress.toString().toStdString().c_str(), tIPv4AddrCurrentNumber);
                                     if (!MEETING.IsLocalAddress(tCurrentProbeAddress.toString().toStdString(), "5060", SOCKET_UDP))
                                     {
                                         MEETING.SendAvailabilityProbe("", tCurrentProbeAddress.toString().toStdString(), "5060", SOCKET_UDP);
                                     }
                                 }else{
-                                    LOG(LOG_INFO, "   ..stopping at: %s [%s != %s]", tCurrentProbeAddress.toString().toStdString().c_str(), tCurrentProbeAddressNetwork.toString().toStdString().c_str(), tHostAddressNetwork.toString().toStdString().c_str());
+                                    LOG(LOG_WORLD, "   ..stopping at: %s [%s != %s]", tCurrentProbeAddress.toString().toStdString().c_str(), tCurrentProbeAddressNetwork.toString().toStdString().c_str(), tHostAddressNetwork.toString().toStdString().c_str());
                                     break;
                                 }
 
@@ -551,7 +551,7 @@ void ContactsManager::ProbeAvailabilityForAll()
             }
         }
     }
-    LOG(LOG_WARN, "######## PROBING CONTACTS - END ########");
+    LOG(LOG_WORLD, "######## PROBING CONTACTS - END ########");
 }
 
 void ContactsManager::UpdateContact(QString pContact, enum TransportType pContactTransport, bool pState, QString pSoftware)
