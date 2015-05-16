@@ -47,7 +47,6 @@ HANDLE sConsoleHandle;
 
 LogSinkConsole::LogSinkConsole()
 {
-    mLogLevel = LOG_ERROR;
     mLogSinkId = "CONSOLE: standard out";
     mColoring = true;
 	#ifdef WINDOWS
@@ -133,7 +132,7 @@ void LogSinkConsole::SetColoring(bool pState)
 
 void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, int pLine, string pMessage)
 {
-    if ((pLevel <= mLogLevel) && (pLevel > LOG_OFF))
+    if ((pLevel <= LOGGER.GetLogLevel()) && (pLevel > LOG_OFF))
     {
         if(mColoring)
         {
@@ -213,17 +212,6 @@ void LogSinkConsole::ProcessMessage(int pLevel, string pTime, string pSource, in
             }
         }
     }
-}
-
-void LogSinkConsole::SetLogLevel(int pLevel)
-{
-	printf("Setting console log level to %d\n", pLevel);
-	mLogLevel = pLevel;
-}
-
-int LogSinkConsole::GetLogLevel()
-{
-	return mLogLevel;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -312,7 +312,6 @@ void Logger::SetLogLevel(int pLevel)
                 mLogLevel = LOG_OFF;
                 break;
     }
-    mLogSinkConsole->SetLogLevel(pLevel);
 }
 
 int Logger::GetLogLevel()
