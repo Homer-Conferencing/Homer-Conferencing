@@ -719,6 +719,11 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     if ((tRes = avformat_write_header(mRtpFormatContext, &tOptions)) < 0)
 		LOG(LOG_ERROR, "Could not initialize default RTP encoder because \"%s\"(%d).", strerror(AVUNERROR(tRes)), tRes);
 
+    // close memory stream
+    char *tBuffer = NULL;
+    unsigned int tBufferSize = 0;
+    CloseRtpPacketStream(&tBuffer, tBufferSize);
+
     /**
      * problems with ffmpeg's RTP packetizer?
      */
@@ -738,11 +743,6 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
             return OpenRtpEncoderH261(pTargetHost, pTargetPort, pInnerStream);
         }
     }
-
-    // close memory stream
-    char *tBuffer = NULL;
-    unsigned int tBufferSize = 0;
-    CloseRtpPacketStream(&tBuffer, tBufferSize);
 
     //
     //    if ((tRes = av_dict_set(&tOptions, "ssrc", toString(mLocalSourceIdentifier).c_str(), 0)) < 0)
