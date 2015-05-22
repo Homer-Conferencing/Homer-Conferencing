@@ -1560,6 +1560,9 @@ void* MediaSourceMuxer::Run(void* pArgs)
                                 tYUVFrame->pts = tEncoderOutputFrameTimestamp;
                                 tYUVFrame->pkt_pts = tYUVFrame->pts;
                                 tYUVFrame->pkt_dts = tYUVFrame->pts;
+                                tYUVFrame->width = mCurrentStreamingResX;
+                                tYUVFrame->height = mCurrentStreamingResY;
+                                tYUVFrame->format = mCodecContext->pix_fmt;
                                 tYUVFrame->pict_type = AV_PICTURE_TYPE_NONE;
                                 tYUVFrame->coded_picture_number = mFrameNumber;
                                 tYUVFrame->coded_picture_number = mFrameNumber;
