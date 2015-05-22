@@ -1066,7 +1066,12 @@ bool RTP::RtpCreate(AVPacket *pAVPacket, char *&pResultingOutputData, unsigned i
     // for H261 use the internal RTP implementation
     //####################################################################
     if (mH261UseInternalEncoder)
-        return RtpCreateH261(tAVBuffer, tAVBufferSize, tAVBufferTimestamp);
+    {
+        bool tResult = RtpCreateH261(tAVBuffer, tAVBufferSize, tAVBufferTimestamp);
+        pResultingOutputData = tAVBuffer;
+        pResultingOutputDataSize = tAVBufferSize;
+        return tResult;
+    }
 
     //####################################################################
     // for all non H261 codec use the ffmpeg RTP implementation
@@ -1109,18 +1114,16 @@ bool RTP::RtpCreate(AVPacket *pAVPacket, char *&pResultingOutputData, unsigned i
 
     #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Encapsulating codec packet:");
-        LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", tPacket.pts);
-        LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", tPacket.dts);
-        LOG(LOG_VERBOSE, "      ..size: %d", tPacket.size);
-        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", tPacket.pos);
-        LOG(LOG_VERBOSE, "      ..packet pts: ", pPacketPts);
+        LOG(LOG_VERBOSE, "      ..pts: %"PRId64"", pAVPacket->pts);
+        LOG(LOG_VERBOSE, "      ..dts: %"PRId64"", pAVPacket->dts);
+        LOG(LOG_VERBOSE, "      ..pos: %"PRId64"", pAVPacket->pos);
     #endif
 
     //####################################################################
     // create memory stream and init ffmpeg internal structures
     //####################################################################
     #ifdef RTP_DEBUG_PACKET_ENCODER
-        LOG(LOG_VERBOSE, "Encapsulate frame of codec %s and size: %u while maximum resulting RTP packet size is: %d", mRtpEncoderStream->codec->codec_name, pDataSize, mAVIOContext->max_packet_size);
+        LOG(LOG_VERBOSE, "Encapsulate frame of codec %s and size: %u while maximum resulting RTP packet size is: %d", mRtpEncoderStream->codec->codec_name, pResultingOutputDataSize, mAVIOContext->max_packet_size);
     #endif
 
     // open RTP stream for av_Write_frame()
@@ -1145,10 +1148,10 @@ bool RTP::RtpCreate(AVPacket *pAVPacket, char *&pResultingOutputData, unsigned i
     CloseRtpPacketStream(&pResultingOutputData, pResultingOutputDataSize);
 
     #ifdef RTP_DEBUG_PACKET_ENCODER
-        if (pDataSize == 0)
+        if (pResultingOutputDataSize == 0)
             LOG(LOG_WARN, "Resulting RTP stream is empty");
         else
-            LOG(LOG_VERBOSE, "Resulting RTP stream at %p with size of %d bytes", tResultingOutputData, tResultingOutputDataSize);
+            LOG(LOG_VERBOSE, "Resulting RTP stream at %p with size of %d bytes", pResultingOutputData, pResultingOutputDataSize);
     #endif
 
     //####################################################################
