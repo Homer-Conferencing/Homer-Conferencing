@@ -691,10 +691,16 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     mRtpFormatContext->start_time_realtime = av_gettime();
     
-    // make sure that the RTP packetizer for H.261 gets started by ffmpeg
+    // make sure that the RTP/H.261 packetizer of FFmpeg gets started
     if (mStreamCodecID == AV_CODEC_ID_H261)
-	    mRtpFormatContext->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
+    {
+        if ((tRes = av_dict_set(&tOptions, "strict", "experimental", 0)) < 0)
+        {
+            LOG(LOG_ERROR, "Failed to set A/V option \"strict\" because %s(0x%x) [option not found = 0x%x]", strerror(AVUNERROR(tRes)), tRes, AVERROR_OPTION_NOT_FOUND);
+        }
+    }
 
+    // set the cname for the RTP stream (gets signaled as source description)
     if(mStreamName != "")
     {
         if ((tRes = av_dict_set(&tOptions, "cname", mStreamName.c_str(), 0)) < 0)
@@ -713,15 +719,10 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
     if ((tRes = avformat_write_header(mRtpFormatContext, &tOptions)) < 0)
 		LOG(LOG_ERROR, "Could not initialize default RTP encoder because \"%s\"(%d).", strerror(AVUNERROR(tRes)), tRes);
 
-    // close memory stream
-    char *tBuffer = NULL;
-    unsigned int tBufferSize = 0;
-    CloseRtpPacketStream(&tBuffer, tBufferSize);
-
     /**
      * problems with ffmpeg's RTP packetizer?
      */
-    if(tRes == -1)
+    if(tRes < 0)
     {
         /**
          * fall-back to internal packetizer for H.261
@@ -737,6 +738,11 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
             return OpenRtpEncoderH261(pTargetHost, pTargetPort, pInnerStream);
         }
     }
+
+    // close memory stream
+    char *tBuffer = NULL;
+    unsigned int tBufferSize = 0;
+    CloseRtpPacketStream(&tBuffer, tBufferSize);
 
     //
     //    if ((tRes = av_dict_set(&tOptions, "ssrc", toString(mLocalSourceIdentifier).c_str(), 0)) < 0)
