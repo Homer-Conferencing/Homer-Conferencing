@@ -518,29 +518,36 @@ void MainWindow::initializeDebugging(QStringList &pArguments)
         LOGGER.SetLogLevel(LOG_ERROR);
     }else
     {
-        if (pArguments.contains("-DebugLevel=Info"))
+        if (pArguments.contains("-DebugLevel=Warn"))
         {
             CONF.SetDebugging(true);
-            LOGGER.SetLogLevel(LOG_INFO);
+            LOGGER.SetLogLevel(LOG_WARN);
         }else
         {
-            if (pArguments.contains("-DebugLevel=Verbose"))
+            if (pArguments.contains("-DebugLevel=Info"))
             {
                 CONF.SetDebugging(true);
-                LOGGER.SetLogLevel(LOG_VERBOSE);
+                LOGGER.SetLogLevel(LOG_INFO);
             }else
             {
-                if (pArguments.contains("-DebugLevel=World"))
+                if (pArguments.contains("-DebugLevel=Verbose"))
                 {
                     CONF.SetDebugging(true);
-                    LOGGER.SetLogLevel(LOG_WORLD);
+                    LOGGER.SetLogLevel(LOG_VERBOSE);
                 }else
                 {
-                    #ifdef RELEASE_VERSION
-                        CONF.SetDebugging(false);
-                    #else
+                    if (pArguments.contains("-DebugLevel=World"))
+                    {
                         CONF.SetDebugging(true);
-                    #endif
+                        LOGGER.SetLogLevel(LOG_WORLD);
+                    }else
+                    {
+                        #ifdef RELEASE_VERSION
+                            CONF.SetDebugging(false);
+                        #else
+                            CONF.SetDebugging(true);
+                        #endif
+                    }
                 }
             }
         }

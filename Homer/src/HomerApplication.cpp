@@ -93,27 +93,33 @@ void HomerApplication::initializeLogging()
 		LOGGER.Init(LOG_ERROR);
 	}else
 	{
-		if (mArguments.contains("-DebugLevel=Info"))
-		{
-			LOGGER.Init(LOG_INFO);
-		}else
-		{
-			if (mArguments.contains("-DebugLevel=Verbose"))
-			{
-				LOGGER.Init(LOG_VERBOSE);
-			}else
-			{
-	            if (mArguments.contains("-DebugLevel=World"))
-	            {
-	                LOGGER.Init(LOG_WORLD);
-	            }else
-	            {
-                    #ifdef RELEASE_VERSION
-                        LOGGER.Init(LOG_ERROR);
-                    #else
-                        LOGGER.Init(LOG_VERBOSE);
-                    #endif
-	            }
+        if (mArguments.contains("-DebugLevel=Warn"))
+        {
+            LOGGER.Init(LOG_WARN);
+        }else
+        {
+            if (mArguments.contains("-DebugLevel=Info"))
+            {
+                LOGGER.Init(LOG_INFO);
+            }else
+            {
+                if (mArguments.contains("-DebugLevel=Verbose"))
+                {
+                    LOGGER.Init(LOG_VERBOSE);
+                }else
+                {
+                    if (mArguments.contains("-DebugLevel=World"))
+                    {
+                        LOGGER.Init(LOG_WORLD);
+                    }else
+                    {
+                        #ifdef RELEASE_VERSION
+                            LOGGER.Init(LOG_ERROR);
+                        #else
+                            LOGGER.Init(LOG_VERBOSE);
+                        #endif
+                    }
+                }
 			}
 		}
 	}
