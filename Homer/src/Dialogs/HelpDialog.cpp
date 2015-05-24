@@ -170,20 +170,21 @@ QString HelpDialog::GetSystemInfo()
 
     tResult=    Homer::Gui::HelpDialog::tr("Operating System:") + "  " + tOs + "\n" +
                 Homer::Gui::HelpDialog::tr("Kernel:") + "  " + QString(System::GetKernelVersion().c_str()) + "\n" +
-                Homer::Gui::HelpDialog::tr("Library Qt:") + "  " + QString(qVersion()) + "\n" \
+                Homer::Gui::HelpDialog::tr("Library Qt (compile time):") + "  " + QT_VERSION_STR + "\n" +
+                Homer::Gui::HelpDialog::tr("Library Qt (runtime):") + "  " + QString(qVersion()) + "\n" +
                 "\n" +
                 Homer::Gui::HelpDialog::tr("CPU cores:") + " " + QString("%1").arg(System::GetMachineCores()) + "\n" +
                 Homer::Gui::HelpDialog::tr("Memory (hardware):") + " " + Int2ByteExpression(rint((float)System::GetMachineMemoryPhysical() / 1024 / 1024)) + " MB\n" +
                 Homer::Gui::HelpDialog::tr("Memory (swap space):") + " " + Int2ByteExpression(rint((float)System::GetMachineMemorySwap() / 1024 / 1024)) + " MB\n" +
                 Homer::Gui::HelpDialog::tr("Current architecture:") + " " + tCurArch + "\n" +
-                Homer::Gui::HelpDialog::tr("Target architecture:") + " " + tTargetArch + "\n" \
+                Homer::Gui::HelpDialog::tr("Target architecture:") + " " + tTargetArch + "\n" +
                 "\n" +
                 Homer::Gui::HelpDialog::tr("Linked AVCodec:") + "  " + QString("%1").arg(LIBAVCODEC_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MINOR) + "." + QString("%1").arg(LIBAVCODEC_VERSION_MICRO) + "\n" +
                 Homer::Gui::HelpDialog::tr("Linked AVDevice:") + "  " + QString("%1").arg(LIBAVDEVICE_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MINOR) + "." + QString("%1").arg(LIBAVDEVICE_VERSION_MICRO) + "\n" +
                 Homer::Gui::HelpDialog::tr("Linked AVFormat:") + "  " + QString("%1").arg(LIBAVFORMAT_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVFORMAT_VERSION_MINOR) + "." + QString("%1").arg(LIBAVFORMAT_VERSION_MICRO) + "\n" +
                 Homer::Gui::HelpDialog::tr("Linked AVUtil:") + "  " + QString("%1").arg(LIBAVUTIL_VERSION_MAJOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MINOR) + "." + QString("%1").arg(LIBAVUTIL_VERSION_MICRO) + "\n" +
                 Homer::Gui::HelpDialog::tr("Linked SWScale:") + "  " + QString("%1").arg(LIBSWSCALE_VERSION_MAJOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MINOR) + "." + QString("%1").arg(LIBSWSCALE_VERSION_MICRO) + "\n" +
-                Homer::Gui::HelpDialog::tr("Linked sofia-sip:") + " " + QString(MEETING.GetSofiaSipVersion().c_str()) + "\n" \
+                Homer::Gui::HelpDialog::tr("Linked sofia-sip:") + " " + QString(MEETING.GetSofiaSipVersion().c_str()) + "\n" +
                 "" + tAdditionaLiblLines + "\n" +
                 Homer::Gui::HelpDialog::tr("QoS supported:") + " " + (Socket::IsQoSSupported() ? "yes" : "no") + "\n" +
                 Homer::Gui::HelpDialog::tr("IPv6 supported:")+ " " + (Socket::IsIPv6Supported() ? "yes" : "no") + "\n" +
