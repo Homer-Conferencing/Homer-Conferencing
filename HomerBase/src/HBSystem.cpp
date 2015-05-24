@@ -30,6 +30,7 @@
 #include <HBSystem.h>
 #include <HBThread.h>
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <cxxabi.h>
@@ -372,10 +373,14 @@ list<string> System::GetStackTrace()
 	            unsigned int tBinaryOffset = strtoul(tBeginBinaryOffset, NULL, 16);
 	            if (tDemanglingRes == 0)
 	            {
+	                string tFuncNameStr = (tFuncName ? tFuncName : "");
+	                if(strncmp(tFuncName, "Homer::", 7) == 0)
+	                    tFuncNameStr = ">> " + tFuncNameStr;
+
 	                if(tBeginBinaryName && strlen(tBeginBinaryName))
-	                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s] from %s", tStackTraceStep, tBinaryOffset, tFuncName, tBeginFuncOffset, tBeginBinaryName);
+	                    sprintf(tStringBuf, "#%02d 0x%016x in %s:[%s] from %s", tStackTraceStep, tBinaryOffset, tFuncNameStr.c_str(), tBeginFuncOffset, tBeginBinaryName);
 	                else
-	                    sprintf(tStringBuf, "#%02d 0x%016x in %s from %s", tStackTraceStep, tBinaryOffset, tFuncName, tBeginFuncOffset);
+	                    sprintf(tStringBuf, "#%02d 0x%016x in %s from %s", tStackTraceStep, tBinaryOffset, tFuncNameStr.c_str(), tBeginFuncOffset);
 	                tStackTraceStep++;
 	            }else{
 	                if(tBeginBinaryName && strlen(tBeginBinaryName))
