@@ -126,6 +126,11 @@ QString HelpDialog::GetSystemInfo()
                             tOs = "OS X Mavericks";
                             break;
             #endif
+			#if (QT_VERSION >= 0x050401)
+				case QSysInfo::MV_YOSEMITE:
+							tOs = "OS X Yosemite";
+							break;
+			#endif
             default:
                         tOs = "OS X unknown version";
                         break;
