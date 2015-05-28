@@ -31,7 +31,9 @@
 
 #include <Header_Windows.h>
 
+#if defined(LINUX)
 #include <malloc.h>
+#endif
 #include <string.h>
 #include <stdlib.h>
 #include <cstdio>

@@ -37,8 +37,9 @@
 
 #if defined(LINUX)
 #include <sys/sysinfo.h>
+#endif
 
-//TODO: available in OSX?
+#if defined(LINUX) || defined(APPLE)
 #include <execinfo.h>
 #endif
 
@@ -318,7 +319,7 @@ list<string> System::GetStackTrace()
 	int tStackTraceStep = 0;
     char tStringBuf[MAX_STACK_TRACE_STEP_LENGTH];
 
-	#ifdef LINUX
+	#ifdef defined(LINUX) || defined (APPLE)
 	    void *tStackTrace[MAX_STACK_TRACE_DEPTH];
 	    int tStackTraceSize;
 	    char **tStackTraceList;
@@ -401,7 +402,8 @@ list<string> System::GetStackTrace()
 	    // memory cleanup
 	    free(tStackTraceList);
 	    free(tFuncName);
-	#else
+	#endif
+	#if defined(WINDOWS)
     	// inspired from: http://www.codeproject.com/Articles/11132/Walking-the-callstack
 
 		HANDLE          tProcess = GetCurrentProcess();
