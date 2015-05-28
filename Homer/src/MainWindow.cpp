@@ -58,7 +58,7 @@
 #include <ProcessStatisticService.h>
 #include <Snippets.h>
 
-#if not HOMER_QT5
+#if not defined(HOMER_QT5)
 	#include <QPlastiqueStyle>
 #endif
 #include <QApplication>

@@ -8,7 +8,7 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../../HomerBuild/CMakeConfig.txt)
 # Configuration
 ##############################################################
 
-IF(WINDOWS)
+IF(WINDOWS OR APPLE)
 	SET(HOMER_QT5 "true")
 ENDIF()
 
@@ -106,7 +106,12 @@ SET (FLAGS
 	${FLAGS}
 	-D_GLIBCXX_USE_WSTRING
 )
-
+if(HOMER_QT5)
+	SET (FLAGS
+		${FLAGS}
+		-DHOMER_QT5
+	)
+ENDIF()
 ##############################################################
 # set rapth entries for non-default builds
 IF (NOT (${BUILD} MATCHES "Default"))
@@ -514,24 +519,24 @@ SET (LIBS_APPLE
 )
 IF (NOT(${BUILD} MATCHES "Default"))
 	SET (LIBS_APPLE_INSTALL
-		libQtCore.dylib
-		libQtGui.dylib
-		libQtNetwork.dylib
-		libQtXml.dylib
-		libQtXmlPatterns.dylib
-		libQtWebKit.dylib
-		libQtCore.4.dylib
-		libQtGui.4.dylib
-		libQtNetwork.4.dylib
-		libQtXml.4.dylib
-		libQtXmlPatterns.4.dylib
-		libQtWebKit.4.dylib
-		libQtCore.4.8.4.dylib
-		libQtGui.4.8.4.dylib
-		libQtNetwork.4.8.4.dylib
-		libQtXml.4.8.4.dylib
-		libQtXmlPatterns.4.8.4.dylib
-		libQtWebKit.4.9.3.dylib
+		libQt5Core.dylib
+		libQt5Gui.dylib
+		libQt5Network.dylib
+		libQt5Xml.dylib
+		libQt5XmlPatterns.dylib
+		libQt5WebKit.dylib
+		libQt5Core.5.dylib
+		libQt5Gui.5.dylib
+		libQt5Network.5.dylib
+		libQt5Xml.5.dylib
+		libQt5XmlPatterns.5.dylib
+		libQt5WebKit.5.dylib
+		libQt5Core.5.4.1.dylib
+		libQt5Gui.5.4.1.dylib
+		libQt5Network.5.4.1.dylib
+		libQt5Xml.5.4.1.dylib
+		libQt5XmlPatterns.5.4.1.dylib
+		libQt5WebKit.5.4.1.dylib
 		plugins/imageformats/libqgif.dylib
 		plugins/imageformats/libqico.dylib
 		plugins/imageformats/libqjpeg.dylib
@@ -539,8 +544,20 @@ IF (NOT(${BUILD} MATCHES "Default"))
 		plugins/imageformats/libqsvg.dylib
 		plugins/imageformats/libqtga.dylib
 		plugins/imageformats/libqtiff.dylib
+		platforms/libqcocoa.dylib
 	)
-	SET (LIBS_APPLE
+	IF(HOMER_QT5)
+	    SET (LIBS_APPLE
+		${LIBS_APPLE}
+		${Qt5Core_LIBRARIES}
+		${Qt5Gui_LIBRARIES}
+		${Qt5Network_LIBRARIES}
+		${Qt5WebKitWidgets_LIBRARIES}
+		${Qt5Widgets_LIBRARIES}
+		${Qt5Xml_LIBRARIES}
+	    )
+	ELSE()
+	    SET (LIBS_APPLE
 		${LIBS_APPLE}
 		QtCore
 		QtGui
@@ -548,7 +565,8 @@ IF (NOT(${BUILD} MATCHES "Default"))
 		QtXml
 		QtXmlPatterns
 		QtWebKit
-	)
+	    )
+	ENDIF()
 else()
 	SET (LIBS_APPLE
 		${LIBS_APPLE}
