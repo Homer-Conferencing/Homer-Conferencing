@@ -522,7 +522,7 @@ int WINAPI WinMain(HINSTANCE pInstance,	HINSTANCE pPrevInstance, LPSTR pCmdLine,
 
 ///////////////////////////////////////////////////////////////////////////////
 	// active memory debugger as early as possible
-	Thread::ActiveMemoryDebugger();
+	Thread::ActivateMemoryDebugger();
 
 	string tFirstArg = (pArgc > 1) ? pArgv[1] : "";
 

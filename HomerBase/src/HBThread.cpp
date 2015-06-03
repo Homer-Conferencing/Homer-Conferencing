@@ -121,7 +121,7 @@ static void* malloc_hook(size_t pSize, const void* pCaller)
     return tResult;
 }
 
-void Thread::ActiveMemoryDebugger()
+void Thread::ActivateMemoryDebugger()
 {
     #ifdef DEBUG_VERSION
         LOGEX(Thread, LOG_WARN, "Activating malloc() hook");
@@ -151,7 +151,7 @@ unsigned long Thread::GetMemoryAllocationSize(int pThreadID)
 
 #else
 
-void Thread::ActiveMemoryDebugger()
+void Thread::ActivateMemoryDebugger()
 {
 
 }
