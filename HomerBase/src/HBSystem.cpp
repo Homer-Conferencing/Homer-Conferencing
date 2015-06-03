@@ -319,7 +319,7 @@ list<string> System::GetStackTrace()
 	int tStackTraceStep = 0;
     char tStringBuf[MAX_STACK_TRACE_STEP_LENGTH];
 
-	#ifdef defined(LINUX) || defined (APPLE)
+	#if defined(LINUX) || defined (APPLE)
 	    void *tStackTrace[MAX_STACK_TRACE_DEPTH];
 	    int tStackTraceSize;
 	    char **tStackTraceList;
