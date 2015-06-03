@@ -259,9 +259,11 @@ void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipant
     //### speedup video presentation by setting the following
     //####################################################################
     setAutoFillBackground(false);
-    setAttribute(Qt::WA_NoSystemBackground, true);
-    setAttribute(Qt::WA_PaintOnScreen, true);
-    setAttribute(Qt::WA_OpaquePaintEvent, true);
+	#if !defined(APPLE)
+    	setAttribute(Qt::WA_NoSystemBackground, true);
+    	setAttribute(Qt::WA_PaintOnScreen, true);
+    	setAttribute(Qt::WA_OpaquePaintEvent, true);
+	#endif
 
     SetVisible(pVisible);
     mNeedBackgroundUpdatesUntillNextFrame = true;
@@ -2129,9 +2131,11 @@ void VideoWidget::customEvent(QEvent *pEvent)
 							//### each future painting task will be managed by our own paintEvent function
 							//#############################################################################
 							setAutoFillBackground(false);
-							setAttribute(Qt::WA_NoSystemBackground, true);
-							setAttribute(Qt::WA_PaintOnScreen, true);
-							setAttribute(Qt::WA_OpaquePaintEvent, true);
+							#if !defined(APPLE)
+								setAttribute(Qt::WA_NoSystemBackground, true);
+								setAttribute(Qt::WA_PaintOnScreen, true);
+								setAttribute(Qt::WA_OpaquePaintEvent, true);
+							#endif
 							mNeedBackgroundUpdatesUntillNextFrame = true;
 						}
 
