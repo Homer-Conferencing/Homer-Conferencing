@@ -121,8 +121,8 @@ MediaSource::MediaSource(string pName):
     for (int i = 0; i < MEDIA_SOURCE_MAX_AUDIO_CHANNELS; i++)
         mResampleFifo[i] = NULL;
     mGrabMutex.AssignName("GrabMutex");
-	mMediaSinksMutex.AssignName("MediaSinksMutex");
-	mMediaFiltersMutex.AssignName("MediaFiltersMutex");
+    mMediaSinksMutex.AssignName("MediaSinksMutex");
+    mMediaFiltersMutex.AssignName("MediaFiltersMutex");
 
     FfmpegInit();
 
@@ -491,7 +491,7 @@ int MediaSource::FfmpegLockManager(void **pMutex, enum AVLockOp pMutexOperation)
  *  ================================
  *        G711 A-law                       CODEC_ID_PCM_MULAW
  *        GSM                              CODEC_ID_GSM
- *        G711 µ-law                       CODEC_ID_PCM_ALAW
+ *        G711 ï¿½-law                       CODEC_ID_PCM_ALAW
  *        G722 adpcm                       CODEC_ID_ADPCM_G722
  *        PCM16                            CODEC_ID_PCM_S16BE
  *        MP2                              CODEC_ID_MP2
@@ -531,7 +531,7 @@ enum AVCodecID MediaSource::GetCodecIDFromGuiName(std::string pName)
         tResult = AV_CODEC_ID_VP8;
 
     /* audio */
-    if ((pName == "G711 µ-law") || (pName == "G711 µ-law (PCMU)" /*historic*/))
+    if ((pName == "G711 ï¿½-law") || (pName == "G711 ï¿½-law (PCMU)" /*historic*/))
         tResult = AV_CODEC_ID_PCM_MULAW;
     if (pName == "GSM")
         tResult = AV_CODEC_ID_GSM;
@@ -603,7 +603,7 @@ string MediaSource::GetGuiNameFromCodecID(enum AVCodecID pCodecId)
 
         /* audio */
         case AV_CODEC_ID_PCM_MULAW:
-                tResult = "G711 µ-law";
+                tResult = "G711 ï¿½-law";
                 break;
         case AV_CODEC_ID_GSM:
                 tResult = "GSM";

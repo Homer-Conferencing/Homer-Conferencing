@@ -717,7 +717,7 @@ bool RTP::OpenRtpEncoder(string pTargetHost, unsigned int pTargetPort, AVStream 
 
     // allocate streams private data buffer and write the streams header, if any
     if ((tRes = avformat_write_header(mRtpFormatContext, &tOptions)) < 0)
-		LOG(LOG_ERROR, "Could not initialize default RTP encoder because \"%s\"(%d).", strerror(AVUNERROR(tRes)), tRes);
+        LOG(LOG_ERROR, "Could not initialize default RTP encoder because \"%s\"(%d).", strerror(AVUNERROR(tRes)), tRes);
 
     // close memory stream
     char *tBuffer = NULL;
@@ -1105,12 +1105,12 @@ bool RTP::RtpCreate(AVPacket *pAVPacket, char *&pResultingOutputData, unsigned i
         LOG(LOG_VERBOSE, "Sending %d bytes packet with PTS: %"PRId64", outgoing RTP-PTS: %.2f", pDataSize, pPacketPts, (float)pPacketPts * CalculateClockRateFactor());
     #endif
 
-	// adapt clock rate for G.722
+    // adapt clock rate for G.722
     if (mStreamCodecID == AV_CODEC_ID_ADPCM_G722)
         tAVBufferTimestamp /= 2; // transform from 16 kHz to 8kHz
     pAVPacket->pts = tAVBufferTimestamp * CalculateClockRateFactor(); // clock rate adaption according to rfc (mpeg uses 90 kHz)
     pAVPacket->dts = pAVPacket->pts;
-	
+
 
     #ifdef RTP_DEBUG_PACKET_ENCODER
         LOG(LOG_VERBOSE, "Encapsulating codec packet:");

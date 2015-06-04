@@ -223,7 +223,7 @@ private:
     AVStream            *mRtpEncoderStream;
     AVFormatContext     *mRtpFormatContext;
     unsigned int        mPayloadId;
-    unsigned int 		mPayloadIdNegotiatedByExternal; // e.g., SIP/SDP
+    unsigned int        mPayloadIdNegotiatedByExternal; // e.g., SIP/SDP
     bool                mIntermediateFragment;
     bool                mRtpEncoderOpened;
     std::string         mTargetHost;
