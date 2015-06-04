@@ -438,12 +438,12 @@ void MediaSourceDesktop::CreateScreenshot()
     //####################################################################
     QPixmap tSourcePixmap;
     // screen capturing
-	#ifdef APPLE
+	#if !defined(APPLE) || defined(HOMER_QT5)
+    	tSourcePixmap = QPixmap::grabWindow(mWidget->winId(), mGrabOffsetX, mGrabOffsetY, tCaptureResX, tCaptureResY);
+	#else
 		CGImageRef tOSXWindowImage = CGWindowListCreateImage(CGRectInfinite, kCGWindowListOptionOnScreenOnly, mWidget->winId(), kCGWindowImageDefault);
 		tSourcePixmap = QPixmap::fromMacCGImageRef(tOSXWindowImage).copy(mGrabOffsetX, mGrabOffsetY, tCaptureResX, tCaptureResY);
 		CGImageRelease(tOSXWindowImage);
-	#else
-		tSourcePixmap = QPixmap::grabWindow(mWidget->winId(), mGrabOffsetX, mGrabOffsetY, tCaptureResX, tCaptureResY);
 	#endif
 
 	//####################################################################
@@ -629,7 +629,7 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
 
     mSupportedVideoFormats.clear();
 
-    tFormat.Name="CIF";        //      352 × 288
+    tFormat.Name="CIF";        //      352 ï¿½ 288
     tFormat.ResX = 352;
     tFormat.ResY = 288;
     mSupportedVideoFormats.push_back(tFormat);
@@ -639,27 +639,27 @@ GrabResolutions MediaSourceDesktop::GetSupportedVideoGrabResolutions()
     tFormat.ResY = 480;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="DVD";        //      720 × 576
+    tFormat.Name="DVD";        //      720 ï¿½ 576
     tFormat.ResX = 720;
     tFormat.ResY = 576;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="CIF9";       //     1056 × 864
+    tFormat.Name="CIF9";       //     1056 ï¿½ 864
     tFormat.ResX = 1056;
     tFormat.ResY = 864;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="SXGA";       //     1280 × 1024
+    tFormat.Name="SXGA";       //     1280 ï¿½ 1024
     tFormat.ResX = 1280;
     tFormat.ResY = 1024;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="WXGA+";      //     1440 × 900
+    tFormat.Name="WXGA+";      //     1440 ï¿½ 900
     tFormat.ResX = 1440;
     tFormat.ResY = 900;
     mSupportedVideoFormats.push_back(tFormat);
 
-    tFormat.Name="SXGA+";       //     1440 × 1050
+    tFormat.Name="SXGA+";       //     1440 ï¿½ 1050
     tFormat.ResX = 1440;
     tFormat.ResY = 1050;
     mSupportedVideoFormats.push_back(tFormat);
