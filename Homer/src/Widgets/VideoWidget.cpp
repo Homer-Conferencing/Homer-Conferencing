@@ -1391,8 +1391,8 @@ void VideoWidget::ShowFullScreen(int &pPosX, int &pPosY)
 	    int tScreenMiddleX = tScreenRes.x() + tScreenRes.width() / 2;
 	    int tScreenMiddleY = tScreenRes.y() + tScreenRes.height() / 2;
 
-	    int tCurXDiff = fabs(tWidgetMiddleAsGlobalPos.x() - tScreenMiddleX);
-        int tCurYDiff = fabs(tWidgetMiddleAsGlobalPos.y() - tScreenMiddleY);
+	    int tCurXDiff = abs(tWidgetMiddleAsGlobalPos.x() - tScreenMiddleX);
+        int tCurYDiff = abs(tWidgetMiddleAsGlobalPos.y() - tScreenMiddleY);
         if (tCurXDiff + tCurYDiff < tXDiff + tYDiff)
         {
             LOG(LOG_VERBOSE, "Screen %d with diff: x=%d, y=%d", i, tCurXDiff, tCurYDiff);
