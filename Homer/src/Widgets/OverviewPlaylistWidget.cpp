@@ -1337,7 +1337,7 @@ Playlist OverviewPlaylistWidget::ParsePLS(QString pFilePlaylist, bool pAcceptVid
 						tPlaylistEntry.Location = tValue;
 					}else
 					{// local file
-						if ((!tLineString.startsWith("/")) && (!tValue.startsWith("\\")) && (!tValue.indexOf(":\\") == 1))
+						if ((!tLineString.startsWith("/")) && (!tValue.startsWith("\\")) && (tValue.indexOf(":\\") != 1))
 							tPlaylistEntry.Location = tDir + tValue;
 						else
 							tPlaylistEntry.Location = tValue;
