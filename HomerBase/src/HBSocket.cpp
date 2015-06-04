@@ -1212,7 +1212,6 @@ string Socket::GetAddrFromDescriptor(SocketAddressDescriptor *tAddressDescriptor
     char tSourceHostStr[INET6_ADDRSTRLEN];
     switch (tAddressDescriptor->sa_stor.ss_family)
     {
-        default:
         case AF_INET:
             if (inet_ntop(AF_INET, &tAddressDescriptor->sa_in.sin_addr, tSourceHostStr, INET_ADDRSTRLEN /* is always smaller than INET6_ADDRSTRLEN */) == NULL)
             {
@@ -1231,22 +1230,22 @@ string Socket::GetAddrFromDescriptor(SocketAddressDescriptor *tAddressDescriptor
             if(pPort != NULL)
             	*pPort = (unsigned int)ntohs(tAddressDescriptor->sa_in6.sin6_port);
             break;
+        default:
+        	LOGEX(Socket, LOG_ERROR, "Unsupported address family detected");
+       		break;
     }
-    if (tSourceHostStr != NULL)
-    {
-        tResult = string(tSourceHostStr);
 
-		#ifdef SOCKET_AVOID_IPv4_IN_IPv6
-			// IPv4 in IPv6 address?
-			if ((tResult.find(':') != string::npos) && (tResult.find('.') != string::npos))
-				tResult.erase(0, tResult.rfind(':') + 1);
+    tResult = string(tSourceHostStr);
 
-			// transform an address of "::ffff:0.0.0.0" to a "::"
-			if ((tResult == "0.0.0.0") && (tAddressDescriptor->sa_stor.ss_family == AF_INET6))
-				tResult = "::";
-		#endif
-    }else
-    	tResult = "";
+	#ifdef SOCKET_AVOID_IPv4_IN_IPv6
+		// IPv4 in IPv6 address?
+		if ((tResult.find(':') != string::npos) && (tResult.find('.') != string::npos))
+			tResult.erase(0, tResult.rfind(':') + 1);
+
+		// transform an address of "::ffff:0.0.0.0" to a "::"
+		if ((tResult == "0.0.0.0") && (tAddressDescriptor->sa_stor.ss_family == AF_INET6))
+			tResult = "::";
+	#endif
 
     return tResult;
 }

@@ -106,10 +106,8 @@ string System::GetKernelVersion()
     {
 		#if defined(LINUX) || defined(APPLE) || defined(BSD)
 			struct utsname tInfo;
-			uname(&tInfo);
-
-			if (tInfo.release != NULL)
-				tResult = string(tInfo.release);
+			if(uname(&tInfo) == 0)
+                tResult = string(tInfo.release);
 		#endif
 		#if defined(WINDOWS)
 			#if (_MSC_VER < 1800)
@@ -177,9 +175,7 @@ string System::GetMachineType()
     {
 		#if defined(LINUX) || defined(APPLE) || defined(BSD)
 			struct utsname tInfo;
-			uname(&tInfo);
-
-			if (tInfo.machine != NULL)
+			if(uname(&tInfo) == 0)
 			{
 				string tType = string(tInfo.machine);
 				if(tType == "i686")
