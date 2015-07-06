@@ -37,8 +37,9 @@
 
 #if defined(LINUX)
 #include <sys/sysinfo.h>
+#endif
 
-//TODO: available in OSX?
+#if defined(LINUX) || defined(APPLE)
 #include <execinfo.h>
 #endif
 
@@ -105,10 +106,8 @@ string System::GetKernelVersion()
     {
 		#if defined(LINUX) || defined(APPLE) || defined(BSD)
 			struct utsname tInfo;
-			uname(&tInfo);
-
-			if (tInfo.release != NULL)
-				tResult = string(tInfo.release);
+			if(uname(&tInfo) == 0)
+                tResult = string(tInfo.release);
 		#endif
 		#if defined(WINDOWS)
 			#if (_MSC_VER < 1800)
@@ -176,9 +175,7 @@ string System::GetMachineType()
     {
 		#if defined(LINUX) || defined(APPLE) || defined(BSD)
 			struct utsname tInfo;
-			uname(&tInfo);
-
-			if (tInfo.machine != NULL)
+			if(uname(&tInfo) == 0)
 			{
 				string tType = string(tInfo.machine);
 				if(tType == "i686")
@@ -318,7 +315,7 @@ list<string> System::GetStackTrace()
 	int tStackTraceStep = 0;
     char tStringBuf[MAX_STACK_TRACE_STEP_LENGTH];
 
-	#ifdef LINUX
+	#if defined(LINUX) || defined (APPLE)
 	    void *tStackTrace[MAX_STACK_TRACE_DEPTH];
 	    int tStackTraceSize;
 	    char **tStackTraceList;
@@ -401,7 +398,8 @@ list<string> System::GetStackTrace()
 	    // memory cleanup
 	    free(tStackTraceList);
 	    free(tFuncName);
-	#else
+	#endif
+	#if defined(WINDOWS)
     	// inspired from: http://www.codeproject.com/Articles/11132/Walking-the-callstack
 
 		HANDLE          tProcess = GetCurrentProcess();

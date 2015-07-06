@@ -232,22 +232,22 @@ private:
     int                 mStreamMaxPacketSize;
     int                 mStreamQuality;
     int                 mStreamBitRate;
-    int 				mStreamMaxFps;
-    int64_t				mStreamMaxFps_LastFrame_Timestamp;
+    int                 mStreamMaxFps;
+    int64_t             mStreamMaxFps_LastFrame_Timestamp;
     bool                mStreamActivated;
     char                *mStreamPacketBuffer;
     /* relaying: skip audio silence */
-    bool				mRelayingSkipAudioSilence;
-    int64_t				mRelayingSkipAudioSilenceSkippedChunks;
+    bool                mRelayingSkipAudioSilence;
+    int64_t             mRelayingSkipAudioSilenceSkippedChunks;
     /* encoding */
     Mutex               mEncoderSeekMutex;
     char                *mEncoderChunkBuffer;
     bool                mEncoderThreadNeeded;
     MediaFifo           *mEncoderFifo;
-    Mutex				mEncoderFifoState;
+    Mutex               mEncoderFifoState;
     Mutex               mEncoderFifoAvailableMutex;
-    int					mEncoderBufferedFrames; // in frames
-    int64_t				mEncoderStartTime;
+    int                 mEncoderBufferedFrames; // in frames
+    int64_t             mEncoderStartTime;
     /* device control */
     MediaSources        mMediaSources;
     Mutex               mMediaSourcesMutex;

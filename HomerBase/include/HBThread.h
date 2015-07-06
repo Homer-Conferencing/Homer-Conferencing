@@ -54,7 +54,7 @@ public:
 
     virtual ~Thread( );
 
-    static void ActiveMemoryDebugger();
+    static void ActivateMemoryDebugger();
     static void DeactivateMemoryDebugger();
     static unsigned long GetMemoryAllocationSize(int pThreadID);
 

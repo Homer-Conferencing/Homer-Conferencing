@@ -259,9 +259,11 @@ void VideoWidget::Init(QMainWindow* pMainWindow, ParticipantWidget *pParticipant
     //### speedup video presentation by setting the following
     //####################################################################
     setAutoFillBackground(false);
-    setAttribute(Qt::WA_NoSystemBackground, true);
-    setAttribute(Qt::WA_PaintOnScreen, true);
-    setAttribute(Qt::WA_OpaquePaintEvent, true);
+	#if !defined(APPLE)
+    	setAttribute(Qt::WA_NoSystemBackground, true);
+    	setAttribute(Qt::WA_PaintOnScreen, true);
+    	setAttribute(Qt::WA_OpaquePaintEvent, true);
+	#endif
 
     SetVisible(pVisible);
     mNeedBackgroundUpdatesUntillNextFrame = true;
@@ -1389,8 +1391,8 @@ void VideoWidget::ShowFullScreen(int &pPosX, int &pPosY)
 	    int tScreenMiddleX = tScreenRes.x() + tScreenRes.width() / 2;
 	    int tScreenMiddleY = tScreenRes.y() + tScreenRes.height() / 2;
 
-	    int tCurXDiff = fabs(tWidgetMiddleAsGlobalPos.x() - tScreenMiddleX);
-        int tCurYDiff = fabs(tWidgetMiddleAsGlobalPos.y() - tScreenMiddleY);
+	    int tCurXDiff = abs(tWidgetMiddleAsGlobalPos.x() - tScreenMiddleX);
+        int tCurYDiff = abs(tWidgetMiddleAsGlobalPos.y() - tScreenMiddleY);
         if (tCurXDiff + tCurYDiff < tXDiff + tYDiff)
         {
             LOG(LOG_VERBOSE, "Screen %d with diff: x=%d, y=%d", i, tCurXDiff, tCurYDiff);
@@ -2129,9 +2131,11 @@ void VideoWidget::customEvent(QEvent *pEvent)
 							//### each future painting task will be managed by our own paintEvent function
 							//#############################################################################
 							setAutoFillBackground(false);
-							setAttribute(Qt::WA_NoSystemBackground, true);
-							setAttribute(Qt::WA_PaintOnScreen, true);
-							setAttribute(Qt::WA_OpaquePaintEvent, true);
+							#if !defined(APPLE)
+								setAttribute(Qt::WA_NoSystemBackground, true);
+								setAttribute(Qt::WA_PaintOnScreen, true);
+								setAttribute(Qt::WA_OpaquePaintEvent, true);
+							#endif
 							mNeedBackgroundUpdatesUntillNextFrame = true;
 						}
 

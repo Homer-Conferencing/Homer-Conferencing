@@ -745,6 +745,17 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     ClassifyStream(DATA_TYPE_AUDIO, SOCKET_RAW);
 
     // #########################################
+    // find the encoder for the audio stream
+    // #########################################
+    LOG(LOG_VERBOSE, "..finding video encoder");
+    if ((tCodec = avcodec_find_encoder(mStreamCodecId)) == NULL)
+    {
+        LOG(LOG_ERROR, "Couldn't find a fitting video codec");
+
+        return false;
+    }
+
+    // #########################################
     // create new format context
     // #########################################
     LOG(LOG_VERBOSE, "..creating new format context");
@@ -787,7 +798,22 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     mCodecContext = mMediaStream->codec;
     mCodecContext->codec_id = mStreamCodecId;
     mCodecContext->codec_type = AVMEDIA_TYPE_AUDIO;
-    switch(mCodecContext->codec_id)
+    // set defaults and update them later with explicit values
+    if ((tResult = avcodec_get_context_defaults3(mCodecContext, tCodec)) < 0)
+    {
+        LOG(LOG_ERROR, "Could not set defaults for codec context because \"%s\".", strerror(AVUNERROR(tResult)));
+
+        // free codec and stream 0
+        av_freep(&mMediaStream->codec);
+        av_freep(&mMediaStream);
+
+        // Close the format context
+        av_free(mFormatContext);
+
+        return false;
+    }
+    // add some extra parameters depending on the selected codec
+    switch(mStreamCodecId)
     {
         case AV_CODEC_ID_ADPCM_G722:
             mOutputAudioChannels = 1;
@@ -847,23 +873,6 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     // Dump information about device file
     av_dump_format(mFormatContext, mMediaStreamIndex, "MediaSourceMuxer (audio)", true);
 
-    // Find the encoder for the audio stream
-    if((tCodec = avcodec_find_encoder(mStreamCodecId)) == NULL)
-    {
-        LOG(LOG_ERROR, "Couldn't find a fitting audio codec");
-        // free codec and stream 0
-        av_freep(&mMediaStream->codec);
-        av_freep(&mMediaStream);
-
-        // Close the format context
-        av_free(mFormatContext);
-
-        return false;
-    }
-
-    // allow ffmpeg its speedup tricks
-    mCodecContext->flags2 |= CODEC_FLAG2_FAST;
-
     // Open codec
     if ((tResult = HM_avcodec_open(mCodecContext, tCodec, NULL)) < 0)
     {
@@ -890,8 +899,16 @@ bool MediaSourceMuxer::OpenAudioMuxer(int pSampleRate, int pChannels)
     // init transcoder FIFO based for 2048 samples with 16 bit and 2 channels, more samples are never produced by a media source per grabbing cycle
     StartEncoder();
 
+    //######################################################
+    //### give some verbose output
+    //######################################################
     MarkOpenGrabDeviceSuccessful();
     LOG(LOG_INFO, "    ..max packet size: %d bytes", mStreamMaxPacketSize);
+    LOG(LOG_INFO, "  stream...");
+    LOG(LOG_INFO, "    ..AV stream context at: %p", mMediaStream);
+    LOG(LOG_INFO, "    ..AV stream codec is: %s(%d)", mMediaStream->codec->codec->name, mMediaStream->codec->codec_id);
+    LOG(LOG_INFO, "    ..AV stream codec context at: 0x%p", mMediaStream->codec);
+    LOG(LOG_INFO, "    ..AV stream codec codec context at: 0x%p", mMediaStream->codec->codec);
 
     return true;
 }

@@ -217,11 +217,14 @@ SET (FRAMEWORKS_APPLE
     AppKit
     AudioToolbox
     AudioUnit
+    AVFoundation
     Carbon
     CoreAudio
     CoreFoundation
+ 	CoreMedia
     CoreVideo
     IOKit
+    QTKit
     OpenGL
     VideoDecodeAcceleration
 )

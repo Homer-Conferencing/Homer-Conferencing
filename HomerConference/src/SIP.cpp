@@ -885,14 +885,13 @@ string SIP::CreateAuthInfo(sip_t const *pSip)
 
 	LOG(LOG_VERBOSE, "Found realm: \"%s\" in auth. information from SIP server", tRealm);
 	LOG(LOG_VERBOSE, "Found scheme: \"%s\" in auth. information from SIP server", tScheme);
-	sprintf(tAuthInfo, "%s:%s:%s:%s", tScheme, tRealm, mSipRegisterServerUsername.c_str(), mSipRegisterServerPassword.c_str());
-	#ifdef DEBUG_AUTH_DATA
-		if (LOGGER.GetLogLevel() == LOG_VERBOSE)
+	if(sprintf(tAuthInfo, "%s:%s:%s:%s", tScheme, tRealm, mSipRegisterServerUsername.c_str(), mSipRegisterServerPassword.c_str()) >= 0)
+	{
+		#ifdef DEBUG_AUTH_DATA
 			LOG(LOG_VERBOSE, "Generated auth. info:", tAuthInfo);
-	#endif
-
-	if (tAuthInfo != NULL)
+		#endif
 		tResult = string(tAuthInfo);
+	}
 
 	return tResult;
 }
