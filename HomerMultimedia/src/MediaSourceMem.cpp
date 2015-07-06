@@ -1199,7 +1199,7 @@ int MediaSourceMem::GrabChunk(void* pChunkBuffer, int& pChunkSize, bool pDropChu
         {
             if (tCurrentFramePts < mDecoderTargetOutputFrameIndex)
             {// we are waiting for some special frame number
-                LOG(LOG_VERBOSE, "Dropping grabbed %s frame %"PRId64" because we are still waiting for frame %.2lf", GetMediaTypeStr().c_str(), tCurrentFramePts, mDecoderTargetOutputFrameIndex);
+                LOG(LOG_VERBOSE, "Dropping grabbed %s frame because we are waiting for frame %.2lf", GetMediaTypeStr().c_str(), mDecoderTargetOutputFrameIndex);
                 tShouldGrabNext = true;
             }else
             {
